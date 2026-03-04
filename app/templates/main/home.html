@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+{% block title %}Home{% endblock %}
+
+{% block nav_links %}
+  <li><a href="{{ url_for('main.home') }}" class="active">Home</a></li>
+  {% if current_user.is_super_admin %}
+    <li><a href="{{ url_for('admin.dashboard') }}">Admin</a></li>
+  {% endif %}
+  <li><a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a></li>
+{% endblock %}
+
+{% block drawer_links %}
+  <a href="{{ url_for('main.home') }}">Home</a>
+  {% if current_user.is_super_admin %}
+    <a href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a>
+  {% endif %}
+  <a href="{{ url_for('auth.logout') }}">Logout</a>
+{% endblock %}
+
+{% block body %}
+<div class="page-hero">
+  <div class="container">
+    <h1>Welcome back, {{ user.fname }}! 👋</h1>
+    <p>Select an assessment below to begin or review your recent results.</p>
+  </div>
+</div>
+
+<div class="container" style="padding-top: 32px; padding-bottom: 48px;">
+
+  {# ── Stats Row ── #}
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-icon">📝</div>
+      <div>
+        <div class="stat-value">{{ total_tests }}</div>
+        <div class="stat-label">Assessments Taken</div>
+      </div>
+    </div>
+    <div class="stat-card gold">
+      <div class="stat-icon">📈</div>
+      <div>
+        <div class="stat-value">{{ avg_score }}</div>
+        <div class="stat-label">Average Score</div>
+      </div>
+    </div>
+    <div class="stat-card teal">
+      <div class="stat-icon">🎓</div>
+      <div>
+        <div class="stat-value" style="font-size: 1.2rem; margin-top: 4px;">{{ user.level | capitalize if user.level else '—' }}</div>
+        <div class="stat-label">Education Level</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🕐</div>
+      <div>
+        <div class="stat-value" style="font-size: 1rem; margin-top: 4px;">
+          {% if most_recent %}{{ most_recent.taken_at.strftime('%d %b') }}{% else %}—{% endif %}
+        </div>
+        <div class="stat-label">Last Assessment</div>
+      </div>
+    </div>
+  </div>
+
+  {# ── Assessments ── #}
+  <div class="section">
+    <div class="section-head">
+      <h2>Choose an Assessment</h2>
+      <p style="font-size: 0.85rem; color: var(--gray-500);">Each test covers a different aspect of social-emotional health.</p>
+    </div>
+
+    {% set tests_meta = [
+      {'name': 'Separation Anxiety Disorder',   'title': 'Fear of Being Left Alone',                      'desc': 'Measures anxiety related to separation or fear of being left alone',          'count': tests_meta[0].count, 'image': 'images/separation-anxiety.png'},
+      {'name': 'Social Phobia',                 'title': 'Fear of Being Judged or Embarrassed in School', 'desc': 'Assesses fear of being judged or embarrassed in public',                     'count': tests_meta[1].count, 'image': 'images/socio-phobia.png'},
+      {'name': 'Generalised Anxiety Disorder',  'title': 'Constant Worrying About Many Things',           'desc': 'Evaluates constant worry about many things and various aspects of life',      'count': tests_meta[2].count, 'image': 'images/generalised-anxiety.png'},
+      {'name': 'Panic Disorder',                'title': 'Sudden Fear Attacks / Heart Racing Moments',    'desc': 'Measures experiences of sudden fear or heart racing moments',                 'count': tests_meta[3].count, 'image': 'images/panic disorder.png'},
+      {'name': 'Obsessive Compulsive Disorder', 'title': 'Uncontrollable Thoughts / Repeating Actions',  'desc': 'Assesses uncontrollable thoughts and repeating actions',                     'count': tests_meta[4].count, 'image': 'images/ocd.png'},
+      {'name': 'Major Depressive Disorder',     'title': 'Deep Sadness / Loss of Interest in Life',      'desc': 'Evaluates symptoms of deep sadness or loss of interest in life',             'count': tests_meta[5].count, 'image': 'images/major depressive disorder.png'},
+    ] %}
+
+    <div class="test-grid">
+      {% for test in tests_meta %}
+      <a href="{{ url_for('test.display_questions', test_type=test.name) }}" class="test-card">
+        <div class="test-card-image">
+          <img src="{{ url_for('static', filename=test.image) }}" alt="{{ test.name }}">
+        </div>
+        <div class="test-card-content">
+          <h3>{{ test.title }}</h3>
+          <p>{{ test.desc }}</p>
+          <div class="test-card-meta">
+            <span class="test-card-count">{{ test.count }} questions</span>
+            <span class="test-card-arrow">→</span>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  {# ── Recent Results ── #}
+  {% if recent_results %}
+  <div class="section">
+    <div class="section-head">
+      <h2>Recent Results</h2>
+    </div>
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Assessment</th>
+              <th>Score</th>
+              <th>Stage</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in recent_results %}
+            <tr>
+              <td>{{ r.test_type }}</td>
+              <td>{{ r.score }}{% if r.max_score %} / {{ r.max_score }}{% endif %}</td>
+              <td>
+                {% set s = (r.stage or r.details or 'Unknown') | lower %}
+                <span class="badge {% if 'normal' in s %}stage-normal{% elif 'mild' in s %}stage-mild{% elif 'elevated' in s %}stage-elevated{% elif 'clinical' in s %}stage-clinical{% else %}badge-gray{% endif %}">
+                  {{ r.stage or r.details or 'Unknown' }}
+                </span>
+              </td>
+              <td style="color: var(--gray-500); font-size: 0.85rem;">{{ r.taken_at.strftime('%d %b %Y') }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+
+<style>
+.test-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+.test-card-image {
+  width: 100%;
+  height: 160px;
+  overflow: hidden;
+  background: var(--green-50);
+  flex-shrink: 0;
+}
+
+.test-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.test-card:hover .test-card-image img {
+  transform: scale(1.05);
+}
+
+.test-card-content {
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.test-card-content h3 {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--green-800);
+  margin-bottom: 6px;
+  line-height: 1.35;
+}
+
+.test-card-content p {
+  font-size: 0.82rem;
+  color: var(--gray-500);
+  margin-bottom: 14px;
+  line-height: 1.5;
+  flex: 1;
+}
+</style>
+{% endblock %}

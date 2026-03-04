@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Register School{% endblock %}
+
+{% block full_page %}
+<div class="auth-page">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-stack">
+        {% for category, message in messages %}
+          <div class="flash-toast {{ category }}"><span>{{ message }}</span></div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <div class="auth-card" style="max-width: 480px; margin: auto;">
+    <div class="auth-logo-area">
+      <img src="{{ url_for('static', filename='images/Pofa.jpg') }}" alt="FOPA Logo" class="auth-logo">
+      <div class="auth-org">FOPA DILLIGENT CONSULT</div>
+      <h1 class="auth-title">Register School</h1>
+      <p class="auth-subtitle">Join the SESA programme</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('auth.school_signup') }}" novalidate>
+      {{ form.hidden_tag() }}
+
+      <div class="form-group">
+        {{ form.school_name.label(class="form-label") }}
+        {{ form.school_name(class="form-control" ~ (" is-invalid" if form.school_name.errors else ""), placeholder="e.g. Accra High School") }}
+        {% for e in form.school_name.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+      </div>
+
+      <div class="form-group">
+        {{ form.admin_name.label(class="form-label") }}
+        {{ form.admin_name(class="form-control" ~ (" is-invalid" if form.admin_name.errors else ""), placeholder="School counsellor / administrator name") }}
+        {% for e in form.admin_name.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+      </div>
+
+      <div class="form-group">
+        {{ form.email.label(class="form-label") }}
+        {{ form.email(class="form-control" ~ (" is-invalid" if form.email.errors else ""), placeholder="school@example.com (optional)") }}
+        {% for e in form.email.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+        <div class="form-group">
+          {{ form.admin_password.label(class="form-label") }}
+          {{ form.admin_password(class="form-control" ~ (" is-invalid" if form.admin_password.errors else ""), placeholder="Min. 8 characters") }}
+          {% for e in form.admin_password.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="form-group">
+          {{ form.confirm_password.label(class="form-label") }}
+          {{ form.confirm_password(class="form-control" ~ (" is-invalid" if form.confirm_password.errors else ""), placeholder="Repeat password") }}
+          {% for e in form.confirm_password.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+        </div>
+      </div>
+
+      <div style="background: var(--gold-50); border-left: 3px solid var(--gold-500); padding: 12px 14px; border-radius: var(--radius-sm); margin-bottom: 18px; font-size: 0.83rem; color: var(--gold-700);">
+        <strong>Note:</strong> After registration, student upload access must be enabled by FOPA DILLIGENT CONSULT following payment confirmation.
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block btn-lg">Register School</button>
+    </form>
+
+    <p style="text-align:center; margin-top: 20px; font-size: 0.85rem; color: var(--gray-500);">
+      Already registered? <a href="{{ url_for('auth.school_login') }}" style="color: var(--green-600); font-weight: 600;">Sign in</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.querySelectorAll('.flash-toast').forEach((el,i)=>{
+  el.addEventListener('click',()=>{el.style.opacity='0';setTimeout(()=>el.remove(),400);});
+  setTimeout(()=>{el.style.transition='opacity 0.4s';el.style.opacity='0';setTimeout(()=>el.remove(),400);},4000+i*300);
+});
+</script>
+{% endblock %}

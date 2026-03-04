@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block title %}Create Account{% endblock %}
+
+{% block full_page %}
+<div class="auth-page" style="align-items: flex-start; padding: 40px 24px;">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-stack" role="status">
+        {% for category, message in messages %}
+          <div class="flash-toast {{ category }}"><span>{{ message }}</span></div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <div class="auth-card" style="max-width: 500px; margin: auto;">
+    <div class="auth-logo-area">
+      <img src="{{ url_for('static', filename='images/Pofa.jpg') }}" alt="FOPA Logo" class="auth-logo">
+      <div class="auth-org">FOPA DILLIGENT CONSULT</div>
+      <h1 class="auth-title">Create Account</h1>
+      <p class="auth-subtitle">Join the SESA platform</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('auth.signup') }}" novalidate>
+      {{ form.hidden_tag() }}
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+        <div class="form-group">
+          {{ form.fname.label(class="form-label") }}
+          {{ form.fname(class="form-control" ~ (" is-invalid" if form.fname.errors else ""), placeholder="First name") }}
+          {% for e in form.fname.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="form-group">
+          {{ form.lname.label(class="form-label") }}
+          {{ form.lname(class="form-control" ~ (" is-invalid" if form.lname.errors else ""), placeholder="Last name") }}
+          {% for e in form.lname.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+        </div>
+      </div>
+
+      <div class="form-group">
+        {{ form.email.label(class="form-label") }}
+        {{ form.email(class="form-control" ~ (" is-invalid" if form.email.errors else ""), placeholder="example@email.com") }}
+        {% for e in form.email.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+      </div>
+
+      <div class="form-group">
+        {{ form.username.label(class="form-label") }}
+        {{ form.username(class="form-control" ~ (" is-invalid" if form.username.errors else ""), placeholder="Choose a username") }}
+        {% for e in form.username.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+        <div class="form-group">
+          {{ form.password.label(class="form-label") }}
+          {{ form.password(class="form-control" ~ (" is-invalid" if form.password.errors else ""), placeholder="Min. 8 characters") }}
+          {% for e in form.password.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="form-group">
+          {{ form.confirm_password.label(class="form-label") }}
+          {{ form.confirm_password(class="form-control" ~ (" is-invalid" if form.confirm_password.errors else ""), placeholder="Repeat password") }}
+          {% for e in form.confirm_password.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+        </div>
+      </div>
+
+      <div class="form-group">
+        {{ form.birthdate.label(class="form-label") }}
+        {{ form.birthdate(class="form-control" ~ (" is-invalid" if form.birthdate.errors else "")) }}
+        {% for e in form.birthdate.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+        <div class="form-group">
+          {{ form.gender.label(class="form-label") }}
+          {{ form.gender(class="form-control" ~ (" is-invalid" if form.gender.errors else "")) }}
+          {% for e in form.gender.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="form-group">
+          {{ form.level.label(class="form-label") }}
+          {{ form.level(class="form-control" ~ (" is-invalid" if form.level.errors else "")) }}
+          {% for e in form.level.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: 4px;">Create Account</button>
+    </form>
+
+    <p style="text-align:center; margin-top: 20px; font-size: 0.85rem; color: var(--gray-500);">
+      Already have an account? <a href="{{ url_for('auth.login') }}" style="color: var(--green-600); font-weight: 600;">Sign in</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.querySelectorAll('.flash-toast').forEach((el,i)=>{
+  el.addEventListener('click',()=>{el.style.opacity='0';setTimeout(()=>el.remove(),400);});
+  setTimeout(()=>{el.style.transition='opacity 0.4s';el.style.opacity='0';setTimeout(()=>el.remove(),400);},4000+i*300);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block nav_links %}
+  <li><a href="{{ url_for('admin.dashboard') }}" class="active">Admin</a></li>
+  <li><a href="{{ url_for('main.home') }}">Home</a></li>
+  <li><a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a></li>
+{% endblock %}
+
+{% block drawer_links %}
+  <a href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a>
+  <a href="{{ url_for('main.home') }}">Home</a>
+  <a href="{{ url_for('auth.logout') }}">Logout</a>
+{% endblock %}
+
+{% block body %}
+<div class="page-hero">
+  <div class="container">
+    <h1>Super Admin Dashboard</h1>
+    <p>Manage accounts, schools, questions, and view all assessment results.</p>
+  </div>
+</div>
+
+<div class="container" style="padding-top: 28px; padding-bottom: 48px;">
+
+  {# ── Stats ── #}
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-icon">👤</div>
+      <div><div class="stat-value">{{ total_users }}</div><div class="stat-label">Total Students</div></div>
+    </div>
+    <div class="stat-card gold">
+      <div class="stat-icon">📋</div>
+      <div><div class="stat-value">{{ total_tests }}</div><div class="stat-label">Total Tests Taken</div></div>
+    </div>
+    <div class="stat-card teal">
+      <div class="stat-icon">🏫</div>
+      <div><div class="stat-value">{{ total_schools }}</div><div class="stat-label">Schools</div></div>
+    </div>
+    {% for stage, count in stage_counts.items() %}
+      {% if loop.index <= 1 %}
+      <div class="stat-card {% if 'clinical' in stage|lower %}red{% endif %}">
+        <div class="stat-icon">{% if 'clinical' in stage|lower %}🔴{% elif 'elevated' in stage|lower %}🟡{% else %}🟢{% endif %}</div>
+        <div><div class="stat-value">{{ count }}</div><div class="stat-label">{{ stage }}</div></div>
+      </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  {# ── Tabs ── #}
+  <div class="admin-tabs">
+    <button class="admin-tab" data-tab="all_accounts">👤 Accounts ({{ accounts | length }})</button>
+    <button class="admin-tab" data-tab="all_schools">🏫 Schools ({{ schools | length }})</button>
+    <button class="admin-tab" data-tab="question_database">❓ Questions ({{ questions | length }})</button>
+    <button class="admin-tab" data-tab="all_results">📋 Results ({{ results | length }})</button>
+  </div>
+
+  {# ── Accounts Tab ── #}
+  <div id="all_accounts" class="admin-tab-panel">
+    <div class="section-head">
+      <h3>Student Accounts</h3>
+    </div>
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr><th>Name</th><th>Username</th><th>Email</th><th>Level</th><th>School</th><th>Joined</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            {% for acc in accounts %}
+            <tr>
+              <td><strong>{{ acc.fname }} {{ acc.lname }}</strong></td>
+              <td>@{{ acc.username }}</td>
+              <td style="font-size: 0.82rem; color: var(--gray-500);">{{ acc.email }}</td>
+              <td>{{ acc.level | capitalize if acc.level else '—' }}</td>
+              <td style="font-size: 0.82rem;">{{ acc.school.school_name if acc.school else '—' }}</td>
+              <td style="font-size: 0.82rem; color: var(--gray-500);">{{ acc.created_at.strftime('%d %b %Y') }}</td>
+              <td>
+                <div style="display: flex; gap: 6px;">
+                  <a href="{{ url_for('admin.edit_account', account_id=acc.id) }}" class="btn btn-ghost btn-sm">Edit</a>
+                  {% if acc.id != 1 %}
+                  <form method="POST" action="{{ url_for('admin.delete_account', account_id=acc.id) }}" class="confirm-delete" data-item="{{ acc.username }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                  </form>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7"><div class="empty-state"><p>No accounts found.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  {# ── Schools Tab ── #}
+  <div id="all_schools" class="admin-tab-panel">
+    <div class="section-head">
+      <h3>Registered Schools</h3>
+    </div>
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr><th>School Name</th><th>Admin</th><th>Email</th><th>Students</th><th>Upload</th><th>Registered</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            {% for s in schools %}
+            <tr>
+              <td><strong>{{ s.school_name }}</strong></td>
+              <td>{{ s.admin_name }}</td>
+              <td style="font-size: 0.82rem; color: var(--gray-500);">{{ s.email or '—' }}</td>
+              <td>{{ s.student_count }}</td>
+              <td>
+                <form method="POST" action="{{ url_for('admin.toggle_upload', school_id=s.id) }}" style="display:inline">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="badge {% if s.upload_enabled %}stage-normal{% else %}stage-clinical{% endif %}" style="border: none; cursor: pointer; padding: 5px 12px;">
+                    {% if s.upload_enabled %}Enabled{% else %}Disabled{% endif %}
+                  </button>
+                </form>
+              </td>
+              <td style="font-size: 0.82rem; color: var(--gray-500);">{{ s.created_at.strftime('%d %b %Y') }}</td>
+              <td>
+                <div style="display: flex; gap: 6px;">
+                  <a href="{{ url_for('main.school_dashboard', school_id=s.id) }}" class="btn btn-ghost btn-sm">View</a>
+                  <a href="{{ url_for('admin.edit_school', school_id=s.id) }}" class="btn btn-ghost btn-sm">Edit</a>
+                  <form method="POST" action="{{ url_for('admin.delete_school', school_id=s.id) }}" class="confirm-delete" data-item="{{ s.school_name }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7"><div class="empty-state"><p>No schools registered.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  {# ── Questions Tab ── #}
+  <div id="question_database" class="admin-tab-panel">
+    <div class="section-head">
+      <h3>Question Database</h3>
+      <a href="{{ url_for('admin.add_question') }}" class="btn btn-primary btn-sm">+ Add Question</a>
+    </div>
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr><th>#</th><th>Test Type</th><th>Question</th><th>Added</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            {% for q in questions %}
+            <tr>
+              <td style="color: var(--gray-500); font-size: 0.82rem;">{{ q.id }}</td>
+              <td><span class="badge badge-green">{{ q.test_type }}</span></td>
+              <td style="max-width: 400px;">{{ q.question_content }}</td>
+              <td style="font-size: 0.82rem; color: var(--gray-500);">{{ q.created_at.strftime('%d %b %Y') }}</td>
+              <td>
+                <div style="display: flex; gap: 6px;">
+                  <a href="{{ url_for('admin.edit_question', question_id=q.id) }}" class="btn btn-ghost btn-sm">Edit</a>
+                  <form method="POST" action="{{ url_for('admin.delete_question', question_id=q.id) }}" class="confirm-delete" data-item="this question">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5"><div class="empty-state"><p>No questions yet.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  {# ── Results Tab ── #}
+  <div id="all_results" class="admin-tab-panel">
+    <div class="section-head"><h3>All Assessment Results</h3></div>
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr><th>Student</th><th>Assessment</th><th>Score</th><th>Stage</th><th>Date</th></tr>
+          </thead>
+          <tbody>
+            {% for r in results %}
+            <tr>
+              <td>{{ r.account.full_name }}<br><small style="color:var(--gray-500)">@{{ r.account.username }}</small></td>
+              <td style="font-size: 0.85rem;">{{ r.test_type }}</td>
+              <td>{{ r.score }}{% if r.max_score %}/{{ r.max_score }}{% endif %}</td>
+              <td>
+                {% set s = (r.stage or r.details or '') | lower %}
+                <span class="badge {% if 'normal' in s %}stage-normal{% elif 'mild' in s %}stage-mild{% elif 'elevated' in s %}stage-elevated{% elif 'clinical' in s %}stage-clinical{% else %}badge-gray{% endif %}">
+                  {{ r.stage or r.details or 'Unknown' }}
+                </span>
+              </td>
+              <td style="font-size: 0.82rem; color: var(--gray-500);">{{ r.taken_at.strftime('%d %b %Y %H:%M') }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5"><div class="empty-state"><p>No results yet.</p></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

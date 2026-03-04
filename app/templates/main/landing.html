@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SESA — Social Emotional Students' Audit</title>
+  <meta name="description" content="SESA helps schools identify and support students' social and emotional wellbeing through structured assessments.">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa.jpg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+<link rel="manifest" href="/static/manifest.json">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/static/sw.js');
+  }
+</script>
+</head>
+
+<body class="landing-page">
+
+  {# ── Navigation ── #}
+  <nav class="landing-nav" id="landingNav">
+    <a href="#" class="landing-nav-brand">
+      <img src="{{ url_for('static', filename='images/Pofa.jpg') }}" alt="FOPA Logo">
+      <span>SESA</span>
+    </a>
+    <div class="landing-nav-links">
+      <a href="{{ url_for('auth.school_signup') }}" class="btn btn-ghost btn-sm" style="color: rgba(255,255,255,.8); background: rgba(255,255,255,.1);">Register School</a>
+      <a href="{{ url_for('auth.login') }}" class="btn btn-gold btn-sm">Sign In</a>
+    </div>
+  </nav>
+
+  {# ── Hero ── #}
+  <section class="hero-section">
+    <div class="hero-bg-circle c1"></div>
+    <div class="hero-bg-circle c2"></div>
+    <div class="hero-bg-circle c3"></div>
+
+    <div class="hero-content">
+      <div class="hero-eyebrow">FOPA DILLIGENT CONSULT</div>
+      <h1 class="hero-title">
+        Supporting Student<br><em>Emotional Wellbeing</em>
+      </h1>
+      <p class="hero-subtitle">
+        The Social Emotional Students' Audit (SESA) helps schools identify, understand,
+        and support the mental and emotional health of their students — early and effectively.
+      </p>
+      <div class="hero-actions">
+        <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-xl">Take the Assessment</a>
+        <a href="{{ url_for('auth.school_signup') }}" class="btn btn-outline btn-xl">Register My School</a>
+      </div>
+    </div>
+  </section>
+
+  {# ── Features ── #}
+  <section class="features-section">
+    <div class="container">
+      <div class="section-label">What We Offer</div>
+      <h2 class="section-title">Comprehensive Social Emotional Screening</h2>
+
+      <div class="feature-grid">
+        <div class="feature-item">
+          <div class="feature-icon">🧠</div>
+          <h3>Six Validated Assessments</h3>
+          <p>Covering Separation Anxiety, Social Phobia, Generalised Anxiety, Panic Disorder, OCD, and Major Depressive Disorder.</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">📊</div>
+          <h3>Staged Results</h3>
+          <p>Each assessment returns a clearly interpreted result — Normal, Mild, Elevated, or Clinical — with personalised guidance.</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🏫</div>
+          <h3>School Dashboard</h3>
+          <p>Administrators access a dedicated dashboard to monitor student results, upload student lists, and track trends.</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🔒</div>
+          <h3>Private & Secure</h3>
+          <p>Student data is protected. Results are confidential and only accessible to authorised school personnel.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {# ── CTA Strip ── #}
+  <section style="background: linear-gradient(135deg, var(--green-800), var(--green-700)); padding: 60px 40px; text-align: center;">
+    <h2 style="font-family: var(--font-display); font-size: 1.8rem; color: #fff; margin-bottom: 10px;">Ready to support your students?</h2>
+    <p style="color: rgba(255,255,255,.7); margin-bottom: 28px; font-size: 1rem;">Register your school today and begin screening in minutes.</p>
+    <div style="display:flex; gap: 14px; justify-content: center; flex-wrap: wrap;">
+      <a href="{{ url_for('auth.school_signup') }}" class="btn btn-gold btn-xl">Register My School</a>
+      <a href="{{ url_for('auth.login') }}" class="btn btn-outline btn-xl" style="color: #fff; border-color: rgba(255,255,255,.5);">Student Sign In</a>
+    </div>
+  </section>
+
+  {# ── Footer ── #}
+  <footer class="landing-footer">
+    <p>© {{ 2025 }} <strong>FOPA DILLIGENT CONSULT</strong> · Training Teachers | Emotional Therapy for Students</p>
+    <p style="margin-top: 6px; font-size: 0.78rem; opacity: .6;">SESA is a screening tool only and does not constitute a clinical diagnosis.</p>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

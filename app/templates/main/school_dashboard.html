@@ -1,0 +1,247 @@
+{% extends 'base.html' %}
+{% block title %}{{ school.school_name }} Dashboard{% endblock %}
+
+{% block nav_links %}
+  <li><a href="{{ url_for('main.school_dashboard', school_id=school.id) }}" class="active">Dashboard</a></li>
+  <li><a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a></li>
+{% endblock %}
+
+{% block drawer_links %}
+  <a href="{{ url_for('main.school_dashboard', school_id=school.id) }}">Dashboard</a>
+  <a href="{{ url_for('auth.logout') }}">Logout</a>
+{% endblock %}
+
+{% block body %}
+<div class="page-hero">
+  <div class="container">
+    <h1>{{ school.school_name }}</h1>
+    <p>School Administrator Dashboard · {{ accounts | length }} student{{ 's' if accounts | length != 1 }}</p>
+  </div>
+</div>
+
+<div class="container" style="padding-top: 32px; padding-bottom: 48px;">
+
+  {# ── Stats ── #}
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-icon">👥</div>
+      <div>
+        <div class="stat-value">{{ accounts | length }}</div>
+        <div class="stat-label">Total Students</div>
+      </div>
+    </div>
+    <div class="stat-card gold">
+      <div class="stat-icon">📋</div>
+      <div>
+        <div class="stat-value">{{ results | length }}</div>
+        <div class="stat-label">Total Assessments</div>
+      </div>
+    </div>
+    <div class="stat-card {% if upload_enabled %}teal{% else %}red{% endif %}">
+      <div class="stat-icon">{% if upload_enabled %}✅{% else %}🔒{% endif %}</div>
+      <div>
+        <div class="stat-value" style="font-size: 0.9rem; margin-top: 4px;">{% if upload_enabled %}Enabled{% else %}Disabled{% endif %}</div>
+        <div class="stat-label">Upload Access</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📅</div>
+      <div>
+        <div class="stat-value">{{ stage_counts | sum(attribute=1) if stage_counts else 0 }}</div>
+        <div class="stat-label">Tests This Month</div>
+      </div>
+    </div>
+  </div>
+
+  {# ── Stage Summary ── #}
+  {% if stage_counts %}
+  <div class="card" style="margin-bottom: 28px;">
+    <div class="card-header"><h3>This Month — Stage Distribution</h3></div>
+    <div class="card-body">
+      <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+        {% for stage, count in stage_counts.items() %}
+          {% set s = stage | lower %}
+          <div style="flex: 1; min-width: 130px; background: var(--ivory); border-radius: var(--radius-md); padding: 16px; text-align: center;">
+            <div style="font-size: 1.6rem; font-weight: 700; color: var(--green-800);">{{ count }}</div>
+            <span class="badge {% if 'normal' in s %}stage-normal{% elif 'mild' in s %}stage-mild{% elif 'elevated' in s %}stage-elevated{% elif 'clinical' in s %}stage-clinical{% else %}badge-gray{% endif %}" style="margin-top: 6px;">{{ stage }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  {# ── Payment / Upload Section ── #}
+  <div class="card" style="margin-bottom: 28px;">
+    <div class="card-header">
+      <h3>Student Upload</h3>
+    </div>
+    <div class="card-body">
+
+      {% if upload_enabled %}
+      {# ── Already paid — show upload form ── #}
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px; padding:10px 14px; background:#ecfdf5; border-radius:var(--radius-md); border-left:3px solid #10b981;">
+        <span style="font-size:1.2rem;">✅</span>
+        <div>
+          <p style="font-weight:600; color:#065f46; margin:0;">Subscription active</p>
+          {% if school.payment_date %}
+            <p style="font-size:0.8rem; color:#047857; margin:0;">Paid on {{ school.payment_date.strftime('%d %b %Y') }} · Ref: {{ school.paystack_reference }}</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <p style="font-size:0.88rem; color:var(--gray-500); margin-bottom:16px;">
+        Upload an Excel file (.xlsx or .xls) with columns:
+        <code>First Name, Last Name, Email, Username, Password, Birthdate, Gender, Level</code>.
+        Level values: <code>primaryschool</code>, <code>middleschool</code>, <code>highschool</code>.
+      </p>
+
+      <form method="POST" action="{{ url_for('main.upload_students', school_id=school.id) }}" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="file-upload-area"
+             style="border:2px dashed var(--gray-300); border-radius:var(--radius-md); padding:28px; text-align:center; margin-bottom:14px; cursor:pointer;"
+             onclick="document.getElementById('fileInput').click()">
+          <div style="font-size:2rem; margin-bottom:8px;">📎</div>
+          <p style="font-weight:600; color:var(--green-700); margin-bottom:4px;">Click to choose file or drag & drop</p>
+          <p class="file-name" style="font-size:0.82rem; color:var(--gray-500);">No file chosen</p>
+          <input type="file" name="file" id="fileInput" class="file-upload-input" accept=".xlsx,.xls" style="display:none">
+        </div>
+        <button type="submit" class="btn btn-primary">Upload Students</button>
+      </form>
+
+      {% else %}
+      {# ── Not yet paid — show Paystack CTA ── #}
+      <div style="text-align:center; padding: 16px 0 8px;">
+        <div style="font-size:3rem; margin-bottom:12px;">🔓</div>
+        <h3 style="font-family:var(--font-display); color:var(--green-800); margin-bottom:8px;">Activate Student Upload</h3>
+        <p style="color:var(--gray-500); font-size:0.9rem; max-width:420px; margin:0 auto 24px;">
+          A one-time subscription payment is required to enable student bulk upload for your school.
+        </p>
+
+        <button
+          id="paystackBtn"
+          class="btn btn-gold btn-lg"
+          onclick="initiatePayment()">
+          💳 Pay to Activate Upload
+        </button>
+
+        <p style="margin-top:14px; font-size:0.78rem; color:var(--gray-500);">
+          Secured by <strong>Paystack</strong> · Your payment activates your account instantly
+        </p>
+      </div>
+
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<script>
+function initiatePayment() {
+  const btn = document.getElementById('paystackBtn');
+  btn.disabled = true;
+  btn.textContent = 'Loading…';
+
+  const handler = PaystackPop.setup({
+    key: {{ config.get('PAYSTACK_PUBLIC_KEY', '') | tojson }},
+    email: {{ (school.email or '') | tojson }},
+    amount: {{ config.get('SUBSCRIPTION_AMOUNT', 10000) }},
+    currency: {{ config.get('SUBSCRIPTION_CURRENCY', 'GHS') | tojson }},
+    ref: 'SESA-' + Math.floor(Math.random() * 1000000000),
+    callback: function(response) {
+      window.location.href = '{{ url_for("main.verify_payment", school_id=school.id) }}?reference=' + response.reference;
+    },
+    onClose: function() {
+      btn.disabled = false;
+      btn.textContent = '💳 Pay to Activate Upload';
+    }
+  });
+
+  handler.openIframe();
+}
+</script>
+      {% endif %}
+
+    </div>
+  </div>
+
+  {# ── Student Search ── #}
+  <div class="section">
+    <div class="section-head">
+      <h2>Students ({{ accounts | length }})</h2>
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="studentSearch" data-school-id="{{ school.id }}" placeholder="Search students…">
+      </div>
+    </div>
+
+    <ul id="searchResults" hidden style="list-style:none; background: var(--white); border-radius: var(--radius-md); box-shadow: var(--shadow-md); padding: 8px; margin-bottom: 16px;"></ul>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Username</th>
+              <th>Level</th>
+              <th>Gender</th>
+              <th>Tests</th>
+              <th>Joined</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for acc in accounts %}
+            <tr>
+              <td><strong>{{ acc.fname }} {{ acc.lname }}</strong><br><small style="color:var(--gray-500)">{{ acc.email }}</small></td>
+              <td>@{{ acc.username }}</td>
+              <td>{{ acc.level | capitalize if acc.level else '—' }}</td>
+              <td>{{ acc.gender | capitalize if acc.gender else '—' }}</td>
+              <td>{{ acc.test_results.count() }}</td>
+              <td style="color: var(--gray-500); font-size: 0.82rem;">{{ acc.created_at.strftime('%d %b %Y') }}</td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="6">
+                <div class="empty-state">
+                  <div class="empty-state-icon">👥</div>
+                  <p>No students yet. Upload an Excel file to add students.</p>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  {# ── Recent Results ── #}
+  {% if results %}
+  <div class="section">
+    <div class="section-head"><h2>Recent Assessment Results</h2></div>
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr><th>Student</th><th>Assessment</th><th>Score</th><th>Stage</th><th>Date</th></tr>
+          </thead>
+          <tbody>
+            {% for r in results[:50] %}
+            <tr>
+              <td>{{ r.account.full_name }}</td>
+              <td style="font-size: 0.85rem;">{{ r.test_type }}</td>
+              <td>{{ r.score }}{% if r.max_score %}/{{ r.max_score }}{% endif %}</td>
+              <td>
+                {% set s = (r.stage or r.details or '') | lower %}
+                <span class="badge {% if 'normal' in s %}stage-normal{% elif 'mild' in s %}stage-mild{% elif 'elevated' in s %}stage-elevated{% elif 'clinical' in s %}stage-clinical{% else %}badge-gray{% endif %}">
+                  {{ r.stage or r.details or 'Unknown' }}
+                </span>
+              </td>
+              <td style="color: var(--gray-500); font-size: 0.82rem;">{{ r.taken_at.strftime('%d %b %Y') }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

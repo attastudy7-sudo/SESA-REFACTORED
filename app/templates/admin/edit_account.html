@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Edit Account{% endblock %}
+
+{% block nav_links %}
+  <li><a href="{{ url_for('admin.dashboard') }}">Admin</a></li>
+  <li><a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a></li>
+{% endblock %}
+
+{% block body %}
+<div class="page-hero">
+  <div class="container">
+    <h1>Edit Account</h1>
+    <p>{{ account.full_name }} · @{{ account.username }}</p>
+  </div>
+</div>
+
+<div class="container-sm" style="padding-top: 36px; padding-bottom: 48px;">
+  <div class="card">
+    <div class="card-body">
+      <form method="POST" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div class="form-group">
+            {{ form.fname.label(class="form-label") }}
+            {{ form.fname(class="form-control") }}
+            {% for e in form.fname.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="form-group">
+            {{ form.lname.label(class="form-label") }}
+            {{ form.lname(class="form-control") }}
+            {% for e in form.lname.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+          </div>
+        </div>
+
+        <div class="form-group">
+          {{ form.email.label(class="form-label") }}
+          {{ form.email(class="form-control") }}
+          {% for e in form.email.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div class="form-group">
+          {{ form.username.label(class="form-label") }}
+          {{ form.username(class="form-control") }}
+          {% for e in form.username.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div class="form-group">
+            {{ form.level.label(class="form-label") }}
+            {{ form.level(class="form-control") }}
+          </div>
+          <div class="form-group">
+            {{ form.gender.label(class="form-label") }}
+            {{ form.gender(class="form-control") }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          {{ form.birthdate.label(class="form-label") }}
+          {{ form.birthdate(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+          {{ form.password.label(class="form-label") }}
+          {{ form.password(class="form-control", placeholder="Leave blank to keep current password") }}
+          <div class="form-hint">Only fill this if you want to change the password.</div>
+          {% for e in form.password.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px;">
+          <a href="{{ url_for('admin.dashboard') }}#all_accounts" class="btn btn-ghost">Cancel</a>
+          <button type="submit" class="btn btn-primary">Update Account</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

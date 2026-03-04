@@ -1,0 +1,109 @@
+"""
+WTForms form definitions for SESA.
+Centralises validation and CSRF protection.
+"""
+from flask_wtf import FlaskForm
+from wtforms import (StringField, PasswordField, SelectField,
+                     DateField, TextAreaField, SubmitField, HiddenField)
+from wtforms.validators import (DataRequired, Email, Length, EqualTo,
+                                Optional, ValidationError)
+
+LEVEL_CHOICES = [
+    ('', 'Select education level'),
+    ('primaryschool', 'Primary School'),
+    ('middleschool', 'Middle School'),
+    ('highschool', 'High School'),
+]
+
+GENDER_CHOICES = [
+    ('', 'Select gender'),
+    ('male', 'Male'),
+    ('female', 'Female'),
+    ('other', 'Other'),
+]
+
+TEST_TYPE_CHOICES = [
+    ('', 'Select test type'),
+    ('Separation Anxiety Disorder', 'Separation Anxiety Disorder'),
+    ('Social Phobia', 'Social / School Phobia'),
+    ('Generalised Anxiety Disorder', 'Generalised Anxiety Disorder'),
+    ('Panic Disorder', 'Panic Disorder'),
+    ('Obsessive Compulsive Disorder', 'Obsessive Compulsive Disorder'),
+    ('Major Depressive Disorder', 'Major Depressive Disorder'),
+]
+
+
+class LoginForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired(), Length(min=3, max=50)])
+    password = PasswordField('Password', validators=[DataRequired()])
+    submit = SubmitField('Login')
+
+
+class SchoolLoginForm(FlaskForm):
+    admin_name = StringField('Administrator Name', validators=[DataRequired(), Length(min=2, max=100)])
+    password = PasswordField('Password', validators=[DataRequired()])
+    submit = SubmitField('Login')
+
+
+class SignupForm(FlaskForm):
+    fname = StringField('First Name', validators=[DataRequired(), Length(min=2, max=100)])
+    lname = StringField('Last Name', validators=[DataRequired(), Length(min=2, max=100)])
+    email = StringField('Email', validators=[DataRequired(), Email(), Length(max=120)])
+    username = StringField('Username', validators=[DataRequired(), Length(min=3, max=50)])
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=8)])
+    confirm_password = PasswordField(
+        'Confirm Password',
+        validators=[DataRequired(), EqualTo('password', message='Passwords must match.')]
+    )
+    birthdate = DateField('Birth Date', validators=[DataRequired()])
+    gender = SelectField('Gender', choices=GENDER_CHOICES, validators=[DataRequired()])
+    level = SelectField('Education Level', choices=LEVEL_CHOICES, validators=[DataRequired()])
+    submit = SubmitField('Create Account')
+
+
+class SchoolSignupForm(FlaskForm):
+    school_name = StringField('School Name', validators=[DataRequired(), Length(min=3, max=200)])
+    admin_name = StringField('Administrator Name', validators=[DataRequired(), Length(min=2, max=100)])
+    email = StringField('Email', validators=[Optional(), Email(), Length(max=120)])
+    admin_password = PasswordField('Password', validators=[DataRequired(), Length(min=8)])
+    confirm_password = PasswordField(
+        'Confirm Password',
+        validators=[DataRequired(), EqualTo('admin_password', message='Passwords must match.')]
+    )
+    submit = SubmitField('Register School')
+
+
+class EditAccountForm(FlaskForm):
+    fname = StringField('First Name', validators=[DataRequired(), Length(min=2, max=100)])
+    lname = StringField('Last Name', validators=[DataRequired(), Length(min=2, max=100)])
+    email = StringField('Email', validators=[DataRequired(), Email(), Length(max=120)])
+    username = StringField('Username', validators=[DataRequired(), Length(min=3, max=50)])
+    level = SelectField('Education Level', choices=LEVEL_CHOICES, validators=[Optional()])
+    birthdate = DateField('Birth Date', validators=[Optional()])
+    gender = SelectField('Gender', choices=GENDER_CHOICES, validators=[Optional()])
+    password = PasswordField('New Password (leave blank to keep current)', validators=[Optional(), Length(min=8)])
+    submit = SubmitField('Update Account')
+
+
+class EditSchoolForm(FlaskForm):
+    school_name = StringField('School Name', validators=[DataRequired(), Length(min=3, max=200)])
+    email = StringField('Email', validators=[Optional(), Email(), Length(max=120)])
+    admin_name = StringField('Administrator Name', validators=[DataRequired(), Length(min=2, max=100)])
+    admin_password = PasswordField('New Password (leave blank to keep current)', validators=[Optional(), Length(min=8)])
+    submit = SubmitField('Update School')
+
+
+class QuestionForm(FlaskForm):
+    test_type = SelectField('Test Type', choices=TEST_TYPE_CHOICES, validators=[DataRequired()])
+    question_content = TextAreaField('Question Content', validators=[DataRequired(), Length(min=10)])
+    submit = SubmitField('Save Question')
+
+
+class FeedbackForm(FlaskForm):
+    test_type = HiddenField()
+    score = HiddenField()
+    stage = HiddenField()
+    message = HiddenField()
+    max_score = HiddenField()
+    feedback = TextAreaField('How are you feeling?', validators=[Optional(), Length(max=1000)])
+    submit = SubmitField('Save & Continue')

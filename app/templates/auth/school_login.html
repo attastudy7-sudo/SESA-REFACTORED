@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}School Login{% endblock %}
+
+{% block full_page %}
+<div class="auth-page">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-stack" role="status">
+        {% for category, message in messages %}
+          <div class="flash-toast {{ category }}"><span>{{ message }}</span></div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <div class="auth-card">
+    <div class="auth-logo-area">
+      <img src="{{ url_for('static', filename='images/Pofa.jpg') }}" alt="FOPA Logo" class="auth-logo">
+      <div class="auth-org">FOPA DILLIGENT CONSULT</div>
+      <h1 class="auth-title">School Portal</h1>
+      <p class="auth-subtitle">Sign in as a school administrator</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('auth.school_login') }}" novalidate>
+      {{ form.hidden_tag() }}
+
+      <div class="form-group">
+        {{ form.admin_name.label(class="form-label") }}
+        <div class="form-control-icon">
+          {{ form.admin_name(class="form-control" ~ (" is-invalid" if form.admin_name.errors else ""), placeholder="Enter your administrator name", autocomplete="username") }}
+          <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        {% for error in form.admin_name.errors %}<div class="form-error">{{ error }}</div>{% endfor %}
+      </div>
+
+      <div class="form-group">
+        {{ form.password.label(class="form-label") }}
+        <div class="form-control-icon">
+          {{ form.password(class="form-control" ~ (" is-invalid" if form.password.errors else ""), placeholder="Enter your password", autocomplete="current-password") }}
+          <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        {% for error in form.password.errors %}<div class="form-error">{{ error }}</div>{% endfor %}
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: 8px;">Sign In</button>
+    </form>
+
+    <div class="auth-divider"><span>or</span></div>
+
+    <div style="text-align:center;">
+      <a href="{{ url_for('auth.login') }}" class="btn btn-ghost btn-block">Student Login</a>
+    </div>
+
+    <p style="text-align:center; margin-top: 20px; font-size: 0.85rem; color: var(--gray-500);">
+      New school? <a href="{{ url_for('auth.school_signup') }}" style="color: var(--green-600); font-weight: 600;">Register your school</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.querySelectorAll('.flash-toast').forEach((el, i) => {
+  el.addEventListener('click', () => { el.style.opacity='0'; setTimeout(()=>el.remove(),400); });
+  setTimeout(() => { el.style.transition='opacity 0.4s'; el.style.opacity='0'; setTimeout(()=>el.remove(),400); }, 4000 + i*300);
+});
+</script>
+{% endblock %}

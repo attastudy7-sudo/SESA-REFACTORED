@@ -1,0 +1,35 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Environment
+.env
+.venv/
+venv/
+env/
+
+# Database
+*.db
+*.sqlite
+
+# Uploads
+uploads/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Flask
+instance/
+
+# Testing
+.pytest_cache/
+htmlcov/
+.coverage

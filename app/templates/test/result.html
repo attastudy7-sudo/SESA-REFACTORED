@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block title %}Your Results — {{ test_type }}{% endblock %}
+
+{% block full_page %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Results — {{ test_type }} — SESA</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa.jpg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+</head>
+<body style="background: var(--ivory);">
+
+<div style="min-height: 100vh; background: linear-gradient(160deg, var(--green-800) 0%, var(--green-700) 28%, var(--ivory) 28%);">
+
+  <div class="quiz-header-bar">
+    <a href="{{ url_for('main.home') }}" style="display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.9);text-decoration:none;">
+      <img src="{{ url_for('static', filename='images/Pofa.jpg') }}" alt="Logo" style="width:30px;height:30px;border-radius:6px;">
+      <span style="font-family:var(--font-display);font-weight:600;color:var(--gold-200);">SESA</span>
+    </a>
+    <a href="{{ url_for('main.home') }}" style="color:rgba(255,255,255,.6);font-size:0.85rem;">← Back to Home</a>
+  </div>
+
+  <div class="quiz-card-wrapper">
+
+    {# ── Score Ring Card ── #}
+    <div class="quiz-card" style="margin-bottom: 20px;">
+      <div class="quiz-card-top" style="text-align: center;">
+        <div class="quiz-test-name">Assessment Complete</div>
+        <h2 style="font-family: var(--font-display); font-size: 1.4rem; margin: 4px 0 16px; color: #fff;">{{ test_type }}</h2>
+
+        <div class="result-score-ring" style="border-color: {{ stage_color }}20; background: {{ stage_color }}15;">
+          <div class="result-score-num" style="color: #fff;" id="scoreCounter" data-target="{{ score }}">0</div>
+          <div class="result-score-denom" style="color: rgba(255,255,255,.6);">/ {{ max_score }}</div>
+        </div>
+      </div>
+
+      <div class="quiz-card-body" style="text-align: center;">
+        <span class="result-stage-badge badge" style="background: {{ stage_color }}20; color: {{ stage_color }}; border: 2px solid {{ stage_color }}40; font-size: 1rem; margin-bottom: 16px;">
+          {{ stage }}
+        </span>
+
+        <div class="result-message">
+          {{ message }}
+        </div>
+
+        <p class="result-breakdown">
+          Score of <strong>{{ score }}</strong> falls within the <strong>{{ stage }}</strong> range ({{ score_range }})
+        </p>
+
+        {# ── Feedback ── #}
+        <form id="resultForm" method="POST" action="{{ url_for('test.submit_result') }}">
+          {{ form.hidden_tag() }}
+          {{ form.test_type() }}
+          {{ form.score() }}
+          {{ form.stage() }}
+          {{ form.message() }}
+          {{ form.max_score() }}
+
+          <div class="form-group" style="text-align: left;">
+            <label class="form-label">{{ form.feedback.label.text }} <span style="color:var(--gray-500);font-weight:400;">(optional)</span></label>
+            {{ form.feedback(class="form-control", placeholder="Share how you've been feeling, or anything on your mind…", rows=3) }}
+          </div>
+
+          <div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 20px;">
+            <button type="submit" name="action" value="finish" class="btn btn-outline" style="flex: 1; min-width: 140px;">
+              Finish & Save
+            </button>
+            {% if next_test_type %}
+            <button type="submit" name="action" value="next" class="btn btn-primary" style="flex: 1; min-width: 140px;">
+              Next: {{ next_test_type | truncate(25) }} →
+            </button>
+            {% else %}
+            <button type="submit" name="action" value="finish" class="btn btn-primary" style="flex: 1; min-width: 140px;">
+              Complete All Assessments ✓
+            </button>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+
+      <div class="quiz-footer-note">
+        This assessment is for informational purposes only and is not a clinical diagnostic tool.<br>
+        Please consult a qualified healthcare professional for a complete evaluation.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// Score counter animation
+const el = document.getElementById('scoreCounter');
+if (el) {
+  const target = parseInt(el.dataset.target, 10) || 0;
+  let current = 0;
+  const duration = 900;
+  const start = performance.now();
+  function step(now) {
+    const p = Math.min((now - start) / duration, 1);
+    el.textContent = Math.round(p * target);
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+</script>
+</body>
+</html>
+{% endblock %}

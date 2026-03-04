@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Edit School{% endblock %}
+
+{% block nav_links %}
+  <li><a href="{{ url_for('admin.dashboard') }}">Admin</a></li>
+  <li><a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a></li>
+{% endblock %}
+
+{% block body %}
+<div class="page-hero">
+  <div class="container">
+    <h1>Edit School</h1>
+    <p>{{ school.school_name }}</p>
+  </div>
+</div>
+
+<div class="container-sm" style="padding-top: 36px; padding-bottom: 48px;">
+  <div class="card">
+    <div class="card-body">
+      <form method="POST" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="form-group">
+          {{ form.school_name.label(class="form-label") }}
+          {{ form.school_name(class="form-control") }}
+          {% for e in form.school_name.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div class="form-group">
+          {{ form.admin_name.label(class="form-label") }}
+          {{ form.admin_name(class="form-control") }}
+          {% for e in form.admin_name.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div class="form-group">
+          {{ form.email.label(class="form-label") }}
+          {{ form.email(class="form-control", placeholder="Optional") }}
+          {% for e in form.email.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div class="form-group">
+          {{ form.admin_password.label(class="form-label") }}
+          {{ form.admin_password(class="form-control", placeholder="Leave blank to keep current password") }}
+          <div class="form-hint">Only fill this if you want to change the password.</div>
+          {% for e in form.admin_password.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px;">
+          <a href="{{ url_for('admin.dashboard') }}#all_schools" class="btn btn-ghost">Cancel</a>
+          <button type="submit" class="btn btn-primary">Update School</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

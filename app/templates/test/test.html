@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% block title %}{{ test_type }}{% endblock %}
+<meta name="csrf-token" content="{{ csrf_token() }}">
+{% block full_page %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ test_type }} — SESA</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa.jpg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body style="background: var(--ivory);">
+
+<div class="quiz-layout" style="min-height: 100vh; background: linear-gradient(160deg, var(--green-800) 0%, var(--green-700) 30%, var(--ivory) 30%);">
+
+  <div class="quiz-header-bar">
+    <a href="{{ url_for('main.home') }}" class="brand" style="display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.9);text-decoration:none;">
+      <img src="{{ url_for('static', filename='images/Pofa.jpg') }}" alt="Logo" style="width:30px;height:30px;border-radius:6px;">
+      <span style="font-family:var(--font-display);font-weight:600;color:var(--gold-200);">SESA</span>
+    </a>
+    <a href="{{ url_for('main.home') }}" class="quiz-back-link">
+      ← Back to Home
+    </a>
+  </div>
+
+  <div class="quiz-card-wrapper">
+    <div class="quiz-card">
+      <div class="quiz-card-top">
+        <div class="quiz-test-name">{{ test_type }}</div>
+        <div class="quiz-q-counter" id="questionCounter">Question {{ curr_question }} of {{ question_count }}</div>
+        <div class="progress-wrap" style="margin-bottom: 0;">
+          <div class="progress-track" style="flex:1;">
+            <div class="progress-fill" id="progressFill" style="width: {{ progress }}%;"></div>
+          </div>
+          <span class="progress-label" id="progressLabel">{{ progress }}%</span>
+        </div>
+      </div>
+
+      <div class="quiz-card-body">
+        <div class="quiz-question-text" id="questionText">{{ question.question_content }}</div>
+
+        <div class="quiz-options" id="optionsContainer">
+          {% for option in ['Never', 'Sometimes', 'Often', 'Always'] %}
+          <label class="quiz-option" onclick="selectOption(this)">
+            <input type="radio" name="answer" value="{{ option }}">
+            <div class="quiz-option-dot"></div>
+            <span class="quiz-option-label">{{ option }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="quiz-nav">
+        <button type="button" id="backBtn" class="btn btn-ghost" style="visibility: hidden;" onclick="sendAnswer('back')">
+          ← Back
+        </button>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 0.8rem; color: var(--gray-500);" id="answerHint">Select an answer to continue</span>
+        </div>
+        <button type="button" id="nextBtn" class="btn btn-primary" onclick="sendAnswer('next')" disabled>
+          Next →
+        </button>
+      </div>
+
+      <div class="quiz-footer-note">
+        This assessment is for informational purposes only and is not a clinical diagnostic tool.<br>
+        Please consult a healthcare professional for a complete evaluation.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const TEST_TYPE = {{ test_type | tojson }};
+const TOTAL = {{ question_count }};
+let currentQ = {{ curr_question }};
+
+function selectOption(label) {
+  document.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected'));
+  label.classList.add('selected');
+  label.querySelector('input').checked = true;
+  document.getElementById('nextBtn').disabled = false;
+  document.getElementById('answerHint').style.display = 'none';
+}
+
+async function sendAnswer(action) {
+  const selected = document.querySelector('input[name="answer"]:checked');
+  const answer = selected ? selected.value : null;
+
+  if (action === 'next' && !answer) {
+    document.getElementById('answerHint').style.display = 'inline';
+    return;
+  }
+
+  // Loading state
+  document.getElementById('nextBtn').disabled = true;
+  document.getElementById('nextBtn').textContent = '…';
+
+  try {
+    const res = await fetch(`/test/api/${encodeURIComponent(TEST_TYPE)}/next`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRF() },
+      body: JSON.stringify({ answer, action })
+    });
+    const data = await res.json();
+
+    if (data.finished) {
+      window.location.href = data.redirect;
+      return;
+    }
+
+    // Update UI
+    const qText = document.getElementById('questionText');
+    qText.style.opacity = '0';
+    setTimeout(() => {
+      qText.textContent = data.question_text;
+      qText.style.transition = 'opacity 0.3s';
+      qText.style.opacity = '1';
+    }, 150);
+
+    document.getElementById('questionCounter').textContent = `Question ${data.question_number} of ${TOTAL}`;
+    document.getElementById('progressFill').style.width = data.progress + '%';
+    document.getElementById('progressLabel').textContent = data.progress + '%';
+    document.getElementById('backBtn').style.visibility = data.question_number > 1 ? 'visible' : 'hidden';
+
+    // Reset options
+    const container = document.getElementById('optionsContainer');
+    container.innerHTML = '';
+    ['Never', 'Sometimes', 'Often', 'Always'].forEach(opt => {
+      const label = document.createElement('label');
+      label.className = 'quiz-option';
+      label.setAttribute('onclick', 'selectOption(this)');
+      label.innerHTML = `<input type="radio" name="answer" value="${opt}"><div class="quiz-option-dot"></div><span class="quiz-option-label">${opt}</span>`;
+      container.appendChild(label);
+    });
+
+    document.getElementById('nextBtn').disabled = true;
+    document.getElementById('nextBtn').textContent = 'Next →';
+    document.getElementById('answerHint').style.display = 'inline';
+    currentQ = data.question_number;
+  } catch (err) {
+    console.error(err);
+    document.getElementById('nextBtn').disabled = false;
+    document.getElementById('nextBtn').textContent = 'Next →';
+  }
+}
+
+function getCSRF() {
+  const meta = document.querySelector('meta[name="csrf-token"]');
+  return meta ? meta.content : '';
+}
+</script>
+</body>
+</html>
+{% endblock %}

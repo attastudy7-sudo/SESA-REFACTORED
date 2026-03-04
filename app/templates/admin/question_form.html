@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block nav_links %}
+  <li><a href="{{ url_for('admin.dashboard') }}">Admin</a></li>
+  <li><a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a></li>
+{% endblock %}
+
+{% block body %}
+<div class="page-hero">
+  <div class="container">
+    <h1>{{ title }}</h1>
+  </div>
+</div>
+
+<div class="container-sm" style="padding-top: 36px; padding-bottom: 48px;">
+  <div class="card">
+    <div class="card-body">
+      <form method="POST" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="form-group">
+          {{ form.test_type.label(class="form-label") }}
+          {{ form.test_type(class="form-control") }}
+          {% for e in form.test_type.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div class="form-group">
+          {{ form.question_content.label(class="form-label") }}
+          {{ form.question_content(class="form-control", rows=5, placeholder="Enter the question text…") }}
+          {% for e in form.question_content.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px;">
+          <a href="{{ url_for('admin.dashboard') }}#question_database" class="btn btn-ghost">Cancel</a>
+          <button type="submit" class="btn btn-primary">{{ form.submit.label.text }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

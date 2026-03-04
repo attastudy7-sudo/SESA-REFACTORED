@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SESA — Social Emotional Students' Audit by FOPA DILLIGENT CONSULT">
+  <title>{% block title %}SESA{% endblock %} — SESA</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa.jpg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <link rel="manifest" href="/static/manifest.json">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/static/sw.js');
+  }
+</script>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+{% block full_page %}
+<div class="app-layout">
+
+  {# ── Navbar ── #}
+  {% block navbar %}
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a href="{{ url_for('main.landing') }}" class="navbar-brand">
+        <img src="{{ url_for('static', filename='images/Pofa.jpg') }}" alt="FOPA Logo" class="navbar-logo">
+        <span class="navbar-title">SESA</span>
+      </a>
+
+      <ul class="navbar-links">
+        {% block nav_links %}{% endblock %}
+      </ul>
+
+      <button class="hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+  {% endblock %}
+
+  {# ── Flash Toasts ── #}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-stack" role="status" aria-live="polite">
+        {% for category, message in messages %}
+          <div class="flash-toast {{ category }}" role="alert">
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {# ── Main Content ── #}
+  <main>
+    {% block body %}{% endblock %}
+  </main>
+
+</div>
+
+{# ── Mobile Drawer ── #}
+<div class="drawer-overlay" id="drawerOverlay"></div>
+<aside class="drawer" id="mobileDrawer" aria-hidden="true">
+  <button class="drawer-close" id="drawerClose" aria-label="Close menu">✕</button>
+  <nav class="drawer-links">
+    {% block drawer_links %}{% endblock %}
+  </nav>
+</aside>
+{% endblock %}
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>
