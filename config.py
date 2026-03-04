@@ -32,8 +32,10 @@ class Config:
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'sqlite:///' + os.path.join(basedir, 'sesa_dev.db')
+    # SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+        # 'sqlite:///' + os.path.join(basedir, 'sesa_dev.db')
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+
     SESSION_COOKIE_SECURE = False
 
 

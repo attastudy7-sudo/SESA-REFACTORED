@@ -25,6 +25,8 @@ class Accounts(UserMixin, db.Model):
         index=True
     )
 
+    is_admin = db.Column(db.Boolean, default=False, nullable=False)
+
     test_results = db.relationship(
         'TestResult',
         backref='account',
@@ -38,7 +40,7 @@ class Accounts(UserMixin, db.Model):
 
     @property
     def is_super_admin(self):
-        return self.id == 1
+        return self.id == 1 or self.is_admin
 
     def __repr__(self):
         return f'<Account {self.username}>'

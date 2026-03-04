@@ -84,8 +84,6 @@ def school_dashboard(school_id):
         if r.taken_at and r.taken_at.month == now.month and r.taken_at.year == now.year
     )
 
-    print(current_app.config.get('PAYSTACK_PUBLIC_KEY'))
-
     return render_template(
         'main/school_dashboard.html',
         school=school,
@@ -94,6 +92,9 @@ def school_dashboard(school_id):
         stage_counts=stage_counter,
         upload_enabled=school.upload_enabled,
         now=now,
+        paystack_public_key=current_app.config.get('PAYSTACK_PUBLIC_KEY', ''),
+        subscription_amount=current_app.config.get('SUBSCRIPTION_AMOUNT', 10000),
+        subscription_currency=current_app.config.get('SUBSCRIPTION_CURRENCY', 'GHS'),
     )
 
 
@@ -110,7 +111,7 @@ def upload_students(school_id):
         return redirect(url_for('auth.school_login'))
 
     if not school.upload_enabled:
-        flash('Upload is not enabled for your school. Please contact FOPA DILLIGENT CONSULT after making payment.', 'warning')
+        flash('Upload is not enabled. Please complete the subscription payment to activate student upload.', 'warning')
         return redirect(url_for('main.school_dashboard', school_id=school_id))
 
     file = request.files.get('file')

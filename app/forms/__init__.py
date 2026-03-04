@@ -3,7 +3,7 @@ WTForms form definitions for SESA.
 Centralises validation and CSRF protection.
 """
 from flask_wtf import FlaskForm
-from wtforms import (StringField, PasswordField, SelectField,
+from wtforms import (StringField, PasswordField, SelectField, BooleanField,
                      DateField, TextAreaField, SubmitField, HiddenField)
 from wtforms.validators import (DataRequired, Email, Length, EqualTo,
                                 Optional, ValidationError)
@@ -81,6 +81,7 @@ class EditAccountForm(FlaskForm):
     level = SelectField('Education Level', choices=LEVEL_CHOICES, validators=[Optional()])
     birthdate = DateField('Birth Date', validators=[Optional()])
     gender = SelectField('Gender', choices=GENDER_CHOICES, validators=[Optional()])
+    is_admin = BooleanField('Grant Admin Privileges')
     password = PasswordField('New Password (leave blank to keep current)', validators=[Optional(), Length(min=8)])
     submit = SubmitField('Update Account')
 
