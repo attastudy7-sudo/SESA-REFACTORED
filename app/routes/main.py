@@ -206,7 +206,7 @@ def search_students(school_id):
 @main_bp.route('/school/<int:school_id>/pay/verify')
 @school_login_required
 def verify_payment(school_id):
-    """Paystack redirects here after payment. Verifies and activates upload."""
+
     school = _get_school_from_session()
     if not school or school.id != school_id:
         flash('Session expired. Please log in again.', 'error')
@@ -221,35 +221,26 @@ def verify_payment(school_id):
         data = verify_paystack_payment(reference)
 
         expected_amount = current_app.config['SUBSCRIPTION_AMOUNT']
+
         if data['status'] != 'success':
-            flash('Payment was not completed successfully. Please try again.', 'error')
+            flash('Payment was not completed successfully.', 'error')
             return redirect(url_for('main.school_dashboard', school_id=school_id))
 
         if data['amount'] < expected_amount:
-            flash('Payment amount was insufficient. Please contact support.', 'error')
+            flash('Payment amount insufficient.', 'error')
             return redirect(url_for('main.school_dashboard', school_id=school_id))
 
-        # Activate the school
+        # ✅ Activate upload
         school.subscription_paid = True
         school.upload_enabled = True
         school.paystack_reference = reference
         school.payment_date = datetime.now(timezone.utc)
         db.session.commit()
 
-        flash('Payment confirmed! Your school is now activated. You can upload students.', 'success')
+        flash('Payment confirmed! Upload is now enabled.', 'success')
 
     except Exception as e:
         flash(f'Could not verify payment: {e}', 'error')
 
-    return render_template(
-        'main/school_dashboard.html',
-        school=school,
-        accounts=accounts,
-        results=results,
-        stage_counts=stage_counter,
-        upload_enabled=school.upload_enabled,
-        now=now,
-        paystack_public_key=current_app.config.get('PAYSTACK_PUBLIC_KEY', ''),
-        subscription_amount=current_app.config.get('SUBSCRIPTION_AMOUNT', 10000),
-        subscription_currency=current_app.config.get('SUBSCRIPTION_CURRENCY', 'GHS'),
-    )
+    # ✅ IMPORTANT: redirect instead of render
+    return redirect(url_for('main.school_dashboard', school_id=school_id))

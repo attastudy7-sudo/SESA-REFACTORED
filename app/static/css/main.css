@@ -973,8 +973,9 @@ select.form-control { cursor: pointer; }
 
 @media (max-width: 480px) {
   .stat-grid { grid-template-columns: 1fr 1fr; }
-  .container, .container-sm, .container-md { padding: 0 16px; }
+  .container, .container-sm, .container-md { padding: 0 16px; max-width: 390px; }
   .quiz-card-wrapper { padding: 0 12px 40px; }
   .btn-xl { padding: 14px 28px; font-size: 0.95rem; }
   .hero-title { font-size: 2rem; }
 }
+

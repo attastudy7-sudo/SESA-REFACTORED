@@ -1,6 +1,127 @@
 {% extends 'base.html' %}
 {% block title %}Admin Dashboard{% endblock %}
 
+<style>
+
+/* ================================
+   RESPONSIVE ADMIN DASHBOARD FIXES
+================================ */
+
+/* ---- Stats Grid ---- */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+/* ---- Admin Tabs (Scrollable on Mobile) ---- */
+.admin-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+
+.admin-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.admin-tab {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* ---- Table Wrapper (Horizontal Scroll) ---- */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  min-width: 700px;
+}
+
+/* ---- Section Headers ---- */
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ================================
+   TABLE → MOBILE OPTIMIZATION
+================================ */
+
+@media (max-width: 768px) {
+
+  /* Stack buttons vertically */
+  .table td div {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .btn-sm {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Stack section headers */
+  .section-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .section-head .btn {
+    width: 100%;
+  }
+
+  /* Hero + container padding */
+  .page-hero {
+    padding: 32px 16px;
+    text-align: center;
+  }
+
+  .container {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
+
+
+/* ================================
+   CARD-STYLE TABLES (Very Small Screens)
+================================ */
+
+@media (max-width: 600px) {
+
+  .table {
+    display: block;
+    min-width: unset;
+  }
+
+  .table thead {
+    display: none;
+  }
+
+  .table tr {
+    display: block;
+    background: white;
+    margin-bottom: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  }
+
+  .table td {
+    display: block;
+    padding: 6px 0;
+  }
+}
+
+</style>
+
 {% block nav_links %}
   <li><a href="{{ url_for('admin.dashboard') }}" class="active">Admin</a></li>
   <li><a href="{{ url_for('main.home') }}">Home</a></li>
