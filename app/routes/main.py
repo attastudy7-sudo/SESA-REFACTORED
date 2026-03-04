@@ -84,6 +84,8 @@ def school_dashboard(school_id):
         if r.taken_at and r.taken_at.month == now.month and r.taken_at.year == now.year
     )
 
+    print(current_app.config.get('PAYSTACK_PUBLIC_KEY'))
+
     return render_template(
         'main/school_dashboard.html',
         school=school,
