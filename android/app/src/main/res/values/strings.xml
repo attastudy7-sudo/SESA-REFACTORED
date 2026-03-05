@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">SESA</string>
+    <string name="title_activity_main">SESA</string>
+    <string name="package_name">com.onrender.sesa_refactored</string>
+    <string name="custom_url_scheme">com.onrender.sesa_refactored</string>
+</resources>

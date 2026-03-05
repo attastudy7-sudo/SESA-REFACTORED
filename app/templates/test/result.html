@@ -18,7 +18,7 @@
 
   <div class="quiz-header-bar">
     <a href="{{ url_for('main.home') }}" style="display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.9);text-decoration:none;">
-      <img src="{{ url_for('static', filename='images/Pofa.jpg') }}" alt="Logo" style="width:30px;height:30px;border-radius:6px;">
+      <img src="{{ url_for('static', filename='images/Pofa.jpg') }}" alt="Logo" style="width:30px;height:30px;border-radius:50%;">
       <span style="font-family:var(--font-display);font-weight:600;color:var(--gold-200);">SESA</span>
     </a>
     <a href="{{ url_for('main.home') }}" style="color:rgba(255,255,255,.6);font-size:0.85rem;">← Back to Home</a>
@@ -62,16 +62,16 @@
 
           <div class="form-group" style="text-align: left;">
             <label class="form-label">{{ form.feedback.label.text }} <span style="color:var(--gray-500);font-weight:400;">(optional)</span></label>
-            {{ form.feedback(class="form-control", placeholder="Share how you've been feeling, or anything on your mind…", rows=3) }}
+            {{ form.feedback(class="form-control", placeholder="Is there something you want to talk about, feel free to get it off your chest 🥺", rows=3) }}
           </div>
 
-          <div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 20px;">
+          <div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 20px;" class="quiz-result-actions">
             <button type="submit" name="action" value="finish" class="btn btn-outline" style="flex: 1; min-width: 140px;">
               Finish & Save
             </button>
             {% if next_test_type %}
             <button type="submit" name="action" value="next" class="btn btn-primary" style="flex: 1; min-width: 140px;">
-              Next: {{ next_test_type | truncate(25) }} →
+              Next: {{ next_test_type | truncate(5) }} →
             </button>
             {% else %}
             <button type="submit" name="action" value="finish" class="btn btn-primary" style="flex: 1; min-width: 140px;">

@@ -3,14 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="SESA — Social Emotional Students' Audit by FOPA DILLIGENT CONSULT">
-  <title>{% block title %}SESA{% endblock %} — SESA</title>
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa.jpg') }}">
+  <meta name="description" content="SESA - Social Emotional Students' Audit by FOPA DILLIGENT CONSULT">
+  <title>{% block title %}SESA{% endblock %} - SESA</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-  <link rel="manifest" href="/static/manifest.json">
-<meta name="theme-color" content="#000000">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <meta name="theme-color" content="#000000">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="SESA">
+  <meta name="format-detection" content="telephone=no">
 
 <script>
   if ('serviceWorker' in navigator) {
@@ -24,9 +28,8 @@
 {% block full_page %}
 <div class="app-layout">
 
-  {# ── Navbar ── #}
   {% block navbar %}
-  <nav class="navbar">
+  <nav class="navbar" id="landingNav">
     <div class="navbar-inner">
       <a href="{{ url_for('main.landing') }}" class="navbar-brand">
         <img src="{{ url_for('static', filename='images/Pofa.jpg') }}" alt="FOPA Logo" class="navbar-logo">
@@ -44,7 +47,6 @@
   </nav>
   {% endblock %}
 
-  {# ── Flash Toasts ── #}
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       <div class="flash-stack" role="status" aria-live="polite">
@@ -57,24 +59,101 @@
     {% endif %}
   {% endwith %}
 
-  {# ── Main Content ── #}
   <main>
     {% block body %}{% endblock %}
   </main>
 
 </div>
 
-{# ── Mobile Drawer ── #}
 <div class="drawer-overlay" id="drawerOverlay"></div>
 <aside class="drawer" id="mobileDrawer" aria-hidden="true">
-  <button class="drawer-close" id="drawerClose" aria-label="Close menu">✕</button>
+  <button class="drawer-close" id="drawerClose" aria-label="Close menu">X</button>
   <nav class="drawer-links">
     {% block drawer_links %}{% endblock %}
   </nav>
 </aside>
 {% endblock %}
 
-<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<div id="a2hs-banner" class="a2hs-banner" style="display: none;">
+  <div class="a2hs-banner-inner">
+    <button id="a2hs-dismiss" class="a2hs-btn-dismiss" aria-label="Dismiss">X</button>
+    <div class="a2hs-banner-content">
+      <div class="a2hs-banner-icon">
+        <img src="{{ url_for('static', filename='images/Pofa_pwa.png') }}" alt="SESA">
+      </div>
+      <div class="a2hs-banner-text">
+        <strong>Install SESA</strong>
+        <span>Add to Home Screen</span>
+      </div>
+      <div class="a2hs-banner-actions">
+        <button id="a2hs-install" class="a2hs-btn-install">Install</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+<script>
+(function() {
+  var deferredPrompt;
+  var banner = document.getElementById('a2hs-banner');
+  var installBtn = document.getElementById('a2hs-install');
+  var dismissBtn = document.getElementById('a2hs-dismiss');
+
+  if (localStorage.getItem('a2hs-dismissed')) return;
+  if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) return;
+
+  function showBanner() {
+    if (banner) banner.style.display = 'block';
+  }
+
+  window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    deferredPrompt = e;
+    showBanner();
+  });
+
+  function isMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+  }
+
+  if (isMobile()) {
+    setTimeout(function() {
+      if (!localStorage.getItem('a2hs-dismissed') && !window.matchMedia('(display-mode: standalone)').matches && !window.navigator.standalone) {
+        showBanner();
+      }
+    }, 2000);
+  }
+
+  if (installBtn) {
+    installBtn.addEventListener('click', function() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(function(outcome) {
+          if (outcome === 'accepted') deferredPrompt = null;
+        });
+      } else {
+        alert('To install SESA:\n\n1. Tap the menu button (three dots)\n2. Select Add to Home screen');
+      }
+      if (banner) banner.style.display = 'none';
+    });
+  }
+
+  if (dismissBtn) {
+    dismissBtn.addEventListener('click', function() {
+      if (banner) banner.style.display = 'none';
+      localStorage.setItem('a2hs-dismissed', 'true');
+    });
+  }
+
+  window.addEventListener('appinstalled', function() {
+    deferredPrompt = null;
+    if (banner) banner.style.display = 'none';
+  });
+})();
+</script>
 {% block extra_scripts %}{% endblock %}
 </body>
 </html>
+

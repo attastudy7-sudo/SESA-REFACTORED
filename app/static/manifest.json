@@ -1,20 +1,38 @@
 {
-  "name": "Your App Name",
-  "short_name": "AppName",
+  "name": "SESA - Social Emotional Students' Audit",
+  "short_name": "SESA",
+  "description": "Social Emotional Students' Audit by FOPA DILLIGENT CONSULT",
+  "id": "/",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
+  "orientation": "portrait",
+  "scope": "/",
   "icons": [
     {
-      "src": "/static/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/static/icon-512.png",
-      "sizes": "512x512",
+      "src": "/static/images/Pofa_pwa.png",
+      "sizes": "any",
       "type": "image/png"
     }
-  ]
+  ],
+  "screenshots": [
+    {
+      "src": "/static/images/SESA.png",
+      "sizes": "1080x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "SESA Dashboard on Desktop"
+    },
+    {
+      "src": "/static/images/Pofa.png",
+      "sizes": "594x420",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "SESA Dashboard on Mobile"
+    }
+  ],
+  "categories": ["education", "health"],
+  "prefer_related_applications": false
 }
+

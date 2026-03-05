@@ -13,6 +13,7 @@ LEVEL_CHOICES = [
     ('primaryschool', 'Primary School'),
     ('middleschool', 'Middle School'),
     ('highschool', 'High School'),
+    ('university', 'University / College / Higher Education'),
 ]
 
 GENDER_CHOICES = [

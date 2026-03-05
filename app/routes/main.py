@@ -1,4 +1,5 @@
 from app.services.payment_service import verify_paystack_payment
+from app.services.test_service import calculate_average_score, get_monthly_averages, get_school_monthly_averages
 from datetime import datetime, timezone
 from flask import Blueprint, render_template, redirect, url_for, flash, session, request, jsonify, current_app
 from flask_login import login_required, current_user
@@ -47,6 +48,22 @@ def home():
 
     avg_score = round(sum(r.score for r in results) / total_tests, 1) if total_tests else 0
 
+    # Calculate previous month's average for comparison
+    from datetime import datetime, timedelta
+    now = datetime.now()
+    first_of_this_month = now.replace(day=1)
+    first_of_last_month = (first_of_this_month - timedelta(days=1)).replace(day=1)
+    
+    last_month_results = [r for r in results if r.taken_at and first_of_last_month <= r.taken_at < first_of_this_month]
+    prev_avg = round(sum(r.score for r in last_month_results) / len(last_month_results), 1) if last_month_results else None
+    
+    # Determine arrow direction
+    # Green arrow up = average dropped (improved in mental health context where lower is better)
+    # Red arrow down = average went up (worse in mental health context)
+    score_change = None
+    if prev_avg is not None and total_tests > len(last_month_results):
+        score_change = avg_score - prev_avg  # positive = went up, negative = went down
+
     return render_template(
         'main/home.html',
         user=user,
@@ -54,7 +71,27 @@ def home():
         avg_score=avg_score,
         most_recent=most_recent,
         tests_meta=tests_meta,
-        recent_results=results[:5],
+        score_change=score_change,
+        prev_avg=prev_avg,
+    )
+
+
+@main_bp.route('/results')
+@login_required
+def results():
+    user = current_user
+    all_results = user.test_results.order_by(TestResult.taken_at.desc()).all()
+    
+    # Calculate average score
+    avg_data = calculate_average_score(all_results)
+    monthly_data = get_monthly_averages(all_results)
+    
+    return render_template(
+        'main/results.html',
+        user=user,
+        results=all_results,
+        avg_score=avg_data,
+        monthly_data=monthly_data,
     )
 
 
@@ -136,7 +173,7 @@ def upload_students(school_id):
         created, skipped = 0, 0
         for _, row in df.iterrows():
             level = str(row['level']).strip().lower()
-            if level not in ('primaryschool', 'middleschool', 'highschool'):
+            if level not in ('primaryschool', 'middleschool', 'highschool', 'university'):
                 skipped += 1
                 continue
             if Accounts.query.filter_by(email=str(row['email']).strip()).first():
@@ -245,3 +282,33 @@ def verify_payment(school_id):
 
     # ✅ IMPORTANT: redirect instead of render
     return redirect(url_for('main.school_dashboard', school_id=school_id))
+
+
+@main_bp.route('/school/<int:school_id>/analytics')
+@school_login_required
+def school_analytics(school_id):
+    """School analytics page showing overall student performance."""
+    school = _get_school_from_session()
+    if not school or school.id != school_id:
+        flash('Please log in as a school administrator.', 'warning')
+        return redirect(url_for('auth.school_login'))
+
+    # Get all test results for this school
+    results = (TestResult.query
+               .join(Accounts)
+               .filter(Accounts.school_id == school.id)
+               .order_by(TestResult.taken_at.desc())
+               .all())
+    
+    # Calculate school average
+    avg_data = calculate_average_score(results)
+    monthly_data = get_school_monthly_averages(results)
+    
+    return render_template(
+        'main/school_analytics.html',
+        school=school,
+        avg_score=avg_data,
+        monthly_data=monthly_data,
+        total_students=len(set(r.user_id for r in results)),
+        total_assessments=len(results),
+    )

@@ -3,6 +3,7 @@
 
 {% block nav_links %}
   <li><a href="{{ url_for('main.home') }}" class="active">Home</a></li>
+  <li><a href="{{ url_for('main.results') }}">Results</a></li>
   {% if current_user.is_super_admin %}
     <li><a href="{{ url_for('admin.dashboard') }}">Admin</a></li>
   {% endif %}
@@ -11,6 +12,7 @@
 
 {% block drawer_links %}
   <a href="{{ url_for('main.home') }}">Home</a>
+  <a href="{{ url_for('main.results') }}">Results</a>
   {% if current_user.is_super_admin %}
     <a href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a>
   {% endif %}
@@ -39,8 +41,15 @@
     <div class="stat-card gold">
       <div class="stat-icon">📈</div>
       <div>
-        <div class="stat-value">{{ avg_score }}</div>
-        <div class="stat-label">Average Score</div>
+        <div class="stat-value">
+          {{ avg_score }}
+          {% if score_change is not none %}
+            <span class="score-arrow {% if score_change < 0 %}arrow-up{% else %}arrow-down{% endif %}" title="vs last month">
+              {% if score_change < 0 %}↑{% else %}↓{% endif %}
+            </span>
+          {% endif %}
+        </div>
+        <div class="stat-label">Average Score{% if prev_avg is not none %} (was {{ prev_avg }}){% endif %}</div>
       </div>
     </div>
     <div class="stat-card teal">

@@ -1,0 +1,24 @@
+{
+  "appId": "com.onrender.sesa_refactored",
+  "appName": "SESA",
+  "webDir": "app/static",
+  "bundledWebRuntime": false,
+  "server": {
+    "url": "https://sesa-refactored.onrender.com",
+    "cleartext": false
+  },
+  "ios": {
+    "allowMixedContent": true,
+    "iosPwaIcon": {
+      "backgroundColor": "#ffffff",
+      "image": "/static/images/SESA.png"
+    }
+  },
+  "android": {
+    "allowMixedContent": true,
+    "adaptiveIcon": {
+      "foregroundImage": "/static/images/SESA.png",
+      "backgroundColor": "#ffffff"
+    }
+  }
+}

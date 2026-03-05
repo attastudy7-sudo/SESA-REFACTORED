@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% block title %}My Results{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block nav_links %}
+  <li><a href="{{ url_for('main.home') }}">Home</a></li>
+  <li><a href="{{ url_for('main.results') }}" class="active">Results</a></li>
+  {% if current_user.is_super_admin %}
+    <li><a href="{{ url_for('admin.dashboard') }}">Admin</a></li>
+  {% endif %}
+  <li><a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a></li>
+{% endblock %}
+
+{% block drawer_links %}
+  <a href="{{ url_for('main.home') }}">Home</a>
+  <a href="{{ url_for('main.results') }}">Results</a>
+  {% if current_user.is_super_admin %}
+    <a href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a>
+  {% endif %}
+  <a href="{{ url_for('auth.logout') }}">Logout</a>
+{% endblock %}
+
+{% block body %}
+<div class="page-hero">
+  <div class="container">
+    <h1>My Assessment Results</h1>
+    <p>View all your past assessment results and track your progress over time.</p>
+  </div>
+</div>
+
+<div class="container" style="padding-top: 32px; padding-bottom: 48px;">
+  
+  {% if results %}
+  <div class="section">
+    <!-- Average Score Card -->
+    <div class="card" style="margin-bottom: 28px; background: linear-gradient(135deg, var(--green-800), var(--green-700));">
+      <div class="card-body" style="text-align: center; color: #fff; padding: 32px;">
+        <h3 style="font-family: var(--font-display); font-size: 1.1rem; margin-bottom: 16px; color: var(--gold-200);">Overall Average Score</h3>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 24px; flex-wrap: wrap;">
+          <div style="background: rgba(255,255,255,.15); border-radius: 50%; width: 100px; height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <span style="font-family: var(--font-display); font-size: 2rem; font-weight: 700;">{{ avg_score.percentage }}%</span>
+          </div>
+          <div style="text-align: left;">
+            <span class="badge" style="font-size: 0.9rem; padding: 6px 16px; margin-bottom: 8px; background: {{ avg_score.color }}; color: #fff;">{{ avg_score.stage }}</span>
+            <p style="font-size: 0.95rem; color: rgba(255,255,255,.85); max-width: 320px;">{{ avg_score.message }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Monthly Progress Chart -->
+    {% if monthly_data and monthly_data|length > 0 %}
+    <div class="card" style="margin-bottom: 28px;">
+      <div class="card-body">
+        <h3 style="font-family: var(--font-display); font-size: 1rem; margin-bottom: 16px; color: var(--green-800);">Monthly Progress</h3>
+        <canvas id="monthlyChart" height="80"></canvas>
+      </div>
+    </div>
+    {% endif %}
+    
+    <div class="section-head">
+      <h2>All Results</h2>
+      <p style="font-size: 0.85rem; color: var(--gray-500);">You have taken {{ results|length }} assessment(s).</p>
+    </div>
+    
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Assessment</th>
+              <th>Score</th>
+              <th>Stage</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in results %}
+            <tr>
+              <td>{{ r.test_type }}</td>
+              <td>{% if r.max_score %}{{ r.score }} / {{ r.max_score }}{% else %}{{ r.score }}{% endif %}</td>
+              <td>
+                {% set s = (r.stage or r.details or 'Unknown') | lower %}
+                <span class="badge {% if 'normal' in s %}stage-normal{% elif 'mild' in s %}stage-mild{% elif 'elevated' in s %}stage-elevated{% elif 'clinical' in s %}stage-clinical{% else %}badge-gray{% endif %}">
+                  {{ r.stage or r.details or 'Unknown' }}
+                </span>
+              </td>
+              <td style="color: var(--gray-500); font-size: 0.85rem;">{{ r.taken_at.strftime('%d %b %Y') }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-state-icon">📋</div>
+    <h3>No Results Yet</h3>
+    <p>You haven't taken any assessments yet. Start by choosing an assessment below.</p>
+    <a href="{{ url_for('main.home') }}" class="btn btn-primary" style="margin-top: 16px;">Take an Assessment</a>
+  </div>
+  {% endif %}
+
+</div>
+
+{% if monthly_data and monthly_data|length > 0 %}
+{% block extra_scripts %}
+<script>
+(function() {
+  const ctx = document.getElementById('monthlyChart');
+  if (!ctx) return;
+  
+  const data = {{ monthly_data | tojson }};
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: data.map(d => d.label),
+      datasets: [{
+        label: 'Average Score (%)',
+        data: data.map(d => d.average),
+        borderColor: '#3d8b58',
+        backgroundColor: 'rgba(61, 139, 88, 0.1)',
+        fill: true,
+        tension: 0.3,
+        pointBackgroundColor: '#3d8b58',
+        pointRadius: 5,
+        pointHoverRadius: 7
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          max: 100,
+          title: { display: true, text: 'Percentage' }
+        }
+      },
+      plugins: {
+        legend: { display: false }
+      }
+    }
+  });
+})();
+</script>
+{% endblock %}
+{% endif %}
+{% endblock %}
+

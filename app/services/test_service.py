@@ -3,6 +3,10 @@ Test scoring service — all scoring ranges and classification logic.
 Isolated from routes for easy testing and maintenance.
 """
 
+from datetime import datetime
+from collections import defaultdict
+from app.models.test_result import TestResult
+
 SCORING_RANGES = {
     "Separation Anxiety Disorder": [
         {"min": 0,  "max": 5,  "stage": "Normal Stage",   "message": "You're managing separation anxiety well. You cope comfortably with school and daily life."},
@@ -82,3 +86,98 @@ def get_next_test(current_test_type: str):
         return TEST_ORDER[idx + 1]
     except (ValueError, IndexError):
         return None
+
+
+# Average score classification
+AVERAGE_STAGE_RANGES = [
+    {"min": 0, "max": 30, "stage": "Normal Stage", "message": "You're doing great! Keep up the good work.", "color": "#2a7f62"},
+    {"min": 31, "max": 50, "stage": "Mild Stage", "message": "You're making progress. Consider speaking with a counselor.", "color": "#b8860b"},
+    {"min": 51, "max": 70, "stage": "Elevated Stage", "message": "Things may be challenging. We recommend talking to someone.", "color": "#d97706"},
+    {"min": 71, "max": 100, "stage": "Clinical Stage", "message": "We encourage you to seek support from a trusted adult or counselor.", "color": "#b91c1c"},
+]
+
+
+def calculate_average_score(results: list) -> dict:
+    """Calculate average percentage from a list of test results and return stage info."""
+    if not results:
+        return {"average": 0, "stage": "No Results", "message": "No assessments taken yet.", "color": "#555", "percentage": 0}
+    
+    percentages = []
+    for r in results:
+        if r.max_score and r.max_score > 0:
+            pct = (r.score / r.max_score) * 100
+            percentages.append(pct)
+    
+    if not percentages:
+        return {"average": 0, "stage": "No Results", "message": "No valid scores.", "color": "#555", "percentage": 0}
+    
+    avg_percentage = sum(percentages) / len(percentages)
+    
+    # Find the stage based on average percentage
+    for stage_info in AVERAGE_STAGE_RANGES:
+        if stage_info["min"] <= avg_percentage <= stage_info["max"]:
+            return {
+                "average": round(avg_percentage, 1),
+                "stage": stage_info["stage"],
+                "message": stage_info["message"],
+                "color": stage_info["color"],
+                "percentage": round(avg_percentage, 1)
+            }
+    
+    return {
+        "average": round(avg_percentage, 1),
+        "stage": "Unknown",
+        "message": "Unable to determine status.",
+        "color": "#555",
+        "percentage": round(avg_percentage, 1)
+    }
+
+
+def get_monthly_averages(results: list) -> list:
+    """Get monthly average percentages for charting."""
+    if not results:
+        return []
+    
+    # Group results by month
+    monthly_data = defaultdict(list)
+    for r in results:
+        if r.taken_at and r.max_score and r.max_score > 0:
+            month_key = r.taken_at.strftime("%Y-%m")
+            month_label = r.taken_at.strftime("%b %Y")
+            pct = (r.score / r.max_score) * 100
+            monthly_data[month_key].append({"percentage": pct, "label": month_label})
+    
+    # Calculate average for each month
+    monthly_averages = []
+    for month_key in sorted(monthly_data.keys()):
+        data = monthly_data[month_key]
+        avg = sum(d["percentage"] for d in data) / len(data)
+        label = data[0]["label"]
+        monthly_averages.append({"month": month_key, "label": label, "average": round(avg, 1)})
+    
+    return monthly_averages
+
+
+def get_school_monthly_averages(test_results: list) -> list:
+    """Get monthly overall average percentages for all students in a school."""
+    if not test_results:
+        return []
+    
+    # Group results by month
+    monthly_data = defaultdict(list)
+    for r in test_results:
+        if r.taken_at and r.max_score and r.max_score > 0:
+            month_key = r.taken_at.strftime("%Y-%m")
+            month_label = r.taken_at.strftime("%b %Y")
+            pct = (r.score / r.max_score) * 100
+            monthly_data[month_key].append({"percentage": pct, "label": month_label})
+    
+    # Calculate average for each month
+    monthly_averages = []
+    for month_key in sorted(monthly_data.keys()):
+        data = monthly_data[month_key]
+        avg = sum(d["percentage"] for d in data) / len(data)
+        label = data[0]["label"]
+        monthly_averages.append({"month": month_key, "label": label, "average": round(avg, 1)})
+    
+    return monthly_averages

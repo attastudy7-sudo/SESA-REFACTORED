@@ -2,14 +2,15 @@
 {% block title %}{{ school.school_name }} Dashboard{% endblock %}
 
 {% block nav_links %}
-  <li><a href="{{ url_for('main.school_dashboard', school_id=school.id) }}" class="active">Dashboard</a></li>
+  <li><a href="{{ url_for('main.school_dashboard', school_id=school.id) }}">Dashboard</a></li>
+  <li><a href="{{ url_for('main.school_analytics', school_id=school.id) }}">Analytics</a></li>
   <li><a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a></li>
 {% endblock %}
 
 {% block drawer_links %}
   <a href="{{ url_for('main.school_dashboard', school_id=school.id) }}">Dashboard</a>
+  <a href="{{ url_for('main.school_analytics', school_id=school.id) }}">Analytics</a>
   <a href="{{ url_for('auth.logout') }}">Logout</a>
-{% endblock %}
 
 {% block body %}
 <div class="page-hero">

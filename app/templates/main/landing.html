@@ -3,14 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SESA — Social Emotional Students' Audit</title>
+  <title>SESA - Social Emotional Students' Audit</title>
   <meta name="description" content="SESA helps schools identify and support students' social and emotional wellbeing through structured assessments.">
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa.jpg') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-<link rel="manifest" href="/static/manifest.json">
-<meta name="theme-color" content="#000000">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <meta name="theme-color" content="#000000">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="SESA">
 
 <script>
   if ('serviceWorker' in navigator) {
@@ -21,7 +24,6 @@
 
 <body class="landing-page">
 
-  {# ── Navigation ── #}
   <nav class="landing-nav" id="landingNav">
     <a href="#" class="landing-nav-brand">
       <img src="{{ url_for('static', filename='images/Pofa.jpg') }}" alt="FOPA Logo">
@@ -33,7 +35,6 @@
     </div>
   </nav>
 
-  {# ── Hero ── #}
   <section class="hero-section">
     <div class="hero-bg-circle c1"></div>
     <div class="hero-bg-circle c2"></div>
@@ -46,7 +47,7 @@
       </h1>
       <p class="hero-subtitle">
         The Social Emotional Students' Audit (SESA) helps schools identify, understand,
-        and support the mental and emotional health of their students — early and effectively.
+        and support the mental and emotional health of their students - early and effectively.
       </p>
       <div class="hero-actions">
         <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-xl">Take the Assessment</a>
@@ -55,7 +56,6 @@
     </div>
   </section>
 
-  {# ── Features ── #}
   <section class="features-section">
     <div class="container">
       <div class="section-label">What We Offer</div>
@@ -70,7 +70,7 @@
         <div class="feature-item">
           <div class="feature-icon">📊</div>
           <h3>Staged Results</h3>
-          <p>Each assessment returns a clearly interpreted result — Normal, Mild, Elevated, or Clinical — with personalised guidance.</p>
+          <p>Each assessment returns a clearly interpreted result - Normal, Mild, Elevated, or Clinical - with personalised guidance.</p>
         </div>
         <div class="feature-item">
           <div class="feature-icon">🏫</div>
@@ -79,14 +79,13 @@
         </div>
         <div class="feature-item">
           <div class="feature-icon">🔒</div>
-          <h3>Private & Secure</h3>
+          <h3>Private and Secure</h3>
           <p>Student data is protected. Results are confidential and only accessible to authorised school personnel.</p>
         </div>
       </div>
     </div>
   </section>
 
-  {# ── CTA Strip ── #}
   <section style="background: linear-gradient(135deg, var(--green-800), var(--green-700)); padding: 60px 40px; text-align: center;">
     <h2 style="font-family: var(--font-display); font-size: 1.8rem; color: #fff; margin-bottom: 10px;">Ready to support your students?</h2>
     <p style="color: rgba(255,255,255,.7); margin-bottom: 28px; font-size: 1rem;">Register your school today and begin screening in minutes.</p>
@@ -96,12 +95,90 @@
     </div>
   </section>
 
-  {# ── Footer ── #}
   <footer class="landing-footer">
-    <p>© {{ 2025 }} <strong>FOPA DILLIGENT CONSULT</strong> · Training Teachers | Emotional Therapy for Students</p>
+    <p>© 2025 <strong>FOPA DILLIGENT CONSULT</strong> - Training Teachers - Emotional Therapy for Students</p>
     <p style="margin-top: 6px; font-size: 0.78rem; opacity: .6;">SESA is a screening tool only and does not constitute a clinical diagnosis.</p>
   </footer>
 
+  <div id="a2hs-banner" class="a2hs-banner" style="display: none;">
+    <div class="a2hs-banner-inner">
+      <button id="a2hs-dismiss" class="a2hs-btn-dismiss" aria-label="Dismiss">X</button>
+      <div class="a2hs-banner-content">
+        <div class="a2hs-banner-icon">
+          <img src="{{ url_for('static', filename='images/Pofa_pwa.png') }}" alt="SESA">
+        </div>
+        <div class="a2hs-banner-text">
+          <strong>Install SESA</strong>
+          <span>Add to Home Screen for quick access</span>
+        </div>
+        <div class="a2hs-banner-actions">
+          <button id="a2hs-install" class="a2hs-btn-install">Install</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+  <script>
+  (function() {
+    var deferredPrompt;
+    var banner = document.getElementById('a2hs-banner');
+    var installBtn = document.getElementById('a2hs-install');
+    var dismissBtn = document.getElementById('a2hs-dismiss');
+
+    if (localStorage.getItem('a2hs-dismissed')) return;
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) return;
+
+    function showBanner() {
+      if (banner) banner.style.display = 'block';
+    }
+
+    window.addEventListener('beforeinstallprompt', function(e) {
+      e.preventDefault();
+      deferredPrompt = e;
+      showBanner();
+    });
+
+    function isMobile() {
+      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+    }
+
+    if (isMobile()) {
+      setTimeout(function() {
+        if (!localStorage.getItem('a2hs-dismissed') && !window.matchMedia('(display-mode: standalone)').matches && !window.navigator.standalone) {
+          showBanner();
+        }
+      }, 2000);
+    }
+
+    if (installBtn) {
+      installBtn.addEventListener('click', function() {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then(function(outcome) {
+            if (outcome === 'accepted') deferredPrompt = null;
+          });
+        } else {
+          alert('To install SESA:\n\n1. Tap the menu button (three dots)\n2. Select Add to Home screen');
+        }
+        if (banner) banner.style.display = 'none';
+      });
+    }
+
+    if (dismissBtn) {
+      dismissBtn.addEventListener('click', function() {
+        if (banner) banner.style.display = 'none';
+        localStorage.setItem('a2hs-dismissed', 'true');
+      });
+    }
+
+    window.addEventListener('appinstalled', function() {
+      deferredPrompt = null;
+      if (banner) banner.style.display = 'none';
+    });
+  })();
+  </script>
 </body>
 </html>
+

@@ -3,7 +3,7 @@ Application factory for SESA.
 """
 import os
 import click
-from flask import Flask, render_template
+from flask import Flask, render_template, send_from_directory, Response
 from flask.cli import with_appcontext
 
 from config import config
@@ -29,6 +29,9 @@ def create_app(config_name: str = None) -> Flask:
 
     # Register blueprints
     _register_blueprints(app)
+
+    # Register PWA routes
+    _register_pwa_routes(app)
 
     # Register error handlers
     _register_error_handlers(app)
@@ -64,6 +67,28 @@ def _register_blueprints(app: Flask) -> None:
     app.register_blueprint(main_bp, url_prefix='/')
     app.register_blueprint(test_bp, url_prefix='/test')
     app.register_blueprint(admin_bp, url_prefix='/admin')
+
+
+def _register_pwa_routes(app: Flask) -> None:
+    """Register PWA-specific routes for manifest and service worker."""
+    
+    @app.route('/static/manifest.json')
+    def manifest():
+        """Serve manifest.json with proper MIME type."""
+        return send_from_directory(
+            app.static_folder, 
+            'manifest.json',
+            mimetype='application/manifest+json'
+        )
+    
+    @app.route('/static/sw.js')
+    def service_worker():
+        """Serve service worker with proper MIME type."""
+        return send_from_directory(
+            app.static_folder,
+            'sw.js',
+            mimetype='application/javascript'
+        )
 
 
 def _register_error_handlers(app: Flask) -> None:
