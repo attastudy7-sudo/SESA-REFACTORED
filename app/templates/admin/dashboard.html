@@ -128,11 +128,9 @@
   <li><a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a></li>
 {% endblock %}
 
-{% block drawer_links %}
   <a href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a>
   <a href="{{ url_for('main.home') }}">Home</a>
   <a href="{{ url_for('auth.logout') }}">Logout</a>
-{% endblock %}
 
 {% block body %}
 <div class="page-hero">

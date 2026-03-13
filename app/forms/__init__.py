@@ -83,6 +83,8 @@ class EditAccountForm(FlaskForm):
     birthdate = DateField('Birth Date', validators=[Optional()])
     gender = SelectField('Gender', choices=GENDER_CHOICES, validators=[Optional()])
     is_admin = BooleanField('Grant Admin Privileges')
+    is_counsellor = BooleanField('Assign as School Counsellor')
+    phone = StringField('Phone Number (for SMS alerts)', validators=[Optional(), Length(max=20)])
     password = PasswordField('New Password (leave blank to keep current)', validators=[Optional(), Length(min=8)])
     submit = SubmitField('Update Account')
 
@@ -102,10 +104,20 @@ class QuestionForm(FlaskForm):
 
 
 class FeedbackForm(FlaskForm):
-    test_type = HiddenField()
-    score = HiddenField()
+    result_id = HiddenField()   # ID of the already-persisted TestResult row
     stage = HiddenField()
     message = HiddenField()
     max_score = HiddenField()
     feedback = TextAreaField('How are you feeling?', validators=[Optional(), Length(max=1000)])
     submit = SubmitField('Save & Continue')
+
+
+class PasswordResetForm(FlaskForm):
+    school_code = StringField('School Access Code', validators=[DataRequired(), Length(min=6, max=8)])
+    username = StringField('Your Username', validators=[DataRequired(), Length(min=3, max=50)])
+    new_password = PasswordField('New Password', validators=[DataRequired(), Length(min=6)])
+    confirm_password = PasswordField(
+        'Confirm New Password',
+        validators=[DataRequired(), EqualTo('new_password', message='Passwords must match.')]
+    )
+    submit = SubmitField('Reset Password')

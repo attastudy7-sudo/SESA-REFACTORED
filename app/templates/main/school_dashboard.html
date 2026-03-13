@@ -4,19 +4,22 @@
 {% block nav_links %}
   <li><a href="{{ url_for('main.school_dashboard', school_id=school.id) }}">Dashboard</a></li>
   <li><a href="{{ url_for('main.school_analytics', school_id=school.id) }}">Analytics</a></li>
+  <li><a href="{{ url_for('main.students_at_risk', school_id=school.id) }}" style="color:#ef4444; font-weight:700;">⚠️ At Risk</a></li>
   <li><a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a></li>
 {% endblock %}
 
 {% block drawer_links %}
   <a href="{{ url_for('main.school_dashboard', school_id=school.id) }}">Dashboard</a>
   <a href="{{ url_for('main.school_analytics', school_id=school.id) }}">Analytics</a>
-  <a href="{{ url_for('auth.logout') }}">Logout</a>
+  <a href="{{ url_for('main.students_at_risk', school_id=school.id) }}">⚠️ Students at Risk</a>
+  <a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a>
+{% endblock %}
 
 {% block body %}
 <div class="page-hero">
   <div class="container">
     <h1>{{ school.school_name }}</h1>
-    <p>School Administrator Dashboard · {{ accounts | length }} student{{ 's' if accounts | length != 1 }}</p>
+    <p>School Administrator Dashboard · {{ total_students }} student{{ 's' if total_students != 1 }}</p>
   </div>
 </div>
 
@@ -27,14 +30,14 @@
     <div class="stat-card">
       <div class="stat-icon">👥</div>
       <div>
-        <div class="stat-value">{{ accounts | length }}</div>
+        <div class="stat-value">{{ total_students }}</div>
         <div class="stat-label">Total Students</div>
       </div>
     </div>
     <div class="stat-card gold">
       <div class="stat-icon">📋</div>
       <div>
-        <div class="stat-value">{{ results | length }}</div>
+        <div class="stat-value">{{ total_results }}</div>
         <div class="stat-label">Total Assessments</div>
       </div>
     </div>
@@ -48,17 +51,69 @@
     <div class="stat-card">
       <div class="stat-icon">📅</div>
       <div>
-        <div class="stat-value">{{ stage_counts | sum(attribute=1) if stage_counts else 0 }}</div>
-        <div class="stat-label">Tests This Month</div>
+        <div class="stat-value">{{ stage_counts.values() | sum if stage_counts else 0 }}</div>
+        <div class="stat-label">Tests ({{ period | capitalize }})</div>
       </div>
+    </div>
+    <a href="{{ url_for('main.students_at_risk', school_id=school.id) }}"
+       class="stat-card red" style="text-decoration:none; cursor:pointer;">
+      <div class="stat-icon">⚠️</div>
+      <div>
+        <div class="stat-value">{{ at_risk_count }}</div>
+        <div class="stat-label">Students at Risk</div>
+      </div>
+    </a>
+  </div>
+
+  {# ── Access Code — Self Registration ── #}
+  <div class="card" style="margin-bottom: 28px;">
+    <div class="card-header">
+      <h3>Student Self-Registration</h3>
+    </div>
+    <div class="card-body">
+      <p style="font-size:0.88rem; color:var(--gray-500); margin-bottom:16px;">
+        Share this access code or link with students — they sign themselves up with just their name and a password. No spreadsheet needed.
+      </p>
+      {% if school.access_code %}
+      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px;">
+        <div style="background:var(--ivory); border: 2px dashed var(--green-700); border-radius:10px; padding:14px 24px; text-align:center; min-width:130px;">
+          <div style="font-size:1.8rem; font-weight:800; letter-spacing:0.18em; color:var(--green-800);">{{ school.access_code }}</div>
+          <div style="font-size:0.7rem; color:var(--gray-400); margin-top:2px;">ACCESS CODE</div>
+        </div>
+        <div style="flex:1; min-width:200px;">
+          <p style="font-size:0.82rem; font-weight:600; color:var(--green-800); margin-bottom:4px;">Self-registration link:</p>
+          <code style="font-size:0.78rem; background:var(--ivory); padding:6px 10px; border-radius:6px; display:block; word-break:break-all;">
+            {{ request.host_url }}join?code={{ school.access_code }}
+          </code>
+        </div>
+      </div>
+      {% endif %}
+      <form method="POST" action="{{ url_for('main.generate_access_code', school_id=school.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-secondary btn-sm">
+          {% if school.access_code %}🔄 Regenerate Code{% else %}✨ Generate Access Code{% endif %}
+        </button>
+      </form>
     </div>
   </div>
 
   {# ── Stage Summary ── #}
-  {% if stage_counts %}
   <div class="card" style="margin-bottom: 28px;">
-    <div class="card-header"><h3>This Month — Stage Distribution</h3></div>
+    <div class="card-header" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+      <h3 style="margin:0;">Stage Distribution</h3>
+      {# Period selector #}
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        {% for p, label in [('month','This Month'), ('term','This Term'), ('year','This Year'), ('all','All Time')] %}
+          <a href="{{ url_for('main.school_dashboard', school_id=school.id, period=p) }}"
+             style="padding:5px 12px; border-radius:20px; font-size:0.78rem; font-weight:600; text-decoration:none;
+                    {% if period == p %}background:var(--green-800); color:#fff;{% else %}background:var(--ivory); color:var(--green-800); border:1px solid var(--green-200);{% endif %}">
+            {{ label }}
+          </a>
+        {% endfor %}
+      </div>
+    </div>
     <div class="card-body">
+      {% if stage_counts %}
       <div style="display: flex; flex-wrap: wrap; gap: 12px;">
         {% for stage, count in stage_counts.items() %}
           {% set s = stage | lower %}
@@ -68,9 +123,27 @@
           </div>
         {% endfor %}
       </div>
+      {% else %}
+      <p style="color:var(--gray-500); font-size:0.88rem; margin:0;">No assessments recorded for this period.</p>
+      {% endif %}
     </div>
   </div>
-  {% endif %}
+
+  {# ── Counsellors ── #}
+  {% set counsellors = students_pagination.items | selectattr('is_counsellor') | list %}
+  {# Get all counsellors (not just current page) #}
+  <div class="card" style="margin-bottom: 28px;">
+    <div class="card-header">
+      <h3>Counsellors</h3>
+    </div>
+    <div class="card-body">
+      {% set all_counsellors = [] %}
+      {# We query counsellors separately to avoid pagination issues #}
+      <p style="color:var(--gray-500); font-size:0.88rem; margin:0;">
+        Counsellor accounts are assigned by your SESA administrator.
+      </p>
+    </div>
+  </div>
 
   {# ── Payment / Upload Section ── #}
   <div class="card" style="margin-bottom: 28px;">
@@ -80,21 +153,31 @@
     <div class="card-body">
 
       {% if upload_enabled %}
-      {# ── Already paid — show upload form ── #}
-      <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px; padding:10px 14px; background:#ecfdf5; border-radius:var(--radius-md); border-left:3px solid #10b981;">
-        <span style="font-size:1.2rem;">✅</span>
-        <div>
-          <p style="font-weight:600; color:#065f46; margin:0;">Subscription active</p>
-          {% if school.payment_date %}
-            <p style="font-size:0.8rem; color:#047857; margin:0;">Paid on {{ school.payment_date.strftime('%d %b %Y') }} · Ref: {{ school.paystack_reference }}</p>
-          {% endif %}
+      {% set days_left = school.subscription_days_remaining %}
+        {% set expiry_warning = days_left is not none and days_left <= 30 %}
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px; padding:10px 14px;
+                    background:{% if expiry_warning %}#fffbeb{% else %}#ecfdf5{% endif %};
+                    border-radius:var(--radius-md);
+                    border-left:3px solid {% if expiry_warning %}#f59e0b{% else %}#10b981{% endif %};">
+          <span style="font-size:1.2rem;">{% if expiry_warning %}⚠️{% else %}✅{% endif %}</span>
+          <div>
+            <p style="font-weight:600; color:{% if expiry_warning %}#92400e{% else %}#065f46{% endif %}; margin:0;">
+              Subscription active{% if expiry_warning %} — expires soon{% endif %}
+            </p>
+            {% if school.payment_date %}
+              <p style="font-size:0.8rem; color:{% if expiry_warning %}#b45309{% else %}#047857{% endif %}; margin:0;">
+                Paid on {{ school.payment_date.strftime('%d %b %Y') }} · Ref: {{ school.paystack_reference }}
+                {% if days_left is not none %} · {{ days_left }} day{{ 's' if days_left != 1 }} remaining{% endif %}
+              </p>
+            {% endif %}
+          </div>
         </div>
-      </div>
 
       <p style="font-size:0.88rem; color:var(--gray-500); margin-bottom:16px;">
-        Upload an Excel file (.xlsx or .xls) with columns:
-        <code>First Name, Last Name, Email, Username, Password, Birthdate, Gender, Level</code>.
-        Level values: <code>primaryschool</code>, <code>middleschool</code>, <code>highschool</code>.
+        Upload an Excel file (.xlsx or .xls). <strong>Required columns:</strong>
+        <code>first_name</code>, <code>last_name</code>.
+        Optional: <code>student_id</code> (used as temp password), <code>class_group</code>,
+        <code>level</code>, <code>gender</code>, <code>email</code>.
       </p>
 
       <form method="POST" action="{{ url_for('main.upload_students', school_id=school.id) }}" enctype="multipart/form-data">
@@ -111,21 +194,15 @@
       </form>
 
       {% else %}
-      {# ── Not yet paid — show Paystack CTA ── #}
       <div style="text-align:center; padding: 16px 0 8px;">
         <div style="font-size:3rem; margin-bottom:12px;">🔓</div>
         <h3 style="font-family:var(--font-display); color:var(--green-800); margin-bottom:8px;">Activate Student Upload</h3>
         <p style="color:var(--gray-500); font-size:0.9rem; max-width:420px; margin:0 auto 24px;">
           A one-time subscription payment is required to enable student bulk upload for your school.
         </p>
-
-        <button
-          id="paystackBtn"
-          class="btn btn-gold btn-lg"
-          onclick="initiatePayment()">
+        <button id="paystackBtn" class="btn btn-gold btn-lg" onclick="initiatePayment()">
           💳 Pay to Activate Upload
         </button>
-
         <p style="margin-top:14px; font-size:0.78rem; color:var(--gray-500);">
           Secured by <strong>Paystack</strong> · Your payment activates your account instantly
         </p>
@@ -137,7 +214,6 @@ function initiatePayment() {
   const btn = document.getElementById('paystackBtn');
   btn.disabled = true;
   btn.textContent = 'Loading…';
-
   const handler = PaystackPop.setup({
     key: {{ config.get('PAYSTACK_PUBLIC_KEY', '') | tojson }},
     email: {{ (school.email or '') | tojson }},
@@ -152,19 +228,18 @@ function initiatePayment() {
       btn.textContent = '💳 Pay to Activate Upload';
     }
   });
-
   handler.openIframe();
 }
-</script> 
+</script>
       {% endif %}
 
     </div>
   </div>
 
-  {# ── Student Search ── #}
+  {# ── Student List ── #}
   <div class="section">
     <div class="section-head">
-      <h2>Students ({{ accounts | length }})</h2>
+      <h2>Students ({{ total_students }})</h2>
       <div class="search-box">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" id="studentSearch" data-school-id="{{ school.id }}" placeholder="Search students…">
@@ -180,19 +255,19 @@ function initiatePayment() {
             <tr>
               <th>Name</th>
               <th>Username</th>
+              <th>Class</th>
               <th>Level</th>
-              <th>Gender</th>
               <th>Tests</th>
               <th>Joined</th>
             </tr>
           </thead>
           <tbody>
-            {% for acc in accounts %}
+            {% for acc in students_pagination.items %}
             <tr>
-              <td><strong>{{ acc.fname }} {{ acc.lname }}</strong><br><small style="color:var(--gray-500)">{{ acc.email }}</small></td>
+              <td><strong>{{ acc.fname }} {{ acc.lname }}</strong><br><small style="color:var(--gray-500)">{{ acc.email or '—' }}</small></td>
               <td>@{{ acc.username }}</td>
+              <td>{{ acc.class_group or '—' }}</td>
               <td>{{ acc.level | capitalize if acc.level else '—' }}</td>
-              <td>{{ acc.gender | capitalize if acc.gender else '—' }}</td>
               <td>{{ acc.test_results.count() }}</td>
               <td style="color: var(--gray-500); font-size: 0.82rem;">{{ acc.created_at.strftime('%d %b %Y') }}</td>
             </tr>
@@ -201,7 +276,7 @@ function initiatePayment() {
               <td colspan="6">
                 <div class="empty-state">
                   <div class="empty-state-icon">👥</div>
-                  <p>No students yet. Upload an Excel file to add students.</p>
+                  <p>No students yet. Upload an Excel file or share your access code to add students.</p>
                 </div>
               </td>
             </tr>
@@ -209,11 +284,27 @@ function initiatePayment() {
           </tbody>
         </table>
       </div>
+
+      {# Student pagination #}
+      {% if students_pagination.pages > 1 %}
+      <div style="display:flex; justify-content:center; align-items:center; gap:8px; padding:16px; border-top:1px solid var(--gray-100);">
+        {% if students_pagination.has_prev %}
+          <a href="{{ url_for('main.school_dashboard', school_id=school.id, student_page=students_pagination.prev_num, period=period) }}"
+             style="padding:6px 14px; border-radius:6px; background:var(--ivory); color:var(--green-800); text-decoration:none; font-size:0.85rem; font-weight:600;">← Prev</a>
+        {% endif %}
+        <span style="font-size:0.82rem; color:var(--gray-500);">
+          Page {{ students_pagination.page }} of {{ students_pagination.pages }}
+        </span>
+        {% if students_pagination.has_next %}
+          <a href="{{ url_for('main.school_dashboard', school_id=school.id, student_page=students_pagination.next_num, period=period) }}"
+             style="padding:6px 14px; border-radius:6px; background:var(--ivory); color:var(--green-800); text-decoration:none; font-size:0.85rem; font-weight:600;">Next →</a>
+        {% endif %}
+      </div>
+      {% endif %}
     </div>
   </div>
 
   {# ── Recent Results ── #}
-  {% if results %}
   <div class="section">
     <div class="section-head"><h2>Recent Assessment Results</h2></div>
     <div class="card">
@@ -223,26 +314,62 @@ function initiatePayment() {
             <tr><th>Student</th><th>Assessment</th><th>Score</th><th>Stage</th><th>Date</th></tr>
           </thead>
           <tbody>
-            {% for r in results[:50] %}
+            {% for r in results_pagination.items %}
             <tr>
               <td>{{ r.account.full_name }}</td>
               <td style="font-size: 0.85rem;">{{ r.test_type }}</td>
               <td>{{ r.score }}{% if r.max_score %}/{{ r.max_score }}{% endif %}</td>
               <td>
-                {% set s = (r.stage or r.details or '') | lower %}
+                {% set s = (r.stage or '') | lower %}
                 <span class="badge {% if 'normal' in s %}stage-normal{% elif 'mild' in s %}stage-mild{% elif 'elevated' in s %}stage-elevated{% elif 'clinical' in s %}stage-clinical{% else %}badge-gray{% endif %}">
-                  {{ r.stage or r.details or 'Unknown' }}
+                  {{ r.stage or 'Unknown' }}
                 </span>
               </td>
               <td style="color: var(--gray-500); font-size: 0.82rem;">{{ r.taken_at.strftime('%d %b %Y') }}</td>
             </tr>
+            {% else %}
+            <tr><td colspan="5"><div class="empty-state"><p>No assessments recorded yet.</p></div></td></tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
+
+      {# Results pagination #}
+      {% if results_pagination.pages > 1 %}
+      <div style="display:flex; justify-content:center; align-items:center; gap:8px; padding:16px; border-top:1px solid var(--gray-100);">
+        {% if results_pagination.has_prev %}
+          <a href="{{ url_for('main.school_dashboard', school_id=school.id, results_page=results_pagination.prev_num, period=period) }}"
+             style="padding:6px 14px; border-radius:6px; background:var(--ivory); color:var(--green-800); text-decoration:none; font-size:0.85rem; font-weight:600;">← Prev</a>
+        {% endif %}
+        <span style="font-size:0.82rem; color:var(--gray-500);">
+          Page {{ results_pagination.page }} of {{ results_pagination.pages }}
+        </span>
+        {% if results_pagination.has_next %}
+          <a href="{{ url_for('main.school_dashboard', school_id=school.id, results_page=results_pagination.next_num, period=period) }}"
+             style="padding:6px 14px; border-radius:6px; background:var(--ivory); color:var(--green-800); text-decoration:none; font-size:0.85rem; font-weight:600;">Next →</a>
+        {% endif %}
+      </div>
+      {% endif %}
     </div>
   </div>
-  {% endif %}
 
 </div>
+{% block bottom_tab_bar %}
+{% set school_id = session.get('school_id') %}
+{% if school_id %}
+<nav class="bottom-tab-bar" aria-label="School admin navigation">
+  <a href="{{ url_for('main.school_dashboard', school_id=school_id) }}"
+     class="tab-item {% if request.endpoint == 'main.school_dashboard' %}active{% endif %}">
+    <span class="tab-icon">🏫</span><span class="tab-label">Dashboard</span>
+  </a>
+  <a href="{{ url_for('main.school_analytics', school_id=school_id) }}"
+     class="tab-item {% if request.endpoint == 'main.school_analytics' %}active{% endif %}">
+    <span class="tab-icon">📈</span><span class="tab-label">Analytics</span>
+  </a>
+  <a href="{{ url_for('auth.logout') }}" class="tab-item tab-logout">
+    <span class="tab-icon">↩</span><span class="tab-label">Logout</span>
+  </a>
+</nav>
+{% endif %}
+{% endblock %}
 {% endblock %}

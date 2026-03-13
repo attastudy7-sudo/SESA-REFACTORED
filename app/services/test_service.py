@@ -88,48 +88,51 @@ def get_next_test(current_test_type: str):
         return None
 
 
-# Average score classification
-AVERAGE_STAGE_RANGES = [
-    {"min": 0, "max": 30, "stage": "Normal Stage", "message": "You're doing great! Keep up the good work.", "color": "#2a7f62"},
-    {"min": 31, "max": 50, "stage": "Mild Stage", "message": "You're making progress. Consider speaking with a counselor.", "color": "#b8860b"},
-    {"min": 51, "max": 70, "stage": "Elevated Stage", "message": "Things may be challenging. We recommend talking to someone.", "color": "#d97706"},
-    {"min": 71, "max": 100, "stage": "Clinical Stage", "message": "We encourage you to seek support from a trusted adult or counselor.", "color": "#b91c1c"},
-]
+# NOTE: Cross-test averages are NOT classified into stages.
+# Each test uses its own validated scoring range (see SCORING_RANGES above).
+# Combining scores from different instruments into a single stage label
+# has no clinical basis and has been intentionally removed.
 
 
 def calculate_average_score(results: list) -> dict:
-    """Calculate average percentage from a list of test results and return stage info."""
-    if not results:
-        return {"average": 0, "stage": "No Results", "message": "No assessments taken yet.", "color": "#555", "percentage": 0}
+    """Return completion stats across all tests for a student.
     
+    Does NOT classify into stages — cross-test averages have no clinical
+    basis. Use per-test stage from SCORING_RANGES for clinical decisions.
+    """
+    if not results:
+        return {
+            "average": 0,
+            "stage": "No assessments yet",
+            "message": "Complete an assessment to see your results here.",
+            "color": "#6b7280",
+            "percentage": 0,
+        }
+
     percentages = []
     for r in results:
         if r.max_score and r.max_score > 0:
-            pct = (r.score / r.max_score) * 100
-            percentages.append(pct)
-    
+            percentages.append((r.score / r.max_score) * 100)
+
     if not percentages:
-        return {"average": 0, "stage": "No Results", "message": "No valid scores.", "color": "#555", "percentage": 0}
-    
-    avg_percentage = sum(percentages) / len(percentages)
-    
-    # Find the stage based on average percentage
-    for stage_info in AVERAGE_STAGE_RANGES:
-        if stage_info["min"] <= avg_percentage <= stage_info["max"]:
-            return {
-                "average": round(avg_percentage, 1),
-                "stage": stage_info["stage"],
-                "message": stage_info["message"],
-                "color": stage_info["color"],
-                "percentage": round(avg_percentage, 1)
-            }
-    
+        return {
+            "average": 0,
+            "stage": "No assessments yet",
+            "message": "Complete an assessment to see your results here.",
+            "color": "#6b7280",
+            "percentage": 0,
+        }
+
+    avg_percentage = round(sum(percentages) / len(percentages), 1)
+    tests_done = len(set(r.test_type for r in results))
+    tests_total = len(TEST_ORDER)
+
     return {
-        "average": round(avg_percentage, 1),
-        "stage": "Unknown",
-        "message": "Unable to determine status.",
-        "color": "#555",
-        "percentage": round(avg_percentage, 1)
+        "average": avg_percentage,
+        "stage": f"{tests_done} of {tests_total} assessments completed",
+        "message": "See each assessment result below for your individual stage.",
+        "color": "#2a6642",
+        "percentage": avg_percentage,
     }
 
 

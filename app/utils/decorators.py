@@ -1,6 +1,9 @@
+import logging
 from functools import wraps
-from flask import g, redirect, url_for, flash, session, abort
+from flask import redirect, url_for, flash, session, abort, request
 from flask_login import current_user
+
+logger = logging.getLogger(__name__)
 
 
 def school_login_required(f):
@@ -15,11 +18,39 @@ def school_login_required(f):
     return decorated
 
 
+def counsellor_required(f):
+    """Require is_counsellor flag on the logged-in Accounts user.
+
+    - Not authenticated → redirect to login with a clear message.
+    - Authenticated but not a counsellor → 403 (they shouldn't be here at all).
+    """
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not current_user.is_authenticated:
+            flash('Please log in to access the counsellor portal.', 'warning')
+            return redirect(url_for('auth.login'))
+        if not current_user.is_counsellor:
+            logger.warning(
+                'Unauthorised counsellor access | user=%s ip=%s path=%s',
+                current_user.username,
+                request.remote_addr,
+                request.path,
+            )
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated
+
+
 def super_admin_required(f):
-    """Require the super-admin account (id == 1)."""
     @wraps(f)
     def decorated(*args, **kwargs):
         if not current_user.is_authenticated or not current_user.is_super_admin:
+            logger.warning(
+                'Unauthorised admin access attempt | user=%s ip=%s path=%s',
+                getattr(current_user, 'username', 'anon'),
+                request.remote_addr,
+                request.path,
+            )
             abort(403)
         return f(*args, **kwargs)
     return decorated

@@ -68,6 +68,19 @@
         </div>
 
         <div class="form-group">
+          {{ form.is_counsellor(class="form-check-input") }}
+          {{ form.is_counsellor.label(class="form-check-label") }}
+          <div class="form-hint">Counsellors can view at-risk students and add private notes. They cannot see other school data.</div>
+        </div>
+
+        <div class="form-group">
+          {{ form.phone.label(class="form-label") }}
+          {{ form.phone(class="form-control", placeholder="e.g. +233201234567") }}
+          <div class="form-hint">Required for SMS alerts when a student reaches Clinical Stage.</div>
+          {% for e in form.phone.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+        </div>
+
+        <div class="form-group">
           {{ form.password.label(class="form-label") }}
           {{ form.password(class="form-control", placeholder="Leave blank to keep current password") }}
           <div class="form-hint">Only fill this if you want to change the password.</div>

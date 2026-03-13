@@ -55,6 +55,8 @@ def edit_account(account_id):
         account.birthdate = form.birthdate.data
         account.gender = form.gender.data
         account.is_admin = form.is_admin.data
+        account.is_counsellor = form.is_counsellor.data
+        account.phone = form.phone.data.strip() if form.phone.data else None
         if form.password.data:
             account.password = generate_password_hash(form.password.data)
         db.session.commit()

@@ -10,7 +10,7 @@ class TestResult(db.Model):
     test_type = db.Column(db.String(100), nullable=False, index=True)
     score = db.Column(db.Integer, nullable=False)
     max_score = db.Column(db.Integer, nullable=True)
-    stage = db.Column(db.String(50), nullable=True)      # "Normal Stage", "Mild Stage", etc.
+    stage = db.Column(db.String(50), nullable=True, index=True)  # "Normal Stage", "Mild Stage", etc.
     feedback = db.Column(db.Text, nullable=True)
     details = db.Column(db.Text, nullable=True)           # kept for backward compat
     taken_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)

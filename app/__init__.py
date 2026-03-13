@@ -2,12 +2,13 @@
 Application factory for SESA.
 """
 import os
+import logging
 import click
 from flask import Flask, render_template, send_from_directory, Response
 from flask.cli import with_appcontext
 
 from config import config
-from app.extensions import db, migrate, login_manager, csrf
+from app.extensions import db, migrate, login_manager, csrf, limiter
 
 
 def create_app(config_name: str = None) -> Flask:
@@ -23,6 +24,9 @@ def create_app(config_name: str = None) -> Flask:
         os.makedirs(app.instance_path, exist_ok=True)
     except OSError:
         pass
+
+    # Configure structured logging
+    _configure_logging(app)
 
     # Initialize extensions
     _init_extensions(app)
@@ -42,12 +46,26 @@ def create_app(config_name: str = None) -> Flask:
     return app
 
 
+def _configure_logging(app: Flask) -> None:
+    """Set up structured logging."""
+    log_level = logging.DEBUG if app.debug else logging.INFO
+    logging.basicConfig(
+        level=log_level,
+        format='%(asctime)s %(levelname)s %(name)s — %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S',
+    )
+    # Silence noisy third-party loggers in production
+    if not app.debug:
+        logging.getLogger('werkzeug').setLevel(logging.WARNING)
+
+
 def _init_extensions(app: Flask) -> None:
     """Initialize Flask extensions."""
     db.init_app(app)
     migrate.init_app(app, db)
     csrf.init_app(app)
     login_manager.init_app(app)
+    limiter.init_app(app)
 
     from app.models.account import Accounts
 
@@ -62,25 +80,27 @@ def _register_blueprints(app: Flask) -> None:
     from app.routes.main import main_bp
     from app.routes.test import test_bp
     from app.routes.admin import admin_bp
+    from app.routes.counsellor import counsellor_bp
 
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(main_bp, url_prefix='/')
     app.register_blueprint(test_bp, url_prefix='/test')
     app.register_blueprint(admin_bp, url_prefix='/admin')
+    app.register_blueprint(counsellor_bp, url_prefix='/counsellor')
 
 
 def _register_pwa_routes(app: Flask) -> None:
     """Register PWA-specific routes for manifest and service worker."""
-    
+
     @app.route('/static/manifest.json')
     def manifest():
         """Serve manifest.json with proper MIME type."""
         return send_from_directory(
-            app.static_folder, 
+            app.static_folder,
             'manifest.json',
             mimetype='application/manifest+json'
         )
-    
+
     @app.route('/static/sw.js')
     def service_worker():
         """Serve service worker with proper MIME type."""
@@ -89,6 +109,11 @@ def _register_pwa_routes(app: Flask) -> None:
             'sw.js',
             mimetype='application/javascript'
         )
+
+    @app.route('/offline')
+    def offline():
+        """Dedicated offline fallback page served by the service worker."""
+        return render_template('errors/offline.html'), 200
 
 
 def _register_error_handlers(app: Flask) -> None:

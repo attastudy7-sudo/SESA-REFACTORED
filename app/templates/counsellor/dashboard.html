@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% block title %}Counsellor Dashboard{% endblock %}
+
+{% block nav_links %}
+  <li><a href="{{ url_for('counsellor.dashboard') }}" class="active">My Students</a></li>
+  <li><a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a></li>
+{% endblock %}
+
+{% block drawer_links %}
+  <a href="{{ url_for('counsellor.dashboard') }}">My Students</a>
+  <a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a>
+{% endblock %}
+
+{% block body %}
+<div class="page-hero" style="background: linear-gradient(135deg, var(--green-800), var(--green-600));">
+  <div class="container">
+    <h1>Counsellor Dashboard</h1>
+    <p>Welcome, {{ counsellor.full_name }} · {{ pagination.total }} student{{ 's' if pagination.total != 1 }} need{{ '' if pagination.total != 1 else 's' }} attention</p>
+  </div>
+</div>
+
+<div class="container" style="padding-top: 32px; padding-bottom: 48px;">
+
+  {# ── Summary chips ── #}
+  {% set clinical_count = at_risk | selectattr('0.stage', 'equalto', 'Clinical Stage') | list | length %}
+  {% set elevated_count = at_risk | selectattr('0.stage', 'equalto', 'Elevated Stage') | list | length %}
+
+  <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:24px;">
+    <div style="background:#fef2f2; border:1px solid #fca5a5; border-radius:10px; padding:12px 20px; text-align:center; min-width:130px;">
+      <div style="font-size:1.8rem; font-weight:800; color:#b91c1c;">{{ pagination.total }}</div>
+      <div style="font-size:0.78rem; color:#7f1d1d; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Total Flagged</div>
+    </div>
+    <div style="background:#fef2f2; border:1px solid #fca5a5; border-radius:10px; padding:12px 20px; text-align:center; min-width:130px;">
+      <div style="font-size:1.8rem; font-weight:800; color:#b91c1c;">{{ clinical_count }}</div>
+      <div style="font-size:0.78rem; color:#7f1d1d; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Clinical (this page)</div>
+    </div>
+    <div style="background:#fffbeb; border:1px solid #fcd34d; border-radius:10px; padding:12px 20px; text-align:center; min-width:130px;">
+      <div style="font-size:1.8rem; font-weight:800; color:#b45309;">{{ elevated_count }}</div>
+      <div style="font-size:0.78rem; color:#78350f; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Elevated (this page)</div>
+    </div>
+  </div>
+
+  {# ── Class filter ── #}
+  {% if class_groups %}
+  <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:24px;">
+    <span style="font-size:0.82rem; font-weight:600; color:var(--gray-500);">Filter by class:</span>
+    <a href="{{ url_for('counsellor.dashboard') }}"
+       style="padding:5px 14px; border-radius:20px; font-size:0.82rem; font-weight:600; text-decoration:none;
+              {% if not selected_class %}background:var(--green-800); color:#fff;{% else %}background:var(--ivory); color:var(--green-800); border:1px solid var(--green-200);{% endif %}">
+      All Classes
+    </a>
+    {% for cg in class_groups %}
+      <a href="{{ url_for('counsellor.dashboard', class_group=cg) }}"
+         style="padding:5px 14px; border-radius:20px; font-size:0.82rem; font-weight:600; text-decoration:none;
+                {% if selected_class == cg %}background:var(--green-800); color:#fff;{% else %}background:var(--ivory); color:var(--green-800); border:1px solid var(--green-200);{% endif %}">
+        {{ cg }}
+      </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if clinical_count > 0 %}
+  <div style="background:#fef2f2; border-left:4px solid #ef4444; padding:12px 16px; border-radius:8px; margin-bottom:24px; font-size:0.88rem; color:#7f1d1d;">
+    <strong>Action required:</strong> {{ clinical_count }} student{{ 's' if clinical_count != 1 }} on this page
+    {{ 'are' if clinical_count != 1 else 'is' }} at Clinical Stage and should be contacted immediately.
+  </div>
+  {% endif %}
+
+  {% if at_risk %}
+
+  {# ── Student cards ── #}
+  {% for result, student in at_risk %}
+  <div class="card" style="margin-bottom:16px; padding:20px 24px;
+    {% if result.stage == 'Clinical Stage' %}border-left:4px solid #ef4444;{% else %}border-left:4px solid #f59e0b;{% endif %}">
+
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+
+      {# Student info #}
+      <div>
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+          <span style="font-weight:700; font-size:1.05rem; color:var(--green-800);">
+            {{ student.fname }} {{ student.lname }}
+          </span>
+          {% if student.id in contacted_ids %}
+          <span style="background:#d1fae5; color:#065f46; font-size:0.72rem; font-weight:700;
+                        padding:3px 9px; border-radius:12px; text-transform:uppercase; letter-spacing:.04em;">
+            ✓ Contacted
+          </span>
+          {% endif %}
+        </div>
+        <div style="font-size:0.82rem; color:var(--gray-500); margin-top:2px;">
+          @{{ student.username }}
+          {% if student.class_group %} · {{ student.class_group }}{% endif %}
+        </div>
+        <div style="margin-top:8px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <span class="badge {% if result.stage == 'Clinical Stage' %}stage-clinical{% else %}stage-elevated{% endif %}">
+            {{ result.stage }}
+          </span>
+          <span style="font-size:0.82rem; color:var(--gray-500);">
+            {{ result.test_type }} · Score {{ result.score }}{% if result.max_score %}/{{ result.max_score }}{% endif %}
+            · {{ result.taken_at.strftime('%d %b %Y') }}
+          </span>
+        </div>
+      </div>
+
+      {# Action buttons #}
+      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+        <a href="{{ url_for('counsellor.student_history', student_id=student.id) }}"
+           class="btn btn-secondary" style="font-size:0.82rem; padding:8px 16px;">
+          📋 Full History
+        </a>
+        <form method="POST" action="{{ url_for('counsellor.mark_contacted', student_id=student.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="next" value="{{ url_for('counsellor.dashboard', class_group=selected_class, page=pagination.page) }}">
+          <button type="submit" class="btn {% if student.id in contacted_ids %}btn-ghost{% else %}btn-primary{% endif %}"
+                  style="font-size:0.82rem; padding:8px 16px;">
+            {% if student.id in contacted_ids %}↻ Re-contact{% else %}✓ Mark Contacted{% endif %}
+          </button>
+        </form>
+      </div>
+    </div>
+
+    {# Quick note form #}
+    <details style="margin-top:14px;">
+      <summary style="font-size:0.85rem; color:var(--green-700); cursor:pointer; font-weight:600; user-select:none;">
+        + Add quick note
+      </summary>
+      <form method="POST" action="{{ url_for('counsellor.add_note', student_id=student.id) }}"
+            style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="next" value="{{ url_for('counsellor.dashboard', class_group=selected_class, page=pagination.page) }}">
+        <textarea name="note" rows="3"
+          style="width:100%; padding:10px 14px; border:1px solid var(--gray-300); border-radius:8px;
+                 font-size:0.88rem; font-family:inherit; resize:vertical; box-sizing:border-box;"
+          placeholder="Private note — visible only to counsellors and school admin…"></textarea>
+        <div>
+          <button type="submit" class="btn btn-primary" style="font-size:0.82rem; padding:8px 18px;">
+            Save Note
+          </button>
+        </div>
+      </form>
+    </details>
+
+  </div>
+  {% endfor %}
+
+  {# ── Pagination ── #}
+  {% if pagination.pages > 1 %}
+  <div style="display:flex; justify-content:center; align-items:center; gap:8px; padding:16px 0;">
+    {% if pagination.has_prev %}
+      <a href="{{ url_for('counsellor.dashboard', page=pagination.prev_num, class_group=selected_class) }}"
+         style="padding:6px 14px; border-radius:6px; background:var(--ivory); color:var(--green-800); text-decoration:none; font-size:0.85rem; font-weight:600;">← Prev</a>
+    {% endif %}
+    <span style="font-size:0.82rem; color:var(--gray-500);">
+      Page {{ pagination.page }} of {{ pagination.pages }} ({{ pagination.total }} total)
+    </span>
+    {% if pagination.has_next %}
+      <a href="{{ url_for('counsellor.dashboard', page=pagination.next_num, class_group=selected_class) }}"
+         style="padding:6px 14px; border-radius:6px; background:var(--ivory); color:var(--green-800); text-decoration:none; font-size:0.85rem; font-weight:600;">Next →</a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="card" style="text-align:center; padding:3rem 2rem;">
+    <div style="font-size:3rem; margin-bottom:1rem;">✅</div>
+    <h3 style="color:var(--green-800); margin-bottom:0.5rem;">
+      {% if selected_class %}No students at risk in {{ selected_class }}{% else %}No students at elevated risk{% endif %}
+    </h3>
+    <p style="color:var(--gray-500);">
+      {% if selected_class %}Try selecting a different class or view all.
+      {% else %}No students are currently at Elevated or Clinical stage.{% endif %}
+    </p>
+    {% if selected_class %}
+    <a href="{{ url_for('counsellor.dashboard') }}" class="btn btn-secondary" style="margin-top:1rem;">View All Classes</a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

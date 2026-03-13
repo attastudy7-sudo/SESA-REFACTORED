@@ -9,7 +9,7 @@
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-  <meta name="theme-color" content="#000000">
+  <meta name="theme-color" content="#1a3e2c">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -21,6 +21,7 @@
     navigator.serviceWorker.register('/static/sw.js');
   }
 </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -32,7 +33,7 @@
   <nav class="navbar" id="landingNav">
     <div class="navbar-inner">
       <a href="{{ url_for('main.landing') }}" class="navbar-brand">
-        <img src="{{ url_for('static', filename='images/Pofa.jpg') }}" alt="FOPA Logo" class="navbar-logo">
+        <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="FOPA Logo" class="navbar-logo">
         <span class="navbar-title">SESA</span>
       </a>
 
@@ -40,10 +41,22 @@
         {% block nav_links %}{% endblock %}
       </ul>
 
-      <button class="hamburger" id="hamburger" aria-label="Menu">
-        <span></span><span></span><span></span>
+      <button id="hamburger" class="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobileDrawer">
+        <span></span>
+        <span></span>
+        <span></span>
       </button>
     </div>
+
+    <nav id="mobileDrawer" class="nav-dropdown" aria-hidden="true">
+      <div class="nav-dropdown-header">
+        <span class="nav-dropdown-title">Menu</span>
+        <button id="drawerClose" class="nav-dropdown-close" aria-label="Close menu">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      {% block drawer_links %}{% endblock %}
+    </nav>
   </nav>
   {% endblock %}
 
@@ -65,32 +78,124 @@
 
 </div>
 
-<div class="drawer-overlay" id="drawerOverlay"></div>
-<aside class="drawer" id="mobileDrawer" aria-hidden="true">
-  <button class="drawer-close" id="drawerClose" aria-label="Close menu">X</button>
-  <nav class="drawer-links">
-    {% block drawer_links %}{% endblock %}
-  </nav>
-</aside>
+
 {% endblock %}
 
-<div id="a2hs-banner" class="a2hs-banner" style="display: none;">
-  <div class="a2hs-banner-inner">
-    <button id="a2hs-dismiss" class="a2hs-btn-dismiss" aria-label="Dismiss">X</button>
-    <div class="a2hs-banner-content">
-      <div class="a2hs-banner-icon">
+<div id="a2hs-banner" class="a2hs-banner" style="display: none;" role="dialog" aria-label="Install SESA">
+  <div class="a2hs-sheet">
+    <div class="a2hs-handle"></div>
+    <button id="a2hs-dismiss" class="a2hs-btn-dismiss" aria-label="Dismiss">&#x2715;</button>
+    <div class="a2hs-row">
+      <div class="a2hs-icon">
         <img src="{{ url_for('static', filename='images/Pofa_pwa.png') }}" alt="SESA">
       </div>
-      <div class="a2hs-banner-text">
+      <div class="a2hs-text">
         <strong>Install SESA</strong>
-        <span>Add to Home Screen</span>
+        <span>Add to your home screen for faster access and offline use</span>
       </div>
-      <div class="a2hs-banner-actions">
-        <button id="a2hs-install" class="a2hs-btn-install">Install</button>
-      </div>
+    </div>
+    <div class="a2hs-actions">
+      <button id="a2hs-install" class="a2hs-btn-install">Add to Home Screen</button>
+      <button id="a2hs-dismiss2" class="a2hs-btn-later">Not now</button>
     </div>
   </div>
 </div>
+
+<!-- ── Crisis Help Button (always visible for logged-in students) ── -->
+{% if current_user.is_authenticated and not current_user.is_super_admin %}
+<div id="crisisBtn" class="crisis-btn" role="button" tabindex="0"
+     aria-label="I need help now" title="I need help now">
+  <i class="fa-solid fa-heart-pulse crisis-btn-icon"></i>
+  <span class="crisis-btn-label">Need Help?</span>
+</div>
+
+<div id="crisisModal" class="crisis-modal" role="dialog" aria-modal="true" aria-labelledby="crisisModalTitle" style="display:none;">
+  <div class="crisis-modal-box">
+    <button class="crisis-modal-close" id="crisisModalClose" aria-label="Close">&#x2715;</button>
+    <div class="crisis-modal-header">
+      <span class="crisis-modal-emoji">💚</span>
+      <h2 id="crisisModalTitle" class="crisis-modal-title">You're not alone</h2>
+      <p class="crisis-modal-sub">It's okay to ask for help. Here's who you can reach right now.</p>
+    </div>
+    <div class="crisis-modal-options">
+      <a class="crisis-option crisis-option--primary" href="tel:0800111222">
+        <span class="crisis-option-icon">📞</span>
+        <div>
+          <strong>Ghana Mental Health Helpline</strong>
+          <span>0800 111 222 — Free &amp; confidential</span>
+        </div>
+      </a>
+      <a class="crisis-option" href="tel:0302666666">
+        <span class="crisis-option-icon">🏥</span>
+        <div>
+          <strong>Accra Psychiatric Hospital</strong>
+          <span>030 266 6666</span>
+        </div>
+      </a>
+      <div class="crisis-option crisis-option--soft">
+        <span class="crisis-option-icon">🏫</span>
+        <div>
+          <strong>Talk to your school counsellor</strong>
+          <span>Find them at the counsellor's office or ask a teacher.</span>
+        </div>
+      </div>
+      <div class="crisis-option crisis-option--soft">
+        <span class="crisis-option-icon">🤝</span>
+        <div>
+          <strong>Tell a trusted adult</strong>
+          <span>A parent, teacher, or any adult you trust can help you right now.</span>
+        </div>
+      </div>
+    </div>
+    <p class="crisis-modal-footer">
+      Reaching out is a sign of strength, not weakness.
+    </p>
+  </div>
+</div>
+{% endif %}
+
+{% block bottom_tab_bar %}
+{% if current_user.is_authenticated %}
+<nav class="bottom-tab-bar" aria-label="Main navigation">
+
+  {% if current_user.is_super_admin %}
+    {# Super admin — minimal tab bar, they mostly work on desktop #}
+    <a href="{{ url_for('admin.dashboard') }}" class="tab-item {% if request.endpoint and request.endpoint.startswith('admin') %}active{% endif %}">
+      <i class="fa-solid fa-shield-halved tab-icon"></i><span class="tab-label">Admin</span>
+    </a>
+    <a href="{{ url_for('auth.logout') }}" class="tab-item tab-logout">
+      <i class="fa-solid fa-right-from-bracket tab-icon"></i><span class="tab-label">Logout</span>
+    </a>
+
+  {% elif current_user.is_counsellor %}
+    {# Counsellor portal #}
+    <a href="{{ url_for('counsellor.dashboard') }}" class="tab-item {% if request.endpoint and request.endpoint.startswith('counsellor') %}active{% endif %}">
+      <i class="fa-solid fa-user-nurse tab-icon"></i><span class="tab-label">Students</span>
+    </a>
+    <a href="{{ url_for('auth.logout') }}" class="tab-item tab-logout">
+      <i class="fa-solid fa-right-from-bracket tab-icon"></i><span class="tab-label">Logout</span>
+    </a>
+
+  {% else %}
+    {# Student #}
+    <a href="{{ url_for('main.home') }}" class="tab-item {% if request.endpoint == 'main.home' %}active{% endif %}">
+      <i class="fa-solid fa-house tab-icon"></i><span class="tab-label">Home</span>
+    </a>
+    <a href="{{ url_for('main.home') }}#assessments"
+       class="tab-item {% if request.endpoint and 'test' in request.endpoint %}active{% endif %}">
+      <i class="fa-solid fa-clipboard-list tab-icon"></i><span class="tab-label">Assess</span>
+    </a>
+    <a href="{{ url_for('main.results') }}" class="tab-item {% if request.endpoint == 'main.results' %}active{% endif %}">
+      <i class="fa-solid fa-chart-bar tab-icon"></i><span class="tab-label">Results</span>
+    </a>
+    <a href="{{ url_for('auth.logout') }}" class="tab-item tab-logout">
+      <i class="fa-solid fa-right-from-bracket tab-icon"></i><span class="tab-label">Logout</span>
+    </a>
+  {% endif %}
+
+</nav>
+{% endif %}
+{% endblock %}
 
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
@@ -156,4 +261,3 @@
 {% block extra_scripts %}{% endblock %}
 </body>
 </html>
-

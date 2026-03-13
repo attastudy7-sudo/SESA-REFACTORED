@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% block title %}{{ student.full_name }} — History{% endblock %}
+
+{% block nav_links %}
+  <li><a href="{{ url_for('counsellor.dashboard') }}">My Students</a></li>
+  <li><a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a></li>
+{% endblock %}
+
+{% block drawer_links %}
+  <a href="{{ url_for('counsellor.dashboard') }}">My Students</a>
+  <a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a>
+{% endblock %}
+
+{% block body %}
+<div class="page-hero" style="background: linear-gradient(135deg, var(--green-800), var(--green-600));">
+  <div class="container">
+    <a href="{{ url_for('counsellor.dashboard') }}"
+       style="display:inline-block; color:rgba(255,255,255,0.75); font-size:0.85rem; margin-bottom:10px; text-decoration:none;">
+      ← Back to Dashboard
+    </a>
+    <h1>{{ student.full_name }}</h1>
+    <p>
+      @{{ student.username }}
+      {% if student.class_group %} · {{ student.class_group }}{% endif %}
+      {% if student.gender %} · {{ student.gender | capitalize }}{% endif %}
+      · {{ results | length }} assessment{{ 's' if results | length != 1 }}
+    </p>
+  </div>
+</div>
+
+<div class="container" style="padding-top:32px; padding-bottom:48px;">
+
+  <div style="display:grid; grid-template-columns:1fr 340px; gap:24px; align-items:start;">
+
+    {# ── Left column: results + notes ── #}
+    <div>
+
+      {# Assessment history #}
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-header"><h3>Assessment History</h3></div>
+        {% if results %}
+        <div class="table-wrapper">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Assessment</th>
+                <th>Score</th>
+                <th>Stage</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in results %}
+              {% set s = (r.stage or '') | lower %}
+              <tr style="{% if 'clinical' in s %}background:#fff5f5;{% elif 'elevated' in s %}background:#fffbeb;{% endif %}">
+                <td style="font-size:0.88rem;">{{ r.test_type }}</td>
+                <td>{{ r.score }}{% if r.max_score %}/{{ r.max_score }}{% endif %}
+                  <span style="font-size:0.78rem; color:var(--gray-500);">({{ r.score_percentage }}%)</span>
+                </td>
+                <td>
+                  <span class="badge {% if 'normal' in s %}stage-normal{% elif 'mild' in s %}stage-mild{% elif 'elevated' in s %}stage-elevated{% elif 'clinical' in s %}stage-clinical{% else %}badge-gray{% endif %}">
+                    {{ r.stage or '—' }}
+                  </span>
+                </td>
+                <td style="font-size:0.82rem; color:var(--gray-500); white-space:nowrap;">
+                  {{ r.taken_at.strftime('%d %b %Y, %H:%M') }}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="card-body">
+          <p style="color:var(--gray-500); font-size:0.88rem; margin:0;">No assessments recorded yet.</p>
+        </div>
+        {% endif %}
+      </div>
+
+      {# Notes history #}
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-header"><h3>Counsellor Notes</h3></div>
+        <div class="card-body">
+          {% if notes %}
+          <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
+            {% for note in notes %}
+            <div style="background:var(--ivory); border-radius:8px; padding:12px 16px; border-left:3px solid var(--green-400);">
+              <p style="font-size:0.88rem; color:var(--gray-700); margin:0 0 6px;">{{ note.detail }}</p>
+              <p style="font-size:0.75rem; color:var(--gray-400); margin:0;">
+                {{ note.created_at.strftime('%d %b %Y, %H:%M') }}
+              </p>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p style="color:var(--gray-500); font-size:0.88rem; margin-bottom:16px;">No notes yet.</p>
+          {% endif %}
+
+          {# Add note form #}
+          <form method="POST" action="{{ url_for('counsellor.add_note', student_id=student.id) }}"
+                style="display:flex; flex-direction:column; gap:8px;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <textarea name="note" rows="3"
+              style="width:100%; padding:10px 14px; border:1px solid var(--gray-300); border-radius:8px;
+                     font-size:0.88rem; font-family:inherit; resize:vertical; box-sizing:border-box;"
+              placeholder="Add a private note about this student…"></textarea>
+            <div>
+              <button type="submit" class="btn btn-primary" style="font-size:0.85rem;">Save Note</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+
+    {# ── Right column: contact log + quick actions ── #}
+    <div>
+
+      {# Quick actions #}
+      <div class="card" style="margin-bottom:20px; padding:20px;">
+        <h4 style="font-size:0.9rem; font-weight:700; color:var(--green-800); margin:0 0 14px;">Quick Actions</h4>
+        <form method="POST" action="{{ url_for('counsellor.mark_contacted', student_id=student.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="next" value="{{ url_for('counsellor.student_history', student_id=student.id) }}">
+          <button type="submit" class="btn btn-primary" style="width:100%; font-size:0.85rem; margin-bottom:10px;">
+            ✓ Mark as Contacted
+          </button>
+        </form>
+        <a href="{{ url_for('counsellor.dashboard') }}" class="btn btn-secondary"
+           style="width:100%; font-size:0.85rem; text-align:center; display:block;">
+          ← Back to Dashboard
+        </a>
+      </div>
+
+      {# Contact log #}
+      <div class="card" style="padding:20px;">
+        <h4 style="font-size:0.9rem; font-weight:700; color:var(--green-800); margin:0 0 14px;">
+          Contact Log ({{ contact_log | length }})
+        </h4>
+        {% if contact_log %}
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          {% for entry in contact_log %}
+          <div style="font-size:0.82rem; padding:8px 12px; background:var(--ivory); border-radius:6px;">
+            <div style="color:var(--green-700); font-weight:600;">✓ Contacted</div>
+            <div style="color:var(--gray-500); margin-top:2px;">
+              {{ entry.created_at.strftime('%d %b %Y, %H:%M') }}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p style="font-size:0.82rem; color:var(--gray-500); margin:0;">
+          No contact recorded yet.
+        </p>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<style>
+  @media (max-width: 700px) {
+    .container > div[style*="grid-template-columns"] {
+      grid-template-columns: 1fr !important;
+    }
+  }
+</style>
+{% endblock %}

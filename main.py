@@ -1,14 +1,8 @@
-"""
-SESA Application Entry Point
-Run with: python run.py  (development)
-         gunicorn 'run:app' (production)
-"""
 from dotenv import load_dotenv
 load_dotenv()
 
 import os
 from app import create_app
-
 
 app = create_app(os.environ.get('FLASK_ENV', 'development'))
 

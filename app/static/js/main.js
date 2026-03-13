@@ -23,17 +23,50 @@
 /* ─── Hamburger / Mobile Drawer ──────────────────────────── */
 (function initDrawer() {
   const hamburger = document.getElementById('hamburger');
-  const drawer = document.getElementById('mobileDrawer');
-  const overlay = document.getElementById('drawerOverlay');
-  const closeBtn = document.getElementById('drawerClose');
+  const drawer = document.getElementById('mobileDrawer') || document.getElementById('landingDrawer');
   if (!hamburger || !drawer) return;
 
-  function openDrawer() { drawer.classList.add('open'); overlay.classList.add('open'); document.body.style.overflow = 'hidden'; }
-  function closeDrawer() { drawer.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow = ''; }
+  function openDrawer() {
+    drawer.classList.add('open');
+    hamburger.classList.add('open');
+    drawer.removeAttribute('aria-hidden');
+    hamburger.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';  // prevent scroll-behind
+  }
+  function closeDrawer() {
+    drawer.classList.remove('open');
+    hamburger.classList.remove('open');
+    drawer.setAttribute('aria-hidden', 'true');
+    hamburger.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  }
+  function toggle() {
+    drawer.classList.contains('open') ? closeDrawer() : openDrawer();
+  }
 
-  hamburger.addEventListener('click', openDrawer);
-  closeBtn?.addEventListener('click', closeDrawer);
-  overlay?.addEventListener('click', closeDrawer);
+  var justOpened = false;
+
+  hamburger.addEventListener('click', function(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    justOpened = true;
+    toggle();
+    setTimeout(function() { justOpened = false; }, 50);
+  });
+
+  document.addEventListener('click', function(e) {
+    if (justOpened) return;
+    if (drawer.classList.contains('open') && !drawer.contains(e.target)) {
+      closeDrawer();
+    }
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeDrawer();
+  });
+
+  const closeBtn = document.getElementById('drawerClose');
+  if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
 })();
 
 /* ─── Landing Nav Scroll ─────────────────────────────────── */
@@ -41,7 +74,9 @@
   const nav = document.getElementById('landingNav');
   if (!nav) return;
   window.addEventListener('scroll', () => {
-    nav.classList.toggle('scrolled', window.scrollY > 40);
+    const isScrolled = window.scrollY > 40;
+    nav.classList.toggle('scrolled', isScrolled);
+    document.body.classList.toggle('navbar-scrolled', isScrolled);
   }, { passive: true });
 })();
 
@@ -154,5 +189,36 @@
       const label = input.closest('.file-upload-area')?.querySelector('.file-name');
       if (label) label.textContent = input.files[0]?.name || 'No file chosen';
     });
+  });
+})();
+
+/* ─── Crisis Help Button ─────────────────────────────────── */
+(function initCrisisBtn() {
+  const btn   = document.getElementById('crisisBtn');
+  const modal = document.getElementById('crisisModal');
+  const close = document.getElementById('crisisModalClose');
+  if (!btn || !modal) return;
+
+  function openModal() {
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    close.focus();
+  }
+  function closeModal() {
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+    btn.focus();
+  }
+
+  btn.addEventListener('click', openModal);
+  btn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') openModal(); });
+  close.addEventListener('click', closeModal);
+
+  // Close on backdrop click
+  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+
+  // Close on Escape
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
   });
 })();

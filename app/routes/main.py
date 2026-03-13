@@ -1,11 +1,11 @@
 from app.services.payment_service import verify_paystack_payment
 from app.services.test_service import calculate_average_score, get_monthly_averages, get_school_monthly_averages
 from datetime import datetime, timezone
+import logging
 from flask import Blueprint, render_template, redirect, url_for, flash, session, request, jsonify, current_app
 from flask_login import login_required, current_user
-from sqlalchemy import or_
-from collections import Counter
-from app.extensions import db
+from sqlalchemy import or_, func
+from app.extensions import db, csrf
 from app.models.account import Accounts
 from app.models.school import School
 from app.models.test_result import TestResult
@@ -13,6 +13,7 @@ from app.models.question import Question
 from app.utils.decorators import school_login_required
 
 main_bp = Blueprint('main', __name__)
+logger = logging.getLogger(__name__)
 
 
 def _get_school_from_session():
@@ -107,26 +108,79 @@ def school_dashboard(school_id):
         flash('Please log in as a school administrator.', 'warning')
         return redirect(url_for('auth.school_login'))
 
-    accounts = Accounts.query.filter_by(school_id=school.id).order_by(Accounts.fname).all()
-    results = (TestResult.query
-               .join(Accounts)
-               .filter(Accounts.school_id == school.id)
-               .order_by(TestResult.taken_at.desc())
-               .all())
-
     now = datetime.now(timezone.utc)
-    stage_counter = Counter(
-        (r.stage or r.details or 'Unknown').strip().title()
-        for r in results
-        if r.taken_at and r.taken_at.month == now.month and r.taken_at.year == now.year
+
+    # ── Paginated student list ──────────────────────────────────────────────
+    student_page = request.args.get('student_page', 1, type=int)
+    accounts_q = (Accounts.query
+                  .filter_by(school_id=school.id)
+                  .order_by(Accounts.fname))
+    students_pagination = accounts_q.paginate(page=student_page, per_page=20, error_out=False)
+
+    # Scalar counts for stat cards — no full table load
+    total_students = accounts_q.count()
+    total_results = (TestResult.query
+                     .join(Accounts, Accounts.id == TestResult.user_id)
+                     .filter(Accounts.school_id == school.id)
+                     .count())
+    at_risk_count = (TestResult.query
+                     .join(Accounts, Accounts.id == TestResult.user_id)
+                     .filter(
+                         Accounts.school_id == school.id,
+                         TestResult.stage.in_(['Elevated Stage', 'Clinical Stage']),
+                     )
+                     .count())
+
+    # ── Stage distribution — configurable period ────────────────────────────
+    # period = 'month' | 'term' | 'year' | 'all'
+    period = request.args.get('period', 'month')
+    stage_q = (
+        db.session.query(
+            func.coalesce(TestResult.stage, 'Unknown').label('stage'),
+            func.count(TestResult.id).label('count'),
+        )
+        .join(Accounts, Accounts.id == TestResult.user_id)
+        .filter(Accounts.school_id == school.id)
+    )
+    if period == 'month':
+        stage_q = stage_q.filter(
+            func.extract('month', TestResult.taken_at) == now.month,
+            func.extract('year',  TestResult.taken_at) == now.year,
+        )
+    elif period == 'term':
+        # Ghanaian school terms: Jan–Apr, May–Aug, Sep–Dec
+        term_start_month = ((now.month - 1) // 4) * 4 + 1
+        term_start = datetime(now.year, term_start_month, 1, tzinfo=timezone.utc)
+        stage_q = stage_q.filter(TestResult.taken_at >= term_start)
+    elif period == 'year':
+        stage_q = stage_q.filter(
+            func.extract('year', TestResult.taken_at) == now.year,
+        )
+    # 'all' — no date filter
+
+    stage_rows = stage_q.group_by(func.coalesce(TestResult.stage, 'Unknown')).all()
+    stage_counts = {row.stage.strip().title(): row.count for row in stage_rows}
+
+    # ── Paginated recent results ────────────────────────────────────────────
+    results_page = request.args.get('results_page', 1, type=int)
+    results_pagination = (
+        TestResult.query
+        .join(Accounts, Accounts.id == TestResult.user_id)
+        .filter(Accounts.school_id == school.id)
+        .order_by(TestResult.taken_at.desc())
+        .paginate(page=results_page, per_page=20, error_out=False)
     )
 
     return render_template(
         'main/school_dashboard.html',
         school=school,
-        accounts=accounts,
-        results=results,
-        stage_counts=stage_counter,
+        students_pagination=students_pagination,
+        results_pagination=results_pagination,
+        total_students=total_students,
+        total_results=total_results,
+        at_risk_count=at_risk_count,
+        stage_counts=stage_counts,
+        period=period,
         upload_enabled=school.upload_enabled,
         now=now,
         paystack_public_key=current_app.config.get('PAYSTACK_PUBLIC_KEY', ''),
@@ -138,9 +192,15 @@ def school_dashboard(school_id):
 @main_bp.route('/school/<int:school_id>/upload-students', methods=['POST'])
 @school_login_required
 def upload_students(school_id):
+    """
+    Bulk upload students from Excel.
+    Required columns: first_name, last_name
+    Optional: student_id, class_group, level, gender, email
+    Usernames and passwords are auto-generated — no longer required.
+    """
+    import re as _re
+    import pandas as pd
     from werkzeug.security import generate_password_hash
-    import pandas as pd, os
-    from flask import current_app
 
     school = _get_school_from_session()
     if not school or school.id != school_id:
@@ -148,7 +208,7 @@ def upload_students(school_id):
         return redirect(url_for('auth.school_login'))
 
     if not school.upload_enabled:
-        flash('Upload is not enabled. Please complete the subscription payment to activate student upload.', 'warning')
+        flash('Upload is not enabled. Please complete the subscription payment.', 'warning')
         return redirect(url_for('main.school_dashboard', school_id=school_id))
 
     file = request.files.get('file')
@@ -161,47 +221,82 @@ def upload_students(school_id):
         flash('Invalid file type. Please upload an Excel file (.xlsx or .xls).', 'error')
         return redirect(url_for('main.school_dashboard', school_id=school_id))
 
+    # Short school code for auto-generated usernames
+    school_code = _re.sub(r'[^a-z0-9]', '', school.school_name.lower())[:6] or 'sch'
+
     try:
         df = pd.read_excel(file)
-        df.columns = [c.strip().lower() for c in df.columns]
-        required = ['first name', 'last name', 'email', 'username', 'password', 'birthdate', 'gender', 'level']
-        missing = [c for c in required if c not in df.columns]
+        df.columns = [c.strip().lower().replace(' ', '_') for c in df.columns]
+
+        required = {'first_name', 'last_name'}
+        missing = required - set(df.columns)
         if missing:
-            flash(f'Missing columns: {", ".join(missing)}', 'error')
+            flash(
+                f'Missing required columns: {", ".join(sorted(missing))}. '
+                f'Required: first_name, last_name. '
+                f'Optional: student_id, class_group, level, gender, email.',
+                'error'
+            )
             return redirect(url_for('main.school_dashboard', school_id=school_id))
 
         created, skipped = 0, 0
         for _, row in df.iterrows():
-            level = str(row['level']).strip().lower()
-            if level not in ('primaryschool', 'middleschool', 'highschool', 'university'):
+            fname = str(row.get('first_name', '')).strip()
+            lname = str(row.get('last_name', '')).strip()
+            if not fname or not lname or fname == 'nan' or lname == 'nan':
                 skipped += 1
                 continue
-            if Accounts.query.filter_by(email=str(row['email']).strip()).first():
-                continue
-            birthdate = None
-            if not pd.isna(row['birthdate']):
-                try:
-                    birthdate = pd.to_datetime(row['birthdate']).date()
-                except Exception:
-                    pass
+
+            # Auto-generate unique username
+            base_uname = _re.sub(r'[^a-z0-9.]', '', f"{fname.lower()}.{lname.lower()}.{school_code}")[:48]
+            username = base_uname
+            suffix = 1
+            while Accounts.query.filter_by(username=username).first():
+                username = f"{base_uname}{suffix}"
+                suffix += 1
+
+            # student_id or username as temporary password
+            student_id = str(row.get('student_id', '')).strip()
+            temp_password = student_id if student_id and student_id != 'nan' else username
+
+            # Optional email
+            email_raw = str(row.get('email', '')).strip()
+            email = email_raw.lower() if email_raw and email_raw != 'nan' else None
+            if email and Accounts.query.filter_by(email=email).first():
+                email = None
+
+            level_raw = str(row.get('level', '')).strip().lower()
+            level = level_raw if level_raw in ('primaryschool', 'middleschool', 'highschool', 'university') else None
+
+            cg_raw = str(row.get('class_group', row.get('class', ''))).strip()
+            class_group = cg_raw if cg_raw and cg_raw != 'nan' else None
+
+            gender_raw = str(row.get('gender', '')).strip().lower()
+            gender = gender_raw if gender_raw in ('male', 'female', 'other') else None
+
             db.session.add(Accounts(
-                fname=str(row['first name']).strip(),
-                lname=str(row['last name']).strip(),
-                email=str(row['email']).strip().lower(),
-                username=str(row['username']).strip(),
-                password=generate_password_hash(str(row['password'])),
+                fname=fname,
+                lname=lname,
+                email=email,
+                username=username,
+                password=generate_password_hash(temp_password),
                 level=level,
-                gender=str(row.get('gender', '')).strip(),
-                birthdate=birthdate,
+                gender=gender,
+                class_group=class_group,
                 school_id=school.id,
             ))
             created += 1
 
         db.session.commit()
+        logger.info(
+            'Bulk upload | school=%s created=%d skipped=%d ip=%s',
+            school.school_name, created, skipped, request.remote_addr,
+        )
         msg = f'Successfully created {created} student account(s).'
         if skipped:
-            msg += f' {skipped} row(s) skipped due to invalid education level.'
+            msg += f' {skipped} row(s) skipped (missing name).'
         flash(msg, 'success')
+
     except Exception as e:
         db.session.rollback()
         flash(f'An error occurred while processing the file: {e}', 'error')
@@ -268,13 +363,19 @@ def verify_payment(school_id):
             flash('Payment amount insufficient.', 'error')
             return redirect(url_for('main.school_dashboard', school_id=school_id))
 
-        # ✅ Activate upload
+        # ✅ Activate upload — subscription valid for 365 days
+        from datetime import timedelta
+        now = datetime.now(timezone.utc)
         school.subscription_paid = True
         school.upload_enabled = True
         school.paystack_reference = reference
-        school.payment_date = datetime.now(timezone.utc)
+        school.payment_date = now
+        school.subscription_expires = now + timedelta(days=365)
         db.session.commit()
-
+        logger.info(
+            'Payment confirmed | school=%s ref=%s ip=%s',
+            school.school_name, reference, request.remote_addr,
+        )
         flash('Payment confirmed! Upload is now enabled.', 'success')
 
     except Exception as e:
@@ -312,3 +413,169 @@ def school_analytics(school_id):
         total_students=len(set(r.user_id for r in results)),
         total_assessments=len(results),
     )
+
+
+# ── Access Code Self-Registration (Group 1) ──────────────────────────────────
+
+@main_bp.route('/join', methods=['GET', 'POST'])
+def join_with_code():
+    """Student self-registration via 6-digit school access code."""
+    from werkzeug.security import generate_password_hash
+    import re
+
+    error = None
+    school = None
+    code = request.args.get('code', '').strip().upper()
+
+    if code:
+        school = School.query.filter_by(access_code=code).first()
+        if not school:
+            error = 'Invalid access code. Please check with your school administrator.'
+
+    if request.method == 'POST':
+        code = request.form.get('code', '').strip().upper()
+        school = School.query.filter_by(access_code=code).first()
+
+        if not school:
+            error = 'Invalid access code.'
+        else:
+            fname = request.form.get('fname', '').strip()
+            lname = request.form.get('lname', '').strip()
+            password = request.form.get('password', '')
+            class_group = request.form.get('class_group', '').strip() or None
+
+            if not fname or not lname or not password:
+                error = 'Please fill in all required fields.'
+            elif len(password) < 6:
+                error = 'Password must be at least 6 characters.'
+            else:
+                school_code = re.sub(r'[^a-z0-9]', '', school.school_name.lower())[:6] or 'sch'
+                base_uname = re.sub(r'[^a-z0-9.]', '', f"{fname.lower()}.{lname.lower()}.{school_code}")[:48]
+                username = base_uname
+                suffix = 1
+                while Accounts.query.filter_by(username=username).first():
+                    username = f"{base_uname}{suffix}"
+                    suffix += 1
+
+                account = Accounts(
+                    fname=fname,
+                    lname=lname,
+                    username=username,
+                    password=generate_password_hash(password),
+                    class_group=class_group,
+                    school_id=school.id,
+                )
+                try:
+                    db.session.add(account)
+                    db.session.commit()
+                    logger.info(
+                        'Access-code registration | school=%s username=%s ip=%s',
+                        school.school_name, username, request.remote_addr,
+                    )
+                    from flask_login import login_user
+                    login_user(account)
+                    flash(f'Welcome to SESA, {fname}! Your username is @{username}.', 'success')
+                    return redirect(url_for('main.home'))
+                except Exception as e:
+                    db.session.rollback()
+                    error = 'An error occurred. Please try again.'
+
+    return render_template('auth/join.html', school=school, code=code, error=error)
+
+
+@main_bp.route('/school/<int:school_id>/generate-access-code', methods=['POST'])
+@school_login_required
+def generate_access_code(school_id):
+    """Generate a new 6-digit access code for the school."""
+    import secrets
+    school = _get_school_from_session()
+    if not school or school.id != school_id:
+        flash('Not authorised.', 'error')
+        return redirect(url_for('auth.school_login'))
+
+    # Generate a unique 6-char alphanumeric code
+    for _ in range(10):
+        code = secrets.token_hex(3).upper()  # 6 hex chars
+        if not School.query.filter_by(access_code=code).first():
+            school.access_code = code
+            db.session.commit()
+            logger.info('Access code generated | school=%s code=%s', school.school_name, code)
+            flash(f'New access code generated: {code}', 'success')
+            break
+    else:
+        flash('Could not generate a unique code. Please try again.', 'error')
+
+    return redirect(url_for('main.school_dashboard', school_id=school_id))
+
+
+@main_bp.route('/school/<int:school_id>/students-at-risk')
+@school_login_required
+def students_at_risk(school_id):
+    """Students at Elevated or Clinical stage (Group 3 — #1 feature for principals)."""
+    school = _get_school_from_session()
+    if not school or school.id != school_id:
+        flash('Please log in as a school administrator.', 'warning')
+        return redirect(url_for('auth.school_login'))
+
+    # Class-group filter (applied in SQL, not Python)
+    selected_class = request.args.get('class_group', '').strip()
+    page = request.args.get('page', 1, type=int)
+
+    # Subquery: latest taken_at per student per test type
+    latest_subq = (
+        db.session.query(
+            TestResult.user_id,
+            TestResult.test_type,
+            func.max(TestResult.taken_at).label('latest_at'),
+        )
+        .join(Accounts, Accounts.id == TestResult.user_id)
+        .filter(Accounts.school_id == school_id)
+        .group_by(TestResult.user_id, TestResult.test_type)
+        .subquery()
+    )
+
+    at_risk_q = (
+        db.session.query(TestResult, Accounts)
+        .join(Accounts, Accounts.id == TestResult.user_id)
+        .join(
+            latest_subq,
+            (latest_subq.c.user_id == TestResult.user_id) &
+            (latest_subq.c.test_type == TestResult.test_type) &
+            (latest_subq.c.latest_at == TestResult.taken_at),
+        )
+        .filter(
+            Accounts.school_id == school_id,
+            TestResult.stage.in_(['Elevated Stage', 'Clinical Stage']),
+        )
+    )
+
+    # Apply class-group filter at the SQL level
+    if selected_class:
+        at_risk_q = at_risk_q.filter(Accounts.class_group == selected_class)
+
+    at_risk_q = at_risk_q.order_by(
+        db.case((TestResult.stage == 'Clinical Stage', 0), else_=1),
+        TestResult.taken_at.desc(),
+    )
+
+    pagination = at_risk_q.paginate(page=page, per_page=25, error_out=False)
+
+    # All class groups for this school (for the filter dropdown)
+    all_class_groups = sorted({
+        a.class_group
+        for a in Accounts.query.filter(
+            Accounts.school_id == school_id,
+            Accounts.class_group.isnot(None),
+        ).with_entities(Accounts.class_group).all()
+        if a.class_group
+    })
+
+    return render_template(
+        'main/students_at_risk.html',
+        school=school,
+        pagination=pagination,
+        at_risk=pagination.items,
+        class_groups=all_class_groups,
+        selected_class=selected_class,
+    )
+

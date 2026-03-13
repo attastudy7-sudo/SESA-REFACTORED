@@ -1,74 +1,105 @@
-const CACHE_NAME = 'sesa-v2';
-const ASSETS_TO_CACHE = [
-  '/',
+/* ============================================================
+   SESA Service Worker
+   Strategy:
+     - Static assets (css/js/images/fonts): cache-first
+     - Navigation / HTML pages:             network-first with cache fallback
+     - API / POST requests:                 network-only (never cache)
+   ============================================================ */
+
+const CACHE_VERSION = 'sesa-v3';
+const STATIC_ASSETS = [
   '/static/css/main.css',
   '/static/js/main.js',
   '/static/manifest.json',
   '/static/images/Pofa_pwa.png',
   '/static/images/Pofa.jpg',
   '/static/images/Pofa.png',
-  '/static/images/SESA.png'
+  '/static/images/SESA.png',
+  '/offline',
 ];
 
-// Install event - cache assets
+// ── Install: pre-cache static assets ────────────────────────
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('Caching app assets');
-        return cache.addAll(ASSETS_TO_CACHE);
-      })
+    caches.open(CACHE_VERSION)
+      .then(cache => cache.addAll(STATIC_ASSETS))
       .then(() => self.skipWaiting())
-      .catch(err => console.error('Cache failed:', err))
+      .catch(err => console.warn('[SW] Pre-cache failed:', err))
   );
 });
 
-// Activate event - clean old caches
+// ── Activate: remove old caches ─────────────────────────────
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames
-          .filter(name => name !== CACHE_NAME)
-          .map(name => caches.delete(name))
-      );
-    }).then(() => self.clients.claim())
+    caches.keys()
+      .then(names => Promise.all(
+        names.filter(n => n !== CACHE_VERSION).map(n => caches.delete(n))
+      ))
+      .then(() => self.clients.claim())
   );
 });
 
-// Fetch event - serve from cache, fallback to network
+// ── Fetch ────────────────────────────────────────────────────
 self.addEventListener('fetch', event => {
-  // Skip non-GET requests
-  if (event.request.method !== 'GET') return;
+  const { request } = event;
+  const url = new URL(request.url);
 
-  event.respondWith(
-    caches.match(event.request)
-      .then(cachedResponse => {
-        if (cachedResponse) {
-          // Return cached version
-          return cachedResponse;
-        }
-        // Fetch from network and cache
-        return fetch(event.request)
-          .then(response => {
-            // Don't cache non-successful responses
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
-            // Clone and cache the response
-            const responseToCache = response.clone();
-            caches.open(CACHE_NAME)
-              .then(cache => {
-                cache.put(event.request, responseToCache);
-              });
-            return response;
-          })
-          .catch(() => {
-            // Return offline fallback for navigation requests
-            if (event.request.mode === 'navigate') {
-              return caches.match('/');
-            }
-          });
-      })
-  );
+  // Skip non-GET and cross-origin requests
+  if (request.method !== 'GET') return;
+  if (url.origin !== self.location.origin) return;
+
+  // API routes: network-only
+  if (url.pathname.startsWith('/test/api/')) return;
+
+  // Static assets: cache-first
+  if (
+    url.pathname.startsWith('/static/') ||
+    url.pathname === '/static/manifest.json'
+  ) {
+    event.respondWith(cacheFirst(request));
+    return;
+  }
+
+  // HTML navigation: network-first with offline fallback
+  if (request.mode === 'navigate' || request.headers.get('accept')?.includes('text/html')) {
+    event.respondWith(networkFirstWithOfflineFallback(request));
+    return;
+  }
 });
+
+// ── Strategies ───────────────────────────────────────────────
+async function cacheFirst(request) {
+  const cached = await caches.match(request);
+  if (cached) return cached;
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      const cache = await caches.open(CACHE_VERSION);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    return new Response('Asset unavailable offline.', { status: 503 });
+  }
+}
+
+async function networkFirstWithOfflineFallback(request) {
+  try {
+    const response = await fetch(request);
+    // Update cache with fresh page on success
+    if (response.ok) {
+      const cache = await caches.open(CACHE_VERSION);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    // Try cache, then dedicated offline page
+    const cached = await caches.match(request);
+    if (cached) return cached;
+    const offline = await caches.match('/offline');
+    return offline || new Response(
+      '<h1>You are offline</h1><p>Please reconnect and try again.</p>',
+      { status: 503, headers: { 'Content-Type': 'text/html' } }
+    );
+  }
+}

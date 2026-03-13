@@ -8,6 +8,7 @@
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
   <meta name="theme-color" content="#000000">
   <meta name="mobile-web-app-capable" content="yes">
@@ -30,9 +31,28 @@
       <span>SESA</span>
     </a>
     <div class="landing-nav-links">
+      <a href="{{ url_for('main.join_with_code') }}" class="btn btn-ghost btn-sm" style="color: rgba(255,255,255,.8); background: rgba(255,255,255,.1);">Join with Code</a>
       <a href="{{ url_for('auth.school_signup') }}" class="btn btn-ghost btn-sm" style="color: rgba(255,255,255,.8); background: rgba(255,255,255,.1);">Register School</a>
       <a href="{{ url_for('auth.login') }}" class="btn btn-gold btn-sm">Sign In</a>
     </div>
+
+    <button id="hamburger" class="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="landingDrawer">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </nav>
+
+  <nav id="landingDrawer" class="nav-dropdown" aria-hidden="true">
+    <div class="nav-dropdown-header">
+      <span class="nav-dropdown-title">Menu</span>
+      <button id="drawerClose" class="nav-dropdown-close" aria-label="Close menu">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <a href="{{ url_for('main.join_with_code') }}">Join with Code</a>
+    <a href="{{ url_for('auth.school_signup') }}">Register School</a>
+    <a href="{{ url_for('auth.login') }}" style="color: var(--gold-700); font-weight: 600;">Sign In</a>
   </nav>
 
   <section class="hero-section">

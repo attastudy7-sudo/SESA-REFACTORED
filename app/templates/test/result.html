@@ -51,11 +51,37 @@
           Score of <strong>{{ score }}</strong> falls within the <strong>{{ stage }}</strong> range ({{ score_range }})
         </p>
 
-        {# ── Feedback ── #}
-        <form id="resultForm" method="POST" action="{{ url_for('test.submit_result') }}">
+        {# ── Crisis button — Elevated or Clinical only ── #}
+        {% if 'elevated' in stage|lower or 'clinical' in stage|lower %}
+        <div style="margin:20px 0;padding:16px;background:#fff3cd;border:2px solid #f59e0b;border-radius:10px;text-align:left;">
+          <p style="font-weight:700;color:#92400e;margin:0 0 8px;font-size:0.95rem;">🆘 You don't have to face this alone</p>
+          <p style="color:#78350f;font-size:0.85rem;margin:0 0 12px;">
+            Your result suggests you may benefit from speaking to someone. Support is available.
+          </p>
+          <div style="display:flex;flex-wrap:wrap;gap:10px;">
+            {% if counsellor and counsellor.phone %}
+            <a href="tel:{{ counsellor.phone }}"
+               style="flex:1;min-width:150px;padding:10px 14px;background:#065f46;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.85rem;text-align:center;">
+              📞 Call School Counsellor<br>
+              <span style="font-weight:400;font-size:0.78rem;">{{ counsellor.phone }}</span>
+            </a>
+            {% endif %}
+            <a href="tel:{{ mhap_helpline }}"
+               style="flex:1;min-width:150px;padding:10px 14px;background:#b91c1c;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.85rem;text-align:center;">
+               Ghana Mental Health Helpline<br>
+              <span style="font-weight:400;font-size:0.78rem;">{{ mhap_helpline }} · Free · 24/7</span>
+            </a>
+          </div>
+          <p style="margin:10px 0 0;font-size:0.78rem;color:#92400e;">
+            You can also speak to a trusted teacher, parent, or friend.
+          </p>
+        </div>
+        {% endif %}
+
+        {# ── Feedback — result already saved; this only attaches optional notes ── #}
+        <form id="resultForm" method="POST" action="{{ url_for('test.submit_feedback') }}">
           {{ form.hidden_tag() }}
-          {{ form.test_type() }}
-          {{ form.score() }}
+          {{ form.result_id() }}
           {{ form.stage() }}
           {{ form.message() }}
           {{ form.max_score() }}

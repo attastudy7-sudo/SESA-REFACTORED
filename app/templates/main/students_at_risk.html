@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+{% block title %}Students at Risk — {{ school.school_name }}{% endblock %}
+
+{% block nav_links %}
+  <li><a href="{{ url_for('main.school_dashboard', school_id=school.id) }}">Dashboard</a></li>
+  <li><a href="{{ url_for('main.school_analytics', school_id=school.id) }}">Analytics</a></li>
+  <li><a href="{{ url_for('main.students_at_risk', school_id=school.id) }}" class="active">At Risk</a></li>
+  <li><a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a></li>
+{% endblock %}
+
+{% block drawer_links %}
+  <a href="{{ url_for('main.school_dashboard', school_id=school.id) }}">Dashboard</a>
+  <a href="{{ url_for('main.school_analytics', school_id=school.id) }}">Analytics</a>
+  <a href="{{ url_for('main.students_at_risk', school_id=school.id) }}">⚠️ Students at Risk</a>
+  <a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a>
+{% endblock %}
+
+{% block body %}
+<div class="page-hero" style="background: linear-gradient(135deg, #7f1d1d, #b91c1c);">
+  <div class="container">
+    <h1>⚠️ Students at Risk</h1>
+    <p>{{ school.school_name }} · {{ pagination.total }} student{{ 's' if pagination.total != 1 }} flagged</p>
+  </div>
+</div>
+
+<div class="container" style="padding-top: 32px; padding-bottom: 48px;">
+
+  {# ── Filters ── #}
+  <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:24px;">
+    {% if class_groups %}
+    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+      <span style="font-size:0.82rem; font-weight:600; color:var(--gray-500);">Filter by class:</span>
+      <a href="{{ url_for('main.students_at_risk', school_id=school.id) }}"
+         style="padding:5px 14px; border-radius:20px; font-size:0.82rem; font-weight:600; text-decoration:none;
+                {% if not selected_class %}background:var(--green-800); color:#fff;{% else %}background:var(--ivory); color:var(--green-800); border:1px solid var(--green-200);{% endif %}">
+        All Classes
+      </a>
+      {% for cg in class_groups %}
+        <a href="{{ url_for('main.students_at_risk', school_id=school.id, class_group=cg) }}"
+           style="padding:5px 14px; border-radius:20px; font-size:0.82rem; font-weight:600; text-decoration:none;
+                  {% if selected_class == cg %}background:var(--green-800); color:#fff;{% else %}background:var(--ivory); color:var(--green-800); border:1px solid var(--green-200);{% endif %}">
+          {{ cg }}
+        </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  {% if at_risk %}
+
+  {# Summary chips #}
+  {% set clinical_count = at_risk | selectattr('0.stage', 'equalto', 'Clinical Stage') | list | length %}
+  {% set elevated_count = at_risk | selectattr('0.stage', 'equalto', 'Elevated Stage') | list | length %}
+
+  <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom: 24px;">
+    <div style="background:#fef2f2; border: 1px solid #fca5a5; border-radius: 10px; padding: 12px 20px; text-align:center; min-width: 130px;">
+      <div style="font-size:1.8rem; font-weight:800; color:#b91c1c;">{{ pagination.total }}</div>
+      <div style="font-size:0.78rem; color:#7f1d1d; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Total Flagged</div>
+    </div>
+    <div style="background:#fef2f2; border: 1px solid #fca5a5; border-radius: 10px; padding: 12px 20px; text-align:center; min-width: 130px;">
+      <div style="font-size:1.8rem; font-weight:800; color:#b91c1c;">{{ clinical_count }}</div>
+      <div style="font-size:0.78rem; color:#7f1d1d; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Clinical Stage</div>
+    </div>
+    <div style="background:#fffbeb; border: 1px solid #fcd34d; border-radius: 10px; padding: 12px 20px; text-align:center; min-width: 130px;">
+      <div style="font-size:1.8rem; font-weight:800; color:#b45309;">{{ elevated_count }}</div>
+      <div style="font-size:0.78rem; color:#78350f; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Elevated Stage</div>
+    </div>
+  </div>
+
+  {% if clinical_count > 0 %}
+  <div style="background:#fef2f2; border-left:4px solid #ef4444; padding:12px 16px; border-radius:8px; margin-bottom:24px; font-size:0.88rem; color:#7f1d1d;">
+    <strong>Action required:</strong> {{ clinical_count }} student{{ 's' if clinical_count != 1 }} on this page
+    are at Clinical Stage and should be referred to a counsellor immediately.
+  </div>
+  {% endif %}
+
+  <div class="card">
+    <div class="table-wrapper">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Class</th>
+            <th>Assessment</th>
+            <th>Stage</th>
+            <th>Score</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for result, student in at_risk %}
+          <tr style="{% if result.stage == 'Clinical Stage' %}background: #fff5f5;{% endif %}">
+            <td>
+              <strong>{{ student.fname }} {{ student.lname }}</strong>
+              <br><small style="color:var(--gray-500)">@{{ student.username }}</small>
+            </td>
+            <td>{{ student.class_group or '—' }}</td>
+            <td style="font-size:0.85rem;">{{ result.test_type }}</td>
+            <td>
+              <span class="badge {% if result.stage == 'Clinical Stage' %}stage-clinical{% else %}stage-elevated{% endif %}">
+                {{ result.stage }}
+              </span>
+            </td>
+            <td>{{ result.score }}{% if result.max_score %}/{{ result.max_score }}{% endif %}</td>
+            <td style="color:var(--gray-500); font-size:0.82rem; white-space:nowrap;">
+              {{ result.taken_at.strftime('%d %b %Y') }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {# Pagination #}
+    {% if pagination.pages > 1 %}
+    <div style="display:flex; justify-content:center; align-items:center; gap:8px; padding:16px; border-top:1px solid var(--gray-100);">
+      {% if pagination.has_prev %}
+        <a href="{{ url_for('main.students_at_risk', school_id=school.id, page=pagination.prev_num, class_group=selected_class) }}"
+           style="padding:6px 14px; border-radius:6px; background:var(--ivory); color:var(--green-800); text-decoration:none; font-size:0.85rem; font-weight:600;">← Prev</a>
+      {% endif %}
+      <span style="font-size:0.82rem; color:var(--gray-500);">
+        Page {{ pagination.page }} of {{ pagination.pages }}
+        ({{ pagination.total }} total)
+      </span>
+      {% if pagination.has_next %}
+        <a href="{{ url_for('main.students_at_risk', school_id=school.id, page=pagination.next_num, class_group=selected_class) }}"
+           style="padding:6px 14px; border-radius:6px; background:var(--ivory); color:var(--green-800); text-decoration:none; font-size:0.85rem; font-weight:600;">Next →</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  {% else %}
+  <div class="card" style="text-align:center; padding: 3rem 2rem;">
+    <div style="font-size:3rem; margin-bottom:1rem;">✅</div>
+    <h3 style="color: var(--green-800); margin-bottom: 0.5rem;">
+      {% if selected_class %}No students at risk in {{ selected_class }}{% else %}No students at elevated risk{% endif %}
+    </h3>
+    <p style="color: var(--gray-500);">
+      {% if selected_class %}
+        Try selecting a different class or view all classes.
+      {% else %}
+        No students are currently at Elevated or Clinical stage across any assessment.
+      {% endif %}
+    </p>
+    <div style="display:flex; gap:10px; justify-content:center; margin-top:1.25rem; flex-wrap:wrap;">
+      {% if selected_class %}
+        <a href="{{ url_for('main.students_at_risk', school_id=school.id) }}" class="btn btn-secondary">View All Classes</a>
+      {% endif %}
+      <a href="{{ url_for('main.school_dashboard', school_id=school.id) }}" class="btn btn-secondary">← Back to Dashboard</a>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

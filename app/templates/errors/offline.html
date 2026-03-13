@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}You're Offline{% endblock %}
+
+{% block body %}
+<div style="min-height: 70vh; display: flex; align-items: center; justify-content: center; padding: 2rem;">
+  <div style="text-align: center; max-width: 420px;">
+    <div style="font-size: 4rem; margin-bottom: 1rem;">📶</div>
+    <h1 style="font-family: var(--font-display); color: var(--green-800); margin-bottom: 0.5rem;">You're offline</h1>
+    <p style="color: var(--gray-500); margin-bottom: 1.5rem; line-height: 1.6;">
+      No internet connection detected. If you were in the middle of an assessment,
+      your progress is safe — just reconnect and your page will reload automatically.
+    </p>
+    <button onclick="window.location.reload()" class="btn btn-primary" style="margin-bottom: 0.75rem; width: 100%;">
+      Try again
+    </button>
+    <p style="font-size: 0.82rem; color: var(--gray-400);">
+      This page will refresh automatically when you're back online.
+    </p>
+  </div>
+</div>
+
+<script>
+  // Auto-reload when connection returns
+  window.addEventListener('online', () => window.location.reload());
+</script>
+{% endblock %}
