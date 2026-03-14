@@ -217,7 +217,7 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
   background: linear-gradient(135deg, var(--green-900) 0%, var(--green-700) 55%, var(--green-800) 100%);
   color: #fff;
   margin-top: calc(-1 * var(--navbar-height));
-  padding: calc(64px + var(--navbar-height)) 24px 60px;
+  padding: calc(24px + var(--navbar-height)) 24px 60px;
   position: relative;
 }
 
@@ -425,15 +425,22 @@ select.form-control { cursor:pointer; }
 .td-actions { white-space:nowrap; width:1%; }
 .td-actions > div { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
 
+.app-layout > main {
+  padding-top: var(--navbar-height);
+}
 /* Stacked card layout on mobile — activates the data-label attributes */
 @media (max-width:600px) {
   .table thead { display:none; }
-  .table, .table tbody, .table tr, .table td { display:block; width:100%; }
-  .table tr { border-bottom:2px solid var(--gray-100); padding:8px 0; }
+  .table, .table tbody { display:block; width:100%; }
+  .table tr {
+    display:block;
+    border-bottom:2px solid var(--gray-100);
+    padding:8px 0;
+  }
   .table tr:last-child { border-bottom:none; }
   .table td {
-    border-bottom:none; padding:4px 16px;
-    display:flex; align-items:baseline; gap:10px; font-size:0.85rem;
+    display:flex; align-items:baseline; gap:10px;
+    border-bottom:none; padding:4px 16px; font-size:0.85rem;
   }
   .table td::before {
     content:attr(data-label);
@@ -443,6 +450,13 @@ select.form-control { cursor:pointer; }
   }
   .td-actions { padding-top:8px; padding-bottom:4px; }
   .td-actions::before { display:none; }
+
+  /* Full-width empty state cells — override flex back to block */
+  .table td.td-empty-state {
+    display: block;
+    padding: 0;
+  }
+  .table td.td-empty-state::before { display: none; }
 
   /* Secondary cells are hidden by default on mobile */
   .table td.td-secondary { display:none; }
@@ -461,6 +475,14 @@ select.form-control { cursor:pointer; }
     font-style:normal; font-size:0.65rem;
   }
   .table tr.row-expanded .row-expand-btn .expand-chevron { transform:rotate(180deg); }
+
+  /* Guide tables stay as normal tables (they have their own layout) */
+  .guide-table-wrap .table thead { display:table-header-group !important; }
+  .guide-table-wrap .table { display:table !important; width:100% !important; }
+  .guide-table-wrap .table tbody { display:table-row-group !important; }
+  .guide-table-wrap .table tr { display:table-row !important; border-bottom:none !important; padding:0 !important; }
+  .guide-table-wrap .table td { display:table-cell !important; width:auto !important; padding:8px 10px !important; font-size:0.78rem !important; }
+  .guide-table-wrap .table td::before { display:none !important; }
 }
 
 /* ─── Badges ─────────────────────────────────────────────── */
@@ -892,7 +914,8 @@ select.form-control { cursor:pointer; }
 
 /* ─── Empty State ────────────────────────────────────────── */
 .empty-state { text-align:center; padding:48px 24px; color:var(--gray-500); }
-.empty-state-icon { font-size:2.5rem; margin-bottom:10px; opacity:.5; }
+.empty-state-icon { font-size:2.5rem; margin-bottom:12px; opacity:0.7; color:var(--gray-400); }
+.empty-state .btn { display: inline-block; margin-top: 16px; }
 .empty-state p { font-size:0.9rem; }
 
 /* ─── Mobile Nav Dropdown ────────────────────────────────── */
@@ -1314,4 +1337,16 @@ select.form-control { cursor:pointer; }
   overflow-x: auto;
   border-radius: var(--radius-md);
   margin-bottom: 24px;
+}
+
+.guide-table-wrap table,
+.guide-table-wrap thead,
+.guide-table-wrap tbody,
+.guide-table-wrap tr,
+.guide-table-wrap th,
+.guide-table-wrap td {
+  display: revert !important;
+}
+.guide-table-wrap td::before {
+  display: none !important;
 }

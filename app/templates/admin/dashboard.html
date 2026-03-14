@@ -11,12 +11,21 @@
 .admin-tab-panel .table-wrapper {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  /* Contain the table so it never pushes the body wider than the viewport */
   max-width: 100%;
 }
 .admin-tab-panel .table {
-  min-width: 320px; /* Reduced minimum width for mobile */
-  width: 100%; /* Use 100% instead of max-content */
+  min-width: 320px;
+  width: 100%;
+}
+
+/* ── Desktop: always show thead, always use standard table layout ── */
+@media (min-width: 601px) {
+  .admin-tab-panel .table thead { display: table-header-group !important; }
+  .admin-tab-panel .table { display: table !important; }
+  .admin-tab-panel .table tbody { display: table-row-group !important; }
+  .admin-tab-panel .table tr { display: table-row !important; border-bottom: none !important; padding: 0 !important; }
+  .admin-tab-panel .table td { display: table-cell !important; padding: 11px 16px !important; border-bottom: 1px solid var(--gray-100) !important; }
+  .admin-tab-panel .table td::before { display: none !important; }
 }
 
 /* ── Mobile ── */

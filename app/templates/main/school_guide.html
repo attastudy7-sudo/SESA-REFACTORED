@@ -339,10 +339,9 @@
       </section>
 
     </div>{# end container #}
-  </main>
-</div>
-{# ── Final CTA ── #}
-<div class="guide-section" style="text-align: center; background: linear-gradient(135deg, var(--green-800), var(--green-700));">
+
+    {# ── Final CTA ── #}
+    <div style="text-align: center; background: linear-gradient(135deg, var(--green-800), var(--green-700)); padding: 48px 24px;">
   <div style="color: var(--gold-200); font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 10px;">
     <i class="fa-solid fa-download"></i> &nbsp;Ready to get started?
   </div>
@@ -357,7 +356,29 @@
     <a href="{{ url_for('main.school_dashboard', school_id=session.get('school_id', 0)) }}" style="color: rgba(255,255,255,.6); font-size: 0.85rem;">
       ← Back to Dashboard
     </a>
-  </p>
+    </p>
+  </div>
+{% set school_id = session.get('school_id') %}
+{% if school_id %}
+<nav class="bottom-tab-bar" aria-label="School admin navigation">
+  <a href="{{ url_for('main.school_dashboard', school_id=school_id) }}"
+     class="tab-item {% if request.endpoint == 'main.school_dashboard' %}active{% endif %}">
+    <i class="fa-solid fa-school tab-icon"></i><span class="tab-label">Dashboard</span>
+  </a>
+  <a href="{{ url_for('main.school_analytics', school_id=school_id) }}"
+     class="tab-item {% if request.endpoint == 'main.school_analytics' %}active{% endif %}">
+    <i class="fa-solid fa-chart-line tab-icon"></i><span class="tab-label">Analytics</span>
+  </a>
+  <a href="{{ url_for('main.school_guide') }}"
+     class="tab-item {% if request.endpoint == 'main.school_guide' %}active{% endif %}">
+    <i class="fa-solid fa-book-open tab-icon"></i><span class="tab-label">Guide</span>
+  </a>
+  <a href="{{ url_for('auth.logout') }}" class="tab-item tab-logout">
+    <span class="tab-icon">↩</span><span class="tab-label">Logout</span>
+  </a>
+</nav>
+{% endif %}
+  </main>
 </div>
 
 {% endblock %}

@@ -125,7 +125,11 @@
         {% endfor %}
       </div>
       {% else %}
-      <p style="color:var(--gray-500); font-size:0.88rem; margin:0;">No assessments recorded for this period.</p>
+      <div class="empty-state">
+        <div class="empty-state-icon"><i class="fa-solid fa-chart-line" style="color: var(--gray-400);"></i></div>
+        <p>No assessments recorded for {{ period | capitalize }}. Encourage students to complete SESA tests.</p>
+        <a href="{{ url_for('main.school_guide', fragment='assessments') }}" class="btn btn-secondary btn-sm">Student Testing Guide</a>
+      </div>
       {% endif %}
     </div>
   </div>
@@ -140,9 +144,21 @@
     <div class="card-body">
       {% set all_counsellors = [] %}
       {# We query counsellors separately to avoid pagination issues #}
-      <p style="color:var(--gray-500); font-size:0.88rem; margin:0;">
-        Counsellor accounts are assigned by your SESA administrator.
-      </p>
+      {% if counsellors %}
+        <ul style="list-style: none; padding: 0;">
+          {% for counsellor in counsellors %}
+            <li style="padding: 8px 0; border-bottom: 1px solid var(--gray-100);">
+              <strong>{{ counsellor.full_name }}</strong> (@{{ counsellor.username }})
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-state-icon"><i class="fa-solid fa-user-nurse" style="color: var(--gray-400);"></i></div>
+          <p>No counsellors assigned yet.</p>
+          <p style="color: var(--gray-500); font-size: 0.88rem; margin-top: 8px;">Contact your SESA administrator to assign counsellor accounts.</p>
+        </div>
+      {% endif %}
     </div>
   </div>
 
@@ -265,25 +281,25 @@ function initiatePayment() {
           <tbody>
             {% for acc in students_pagination.items %}
             <tr>
-              <td><strong>{{ acc.fname }} {{ acc.lname }}</strong><br><small style="color:var(--gray-500)">{{ acc.email or '—' }}</small></td>
-              <td>@{{ acc.username }}</td>
-              <td>{{ acc.class_group or '—' }}</td>
-              <td>{{ acc.level | capitalize if acc.level else '—' }}</td>
-              <td>{{ acc.test_results.count() }}</td>
-              <td style="color: var(--gray-500); font-size: 0.82rem;">{{ acc.created_at.strftime('%d %b %Y') }}</td>
+              <td data-label="Name"><strong>{{ acc.fname }} {{ acc.lname }}</strong><br><small style="color:var(--gray-500)">{{ acc.email or '—' }}</small></td>
+              <td data-label="Username">@{{ acc.username }}</td>
+              <td data-label="Class">{{ acc.class_group or '—' }}</td>
+              <td data-label="Level">{{ acc.level | capitalize if acc.level else '—' }}</td>
+              <td data-label="Tests">{{ acc.test_results.count() }}</td>
+              <td data-label="Joined" style="color: var(--gray-500); font-size: 0.82rem;">{{ acc.created_at.strftime('%d %b %Y') }}</td>
             </tr>
             {% else %}
             <tr>
-  <td colspan="6">
-    <div class="empty-state">
-      <div class="empty-state-icon"><i class="fa-solid fa-users" style="color: var(--gray-300);"></i></div>
-      <p>No students yet. Upload an Excel file or share your access code to add students.</p>
-      <a href="{{ url_for('main.school_guide') }}" class="btn btn-secondary btn-sm" style="margin-top: 12px;">
-        <i class="fa-solid fa-book-open"></i> View Upload Guide
-      </a>
-    </div>
-  </td>
-</tr>
+              <td colspan="6" class="td-empty-state">
+                <div class="empty-state">
+                  <div class="empty-state-icon"><i class="fa-solid fa-users" style="color: var(--gray-300);"></i></div>
+                  <p>No students yet. Upload an Excel file or share your access code to add students.</p>
+                  <a href="{{ url_for('main.school_guide') }}" class="btn btn-secondary btn-sm" style="margin-top: 12px;">
+                    <i class="fa-solid fa-book-open"></i> View Upload Guide
+                  </a>
+                </div>
+              </td>
+            </tr>
             {% endfor %}
           </tbody>
         </table>
@@ -320,19 +336,27 @@ function initiatePayment() {
           <tbody>
             {% for r in results_pagination.items %}
             <tr>
-              <td>{{ r.account.full_name }}</td>
-              <td style="font-size: 0.85rem;">{{ r.test_type }}</td>
-              <td>{{ r.score }}{% if r.max_score %}/{{ r.max_score }}{% endif %}</td>
-              <td>
+              <td data-label="Student">{{ r.account.full_name }}</td>
+              <td data-label="Assessment" style="font-size: 0.85rem;">{{ r.test_type }}</td>
+              <td data-label="Score">{{ r.score }}{% if r.max_score %}/{{ r.max_score }}{% endif %}</td>
+              <td data-label="Stage">
                 {% set s = (r.stage or '') | lower %}
                 <span class="badge {% if 'normal' in s %}stage-normal{% elif 'mild' in s %}stage-mild{% elif 'elevated' in s %}stage-elevated{% elif 'clinical' in s %}stage-clinical{% else %}badge-gray{% endif %}">
                   {{ r.stage or 'Unknown' }}
                 </span>
               </td>
-              <td style="color: var(--gray-500); font-size: 0.82rem;">{{ r.taken_at.strftime('%d %b %Y') }}</td>
+              <td data-label="Date" style="color: var(--gray-500); font-size: 0.82rem;">{{ r.taken_at.strftime('%d %b %Y') }}</td>
             </tr>
             {% else %}
-            <tr><td colspan="5"><div class="empty-state"><p>No assessments recorded yet.</p></div></td></tr>
+            {# In the results {% else %} block — already has padding:0; border:none inline,
+   but add the class for the ::before suppression #}
+<td colspan="5" class="td-empty-state" style="padding: 0; border: none;">
+              <div class="empty-state">
+                <div class="empty-state-icon"><i class="fa-solid fa-clipboard-list" style="color: var(--gray-400);"></i></div>
+                <p>No recent assessments. Encourage students to take the SESA test.</p>
+                <a href="{{ url_for('main.school_guide', fragment='assessments') }}" class="btn btn-secondary btn-sm" style="margin-top: 8px;">How to Get Started</a>
+              </div>
+            </td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -369,6 +393,10 @@ function initiatePayment() {
   <a href="{{ url_for('main.school_analytics', school_id=school_id) }}"
      class="tab-item {% if request.endpoint == 'main.school_analytics' %}active{% endif %}">
     <i class="fa-solid fa-chart-line tab-icon"></i><span class="tab-label">Analytics</span>
+  </a>
+  <a href="{{ url_for('main.school_guide') }}"
+     class="tab-item {% if request.endpoint == 'main.school_guide' %}active{% endif %}">
+    <i class="fa-solid fa-book-open tab-icon"></i><span class="tab-label">Guide</span>
   </a>
   <a href="{{ url_for('auth.logout') }}" class="tab-item tab-logout">
     <span class="tab-icon">↩</span><span class="tab-label">Logout</span>

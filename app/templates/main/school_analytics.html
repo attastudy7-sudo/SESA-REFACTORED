@@ -146,6 +146,10 @@
      class="tab-item {% if request.endpoint == 'main.school_analytics' %}active{% endif %}">
     <i class="fa-solid fa-chart-line tab-icon"></i><span class="tab-label">Analytics</span>
   </a>
+  <a href="{{ url_for('main.school_guide') }}"
+     class="tab-item {% if request.endpoint == 'main.school_guide' %}active{% endif %}">
+    <i class="fa-solid fa-book-open tab-icon"></i><span class="tab-label">Guide</span>
+  </a>
   <a href="{{ url_for('auth.logout') }}" class="tab-item tab-logout">
     <span class="tab-icon">↩</span><span class="tab-label">Logout</span>
   </a>
