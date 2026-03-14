@@ -48,32 +48,124 @@
         </div>
 
         <p class="result-breakdown">
-          Score of <strong>{{ score }}</strong> falls within the <strong>{{ stage }}</strong> range ({{ score_range }})
+          Score of <strong>{{ score }}</strong> out of <strong>{{ max_score }}</strong> — <strong>{{ stage }}</strong> range ({{ score_range }})
         </p>
 
-        {# ── Crisis button — Elevated or Clinical only ── #}
-        {% if 'elevated' in stage|lower or 'clinical' in stage|lower %}
-        <div style="margin:20px 0;padding:16px;background:#fff3cd;border:2px solid #f59e0b;border-radius:10px;text-align:left;">
-          <p style="font-weight:700;color:#92400e;margin:0 0 8px;font-size:0.95rem;">🆘 You don't have to face this alone</p>
-          <p style="color:#78350f;font-size:0.85rem;margin:0 0 12px;">
-            Your result suggests you may benefit from speaking to someone. Support is available.
+        {# ── Visual score scale ── #}
+        {% if max_score %}
+        <div style="margin: 16px 0 20px; padding: 0 4px;">
+          <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:rgba(255,255,255,.5); margin-bottom:4px;">
+            <span>0</span><span>{{ max_score }}</span>
+          </div>
+          <div style="height:10px; background:rgba(255,255,255,.15); border-radius:6px; overflow:hidden;">
+            <div style="height:100%; width:{{ ((score / max_score) * 100) | round | int }}%; background:{{ stage_color }}; border-radius:6px; transition:width 0.8s ease;"></div>
+          </div>
+          <div style="margin-top:6px; font-size:0.75rem; color:rgba(255,255,255,.6); text-align:center;">
+            Your score: {{ score }} / {{ max_score }} ({{ ((score / max_score) * 100) | round | int }}%)
+          </div>
+        </div>
+        {% endif %}
+
+        {# ── Psychoeducation coping tips — shown for every stage ── #}
+        {% set coping_tips = {
+          'Separation Anxiety Disorder': [
+            'Practise short separations and gradually increase the time apart',
+            'Create a consistent goodbye routine to build predictability',
+            'Talk to a trusted adult about what makes you feel unsafe when apart',
+            'Deep breathing and grounding exercises can reduce anxiety in the moment',
+          ],
+          'Social Phobia': [
+            'Start with small social interactions and build up gradually',
+            'Prepare topics in advance — it reduces the fear of running out of things to say',
+            'Remember that most people are focused on themselves, not judging you',
+            'A school counsellor can help with exposure techniques that really work',
+          ],
+          'Generalised Anxiety Disorder': [
+            'Write down your worries — it stops them circling in your head',
+            'Schedule a daily 10-minute "worry time" so anxiety doesn\'t take over the day',
+            'Physical exercise is one of the most effective anxiety reducers',
+            'Limit caffeine and prioritise consistent sleep',
+          ],
+          'Panic Disorder': [
+            'During a panic attack: breathe in for 4 counts, hold for 4, out for 6',
+            'Remind yourself: panic attacks are not dangerous and they do pass',
+            'Keep a diary to identify triggers — patterns often emerge',
+            'Tell a trusted person so they can support you during an attack',
+          ],
+          'Obsessive Compulsive Disorder': [
+            'Try to delay a compulsion by even 5 minutes — the urge does weaken',
+            'Write down the obsessive thought rather than acting on it',
+            'Avoid reassurance-seeking — it makes OCD stronger, not weaker',
+            'A counsellor trained in CBT can teach evidence-based OCD techniques',
+          ],
+          'Major Depressive Disorder': [
+            'Even small activities count — a short walk, a meal with someone you trust',
+            'Depression lies: what feels permanent is not. Things can and do improve',
+            'Talk to at least one person today — isolation makes depression worse',
+            'Sleep, routine and gentle exercise are the three most protective habits',
+          ],
+        } %}
+        {% set tips = coping_tips.get(test_type, []) %}
+        {% if tips %}
+        <div class="psycho-card">
+          <div class="psycho-card-title">
+            <i class="fa-solid fa-lightbulb" style="color: var(--gold-500);"></i>
+            Coping strategies for {{ test_type }}
+          </div>
+          <ul>
+            {% for tip in tips %}
+            <li>{{ tip }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        {# ── Elevated stage: resource prompt ── #}
+        {% if 'elevated' in stage|lower %}
+        <div class="intervention-elevated">
+          <p class="intervention-title">&#x26A0;&#xFE0F; You may benefit from extra support</p>
+          <p class="intervention-body">
+            Your score places you in the Elevated range. This means what you're experiencing
+            is having a real impact on your daily life. Speaking to your school counsellor is
+            a positive, practical next step — it's not a big deal to ask for help.
           </p>
-          <div style="display:flex;flex-wrap:wrap;gap:10px;">
+          <div class="intervention-actions">
             {% if counsellor and counsellor.phone %}
-            <a href="tel:{{ counsellor.phone }}"
-               style="flex:1;min-width:150px;padding:10px 14px;background:#065f46;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.85rem;text-align:center;">
-              📞 Call School Counsellor<br>
-              <span style="font-weight:400;font-size:0.78rem;">{{ counsellor.phone }}</span>
+            <a href="tel:{{ counsellor.phone }}" class="btn-call-counsellor">
+              <i class="fa-solid fa-phone"></i> Call School Counsellor
             </a>
             {% endif %}
-            <a href="tel:{{ mhap_helpline }}"
-               style="flex:1;min-width:150px;padding:10px 14px;background:#b91c1c;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;font-size:0.85rem;text-align:center;">
-               Ghana Mental Health Helpline<br>
-              <span style="font-weight:400;font-size:0.78rem;">{{ mhap_helpline }} · Free · 24/7</span>
+            <a href="tel:{{ mhap_helpline }}" class="btn-call-helpline">
+              <i class="fa-solid fa-heart-pulse"></i> {{ mhap_helpline }} (Free helpline)
             </a>
           </div>
           <p style="margin:10px 0 0;font-size:0.78rem;color:#92400e;">
             You can also speak to a trusted teacher, parent, or friend.
+          </p>
+        </div>
+        {% endif %}
+
+        {# ── Clinical stage: urgent support prompt ── #}
+        {% if 'clinical' in stage|lower %}
+        <div class="intervention-clinical">
+          <p class="intervention-title">&#x1F198; Please talk to someone today</p>
+          <p class="intervention-body">
+            Your score is in the Clinical range. This does not mean something is permanently
+            wrong — but it does mean you deserve real support right now. Please reach out to
+            your school counsellor or the free helpline below. You don't have to face this alone.
+          </p>
+          <div class="intervention-actions">
+            {% if counsellor and counsellor.phone %}
+            <a href="tel:{{ counsellor.phone }}" class="btn-call-counsellor">
+              <i class="fa-solid fa-phone"></i> Call School Counsellor
+            </a>
+            {% endif %}
+            <a href="tel:{{ mhap_helpline }}" class="btn-call-helpline">
+              <i class="fa-solid fa-heart-pulse"></i> {{ mhap_helpline }} &mdash; Free &amp; 24/7
+            </a>
+          </div>
+          <p style="margin:10px 0 0;font-size:0.78rem;color:#991b1b;">
+            A parent, teacher, or any trusted adult can also help you right now.
           </p>
         </div>
         {% endif %}

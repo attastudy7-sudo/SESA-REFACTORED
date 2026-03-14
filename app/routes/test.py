@@ -23,6 +23,28 @@ def display_questions(test_type):
         flash(f'No questions found for "{test_type}".', 'error')
         return redirect(url_for('main.home'))
 
+    # 7-day cooldown — prevent score gaming and rumination
+    from datetime import datetime, timedelta, timezone
+    cooldown_days = 7
+    cutoff = datetime.now(timezone.utc) - timedelta(days=cooldown_days)
+    recent = TestResult.query.filter(
+        TestResult.user_id == current_user.id,
+        TestResult.test_type == test_type,
+        TestResult.taken_at >= cutoff,
+    ).order_by(TestResult.taken_at.desc()).first()
+    if recent:
+        taken_at = recent.taken_at
+        if taken_at.tzinfo is None:
+            taken_at = taken_at.replace(tzinfo=timezone.utc)
+        days_ago = (datetime.now(timezone.utc) - taken_at).days
+        days_left = cooldown_days - days_ago
+        flash(
+            f'You completed this assessment {days_ago} day(s) ago. '
+            f'Please wait {days_left} more day(s) before retaking it.',
+            'warning'
+        )
+        return redirect(url_for('main.home'))
+
     quiz_key = f'quiz_{test_type}'
     if quiz_key not in session:
         session[quiz_key] = {'q_index': 0, 'score': 0}

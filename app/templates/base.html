@@ -24,13 +24,14 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   {% block extra_head %}{% endblock %}
 </head>
-<body>
+<body class="{% if current_user.is_authenticated or session.get('school_id') %}has-bottom-nav {% endif %}{% block body_class %}{% endblock %}">
+
 
 {% block full_page %}
 <div class="app-layout">
 
   {% block navbar %}
-  <nav class="navbar" id="landingNav">
+  <nav class="navbar{% if 'has-page-hero' in self.body_class() %} transparent{% endif %}" id="mainNav">
     <div class="navbar-inner">
       <a href="{{ url_for('main.landing') }}" class="navbar-brand">
         <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="FOPA Logo" class="navbar-logo">
@@ -41,13 +42,16 @@
         {% block nav_links %}{% endblock %}
       </ul>
 
+      {% if not (current_user.is_authenticated or session.get('school_id')) %}
       <button id="hamburger" class="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobileDrawer">
         <span></span>
         <span></span>
         <span></span>
       </button>
+      {% endif %}
     </div>
 
+    {% if not (current_user.is_authenticated or session.get('school_id')) %}
     <nav id="mobileDrawer" class="nav-dropdown" aria-hidden="true">
       <div class="nav-dropdown-header">
         <span class="nav-dropdown-title">Menu</span>
@@ -57,6 +61,7 @@
       </div>
       {% block drawer_links %}{% endblock %}
     </nav>
+    {% endif %}
   </nav>
   {% endblock %}
 
@@ -113,34 +118,34 @@
   <div class="crisis-modal-box">
     <button class="crisis-modal-close" id="crisisModalClose" aria-label="Close">&#x2715;</button>
     <div class="crisis-modal-header">
-      <span class="crisis-modal-emoji">💚</span>
+      <span class="crisis-modal-emoji"><i class="fa-solid fa-heart" style="color: #4ade80;"></i></span>
       <h2 id="crisisModalTitle" class="crisis-modal-title">You're not alone</h2>
       <p class="crisis-modal-sub">It's okay to ask for help. Here's who you can reach right now.</p>
     </div>
     <div class="crisis-modal-options">
       <a class="crisis-option crisis-option--primary" href="tel:0800111222">
-        <span class="crisis-option-icon">📞</span>
+        <span class="crisis-option-icon"><i class="fa-solid fa-phone" style="color: var(--green-500);"></i></span>
         <div>
           <strong>Ghana Mental Health Helpline</strong>
           <span>0800 111 222 — Free &amp; confidential</span>
         </div>
       </a>
       <a class="crisis-option" href="tel:0302666666">
-        <span class="crisis-option-icon">🏥</span>
+        <span class="crisis-option-icon"><i class="fa-solid fa-hospital" style="color: var(--green-500);"></i></span>
         <div>
           <strong>Accra Psychiatric Hospital</strong>
           <span>030 266 6666</span>
         </div>
       </a>
       <div class="crisis-option crisis-option--soft">
-        <span class="crisis-option-icon">🏫</span>
+        <span class="crisis-option-icon"><i class="fa-solid fa-school" style="color: var(--green-500);"></i></span>
         <div>
           <strong>Talk to your school counsellor</strong>
           <span>Find them at the counsellor's office or ask a teacher.</span>
         </div>
       </div>
       <div class="crisis-option crisis-option--soft">
-        <span class="crisis-option-icon">🤝</span>
+        <span class="crisis-option-icon"><i class="fa-solid fa-handshake" style="color: var(--green-500);"></i></span>
         <div>
           <strong>Tell a trusted adult</strong>
           <span>A parent, teacher, or any adult you trust can help you right now.</span>
@@ -197,64 +202,89 @@
 {% endif %}
 {% endblock %}
 
-  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
 
 <script>
 (function() {
-  var deferredPrompt;
+  var deferredPrompt = null;
   var banner = document.getElementById('a2hs-banner');
-  var installBtn = document.getElementById('a2hs-install');
-  var dismissBtn = document.getElementById('a2hs-dismiss');
+  var installBtn  = document.getElementById('a2hs-install');
+  var dismissBtn  = document.getElementById('a2hs-dismiss');
+  var dismissBtn2 = document.getElementById('a2hs-dismiss2');
 
+  // Never show if: already dismissed, already installed as standalone, or on desktop browser
   if (localStorage.getItem('a2hs-dismissed')) return;
-  if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) return;
+  if (window.matchMedia('(display-mode: standalone)').matches) return;
+  if (window.navigator.standalone) return;
+
+  // Only show on real mobile/tablet devices — not a resized desktop browser
+  var isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (!isMobileDevice) return;
 
   function showBanner() {
-    if (banner) banner.style.display = 'block';
+    if (banner) {
+      banner.style.display = 'block';
+    }
   }
 
+  function hideBanner() {
+    if (banner) banner.style.display = 'none';
+  }
+
+  function dismiss(permanent) {
+    hideBanner();
+    if (permanent) {
+      localStorage.setItem('a2hs-dismissed', 'true');
+    }
+  }
+
+  // Chrome/Edge Android: capture the native prompt
   window.addEventListener('beforeinstallprompt', function(e) {
     e.preventDefault();
     deferredPrompt = e;
-    showBanner();
+    // Small delay so the page has settled before the banner appears
+    setTimeout(showBanner, 1500);
   });
 
-  function isMobile() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
-  }
-
-  if (isMobile()) {
-    setTimeout(function() {
-      if (!localStorage.getItem('a2hs-dismissed') && !window.matchMedia('(display-mode: standalone)').matches && !window.navigator.standalone) {
-        showBanner();
-      }
-    }, 2000);
-  }
-
+  // Install button clicked
   if (installBtn) {
     installBtn.addEventListener('click', function() {
       if (deferredPrompt) {
+        // Trigger native Chrome install dialog
         deferredPrompt.prompt();
         deferredPrompt.userChoice.then(function(outcome) {
-          if (outcome === 'accepted') deferredPrompt = null;
+          deferredPrompt = null;
+          // Whether accepted or dismissed, don't show again this session
+          dismiss(outcome === 'accepted');
         });
       } else {
-        alert('To install SESA:\n\n1. Tap the menu button (three dots)\n2. Select Add to Home screen');
+        // iOS Safari / browsers without beforeinstallprompt — show manual steps
+        hideBanner();
+        var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        if (isIOS) {
+          alert('To install SESA on your iPhone:\n\n1. Tap the Share button (box with arrow)\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add"');
+        } else {
+          alert('To install SESA:\n\n1. Tap the browser menu (three dots ⋮)\n2. Tap "Add to Home screen" or "Install app"\n3. Tap "Add"');
+        }
+        dismiss(false);
       }
-      if (banner) banner.style.display = 'none';
     });
   }
 
+  // ✕ button — permanent dismiss
   if (dismissBtn) {
-    dismissBtn.addEventListener('click', function() {
-      if (banner) banner.style.display = 'none';
-      localStorage.setItem('a2hs-dismissed', 'true');
-    });
+    dismissBtn.addEventListener('click', function() { dismiss(true); });
   }
 
+  // "Not now" button — also permanent dismiss (they can re-add via browser menu)
+  if (dismissBtn2) {
+    dismissBtn2.addEventListener('click', function() { dismiss(true); });
+  }
+
+  // App successfully installed via system dialog — hide immediately and mark done
   window.addEventListener('appinstalled', function() {
     deferredPrompt = null;
-    if (banner) banner.style.display = 'none';
+    dismiss(true);
   });
 })();
 </script>

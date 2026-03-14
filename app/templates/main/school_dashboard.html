@@ -1,17 +1,18 @@
 {% extends 'base.html' %}
 {% block title %}{{ school.school_name }} Dashboard{% endblock %}
+{% block body_class %}has-page-hero{% endblock %}
 
 {% block nav_links %}
   <li><a href="{{ url_for('main.school_dashboard', school_id=school.id) }}">Dashboard</a></li>
   <li><a href="{{ url_for('main.school_analytics', school_id=school.id) }}">Analytics</a></li>
-  <li><a href="{{ url_for('main.students_at_risk', school_id=school.id) }}" style="color:#ef4444; font-weight:700;">⚠️ At Risk</a></li>
+  <li><a href="{{ url_for('main.students_at_risk', school_id=school.id) }}" style="color:#ef4444; font-weight:700;"><i class="fa-solid fa-triangle-exclamation"></i> At Risk</a></li>
   <li><a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a></li>
 {% endblock %}
 
 {% block drawer_links %}
   <a href="{{ url_for('main.school_dashboard', school_id=school.id) }}">Dashboard</a>
   <a href="{{ url_for('main.school_analytics', school_id=school.id) }}">Analytics</a>
-  <a href="{{ url_for('main.students_at_risk', school_id=school.id) }}">⚠️ Students at Risk</a>
+  <a href="{{ url_for('main.students_at_risk', school_id=school.id) }}"><i class="fa-solid fa-triangle-exclamation" style="color:#ef4444;"></i> Students at Risk</a>
   <a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a>
 {% endblock %}
 
@@ -28,28 +29,28 @@
   {# ── Stats ── #}
   <div class="stat-grid">
     <div class="stat-card">
-      <div class="stat-icon">👥</div>
+      <div class="stat-icon"><i class="fa-solid fa-users" style="color: var(--green-500);"></i></div>
       <div>
         <div class="stat-value">{{ total_students }}</div>
         <div class="stat-label">Total Students</div>
       </div>
     </div>
     <div class="stat-card gold">
-      <div class="stat-icon">📋</div>
+      <div class="stat-icon"><i class="fa-solid fa-clipboard-list" style="color: var(--gold-500);"></i></div>
       <div>
         <div class="stat-value">{{ total_results }}</div>
         <div class="stat-label">Total Assessments</div>
       </div>
     </div>
     <div class="stat-card {% if upload_enabled %}teal{% else %}red{% endif %}">
-      <div class="stat-icon">{% if upload_enabled %}✅{% else %}🔒{% endif %}</div>
+      <div class="stat-icon">{% if upload_enabled %}<i class="fa-solid fa-circle-check" style="color: #0891b2;"></i>{% else %}<i class="fa-solid fa-lock" style="color: var(--red-600);"></i>{% endif %}</div>
       <div>
         <div class="stat-value" style="font-size: 0.9rem; margin-top: 4px;">{% if upload_enabled %}Enabled{% else %}Disabled{% endif %}</div>
         <div class="stat-label">Upload Access</div>
       </div>
     </div>
     <div class="stat-card">
-      <div class="stat-icon">📅</div>
+      <div class="stat-icon"><i class="fa-solid fa-calendar-days" style="color: var(--green-500);"></i></div>
       <div>
         <div class="stat-value">{{ stage_counts.values() | sum if stage_counts else 0 }}</div>
         <div class="stat-label">Tests ({{ period | capitalize }})</div>
@@ -57,7 +58,7 @@
     </div>
     <a href="{{ url_for('main.students_at_risk', school_id=school.id) }}"
        class="stat-card red" style="text-decoration:none; cursor:pointer;">
-      <div class="stat-icon">⚠️</div>
+      <div class="stat-icon"><i class="fa-solid fa-triangle-exclamation" style="color: var(--red-600);"></i></div>
       <div>
         <div class="stat-value">{{ at_risk_count }}</div>
         <div class="stat-label">Students at Risk</div>
@@ -91,7 +92,7 @@
       <form method="POST" action="{{ url_for('main.generate_access_code', school_id=school.id) }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn btn-secondary btn-sm">
-          {% if school.access_code %}🔄 Regenerate Code{% else %}✨ Generate Access Code{% endif %}
+          {% if school.access_code %}<i class="fa-solid fa-rotate"></i> Regenerate Code{% else %}<i class="fa-solid fa-wand-magic-sparkles"></i> Generate Access Code{% endif %}
         </button>
       </form>
     </div>
@@ -159,7 +160,7 @@
                     background:{% if expiry_warning %}#fffbeb{% else %}#ecfdf5{% endif %};
                     border-radius:var(--radius-md);
                     border-left:3px solid {% if expiry_warning %}#f59e0b{% else %}#10b981{% endif %};">
-          <span style="font-size:1.2rem;">{% if expiry_warning %}⚠️{% else %}✅{% endif %}</span>
+          <span style="font-size:1.2rem;">{% if expiry_warning %}<i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b;"></i>{% else %}<i class="fa-solid fa-circle-check" style="color:#10b981;"></i>{% endif %}</span>
           <div>
             <p style="font-weight:600; color:{% if expiry_warning %}#92400e{% else %}#065f46{% endif %}; margin:0;">
               Subscription active{% if expiry_warning %} — expires soon{% endif %}
@@ -185,7 +186,7 @@
         <div class="file-upload-area"
              style="border:2px dashed var(--gray-300); border-radius:var(--radius-md); padding:28px; text-align:center; margin-bottom:14px; cursor:pointer;"
              onclick="document.getElementById('fileInput').click()">
-          <div style="font-size:2rem; margin-bottom:8px;">📎</div>
+          <div style="font-size:2rem; margin-bottom:8px;"><i class="fa-solid fa-paperclip" style="color: var(--green-500);"></i></div>
           <p style="font-weight:600; color:var(--green-700); margin-bottom:4px;">Click to choose file or drag & drop</p>
           <p class="file-name" style="font-size:0.82rem; color:var(--gray-500);">No file chosen</p>
           <input type="file" name="file" id="fileInput" class="file-upload-input" accept=".xlsx,.xls" style="display:none">
@@ -195,13 +196,13 @@
 
       {% else %}
       <div style="text-align:center; padding: 16px 0 8px;">
-        <div style="font-size:3rem; margin-bottom:12px;">🔓</div>
+        <div style="font-size:3rem; margin-bottom:12px;"><i class="fa-solid fa-lock-open" style="color: var(--green-500);"></i></div>
         <h3 style="font-family:var(--font-display); color:var(--green-800); margin-bottom:8px;">Activate Student Upload</h3>
         <p style="color:var(--gray-500); font-size:0.9rem; max-width:420px; margin:0 auto 24px;">
           A one-time subscription payment is required to enable student bulk upload for your school.
         </p>
         <button id="paystackBtn" class="btn btn-gold btn-lg" onclick="initiatePayment()">
-          💳 Pay to Activate Upload
+          <i class="fa-solid fa-credit-card"></i> Pay to Activate Upload
         </button>
         <p style="margin-top:14px; font-size:0.78rem; color:var(--gray-500);">
           Secured by <strong>Paystack</strong> · Your payment activates your account instantly
@@ -225,7 +226,7 @@ function initiatePayment() {
     },
     onClose: function() {
       btn.disabled = false;
-      btn.textContent = '💳 Pay to Activate Upload';
+      btn.textContent = '<i class="fa-solid fa-credit-card"></i> Pay to Activate Upload';
     }
   });
   handler.openIframe();
@@ -275,7 +276,7 @@ function initiatePayment() {
             <tr>
               <td colspan="6">
                 <div class="empty-state">
-                  <div class="empty-state-icon">👥</div>
+                  <div class="empty-state-icon"><i class="fa-solid fa-users" style="color: var(--gray-300);"></i></div>
                   <p>No students yet. Upload an Excel file or share your access code to add students.</p>
                 </div>
               </td>
@@ -360,11 +361,11 @@ function initiatePayment() {
 <nav class="bottom-tab-bar" aria-label="School admin navigation">
   <a href="{{ url_for('main.school_dashboard', school_id=school_id) }}"
      class="tab-item {% if request.endpoint == 'main.school_dashboard' %}active{% endif %}">
-    <span class="tab-icon">🏫</span><span class="tab-label">Dashboard</span>
+    <i class="fa-solid fa-school tab-icon"></i><span class="tab-label">Dashboard</span>
   </a>
   <a href="{{ url_for('main.school_analytics', school_id=school_id) }}"
      class="tab-item {% if request.endpoint == 'main.school_analytics' %}active{% endif %}">
-    <span class="tab-icon">📈</span><span class="tab-label">Analytics</span>
+    <i class="fa-solid fa-chart-line tab-icon"></i><span class="tab-label">Analytics</span>
   </a>
   <a href="{{ url_for('auth.logout') }}" class="tab-item tab-logout">
     <span class="tab-icon">↩</span><span class="tab-label">Logout</span>

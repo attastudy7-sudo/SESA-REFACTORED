@@ -47,23 +47,27 @@ def home():
         {'name': 'Major Depressive Disorder',     'key': 'mdd',  'count': q_count('Major Depressive Disorder'),     'icon': '🌧', 'color': 'indigo'},
     ]
 
-    avg_score = round(sum(r.score for r in results) / total_tests, 1) if total_tests else 0
-
-    # Calculate previous month's average for comparison
-    from datetime import datetime, timedelta
+    # Cross-test average removed — clinically invalid (tests have different max scores).
+    from datetime import datetime, timedelta, timezone
     now = datetime.now()
-    first_of_this_month = now.replace(day=1)
-    first_of_last_month = (first_of_this_month - timedelta(days=1)).replace(day=1)
-    
-    last_month_results = [r for r in results if r.taken_at and first_of_last_month <= r.taken_at < first_of_this_month]
-    prev_avg = round(sum(r.score for r in last_month_results) / len(last_month_results), 1) if last_month_results else None
-    
-    # Determine arrow direction
-    # Green arrow up = average dropped (improved in mental health context where lower is better)
-    # Red arrow down = average went up (worse in mental health context)
-    score_change = None
-    if prev_avg is not None and total_tests > len(last_month_results):
-        score_change = avg_score - prev_avg  # positive = went up, negative = went down
+
+    this_month_results = [
+        r for r in results
+        if r.taken_at and r.taken_at.month == now.month and r.taken_at.year == now.year
+    ]
+    tests_this_month = len(this_month_results)
+
+    # Most recent result per test type — used for per-test stage summary
+    latest_by_type = {}
+    for r in results:
+        if r.test_type not in latest_by_type:
+            latest_by_type[r.test_type] = r
+
+    avg_score = total_tests        # repurposed: total assessments taken
+    prev_avg = tests_this_month    # repurposed: assessments this month
+    score_change = None            # no longer used
+
+    recent_results = results[:3]  # 5 most recent for the home table
 
     return render_template(
         'main/home.html',
@@ -74,6 +78,8 @@ def home():
         tests_meta=tests_meta,
         score_change=score_change,
         prev_avg=prev_avg,
+        recent_results=recent_results,
+        latest_by_type=latest_by_type,
     )
 
 

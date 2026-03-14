@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block title %}Students at Risk — {{ school.school_name }}{% endblock %}
+{% block body_class %}has-page-hero{% endblock %}
 
 {% block nav_links %}
   <li><a href="{{ url_for('main.school_dashboard', school_id=school.id) }}">Dashboard</a></li>
@@ -11,14 +12,14 @@
 {% block drawer_links %}
   <a href="{{ url_for('main.school_dashboard', school_id=school.id) }}">Dashboard</a>
   <a href="{{ url_for('main.school_analytics', school_id=school.id) }}">Analytics</a>
-  <a href="{{ url_for('main.students_at_risk', school_id=school.id) }}">⚠️ Students at Risk</a>
+  <a href="{{ url_for('main.students_at_risk', school_id=school.id) }}"><i class="fa-solid fa-triangle-exclamation" style="color:#ef4444;"></i> Students at Risk</a>
   <a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a>
 {% endblock %}
 
 {% block body %}
 <div class="page-hero" style="background: linear-gradient(135deg, #7f1d1d, #b91c1c);">
   <div class="container">
-    <h1>⚠️ Students at Risk</h1>
+    <h1><i class="fa-solid fa-triangle-exclamation"></i> Students at Risk</h1>
     <p>{{ school.school_name }} · {{ pagination.total }} student{{ 's' if pagination.total != 1 }} flagged</p>
   </div>
 </div>
@@ -132,7 +133,7 @@
 
   {% else %}
   <div class="card" style="text-align:center; padding: 3rem 2rem;">
-    <div style="font-size:3rem; margin-bottom:1rem;">✅</div>
+    <div style="font-size:3rem; margin-bottom:1rem;"><i class="fa-solid fa-circle-check" style="color: var(--green-500);"></i></div>
     <h3 style="color: var(--green-800); margin-bottom: 0.5rem;">
       {% if selected_class %}No students at risk in {{ selected_class }}{% else %}No students at elevated risk{% endif %}
     </h3>
@@ -153,4 +154,26 @@
   {% endif %}
 
 </div>
+{% block bottom_tab_bar %}
+{% set school_id = session.get('school_id') %}
+{% if school_id %}
+<nav class="bottom-tab-bar" aria-label="School admin navigation">
+  <a href="{{ url_for('main.school_dashboard', school_id=school_id) }}"
+     class="tab-item {% if request.endpoint == 'main.school_dashboard' %}active{% endif %}">
+    <i class="fa-solid fa-school tab-icon"></i><span class="tab-label">Dashboard</span>
+  </a>
+  <a href="{{ url_for('main.school_analytics', school_id=school_id) }}"
+     class="tab-item {% if request.endpoint == 'main.school_analytics' %}active{% endif %}">
+    <i class="fa-solid fa-chart-line tab-icon"></i><span class="tab-label">Analytics</span>
+  </a>
+  <a href="{{ url_for('main.students_at_risk', school_id=school_id) }}"
+     class="tab-item active">
+    <i class="fa-solid fa-triangle-exclamation tab-icon" style="color:#ef4444;"></i><span class="tab-label">At Risk</span>
+  </a>
+  <a href="{{ url_for('auth.logout') }}" class="tab-item tab-logout">
+    <span class="tab-icon">↩</span><span class="tab-label">Logout</span>
+  </a>
+</nav>
+{% endif %}
+{% endblock %}
 {% endblock %}

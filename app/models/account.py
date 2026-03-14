@@ -26,7 +26,7 @@ class Accounts(UserMixin, db.Model):
     )
 
     class_group = db.Column(db.String(50), nullable=True)   # e.g. "Form 2A", "JHS 3B"
-    phone = db.Column(db.String(20), nullable=True)         # for SMS clinical alerts
+
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
     is_counsellor = db.Column(db.Boolean, default=False, server_default='0', nullable=False)
 

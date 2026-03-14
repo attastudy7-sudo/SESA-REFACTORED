@@ -22,7 +22,7 @@
 {% block body %}
 <div class="page-hero">
   <div class="container">
-    <h1>Welcome back, {{ user.fname }}! 👋</h1>
+    <h1>Welcome back, {{ user.fname }}! <i class="fa-solid fa-hand-wave" style="color: var(--gold-200);"></i></h1>
     <p>Select an assessment below to begin or review your recent results.</p>
   </div>
 </div>
@@ -32,35 +32,28 @@
   {# ── Stats Row ── #}
   <div class="stat-grid">
     <div class="stat-card">
-      <div class="stat-icon">📝</div>
+      <div class="stat-icon"><i class="fa-solid fa-pen-to-square" style="color: var(--green-500);"></i></div>
       <div>
         <div class="stat-value">{{ total_tests }}</div>
         <div class="stat-label">Assessments Taken</div>
       </div>
     </div>
     <div class="stat-card gold">
-      <div class="stat-icon">📈</div>
+      <div class="stat-icon"><i class="fa-solid fa-calendar-days" style="color: var(--gold-500);"></i></div>
       <div>
-        <div class="stat-value">
-          {{ avg_score }}
-          {% if score_change is not none %}
-            <i class="fa-solid {% if score_change < 0 %}fa-arrow-trend-down arrow-up{% else %}fa-arrow-trend-up arrow-down{% endif %}"
-               title="vs last month"
-               style="font-size:1.1rem; margin-left:6px;"></i>
-          {% endif %}
-        </div>
-        <div class="stat-label">Average Score{% if prev_avg is not none %} (was {{ prev_avg }}){% endif %}</div>
+        <div class="stat-value">{{ prev_avg }}</div>
+        <div class="stat-label">This Month's Assessments</div>
       </div>
     </div>
     <div class="stat-card teal">
-      <div class="stat-icon">🎓</div>
+      <div class="stat-icon"><i class="fa-solid fa-graduation-cap" style="color: #0891b2;"></i></div>
       <div>
         <div class="stat-value" style="font-size: 1.2rem; margin-top: 4px;">{{ user.level | capitalize if user.level else '—' }}</div>
         <div class="stat-label">Education Level</div>
       </div>
     </div>
     <div class="stat-card">
-      <div class="stat-icon">🕐</div>
+      <div class="stat-icon"><i class="fa-solid fa-clock" style="color: var(--green-500);"></i></div>
       <div>
         <div class="stat-value" style="font-size: 1rem; margin-top: 4px;">
           {% if most_recent %}{{ most_recent.taken_at.strftime('%d %b') }}{% else %}—{% endif %}
@@ -90,7 +83,11 @@
       {% for test in tests_meta %}
       <a href="{{ url_for('test.display_questions', test_type=test.name) }}" class="test-card">
         <div class="test-card-image">
-          <img src="{{ url_for('static', filename=test.image) }}" alt="{{ test.name }}">
+          <img src="{{ url_for('static', filename=test.image) }}"
+               alt="{{ test.name }}"
+               loading="lazy"
+               width="400"
+               height="160">
         </div>
         <div class="test-card-content">
           <h3>{{ test.title }}</h3>
@@ -125,15 +122,15 @@
           <tbody>
             {% for r in recent_results %}
             <tr>
-              <td>{{ r.test_type }}</td>
-              <td>{{ r.score }}{% if r.max_score %} / {{ r.max_score }}{% endif %}</td>
-              <td>
+              <td data-label="Assessment">{{ r.test_type }}</td>
+              <td data-label="Score">{{ r.score }}{% if r.max_score %} / {{ r.max_score }}{% endif %}</td>
+              <td data-label="Stage">
                 {% set s = (r.stage or r.details or 'Unknown') | lower %}
                 <span class="badge {% if 'normal' in s %}stage-normal{% elif 'mild' in s %}stage-mild{% elif 'elevated' in s %}stage-elevated{% elif 'clinical' in s %}stage-clinical{% else %}badge-gray{% endif %}">
                   {{ r.stage or r.details or 'Unknown' }}
                 </span>
               </td>
-              <td style="color: var(--gray-500); font-size: 0.85rem;">{{ r.taken_at.strftime('%d %b %Y') }}</td>
+              <td data-label="Date" style="color: var(--gray-500); font-size: 0.85rem;">{{ r.taken_at.strftime('%d %b %Y') }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -144,128 +141,5 @@
   {% endif %}
 
 </div>
-</div>
 
-<style>
-.test-card {
-  display: flex;
-  flex-direction: column;
-  padding: 0;
-  overflow: hidden;
-}
-
-.test-card-image {
-  width: 100%;
-  height: 160px;
-  overflow: hidden;
-  background: var(--green-50);
-  flex-shrink: 0;
-}
-
-.test-card-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.4s ease;
-}
-
-.test-card:hover .test-card-image img {
-  transform: scale(1.05);
-}
-
-.test-card-content {
-  padding: 18px 20px;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-
-.test-card-content h3 {
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--green-800);
-  margin-bottom: 6px;
-  line-height: 1.35;
-}
-
-.test-card-content p {
-  font-size: 0.82rem;
-  color: var(--gray-500);
-  margin-bottom: 14px;
-  line-height: 1.5;
-  flex: 1;
-}
-
-.test-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 16px;
-}
-
-.test-card {
-  display: flex;
-  flex-direction: column;
-  padding: 0;
-  overflow: hidden;
-  background: #fff;
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
-}
-
-.test-card-image {
-  width: 100%;
-  height: 160px;
-  overflow: hidden;
-  background: var(--green-50);
-  flex-shrink: 0;
-}
-
-.test-card-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.4s ease;
-}
-
-.test-card:hover .test-card-image img {
-  transform: scale(1.05);
-}
-
-.test-card-content {
-  padding: 18px 20px;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-
-.test-card-content h3 {
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--green-800);
-  margin-bottom: 6px;
-  line-height: 1.35;
-}
-
-.test-card-content p {
-  font-size: 0.82rem;
-  color: var(--gray-500);
-  margin-bottom: 14px;
-  line-height: 1.5;
-  flex: 1;
-}
-
-@media (max-width: 480px) {
-  .test-card-image {
-    height: 120px;
-  }
-}
-
-@media (max-width: 768px) {
-    .stat-grid {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    }
-}
-</style>
 {% endblock %}

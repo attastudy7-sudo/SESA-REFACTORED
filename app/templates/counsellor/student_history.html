@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block title %}{{ student.full_name }} — History{% endblock %}
+{% block body_class %}has-page-hero{% endblock %}
 
 {% block nav_links %}
   <li><a href="{{ url_for('counsellor.dashboard') }}">My Students</a></li>
@@ -123,7 +124,7 @@
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="next" value="{{ url_for('counsellor.student_history', student_id=student.id) }}">
           <button type="submit" class="btn btn-primary" style="width:100%; font-size:0.85rem; margin-bottom:10px;">
-            ✓ Mark as Contacted
+            <i class="fa-solid fa-check"></i> Mark as Contacted
           </button>
         </form>
         <a href="{{ url_for('counsellor.dashboard') }}" class="btn btn-secondary"
@@ -141,7 +142,7 @@
         <div style="display:flex; flex-direction:column; gap:10px;">
           {% for entry in contact_log %}
           <div style="font-size:0.82rem; padding:8px 12px; background:var(--ivory); border-radius:6px;">
-            <div style="color:var(--green-700); font-weight:600;">✓ Contacted</div>
+            <div style="color:var(--green-700); font-weight:600;"><i class="fa-solid fa-check"></i> Contacted</div>
             <div style="color:var(--gray-500); margin-top:2px;">
               {{ entry.created_at.strftime('%d %b %Y, %H:%M') }}
             </div>
@@ -167,4 +168,16 @@
     }
   }
 </style>
+{% block bottom_tab_bar %}
+{% if current_user.is_authenticated and current_user.is_counsellor %}
+<nav class="bottom-tab-bar" aria-label="Counsellor navigation">
+  <a href="{{ url_for('counsellor.dashboard') }}" class="tab-item">
+    <i class="fa-solid fa-user-nurse tab-icon"></i><span class="tab-label">Students</span>
+  </a>
+  <a href="{{ url_for('auth.logout') }}" class="tab-item tab-logout">
+    <i class="fa-solid fa-right-from-bracket tab-icon"></i><span class="tab-label">Logout</span>
+  </a>
+</nav>
+{% endif %}
+{% endblock %}
 {% endblock %}

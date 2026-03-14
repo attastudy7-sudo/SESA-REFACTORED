@@ -1,136 +1,66 @@
 {% extends 'base.html' %}
 {% block title %}Admin Dashboard{% endblock %}
+{% block body_class %}has-page-hero{% endblock %}
 
+{% block extra_head %}
 <style>
+/* ── Prevent horizontal page overflow on mobile ── */
+/* body { overflow-x: hidden; } */
 
-/* ================================
-   RESPONSIVE ADMIN DASHBOARD FIXES
-================================ */
-
-/* ---- Stats Grid ---- */
-.stat-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
-}
-
-/* ---- Admin Tabs (Scrollable on Mobile) ---- */
-.admin-tabs {
-  display: flex;
-  gap: 8px;
-  flex-wrap: nowrap;
+/* ── Tables scroll within their wrapper, never overflow the page ── */
+.admin-tab-panel .table-wrapper {
   overflow-x: auto;
-  padding-bottom: 6px;
+  -webkit-overflow-scrolling: touch;
+  /* Contain the table so it never pushes the body wider than the viewport */
+  max-width: 100%;
+}
+.admin-tab-panel .table {
+  min-width: 320px; /* Reduced minimum width for mobile */
+  width: 100%; /* Use 100% instead of max-content */
 }
 
-.admin-tabs::-webkit-scrollbar {
-  display: none;
-}
-
-.admin-tab {
-  flex: 0 0 auto;
-  white-space: nowrap;
-}
-
-/* ---- Table Wrapper (Horizontal Scroll) ---- */
-.table-wrapper {
-  width: 100%;
-  overflow-x: auto;
-}
-
-.table {
-  min-width: 700px;
-}
-
-/* ---- Section Headers ---- */
-.section-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-}
-
-/* ================================
-   TABLE → MOBILE OPTIMIZATION
-================================ */
-
+/* ── Mobile ── */
 @media (max-width: 768px) {
+  /* Stat cards: compact on mobile (grid is already 2-col by default in main.css) */
+  .stat-card  { padding: 14px 12px !important; gap: 10px !important; }
+  .stat-icon  { font-size: 1.1rem !important; }
+  .stat-value { font-size: 1.4rem !important; }
+  .stat-label { font-size: 0.72rem !important; }
 
-  /* Stack buttons vertically */
-  .table td div {
-    flex-direction: column !important;
-    align-items: stretch !important;
+  /* Tab bar: wrap to 2×2 grid instead of scrolling off-screen */
+  .admin-tabs {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    overflow-x: unset !important;
+    gap: 4px !important;
+    border-bottom: none !important;
+    margin-bottom: 20px !important;
   }
-
-  .btn-sm {
-    width: 100%;
-    text-align: center;
+  .admin-tab {
+    border-radius: var(--radius-sm) !important;
+    border: 1.5px solid var(--gray-200) !important;
+    border-bottom: 1.5px solid var(--gray-200) !important;
+    margin-bottom: 0 !important;
+    padding: 10px 8px !important;
+    font-size: 0.78rem !important;
+    white-space: normal !important;
+    text-align: center !important;
+    background: var(--white) !important;
   }
-
-  /* Stack section headers */
-  .section-head {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .section-head .btn {
-    width: 100%;
-  }
-
-  /* Hero + container padding */
-  .page-hero {
-    padding: 32px 16px;
-    text-align: center;
-  }
-
-  .container {
-    padding-left: 16px !important;
-    padding-right: 16px !important;
-  }
-}
-
-
-/* ================================
-   CARD-STYLE TABLES (Very Small Screens)
-================================ */
-
-@media (max-width: 600px) {
-
-  .table {
-    display: block;
-    min-width: unset;
-  }
-
-  .table thead {
-    display: none;
-  }
-
-  .table tr {
-    display: block;
-    background: white;
-    margin-bottom: 12px;
-    padding: 12px;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-  }
-
-  .table td {
-    display: block;
-    padding: 6px 0;
+  .admin-tab.active {
+    background: var(--green-800) !important;
+    color: #fff !important;
+    border-color: var(--green-800) !important;
   }
 }
-
 </style>
+{% endblock %}
 
 {% block nav_links %}
   <li><a href="{{ url_for('admin.dashboard') }}" class="active">Admin</a></li>
   <li><a href="{{ url_for('main.home') }}">Home</a></li>
   <li><a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a></li>
 {% endblock %}
-
-  <a href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a>
-  <a href="{{ url_for('main.home') }}">Home</a>
-  <a href="{{ url_for('auth.logout') }}">Logout</a>
 
 {% block body %}
 <div class="page-hero">
@@ -140,26 +70,30 @@
   </div>
 </div>
 
-<div class="container" style="padding-top: 28px; padding-bottom: 48px;">
+<div class="container" style="padding-top: 28px; padding-bottom: max(48px, calc(48px + env(safe-area-inset-bottom)));">
 
   {# ── Stats ── #}
   <div class="stat-grid">
     <div class="stat-card">
-      <div class="stat-icon">👤</div>
+      <div class="stat-icon"><i class="fa-solid fa-user" style="color: var(--green-500);"></i></div>
       <div><div class="stat-value">{{ total_users }}</div><div class="stat-label">Total Students</div></div>
     </div>
     <div class="stat-card gold">
-      <div class="stat-icon">📋</div>
+      <div class="stat-icon"><i class="fa-solid fa-clipboard-list" style="color: var(--gold-500);"></i></div>
       <div><div class="stat-value">{{ total_tests }}</div><div class="stat-label">Total Tests Taken</div></div>
     </div>
     <div class="stat-card teal">
-      <div class="stat-icon">🏫</div>
+      <div class="stat-icon"><i class="fa-solid fa-school" style="color: #0891b2;"></i></div>
       <div><div class="stat-value">{{ total_schools }}</div><div class="stat-label">Schools</div></div>
     </div>
     {% for stage, count in stage_counts.items() %}
       {% if loop.index <= 1 %}
       <div class="stat-card {% if 'clinical' in stage|lower %}red{% endif %}">
-        <div class="stat-icon">{% if 'clinical' in stage|lower %}🔴{% elif 'elevated' in stage|lower %}🟡{% else %}🟢{% endif %}</div>
+        <div class="stat-icon">
+          {% if 'clinical' in stage|lower %}<i class="fa-solid fa-circle-exclamation" style="color: var(--red-600);"></i>
+          {% elif 'elevated' in stage|lower %}<i class="fa-solid fa-circle-exclamation" style="color: var(--gold-500);"></i>
+          {% else %}<i class="fa-solid fa-circle-check" style="color: var(--green-500);"></i>{% endif %}
+        </div>
         <div><div class="stat-value">{{ count }}</div><div class="stat-label">{{ stage }}</div></div>
       </div>
       {% endif %}
@@ -168,17 +102,27 @@
 
   {# ── Tabs ── #}
   <div class="admin-tabs">
-    <button class="admin-tab" data-tab="all_accounts">👤 Accounts ({{ accounts | length }})</button>
-    <button class="admin-tab" data-tab="all_schools">🏫 Schools ({{ schools | length }})</button>
-    <button class="admin-tab" data-tab="question_database">❓ Questions ({{ questions | length }})</button>
-    <button class="admin-tab" data-tab="all_results">📋 Results ({{ results | length }})</button>
+    <button class="admin-tab" data-tab="all_accounts">
+      <i class="fa-solid fa-users"></i>
+      <span>Accounts</span><span class="tab-count"> ({{ accounts | length }})</span>
+    </button>
+    <button class="admin-tab" data-tab="all_schools">
+      <i class="fa-solid fa-school"></i>
+      <span>Schools</span><span class="tab-count"> ({{ schools | length }})</span>
+    </button>
+    <button class="admin-tab" data-tab="question_database">
+      <i class="fa-solid fa-circle-question"></i>
+      <span>Questions</span><span class="tab-count"> ({{ questions | length }})</span>
+    </button>
+    <button class="admin-tab" data-tab="all_results">
+      <i class="fa-solid fa-clipboard-list"></i>
+      <span>Results</span><span class="tab-count"> ({{ results | length }})</span>
+    </button>
   </div>
 
   {# ── Accounts Tab ── #}
   <div id="all_accounts" class="admin-tab-panel">
-    <div class="section-head">
-      <h3>Student Accounts</h3>
-    </div>
+    <div class="section-head"><h3>Student Accounts</h3></div>
     <div class="card">
       <div class="table-wrapper">
         <table class="table">
@@ -188,14 +132,14 @@
           <tbody>
             {% for acc in accounts %}
             <tr>
-              <td><strong>{{ acc.fname }} {{ acc.lname }}</strong></td>
-              <td>@{{ acc.username }}</td>
-              <td style="font-size: 0.82rem; color: var(--gray-500);">{{ acc.email }}</td>
-              <td>{{ acc.level | capitalize if acc.level else '—' }}</td>
-              <td style="font-size: 0.82rem;">{{ acc.school.school_name if acc.school else '—' }}</td>
-              <td style="font-size: 0.82rem; color: var(--gray-500);">{{ acc.created_at.strftime('%d %b %Y') }}</td>
-              <td>
-                <div style="display: flex; gap: 6px;">
+              <td data-label="Name"><strong>{{ acc.fname }} {{ acc.lname }}</strong></td>
+              <td data-label="Username">@{{ acc.username }}</td>
+              <td data-label="Email">{{ acc.email }}</td>
+              <td data-label="Level">{{ acc.level | capitalize if acc.level else '—' }}</td>
+              <td data-label="School">{{ acc.school.school_name if acc.school else '—' }}</td>
+              <td data-label="Joined">{{ acc.created_at.strftime('%d %b %Y') }}</td>
+              <td class="td-actions">
+                <div>
                   <a href="{{ url_for('admin.edit_account', account_id=acc.id) }}" class="btn btn-ghost btn-sm">Edit</a>
                   {% if acc.id != 1 %}
                   <form method="POST" action="{{ url_for('admin.delete_account', account_id=acc.id) }}" class="confirm-delete" data-item="{{ acc.username }}">
@@ -217,9 +161,7 @@
 
   {# ── Schools Tab ── #}
   <div id="all_schools" class="admin-tab-panel">
-    <div class="section-head">
-      <h3>Registered Schools</h3>
-    </div>
+    <div class="section-head"><h3>Registered Schools</h3></div>
     <div class="card">
       <div class="table-wrapper">
         <table class="table">
@@ -229,11 +171,11 @@
           <tbody>
             {% for s in schools %}
             <tr>
-              <td><strong>{{ s.school_name }}</strong></td>
-              <td>{{ s.admin_name }}</td>
-              <td style="font-size: 0.82rem; color: var(--gray-500);">{{ s.email or '—' }}</td>
-              <td>{{ s.student_count }}</td>
-              <td>
+              <td data-label="School"><strong>{{ s.school_name }}</strong></td>
+              <td data-label="Admin">{{ s.admin_name }}</td>
+              <td data-label="Email">{{ s.email or '—' }}</td>
+              <td data-label="Students">{{ s.student_count }}</td>
+              <td data-label="Upload">
                 <form method="POST" action="{{ url_for('admin.toggle_upload', school_id=s.id) }}" style="display:inline">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit" class="badge {% if s.upload_enabled %}stage-normal{% else %}stage-clinical{% endif %}" style="border: none; cursor: pointer; padding: 5px 12px;">
@@ -241,9 +183,9 @@
                   </button>
                 </form>
               </td>
-              <td style="font-size: 0.82rem; color: var(--gray-500);">{{ s.created_at.strftime('%d %b %Y') }}</td>
-              <td>
-                <div style="display: flex; gap: 6px;">
+              <td data-label="Registered">{{ s.created_at.strftime('%d %b %Y') }}</td>
+              <td class="td-actions">
+                <div>
                   <a href="{{ url_for('main.school_dashboard', school_id=s.id) }}" class="btn btn-ghost btn-sm">View</a>
                   <a href="{{ url_for('admin.edit_school', school_id=s.id) }}" class="btn btn-ghost btn-sm">Edit</a>
                   <form method="POST" action="{{ url_for('admin.delete_school', school_id=s.id) }}" class="confirm-delete" data-item="{{ s.school_name }}">
@@ -277,12 +219,12 @@
           <tbody>
             {% for q in questions %}
             <tr>
-              <td style="color: var(--gray-500); font-size: 0.82rem;">{{ q.id }}</td>
-              <td><span class="badge badge-green">{{ q.test_type }}</span></td>
-              <td style="max-width: 400px;">{{ q.question_content }}</td>
-              <td style="font-size: 0.82rem; color: var(--gray-500);">{{ q.created_at.strftime('%d %b %Y') }}</td>
-              <td>
-                <div style="display: flex; gap: 6px;">
+              <td data-label="ID">{{ q.id }}</td>
+              <td data-label="Type"><span class="badge badge-green">{{ q.test_type }}</span></td>
+              <td data-label="Question">{{ q.question_content }}</td>
+              <td data-label="Added">{{ q.created_at.strftime('%d %b %Y') }}</td>
+              <td class="td-actions">
+                <div>
                   <a href="{{ url_for('admin.edit_question', question_id=q.id) }}" class="btn btn-ghost btn-sm">Edit</a>
                   <form method="POST" action="{{ url_for('admin.delete_question', question_id=q.id) }}" class="confirm-delete" data-item="this question">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -291,8 +233,6 @@
                 </div>
               </td>
             </tr>
-            {% else %}
-            <tr><td colspan="5"><div class="empty-state"><p>No questions yet.</p></div></td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -312,16 +252,19 @@
           <tbody>
             {% for r in results %}
             <tr>
-              <td>{{ r.account.full_name }}<br><small style="color:var(--gray-500)">@{{ r.account.username }}</small></td>
-              <td style="font-size: 0.85rem;">{{ r.test_type }}</td>
-              <td>{{ r.score }}{% if r.max_score %}/{{ r.max_score }}{% endif %}</td>
-              <td>
+              <td data-label="Student">
+                {{ r.account.full_name }}<br>
+                <small style="color:var(--gray-500)">@{{ r.account.username }}</small>
+              </td>
+              <td data-label="Assessment">{{ r.test_type }}</td>
+              <td data-label="Score">{{ r.score }}{% if r.max_score %}/{{ r.max_score }}{% endif %}</td>
+              <td data-label="Stage">
                 {% set s = (r.stage or r.details or '') | lower %}
                 <span class="badge {% if 'normal' in s %}stage-normal{% elif 'mild' in s %}stage-mild{% elif 'elevated' in s %}stage-elevated{% elif 'clinical' in s %}stage-clinical{% else %}badge-gray{% endif %}">
                   {{ r.stage or r.details or 'Unknown' }}
                 </span>
               </td>
-              <td style="font-size: 0.82rem; color: var(--gray-500);">{{ r.taken_at.strftime('%d %b %Y %H:%M') }}</td>
+              <td data-label="Date">{{ r.taken_at.strftime('%d %b %Y %H:%M') }}</td>
             </tr>
             {% else %}
             <tr><td colspan="5"><div class="empty-state"><p>No results yet.</p></div></td></tr>
@@ -333,4 +276,67 @@
   </div>
 
 </div>
+
+{% block scripts %}
+<script>
+(function () {
+  const STORAGE_KEY = 'adminActiveTab';
+  const tabs   = document.querySelectorAll('.admin-tab');
+  const panels = document.querySelectorAll('.admin-tab-panel');
+
+  function activate(tabId) {
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === tabId));
+    panels.forEach(p => p.classList.toggle('active', p.id === tabId));
+    try { localStorage.setItem(STORAGE_KEY, tabId); } catch (_) {}
+  }
+
+  tabs.forEach(tab => tab.addEventListener('click', () => activate(tab.dataset.tab)));
+
+  const saved  = (() => { try { return localStorage.getItem(STORAGE_KEY); } catch (_) { return null; } })();
+  const first  = tabs[0]?.dataset.tab;
+  const target = saved && document.getElementById(saved) ? saved : first;
+  if (target) activate(target);
+
+  // ── Mobile row expander ──────────────────────────────────
+  // Only runs below 600px. Marks secondary cells, injects a
+  // "More / Less" toggle button after the primary cells in each row.
+  function initRowExpanders() {
+    if (window.innerWidth >= 600) return;
+    document.querySelectorAll('.admin-tab-panel .table tbody tr').forEach(function(row) {
+      // Skip empty-state rows
+      if (row.querySelector('[colspan]')) return;
+      // Already initialised
+      if (row.querySelector('.row-expand-btn')) return;
+
+      const cells = Array.from(row.querySelectorAll('td:not(.td-actions)'));
+      // First cell is always visible; everything from index 2 onward is secondary
+      cells.slice(2).forEach(function(td) { td.classList.add('td-secondary'); });
+
+      if (cells.length > 2) {
+        const btn = document.createElement('button');
+        btn.className = 'row-expand-btn';
+        btn.innerHTML = 'More <i class="expand-chevron">▼</i>';
+        btn.addEventListener('click', function() {
+          const expanded = row.classList.toggle('row-expanded');
+          btn.innerHTML = (expanded ? 'Less' : 'More') + ' <i class="expand-chevron">▼</i>';
+        });
+        // Insert button before the actions cell (or at end of row)
+        const actionsCell = row.querySelector('.td-actions');
+        if (actionsCell) {
+          row.insertBefore(btn, actionsCell);
+        } else {
+          row.appendChild(btn);
+        }
+      }
+    });
+  }
+
+  initRowExpanders();
+  // Re-run when the user switches tabs (new panel becomes visible)
+  tabs.forEach(tab => tab.addEventListener('click', function() {
+    setTimeout(initRowExpanders, 0);
+  }));
+})();
+</script>
+{% endblock %}
 {% endblock %}

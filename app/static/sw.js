@@ -6,15 +6,14 @@
      - API / POST requests:                 network-only (never cache)
    ============================================================ */
 
-const CACHE_VERSION = 'sesa-v3';
+const CACHE_VERSION = 'sesa-v4'; // bump this every deployment to force cache refresh
 const STATIC_ASSETS = [
   '/static/css/main.css',
   '/static/js/main.js',
   '/static/manifest.json',
   '/static/images/Pofa_pwa.png',
-  '/static/images/Pofa.jpg',
-  '/static/images/Pofa.png',
-  '/static/images/SESA.png',
+  '/static/images/Pofa_pwa-192.png',
+  '/static/images/Pofa.png',  // keep only one logo variant
   '/offline',
 ];
 

@@ -104,7 +104,9 @@ class QuestionForm(FlaskForm):
 
 
 class FeedbackForm(FlaskForm):
-    result_id = HiddenField()   # ID of the already-persisted TestResult row
+    result_id = HiddenField()
+    test_type = HiddenField()
+    score = HiddenField()
     stage = HiddenField()
     message = HiddenField()
     max_score = HiddenField()

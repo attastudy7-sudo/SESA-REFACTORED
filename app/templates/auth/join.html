@@ -5,7 +5,7 @@
 <div class="container" style="max-width: 480px; padding: 3rem 1rem;">
   <div class="card">
     <div class="card-header" style="text-align:center;">
-      <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🏫</div>
+      <div style="font-size: 2.5rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-school" style="color: var(--green-600);"></i></div>
       <h2 style="font-family: var(--font-display); color: var(--green-800);">Join Your School</h2>
       <p style="color: var(--gray-500); font-size: 0.88rem;">Enter the access code your school administrator gave you.</p>
     </div>
@@ -29,7 +29,7 @@
                  {% if school %}readonly{% endif %} required>
           {% if school %}
           <p style="margin-top: 6px; font-size: 0.82rem; color: var(--green-700);">
-            ✅ <strong>{{ school.school_name }}</strong>
+            <i class="fa-solid fa-circle-check" style="color: var(--green-500);"></i> <strong>{{ school.school_name }}</strong>
           </p>
           {% endif %}
         </div>

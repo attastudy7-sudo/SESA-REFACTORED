@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block title %}School Analytics{% endblock %}
+{% block body_class %}has-page-hero{% endblock %}
 
 {% block extra_head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -10,16 +11,18 @@
   <li><a href="{{ url_for('main.school_analytics', school_id=school.id) }}" class="active">Analytics</a></li>
   <li><a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a></li>
 {% endblock %}
+{% block drawer_links %}
 
   <a href="{{ url_for('main.school_dashboard', school_id=school.id) }}">Dashboard</a>
   <a href="{{ url_for('main.school_analytics', school_id=school.id) }}">Analytics</a>
   <a href="{{ url_for('auth.logout') }}">Logout</a>
+{% endblock %}
 
 {% block body %}
 <div class="page-hero">
   <div class="container">
     <h1>School Analytics</h1>
-    <p>Overall student performance and trends for {{ school.name }}</p>
+    <p>Overall student performance and trends for {{ school.school_name }}</p>
   </div>
 </div>
 
@@ -30,21 +33,21 @@
     <!-- Summary Stats -->
     <div class="stat-grid" style="margin-bottom: 32px;">
       <div class="stat-card">
-        <div class="stat-icon">👥</div>
+        <div class="stat-icon"><i class="fa-solid fa-users" style="color: var(--green-500);"></i></div>
         <div>
           <div class="stat-value">{{ total_students }}</div>
           <div class="stat-label">Students Assessed</div>
         </div>
       </div>
       <div class="stat-card gold">
-        <div class="stat-icon">📝</div>
+        <div class="stat-icon"><i class="fa-solid fa-pen-to-square" style="color: var(--gold-500);"></i></div>
         <div>
           <div class="stat-value">{{ total_assessments }}</div>
           <div class="stat-label">Total Assessments</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon">📊</div>
+        <div class="stat-icon"><i class="fa-solid fa-chart-bar" style="color: var(--green-500);"></i></div>
         <div>
           <div class="stat-value">{{ avg_score.percentage }}%</div>
           <div class="stat-label">Overall Average</div>
@@ -80,7 +83,7 @@
   </div>
   {% else %}
   <div class="empty-state">
-    <div class="empty-state-icon">📊</div>
+    <div class="empty-state-icon"><i class="fa-solid fa-chart-bar" style="color: var(--gray-300);"></i></div>
     <h3>No Data Yet</h3>
     <p>No student assessments have been completed yet.</p>
     <a href="{{ url_for('main.school_dashboard', school_id=school.id) }}" class="btn btn-primary" style="margin-top: 16px;">Go to Dashboard</a>
@@ -137,11 +140,11 @@
 <nav class="bottom-tab-bar" aria-label="School admin navigation">
   <a href="{{ url_for('main.school_dashboard', school_id=school_id) }}"
      class="tab-item {% if request.endpoint == 'main.school_dashboard' %}active{% endif %}">
-    <span class="tab-icon">🏫</span><span class="tab-label">Dashboard</span>
+    <i class="fa-solid fa-school tab-icon"></i><span class="tab-label">Dashboard</span>
   </a>
   <a href="{{ url_for('main.school_analytics', school_id=school_id) }}"
      class="tab-item {% if request.endpoint == 'main.school_analytics' %}active{% endif %}">
-    <span class="tab-icon">📈</span><span class="tab-label">Analytics</span>
+    <i class="fa-solid fa-chart-line tab-icon"></i><span class="tab-label">Analytics</span>
   </a>
   <a href="{{ url_for('auth.logout') }}" class="tab-item tab-logout">
     <span class="tab-icon">↩</span><span class="tab-label">Logout</span>

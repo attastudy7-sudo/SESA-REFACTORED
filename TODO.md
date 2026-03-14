@@ -18,7 +18,7 @@ Make the navigation in the base template (used across the app) change background
 ### Current State:
 ```css
 .navbar {
-  background: var(--green-800);
+  background: transparent;
   color: #fff;
   position: sticky;
   top: 0;

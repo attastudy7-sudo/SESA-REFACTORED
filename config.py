@@ -61,13 +61,6 @@ class ProductionConfig(Config):
     def init_app(cls, app):
         Config.init_app(app) if hasattr(Config, 'init_app') else None
         secret = app.config.get('SECRET_KEY', '')
-        db_uri = app.config.get('SQLALCHEMY_DATABASE_URI', '')
-        if db_uri.startswith('sqlite') and not os.environ.get('ALLOW_SQLITE_IN_PROD'):
-            raise RuntimeError(
-                'DATABASE_URL is not set. SQLite must not be used in production '
-                'with multiple workers. Set DATABASE_URL to a PostgreSQL connection '
-                'string, or set ALLOW_SQLITE_IN_PROD=1 to override (single-process only).'
-            )
         if 'change-this' in secret or len(secret) < 24:
             raise RuntimeError(
                 'SECRET_KEY is insecure or using the default value. '

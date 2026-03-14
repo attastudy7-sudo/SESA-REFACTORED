@@ -35,16 +35,17 @@
   
   {% if results %}
   <div class="section">
-    <!-- Average Score Card -->
+    <!-- Assessment Completion Summary -->
     <div class="card" style="margin-bottom: 28px; background: linear-gradient(135deg, var(--green-800), var(--green-700));">
       <div class="card-body" style="text-align: center; color: #fff; padding: 32px;">
-        <h3 style="font-family: var(--font-display); font-size: 1.1rem; margin-bottom: 16px; color: var(--gold-200);">Overall Average Score</h3>
+        <h3 style="font-family: var(--font-display); font-size: 1.1rem; margin-bottom: 16px; color: var(--gold-200);">Assessment Summary</h3>
         <div style="display: flex; align-items: center; justify-content: center; gap: 24px; flex-wrap: wrap;">
           <div style="background: rgba(255,255,255,.15); border-radius: 50%; width: 100px; height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-            <span style="font-family: var(--font-display); font-size: 2rem; font-weight: 700;">{{ avg_score.percentage }}%</span>
+            <span style="font-family: var(--font-display); font-size: 2rem; font-weight: 700;">{{ results | length }}</span>
+            <span style="font-size: 0.72rem; color: rgba(255,255,255,.7); margin-top: 2px;">taken</span>
           </div>
           <div style="text-align: left;">
-            <span class="badge" style="font-size: 0.9rem; padding: 6px 16px; margin-bottom: 8px; background: {{ avg_score.color }}; color: #fff;">{{ avg_score.stage }}</span>
+            <span class="badge" style="font-size: 0.9rem; padding: 6px 16px; margin-bottom: 8px; background: rgba(255,255,255,.2); color: #fff;">{{ avg_score.stage }}</span>
             <p style="font-size: 0.95rem; color: rgba(255,255,255,.85); max-width: 320px;">{{ avg_score.message }}</p>
           </div>
         </div>
@@ -63,7 +64,7 @@
     
     <div class="section-head">
       <h2>All Results</h2>
-      <p style="font-size: 0.85rem; color: var(--gray-500);">You have taken {{ results|length }} assessment(s).</p>
+      <p style="font-size: 0.85rem; color: var(--gray-500); width: 100%;">You have taken {{ results|length }} assessment(s).</p>
     </div>
     
     <div class="card">
@@ -80,15 +81,15 @@
           <tbody>
             {% for r in results %}
             <tr>
-              <td>{{ r.test_type }}</td>
-              <td>{% if r.max_score %}{{ r.score }} / {{ r.max_score }}{% else %}{{ r.score }}{% endif %}</td>
-              <td>
+              <td data-label="Assessment">{{ r.test_type }}</td>
+              <td data-label="Score">{% if r.max_score %}{{ r.score }} / {{ r.max_score }}{% else %}{{ r.score }}{% endif %}</td>
+              <td data-label="Stage">
                 {% set s = (r.stage or r.details or 'Unknown') | lower %}
                 <span class="badge {% if 'normal' in s %}stage-normal{% elif 'mild' in s %}stage-mild{% elif 'elevated' in s %}stage-elevated{% elif 'clinical' in s %}stage-clinical{% else %}badge-gray{% endif %}">
                   {{ r.stage or r.details or 'Unknown' }}
                 </span>
               </td>
-              <td style="color: var(--gray-500); font-size: 0.85rem;">{{ r.taken_at.strftime('%d %b %Y') }}</td>
+              <td data-label="Date">{{ r.taken_at.strftime('%d %b %Y') }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -98,7 +99,7 @@
   </div>
   {% else %}
   <div class="empty-state">
-    <div class="empty-state-icon">📋</div>
+    <div class="empty-state-icon"><i class="fa-solid fa-clipboard-list" style="color: var(--gray-300);"></i></div>
     <h3>No Results Yet</h3>
     <p>You haven't taken any assessments yet. Start by choosing an assessment below.</p>
     <a href="{{ url_for('main.home') }}" class="btn btn-primary" style="margin-top: 16px;">Take an Assessment</a>
@@ -150,4 +151,3 @@
 {% endblock %}
 {% endif %}
 {% endblock %}
-

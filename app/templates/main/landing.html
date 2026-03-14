@@ -83,26 +83,41 @@
 
       <div class="feature-grid">
         <div class="feature-item">
-          <div class="feature-icon">🧠</div>
+          <div class="feature-icon"><i class="fa-solid fa-brain" style="color: var(--green-600);"></i></div>
           <h3>Six Validated Assessments</h3>
           <p>Covering Separation Anxiety, Social Phobia, Generalised Anxiety, Panic Disorder, OCD, and Major Depressive Disorder.</p>
         </div>
         <div class="feature-item">
-          <div class="feature-icon">📊</div>
+          <div class="feature-icon"><i class="fa-solid fa-chart-bar" style="color: var(--green-600);"></i></div>
           <h3>Staged Results</h3>
           <p>Each assessment returns a clearly interpreted result - Normal, Mild, Elevated, or Clinical - with personalised guidance.</p>
         </div>
         <div class="feature-item">
-          <div class="feature-icon">🏫</div>
+          <div class="feature-icon"><i class="fa-solid fa-school" style="color: var(--green-600);"></i></div>
           <h3>School Dashboard</h3>
           <p>Administrators access a dedicated dashboard to monitor student results, upload student lists, and track trends.</p>
         </div>
         <div class="feature-item">
-          <div class="feature-icon">🔒</div>
+          <div class="feature-icon"><i class="fa-solid fa-lock" style="color: var(--green-600);"></i></div>
           <h3>Private and Secure</h3>
           <p>Student data is protected. Results are confidential and only accessible to authorised school personnel.</p>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- GES Alignment Banner — Phase 3 feature from audit report -->
+  <section class="ges-banner">
+    <div class="ges-banner-inner">
+      <div class="ges-badge">
+        <i class="fa-solid fa-award"></i> GES Aligned
+      </div>
+      <h2>Aligned with Ghana Education Service Policy</h2>
+      <p>
+        SESA supports the GES School Health Policy by providing schools with
+        structured, evidence-informed tools to identify and respond to students'
+        social-emotional needs — enabling schools to meet their wellbeing reporting obligations.
+      </p>
     </div>
   </section>
 
@@ -120,20 +135,22 @@
     <p style="margin-top: 6px; font-size: 0.78rem; opacity: .6;">SESA is a screening tool only and does not constitute a clinical diagnosis.</p>
   </footer>
 
-  <div id="a2hs-banner" class="a2hs-banner" style="display: none;">
-    <div class="a2hs-banner-inner">
-      <button id="a2hs-dismiss" class="a2hs-btn-dismiss" aria-label="Dismiss">X</button>
-      <div class="a2hs-banner-content">
-        <div class="a2hs-banner-icon">
+  <div id="a2hs-banner" class="a2hs-banner" style="display: none;" role="dialog" aria-label="Install SESA">
+    <div class="a2hs-sheet">
+      <div class="a2hs-handle"></div>
+      <button id="a2hs-dismiss" class="a2hs-btn-dismiss" aria-label="Dismiss">&#x2715;</button>
+      <div class="a2hs-row">
+        <div class="a2hs-icon">
           <img src="{{ url_for('static', filename='images/Pofa_pwa.png') }}" alt="SESA">
         </div>
-        <div class="a2hs-banner-text">
+        <div class="a2hs-text">
           <strong>Install SESA</strong>
-          <span>Add to Home Screen for quick access</span>
+          <span>Add to your home screen for faster access and offline use</span>
         </div>
-        <div class="a2hs-banner-actions">
-          <button id="a2hs-install" class="a2hs-btn-install">Install</button>
-        </div>
+      </div>
+      <div class="a2hs-actions">
+        <button id="a2hs-install" class="a2hs-btn-install">Add to Home Screen</button>
+        <button id="a2hs-dismiss2" class="a2hs-btn-later">Not now</button>
       </div>
     </div>
   </div>
@@ -142,63 +159,47 @@
 
   <script>
   (function() {
-    var deferredPrompt;
-    var banner = document.getElementById('a2hs-banner');
-    var installBtn = document.getElementById('a2hs-install');
-    var dismissBtn = document.getElementById('a2hs-dismiss');
+    var deferredPrompt = null;
+    var banner      = document.getElementById('a2hs-banner');
+    var installBtn  = document.getElementById('a2hs-install');
+    var dismissBtn  = document.getElementById('a2hs-dismiss');
+    var dismissBtn2 = document.getElementById('a2hs-dismiss2');
 
     if (localStorage.getItem('a2hs-dismissed')) return;
-    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) return;
+    if (window.matchMedia('(display-mode: standalone)').matches) return;
+    if (window.navigator.standalone) return;
 
-    function showBanner() {
-      if (banner) banner.style.display = 'block';
-    }
+    var isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (!isMobileDevice) return;
+
+    function showBanner() { if (banner) banner.style.display = 'block'; }
+    function hideBanner()  { if (banner) banner.style.display = 'none';  }
+    function dismiss(permanent) { hideBanner(); if (permanent) localStorage.setItem('a2hs-dismissed','true'); }
 
     window.addEventListener('beforeinstallprompt', function(e) {
-      e.preventDefault();
-      deferredPrompt = e;
-      showBanner();
+      e.preventDefault(); deferredPrompt = e;
+      setTimeout(showBanner, 1500);
     });
-
-    function isMobile() {
-      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
-    }
-
-    if (isMobile()) {
-      setTimeout(function() {
-        if (!localStorage.getItem('a2hs-dismissed') && !window.matchMedia('(display-mode: standalone)').matches && !window.navigator.standalone) {
-          showBanner();
-        }
-      }, 2000);
-    }
 
     if (installBtn) {
       installBtn.addEventListener('click', function() {
         if (deferredPrompt) {
           deferredPrompt.prompt();
-          deferredPrompt.userChoice.then(function(outcome) {
-            if (outcome === 'accepted') deferredPrompt = null;
-          });
+          deferredPrompt.userChoice.then(function(o) { deferredPrompt = null; dismiss(o.outcome === 'accepted'); });
         } else {
-          alert('To install SESA:\n\n1. Tap the menu button (three dots)\n2. Select Add to Home screen');
+          hideBanner();
+          var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+          alert(isIOS
+            ? 'To install SESA on your iPhone:\n\n1. Tap the Share button\n2. Tap "Add to Home Screen"\n3. Tap "Add"'
+            : 'To install SESA:\n\n1. Tap the browser menu (\u22ee)\n2. Tap "Add to Home screen"\n3. Tap "Add"');
+          dismiss(false);
         }
-        if (banner) banner.style.display = 'none';
       });
     }
-
-    if (dismissBtn) {
-      dismissBtn.addEventListener('click', function() {
-        if (banner) banner.style.display = 'none';
-        localStorage.setItem('a2hs-dismissed', 'true');
-      });
-    }
-
-    window.addEventListener('appinstalled', function() {
-      deferredPrompt = null;
-      if (banner) banner.style.display = 'none';
-    });
+    if (dismissBtn)  dismissBtn.addEventListener('click',  function() { dismiss(true); });
+    if (dismissBtn2) dismissBtn2.addEventListener('click', function() { dismiss(true); });
+    window.addEventListener('appinstalled', function() { deferredPrompt = null; dismiss(true); });
   })();
   </script>
 </body>
 </html>
-

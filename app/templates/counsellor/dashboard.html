@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block title %}Counsellor Dashboard{% endblock %}
+{% block body_class %}has-page-hero{% endblock %}
 
 {% block nav_links %}
   <li><a href="{{ url_for('counsellor.dashboard') }}" class="active">My Students</a></li>
@@ -84,7 +85,7 @@
           {% if student.id in contacted_ids %}
           <span style="background:#d1fae5; color:#065f46; font-size:0.72rem; font-weight:700;
                         padding:3px 9px; border-radius:12px; text-transform:uppercase; letter-spacing:.04em;">
-            ✓ Contacted
+            <i class="fa-solid fa-check"></i> Contacted
           </span>
           {% endif %}
         </div>
@@ -107,14 +108,14 @@
       <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
         <a href="{{ url_for('counsellor.student_history', student_id=student.id) }}"
            class="btn btn-secondary" style="font-size:0.82rem; padding:8px 16px;">
-          📋 Full History
+          <i class="fa-solid fa-clipboard-list"></i> Full History
         </a>
         <form method="POST" action="{{ url_for('counsellor.mark_contacted', student_id=student.id) }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="next" value="{{ url_for('counsellor.dashboard', class_group=selected_class, page=pagination.page) }}">
           <button type="submit" class="btn {% if student.id in contacted_ids %}btn-ghost{% else %}btn-primary{% endif %}"
                   style="font-size:0.82rem; padding:8px 16px;">
-            {% if student.id in contacted_ids %}↻ Re-contact{% else %}✓ Mark Contacted{% endif %}
+            {% if student.id in contacted_ids %}<i class="fa-solid fa-rotate"></i> Re-contact{% else %}<i class="fa-solid fa-check"></i> Mark Contacted{% endif %}
           </button>
         </form>
       </div>
@@ -163,7 +164,7 @@
 
   {% else %}
   <div class="card" style="text-align:center; padding:3rem 2rem;">
-    <div style="font-size:3rem; margin-bottom:1rem;">✅</div>
+    <div style="font-size:3rem; margin-bottom:1rem;"><i class="fa-solid fa-circle-check" style="color: var(--green-500);"></i></div>
     <h3 style="color:var(--green-800); margin-bottom:0.5rem;">
       {% if selected_class %}No students at risk in {{ selected_class }}{% else %}No students at elevated risk{% endif %}
     </h3>

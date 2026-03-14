@@ -39,7 +39,8 @@ def upgrade():
         )
 
 
-def downgrade():
+def do
+wngrade():
     with op.batch_alter_table('school', schema=None) as batch_op:
         batch_op.drop_column('locked_until')
         batch_op.drop_column('failed_attempts')
