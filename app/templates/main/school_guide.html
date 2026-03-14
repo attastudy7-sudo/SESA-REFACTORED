@@ -1,0 +1,363 @@
+{% extends 'base.html' %}
+{% block title %}School Guide{% endblock %}
+
+{% block full_page %}
+
+<div class="app-layout">
+
+  {# ── Navbar ── #}
+  <nav class="navbar scrolled" id="mainNav">
+    <div class="navbar-inner">
+      <a href="{{ url_for('main.school_dashboard', school_id=session.get('school_id', 0)) }}" class="navbar-brand">
+        <img src="{{ url_for('static', filename='images/Pofa.jpg') }}" alt="SESA" class="navbar-logo">
+        <span class="navbar-title">SESA</span>
+      </a>
+      <ul class="navbar-links">
+        <a href="{{ url_for('main.school_dashboard', school_id=session.get('school_id', 0)) }}" class="btn btn-sm btn-ghost">← Back to Dashboard</a>
+        <a href="{{ url_for('auth.school_login') }}" class="btn btn-sm btn-danger">Logout</a>
+      </ul>
+    </div>
+  </nav>
+
+  <main>
+    {# ── Hero ── #}
+    <div class="page-hero has-page-hero">
+      <div class="container-md">
+        <p style="font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--gold-200); margin-bottom:8px;">
+          <i class="fa-solid fa-book-open"></i> &nbsp;SESA School Guide
+        </p>
+        <h1>Getting Started with SESA</h1>
+        <p>Everything you need to register your school, upload students, and get assessments running.</p>
+      </div>
+    </div>
+
+    <div class="container-md" style="padding-top: 40px; padding-bottom: 60px;">
+
+      {# ── Quick Nav ── #}
+      <div class="guide-nav">
+        <a href="#registration" class="guide-nav-item">
+          <i class="fa-solid fa-school"></i>
+          <span>School Registration</span>
+        </a>
+        <a href="#upload" class="guide-nav-item">
+          <i class="fa-solid fa-file-excel"></i>
+          <span>Excel Upload</span>
+        </a>
+        <a href="#code" class="guide-nav-item">
+          <i class="fa-solid fa-qrcode"></i>
+          <span>Join by Code</span>
+        </a>
+        <a href="#troubleshooting" class="guide-nav-item">
+          <i class="fa-solid fa-circle-question"></i>
+          <span>Troubleshooting</span>
+        </a>
+      </div>
+
+      {# ══════════════════════════════════════════════════════
+         SECTION 1 — School Registration
+      ══════════════════════════════════════════════════════ #}
+      <section class="guide-section" id="registration">
+        <div class="guide-section-header">
+          <div class="guide-section-icon"><i class="fa-solid fa-school"></i></div>
+          <div>
+            <h2>School Registration</h2>
+            <p>How to register your school and activate your SESA account.</p>
+          </div>
+        </div>
+
+        <div class="guide-steps">
+          <div class="guide-step">
+            <div class="guide-step-num">1</div>
+            <div class="guide-step-body">
+              <h3>Register your school</h3>
+              <p>Go to the SESA homepage and click <strong>Register My School</strong>. Fill in your school name, administrator name, email, and a secure password. Click <strong>Register School</strong>.</p>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="guide-step-num">2</div>
+            <div class="guide-step-body">
+              <h3>Await activation</h3>
+              <p>After registration, your account will be reviewed by <strong>FOPA DILLIGENT CONSULT</strong>. Student upload access is enabled only after payment confirmation. You will be notified when your account is activated.</p>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="guide-step-num">3</div>
+            <div class="guide-step-body">
+              <h3>Log in to your School Portal</h3>
+              <p>Once activated, go to <strong>School Administrator Login</strong> on the login page. Enter your administrator name and password to access your dashboard.</p>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="guide-step-num">4</div>
+            <div class="guide-step-body">
+              <h3>Share your access code with students</h3>
+              <p>Your dashboard shows a unique <strong>School Access Code</strong> and <strong>QR Code</strong>. Students can use either to join your school without needing an Excel upload — useful for individual sign-ups.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {# ══════════════════════════════════════════════════════
+         SECTION 2 — Excel Upload
+      ══════════════════════════════════════════════════════ #}
+      <section class="guide-section" id="upload">
+        <div class="guide-section-header">
+          <div class="guide-section-icon guide-section-icon--gold"><i class="fa-solid fa-file-excel"></i></div>
+          <div>
+            <h2>Bulk Student Upload (Excel)</h2>
+            <p>The fastest way to add your entire student body at once.</p>
+          </div>
+        </div>
+
+        {# Download button #}
+        <div class="guide-download-box">
+          <div>
+            <strong>Download the official template</strong>
+            <p>Use only this template — do not rename columns or change the format.</p>
+          </div>
+          <a href="{{ url_for('static', filename='downloads/SESA_Student_Upload_Template.xlsx') }}" class="btn btn-gold" download>
+            <i class="fa-solid fa-download"></i> Download Template (.xlsx)
+          </a>
+        </div>
+
+        {# Column reference #}
+        <h3 class="guide-subsection-title">Column Reference</h3>
+        <div class="guide-table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Column</th>
+                <th>Required?</th>
+                <th>Description</th>
+                <th>Example</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>first_name</code></td>
+                <td><span class="badge badge-red">Required</span></td>
+                <td>Student's first name</td>
+                <td>Ama</td>
+              </tr>
+              <tr>
+                <td><code>last_name</code></td>
+                <td><span class="badge badge-red">Required</span></td>
+                <td>Student's last name</td>
+                <td>Mensah</td>
+              </tr>
+              <tr>
+                <td><code>student_id</code></td>
+                <td><span class="badge badge-gray">Optional</span></td>
+                <td>Your school's student ID. Used as the student's <strong>initial password</strong>. If blank, username is used instead.</td>
+                <td>STU001</td>
+              </tr>
+              <tr>
+                <td><code>class_group</code></td>
+                <td><span class="badge badge-gray">Optional</span></td>
+                <td>Class or form group</td>
+                <td>3A, Form 2</td>
+              </tr>
+              <tr>
+                <td><code>level</code></td>
+                <td><span class="badge badge-gray">Optional</span></td>
+                <td>Must be exactly one of the accepted values</td>
+                <td>primaryschool · middleschool · highschool · university</td>
+              </tr>
+              <tr>
+                <td><code>gender</code></td>
+                <td><span class="badge badge-gray">Optional</span></td>
+                <td>Must be exactly one of the accepted values</td>
+                <td>male · female · other</td>
+              </tr>
+              <tr>
+                <td><code>birthdate</code></td>
+                <td><span class="badge badge-gray">Optional</span></td>
+                <td>Date of birth in YYYY-MM-DD format</td>
+                <td>2008-04-12</td>
+              </tr>
+              <tr>
+                <td><code>email</code></td>
+                <td><span class="badge badge-gray">Optional</span></td>
+                <td>Student email address</td>
+                <td>ama@school.edu</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        {# How usernames work #}
+        <div class="guide-info-box">
+          <i class="fa-solid fa-circle-info"></i>
+          <div>
+            <strong>Usernames are auto-generated — no column needed.</strong>
+            <p>Each student gets a username in the format <code>firstname.lastname.schoolcode</code> (e.g. <code>ama.mensah.accrah</code>). If that username is already taken, a number is added automatically.</p>
+          </div>
+        </div>
+
+        {# Step by step #}
+        <h3 class="guide-subsection-title">Step-by-Step Upload</h3>
+        <div class="guide-steps">
+          <div class="guide-step">
+            <div class="guide-step-num">1</div>
+            <div class="guide-step-body">
+              <h3>Open the template</h3>
+              <p>Download the template above and open it in Microsoft Excel or Google Sheets. Student data starts at <strong>row 5</strong>. Delete the 5 sample rows before uploading.</p>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="guide-step-num">2</div>
+            <div class="guide-step-body">
+              <h3>Fill in student data</h3>
+              <p>Enter one student per row. Only <code>first_name</code> and <code>last_name</code> are required. Fill optional columns where available — the more data, the richer the dashboard reports.</p>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="guide-step-num">3</div>
+            <div class="guide-step-body">
+              <h3>Save as .xlsx</h3>
+              <p>Save the file in <strong>Excel format (.xlsx or .xls)</strong>. CSV files are not accepted. In Google Sheets: File → Download → Microsoft Excel.</p>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="guide-step-num">4</div>
+            <div class="guide-step-body">
+              <h3>Upload on your dashboard</h3>
+              <p>In your school dashboard, find the <strong>Upload Students</strong> section. Click <strong>Choose File</strong>, select your .xlsx file, then click <strong>Upload</strong>.</p>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="guide-step-num">5</div>
+            <div class="guide-step-body">
+              <h3>Confirm the result</h3>
+              <p>A success message will show how many accounts were created and how many rows were skipped. Students can now log in with their username and temporary password.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="guide-warning-box">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <div>
+            <strong>Upload is only available once your subscription is activated.</strong>
+            <p>If you see a warning about upload being disabled, contact FOPA DILLIGENT CONSULT to confirm your payment status.</p>
+          </div>
+        </div>
+      </section>
+
+      {# ══════════════════════════════════════════════════════
+         SECTION 3 — Join by Code
+      ══════════════════════════════════════════════════════ #}
+      <section class="guide-section" id="code">
+        <div class="guide-section-header">
+          <div class="guide-section-icon guide-section-icon--teal"><i class="fa-solid fa-qrcode"></i></div>
+          <div>
+            <h2>Join by Code (Alternative Method)</h2>
+            <p>Students can join your school individually using your access code or QR code — no Excel needed.</p>
+          </div>
+        </div>
+
+        <div class="guide-two-col">
+          <div class="guide-method-card">
+            <div class="guide-method-icon"><i class="fa-solid fa-key"></i></div>
+            <h3>Access Code</h3>
+            <p>Your school has a unique <strong>Access Code</strong> visible on your dashboard. Share it with students. They go to the SESA homepage, click <strong>Join with Code</strong>, enter the code, and create their account — automatically linked to your school.</p>
+          </div>
+          <div class="guide-method-card">
+            <div class="guide-method-icon"><i class="fa-solid fa-qrcode"></i></div>
+            <h3>QR Code</h3>
+            <p>Your dashboard also shows a <strong>QR Code</strong> that students can scan with their phone. This takes them directly to the sign-up page pre-linked to your school — no code typing required. Print it and display it in your school.</p>
+          </div>
+        </div>
+
+        <div class="guide-info-box">
+          <i class="fa-solid fa-circle-info"></i>
+          <div>
+            <strong>When to use the code method vs. Excel upload</strong>
+            <p>Use <strong>Excel upload</strong> for bulk onboarding at the start of term. Use the <strong>access code / QR code</strong> for new students joining mid-term, or for schools that prefer students to create their own accounts.</p>
+          </div>
+        </div>
+      </section>
+
+      {# ══════════════════════════════════════════════════════
+         SECTION 4 — Troubleshooting
+      ══════════════════════════════════════════════════════ #}
+      <section class="guide-section" id="troubleshooting">
+        <div class="guide-section-header">
+          <div class="guide-section-icon guide-section-icon--red"><i class="fa-solid fa-circle-question"></i></div>
+          <div>
+            <h2>Troubleshooting</h2>
+            <p>Common issues and how to fix them.</p>
+          </div>
+        </div>
+
+        <div class="guide-faq">
+
+          <div class="guide-faq-item">
+            <div class="guide-faq-q"><i class="fa-solid fa-chevron-right"></i> "Upload is not enabled" warning</div>
+            <div class="guide-faq-a">Your school subscription has not been activated yet. Contact <strong>FOPA DILLIGENT CONSULT</strong> to confirm your payment and request activation.</div>
+          </div>
+
+          <div class="guide-faq-item">
+            <div class="guide-faq-q"><i class="fa-solid fa-chevron-right"></i> "Missing required columns: first_name, last_name"</div>
+            <div class="guide-faq-a">Your column headers don't match exactly. Make sure the headers in row 4 of your file are spelled <code>first_name</code> and <code>last_name</code> — all lowercase, with underscores, no spaces.</div>
+          </div>
+
+          <div class="guide-faq-item">
+            <div class="guide-faq-q"><i class="fa-solid fa-chevron-right"></i> "Invalid file type" error</div>
+            <div class="guide-faq-a">Only <strong>.xlsx</strong> and <strong>.xls</strong> files are accepted. If you are using Google Sheets, go to File → Download → Microsoft Excel (.xlsx) before uploading.</div>
+          </div>
+
+          <div class="guide-faq-item">
+            <div class="guide-faq-q"><i class="fa-solid fa-chevron-right"></i> Some rows were skipped</div>
+            <div class="guide-faq-a">Rows are skipped when <code>first_name</code> or <code>last_name</code> is empty. Check your file for blank rows or rows with missing names and re-upload just those students.</div>
+          </div>
+
+          <div class="guide-faq-item">
+            <div class="guide-faq-q"><i class="fa-solid fa-chevron-right"></i> Level or gender not showing correctly</div>
+            <div class="guide-faq-a">These fields only accept exact values. For level: <code>primaryschool</code>, <code>middleschool</code>, <code>highschool</code>, or <code>university</code>. For gender: <code>male</code>, <code>female</code>, or <code>other</code>. Any other value will be ignored.</div>
+          </div>
+
+          <div class="guide-faq-item">
+            <div class="guide-faq-q"><i class="fa-solid fa-chevron-right"></i> A student forgot their password</div>
+            <div class="guide-faq-a">Their initial password is their <strong>Student ID</strong> from the upload file. If no Student ID was provided, their password is their <strong>username</strong>. You can view student usernames from your dashboard. Students can reset their password from the login page.</div>
+          </div>
+
+          <div class="guide-faq-item">
+            <div class="guide-faq-q"><i class="fa-solid fa-chevron-right"></i> Students can't find the login page</div>
+            <div class="guide-faq-a">Direct students to the SESA homepage and tell them to click <strong>Sign In</strong>. They log in with their username (not email) and their temporary password.</div>
+          </div>
+
+        </div>
+
+        <div class="guide-contact-box">
+          <i class="fa-solid fa-envelope"></i>
+          <div>
+            <strong>Still need help?</strong>
+            <p>Contact FOPA DILLIGENT CONSULT for support with your school account, subscription, or any technical issues not covered here.</p>
+          </div>
+        </div>
+
+      </section>
+
+    </div>{# end container #}
+  </main>
+</div>
+{# ── Final CTA ── #}
+<div class="guide-section" style="text-align: center; background: linear-gradient(135deg, var(--green-800), var(--green-700));">
+  <div style="color: var(--gold-200); font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 10px;">
+    <i class="fa-solid fa-download"></i> &nbsp;Ready to get started?
+  </div>
+  <h2 style="font-family: var(--font-display); color: #fff; font-size: 1.4rem; margin-bottom: 10px;">Download the Student Upload Template</h2>
+  <p style="color: rgba(255,255,255,.7); font-size: 0.9rem; margin-bottom: 24px; max-width: 480px; margin-left: auto; margin-right: auto;">
+    Fill it in with your student data and upload it from your school dashboard to create all accounts at once.
+  </p>
+  <a href="{{ url_for('static', filename='downloads/SESA_Student_Upload_Template.xlsx') }}" class="btn btn-gold btn-lg" download>
+    <i class="fa-solid fa-file-excel"></i> Download Template (.xlsx)
+  </a>
+  <p style="margin-top: 16px;">
+    <a href="{{ url_for('main.school_dashboard', school_id=session.get('school_id', 0)) }}" style="color: rgba(255,255,255,.6); font-size: 0.85rem;">
+      ← Back to Dashboard
+    </a>
+  </p>
+</div>
+
+{% endblock %}

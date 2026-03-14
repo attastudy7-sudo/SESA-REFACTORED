@@ -99,6 +99,37 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
   .transparent modifier applied only on landing page over the dark hero.
   .scrolled re-applies solid bg + shadow after user scrolls past 40px.
 */
+
+.hero-section {
+  position: relative; /* ADD this if not already there */
+}
+
+.scroll-indicator {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.5rem;
+  text-decoration: none;
+  animation: scrollPulse 1.5s ease-in-out infinite;
+  z-index: 10;
+}
+
+.scroll-indicator:hover {
+  color: #fff;
+}
+
+@keyframes scrollPulse {
+  0%   { opacity: 1;   transform: translateX(-50%) translateY(0);   }
+  50%  { opacity: 0.4; transform: translateX(-50%) translateY(10px); }
+  100% { opacity: 1;   transform: translateX(-50%) translateY(0);   }
+}
+
 .navbar {
   background: transparent;
   color: #fff;
@@ -142,12 +173,30 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
   transition: background var(--transition), color var(--transition);
 }
 .navbar-links a:hover,
-.navbar-links a.active { background: rgba(255,255,255,.12); color: #fff; }
+.navbar-links a.active { color: var(--gold-200) }
 .navbar-links .btn-nav-logout {
-  background: rgba(220,38,38,.15); color: #fca5a5; border: 1px solid rgba(220,38,38,.25);
+  color: #fca5a5;;
 }
-.navbar-links .btn-nav-logout:hover { background: rgba(220,38,38,.3); color: #fef2f2; }
+.navbar-links .btn-nav-logout:hover { color: rgba(255, 0, 0, 0.65);}
 
+
+.nav-dropdown {
+  pointer-events: none;
+}
+
+.nav-dropdown.open {
+  pointer-events: auto;
+}
+
+.auth-page::before,
+.auth-page::after {
+  pointer-events: none;
+}
+
+.auth-page {
+  position: relative;
+  z-index: 0;
+}
 /* FIX 3: Hamburger now exists in DOM; hidden on desktop via CSS */
 .hamburger {
   display: none;
@@ -168,7 +217,7 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
   background: linear-gradient(135deg, var(--green-900) 0%, var(--green-700) 55%, var(--green-800) 100%);
   color: #fff;
   margin-top: calc(-1 * var(--navbar-height));
-  padding: calc(48px + var(--navbar-height)) 24px 40px;
+  padding: calc(64px + var(--navbar-height)) 24px 60px;
   position: relative;
 }
 
@@ -445,13 +494,17 @@ select.form-control { cursor:pointer; }
 .auth-page::before { content:''; position:absolute; width:600px; height:600px; border-radius:50%; background:var(--gold-200); opacity:.12; top:-200px; right:-200px; }
 .auth-page::after  { content:''; position:absolute; width:400px; height:400px; border-radius:50%; background:var(--green-400); opacity:.08; bottom:-150px; left:-100px; }
 .auth-card {
-  background:var(--white); border-radius:var(--radius-xl); box-shadow:var(--shadow-xl);
-  width:100%; max-width:440px;
-  padding:32px 24px;
-  position:relative; z-index:1;
-  animation:authCardIn 0.5s ease;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  border-radius: 0; /* on mobile, full bleed */
 }
-@media (min-width:480px) { .auth-card { padding:40px; } }
+
+@media (min-width: 480px) {
+  .auth-card {
+    border-radius: 16px;
+  }
+}
 @keyframes authCardIn { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
 .auth-logo-area { text-align:center; margin-bottom:28px; }
 .auth-logo { width:68px; height:68px; border-radius:50%; object-fit:cover; margin:0 auto 10px; box-shadow:var(--shadow-md); }
@@ -461,6 +514,126 @@ select.form-control { cursor:pointer; }
 .auth-divider  { text-align:center; margin:18px 0; position:relative; }
 .auth-divider::before { content:''; position:absolute; top:50%; left:0; right:0; height:1px; background:var(--gray-300); }
 .auth-divider span { position:relative; background:var(--white); padding:0 12px; font-size:0.8rem; color:var(--gray-500); }
+
+/* ─── Auth Page Improvements ─────────────────────────────── */
+/* Add these rules to the existing ── Auth Pages ── section  */
+
+/* Override: card fills screen on mobile, floats on desktop */
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--white);
+  box-shadow: var(--shadow-lg);
+  padding: 36px 28px 28px;
+  animation: authCardIn 0.4s ease;
+  border-radius: 0;           /* full bleed on small screens */
+}
+@media (min-width: 480px) {
+  .auth-card { border-radius: var(--radius-xl); }
+}
+
+/* Wider card for signup / school signup (more fields) */
+.auth-card--wide {
+  max-width: 480px;
+}
+
+/* School portal gets a subtle gold accent on top */
+.auth-page--school .auth-card {
+  border-top: 4px solid var(--gold-500);
+}
+@media (min-width: 480px) {
+  .auth-page--school .auth-card {
+    border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  }
+}
+
+/* ─── Wordmark (replaces logo image) ────────────────────── */
+.auth-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 auto 12px;
+}
+.auth-wordmark-sesa {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--green-800);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.auth-wordmark-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gold-500);
+  flex-shrink: 0;
+  margin-bottom: 4px; /* optically align with baseline */
+}
+
+/* School portal variant — adds a small tag below */
+.auth-wordmark--school {
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+}
+.auth-wordmark-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--gold-600, var(--gold-700));
+  background: var(--gold-100);
+  border: 1px solid var(--gold-200);
+  border-radius: var(--radius-full);
+  padding: 2px 10px;
+}
+
+/* ─── Footer links area ──────────────────────────────────── */
+.auth-footer-links {
+  text-align: center;
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.auth-footer-links p {
+  font-size: 0.85rem;
+  color: var(--gray-500);
+}
+.auth-footer-links a {
+  color: var(--green-600);
+  font-weight: 600;
+  transition: color var(--transition);
+}
+.auth-footer-links a:hover { color: var(--green-800); }
+
+/* ─── Two-column field grid ──────────────────────────────── */
+.auth-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 400px) {
+  .auth-two-col { grid-template-columns: 1fr; }
+}
+
+/* ─── Notice / info box ──────────────────────────────────── */
+.auth-notice {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: var(--gold-50);
+  border-left: 3px solid var(--gold-500);
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 18px;
+  font-size: 0.83rem;
+  color: var(--gold-700);
+  line-height: 1.5;
+}
+.auth-notice i { margin-top: 2px; flex-shrink: 0; }
+
 
 /* ─── Landing Page ───────────────────────────────────────── */
 .landing-page { overflow-x:hidden; }
@@ -884,4 +1057,261 @@ select.form-control { cursor:pointer; }
 @supports (padding-bottom:env(safe-area-inset-bottom)) {
   .bottom-tab-bar { padding-bottom:env(safe-area-inset-bottom); height:calc(60px + env(safe-area-inset-bottom)); }
   @media (max-width:768px) { main { padding-bottom:calc(68px + env(safe-area-inset-bottom)); } }
+}
+
+/* ─── School Guide Page ──────────────────────────────────── */
+/* Add to the bottom of main.css                              */
+
+/* Quick nav pills at top */
+.guide-nav {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 40px;
+}
+.guide-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: var(--white);
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--green-700);
+  transition: background var(--transition), border-color var(--transition),
+              transform var(--transition);
+  text-decoration: none;
+}
+.guide-nav-item:hover {
+  background: var(--green-50);
+  border-color: var(--green-400);
+  transform: translateY(-2px);
+}
+.guide-nav-item i { color: var(--green-500); }
+
+/* Section wrapper */
+.guide-section {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 32px;
+  margin-bottom: 32px;
+  scroll-margin-top: 80px;
+}
+@media (max-width: 480px) { .guide-section { padding: 20px 16px; } }
+
+/* Section header with icon */
+.guide-section-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--gray-100);
+}
+.guide-section-header h2 {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--green-800);
+  margin-bottom: 4px;
+}
+.guide-section-header p {
+  font-size: 0.9rem;
+  color: var(--gray-500);
+}
+.guide-section-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background: var(--green-100);
+  color: var(--green-700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+.guide-section-icon--gold { background: var(--gold-100); color: var(--gold-700); }
+.guide-section-icon--teal { background: #e0f2fe; color: #0369a1; }
+.guide-section-icon--red  { background: var(--red-100); color: var(--red-600); }
+
+/* Steps */
+.guide-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+}
+.guide-steps::before {
+  content: '';
+  position: absolute;
+  left: 19px;
+  top: 24px;
+  bottom: 24px;
+  width: 2px;
+  background: var(--green-100);
+}
+.guide-step {
+  display: flex;
+  gap: 16px;
+  padding: 16px 0;
+  position: relative;
+}
+.guide-step-num {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--green-700);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  z-index: 1;
+  box-shadow: 0 0 0 4px var(--white);
+}
+.guide-step-body h3 {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--green-800);
+  margin-bottom: 4px;
+}
+.guide-step-body p {
+  font-size: 0.875rem;
+  color: var(--gray-600, var(--gray-700));
+  line-height: 1.65;
+}
+
+/* Download box */
+.guide-download-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  background: var(--gold-50);
+  border: 2px solid var(--gold-200);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  margin-bottom: 28px;
+}
+.guide-download-box strong { font-size: 1rem; color: var(--green-800); }
+.guide-download-box p { font-size: 0.85rem; color: var(--gray-500); margin-top: 2px; }
+
+/* Subsection title */
+.guide-subsection-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--green-800);
+  margin: 24px 0 12px;
+}
+
+/* Info / warning / contact boxes */
+.guide-info-box,
+.guide-warning-box,
+.guide-contact-box {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  margin-top: 24px;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+.guide-info-box    { background: var(--blue-100);   color: #1e3a5f; border-left: 4px solid var(--blue-600); }
+.guide-warning-box { background: var(--amber-100);  color: #78350f; border-left: 4px solid var(--amber-600); }
+.guide-contact-box { background: var(--green-50);   color: var(--green-800); border-left: 4px solid var(--green-500); }
+.guide-info-box i,
+.guide-warning-box i,
+.guide-contact-box i { font-size: 1.2rem; margin-top: 2px; flex-shrink: 0; }
+.guide-info-box strong,
+.guide-warning-box strong,
+.guide-contact-box strong { display: block; margin-bottom: 4px; font-size: 0.925rem; }
+
+/* Two column method cards */
+.guide-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+@media (max-width: 540px) { .guide-two-col { grid-template-columns: 1fr; } }
+.guide-method-card {
+  background: var(--ivory);
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  padding: 20px;
+}
+.guide-method-icon {
+  font-size: 1.5rem;
+  color: var(--green-600);
+  margin-bottom: 10px;
+}
+.guide-method-card h3 {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--green-800);
+  margin-bottom: 8px;
+}
+.guide-method-card p {
+  font-size: 0.875rem;
+  color: var(--gray-700);
+  line-height: 1.65;
+}
+
+/* FAQ accordion-style */
+.guide-faq { display: flex; flex-direction: column; gap: 8px; }
+.guide-faq-item {
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.guide-faq-q {
+  padding: 14px 18px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--green-800);
+  background: var(--gray-100);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.guide-faq-q i { color: var(--green-500); font-size: 0.75rem; }
+.guide-faq-a {
+  padding: 12px 18px 14px 42px;
+  font-size: 0.875rem;
+  color: var(--gray-700);
+  line-height: 1.65;
+  background: var(--white);
+}
+
+/* Inline code style */
+.guide-table-wrap code,
+.guide-faq-a code,
+.guide-step-body code,
+.guide-info-box code {
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 0.82em;
+  font-family: monospace;
+  color: var(--green-700);
+}
+
+/* Table wrapper inside guide */
+.guide-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  margin-bottom: 24px;
 }

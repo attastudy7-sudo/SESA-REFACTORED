@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
-{% block title %}School Login{% endblock %}
+{% block title %}School Portal{% endblock %}
 
 {% block full_page %}
-<div class="auth-page">
+<div class="auth-page auth-page--school">
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       <div class="flash-stack" role="status">
@@ -15,7 +15,10 @@
 
   <div class="auth-card">
     <div class="auth-logo-area">
-      <img src="{{ url_for('static', filename='images/Pofa.jpg') }}" alt="FOPA Logo" class="auth-logo">
+      <div class="auth-wordmark auth-wordmark--school">
+        <span class="auth-wordmark-sesa">SESA</span>
+        <span class="auth-wordmark-tag">School Portal</span>
+      </div>
       <div class="auth-org">FOPA DILLIGENT CONSULT</div>
       <h1 class="auth-title">School Portal</h1>
       <p class="auth-subtitle">Sign in as a school administrator</p>
@@ -47,13 +50,11 @@
 
     <div class="auth-divider"><span>or</span></div>
 
-    <div style="text-align:center;">
-      <a href="{{ url_for('auth.login') }}" class="btn btn-ghost btn-block">Student Login</a>
-    </div>
+    <a href="{{ url_for('auth.login') }}" class="btn btn-ghost btn-block">Student Login</a>
 
-    <p style="text-align:center; margin-top: 20px; font-size: 0.85rem; color: var(--gray-500);">
-      New school? <a href="{{ url_for('auth.school_signup') }}" style="color: var(--green-600); font-weight: 600;">Register your school</a>
-    </p>
+    <div class="auth-footer-links">
+      <p>New school? <a href="{{ url_for('auth.school_signup') }}">Register your school</a></p>
+    </div>
   </div>
 </div>
 {% endblock %}

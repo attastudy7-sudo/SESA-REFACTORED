@@ -2,7 +2,7 @@
 {% block title %}Create Account{% endblock %}
 
 {% block full_page %}
-<div class="auth-page" style="align-items: flex-start; padding: 40px 24px;">
+<div class="auth-page" style="align-items: flex-start; padding: 0px 0;">
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       <div class="flash-stack" role="status">
@@ -13,9 +13,12 @@
     {% endif %}
   {% endwith %}
 
-  <div class="auth-card" style="max-width: 500px; margin: auto;">
+  <div class="auth-card auth-card--wide">
     <div class="auth-logo-area">
-      <img src="{{ url_for('static', filename='images/Pofa.jpg') }}" alt="FOPA Logo" class="auth-logo">
+      <div class="auth-wordmark">
+        <span class="auth-wordmark-sesa">SESA</span>
+        <span class="auth-wordmark-dot"></span>
+      </div>
       <div class="auth-org">FOPA DILLIGENT CONSULT</div>
       <h1 class="auth-title">Create Account</h1>
       <p class="auth-subtitle">Join the SESA platform</p>
@@ -24,7 +27,7 @@
     <form method="POST" action="{{ url_for('auth.signup') }}" novalidate>
       {{ form.hidden_tag() }}
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+      <div class="auth-two-col">
         <div class="form-group">
           {{ form.fname.label(class="form-label") }}
           {{ form.fname(class="form-control" ~ (" is-invalid" if form.fname.errors else ""), placeholder="First name") }}
@@ -49,7 +52,7 @@
         {% for e in form.username.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+      <div class="auth-two-col">
         <div class="form-group">
           {{ form.password.label(class="form-label") }}
           {{ form.password(class="form-control" ~ (" is-invalid" if form.password.errors else ""), placeholder="Min. 8 characters") }}
@@ -68,7 +71,7 @@
         {% for e in form.birthdate.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+      <div class="auth-two-col">
         <div class="form-group">
           {{ form.gender.label(class="form-label") }}
           {{ form.gender(class="form-control" ~ (" is-invalid" if form.gender.errors else "")) }}
@@ -84,9 +87,9 @@
       <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: 4px;">Create Account</button>
     </form>
 
-    <p style="text-align:center; margin-top: 20px; font-size: 0.85rem; color: var(--gray-500);">
-      Already have an account? <a href="{{ url_for('auth.login') }}" style="color: var(--green-600); font-weight: 600;">Sign in</a>
-    </p>
+    <div class="auth-footer-links">
+      <p>Already have an account? <a href="{{ url_for('auth.login') }}">Sign in</a></p>
+    </div>
   </div>
 </div>
 {% endblock %}

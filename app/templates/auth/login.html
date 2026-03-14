@@ -3,7 +3,6 @@
 
 {% block full_page %}
 <div class="auth-page">
-  {# Flash messages #}
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       <div class="flash-stack" role="status" aria-live="polite">
@@ -16,7 +15,10 @@
 
   <div class="auth-card">
     <div class="auth-logo-area">
-      <img src="{{ url_for('static', filename='images/Pofa.jpg') }}" alt="FOPA Logo" class="auth-logo">
+      <div class="auth-wordmark">
+        <span class="auth-wordmark-sesa">SESA</span>
+        <span class="auth-wordmark-dot"></span>
+      </div>
       <div class="auth-org">FOPA DILLIGENT CONSULT</div>
       <h1 class="auth-title">Welcome back</h1>
       <p class="auth-subtitle">Sign in to your student account</p>
@@ -54,19 +56,15 @@
 
     <div class="auth-divider"><span>or</span></div>
 
-    <div style="text-align: center;">
-      <a href="{{ url_for('auth.school_login') }}" class="btn btn-outline btn-block">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        School Administrator Login
-      </a>
-    </div>
+    <a href="{{ url_for('auth.school_login') }}" class="btn btn-outline btn-block">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      School Administrator Login
+    </a>
 
-    <p style="text-align:center; margin-top: 20px; font-size: 0.85rem; color: var(--gray-500);">
-      New to SESA? <a href="{{ url_for('auth.signup') }}" style="color: var(--green-600); font-weight: 600;">Create an account</a>
-    </p>
-    <p style="text-align:center; margin-top: 8px; font-size: 0.85rem; color: var(--gray-500);">
-      Forgot your password? <a href="{{ url_for('auth.reset_password') }}" style="color: var(--green-600); font-weight: 600;">Reset it here</a>
-    </p>
+    <div class="auth-footer-links">
+      <p>New to SESA? <a href="{{ url_for('auth.signup') }}">Create an account</a></p>
+      <p>Forgot your password? <a href="{{ url_for('auth.reset_password') }}">Reset it here</a></p>
+    </div>
   </div>
 </div>
 {% endblock %}

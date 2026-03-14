@@ -585,3 +585,7 @@ def students_at_risk(school_id):
         selected_class=selected_class,
     )
 
+@main_bp.route('/school/guide')
+@school_login_required
+def school_guide():
+    return render_template('main/school_guide.html')
