@@ -217,7 +217,7 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
   background: linear-gradient(135deg, var(--green-900) 0%, var(--green-700) 55%, var(--green-800) 100%);
   color: #fff;
   margin-top: calc(-1 * var(--navbar-height));
-  padding: calc(24px + var(--navbar-height)) 24px 60px;
+  padding: calc(52px + var(--navbar-height)) 24px 60px;
   position: relative;
 }
 
@@ -453,10 +453,11 @@ select.form-control { cursor:pointer; }
 
   /* Full-width empty state cells — override flex back to block */
   .table td.td-empty-state {
-    display: block;
-    padding: 0;
+    display: block !important;
+    padding: 0 !important;
+    border: none !important;
   }
-  .table td.td-empty-state::before { display: none; }
+  .table td.td-empty-state::before { display: none !important; }
 
   /* Secondary cells are hidden by default on mobile */
   .table td.td-secondary { display:none; }
@@ -483,6 +484,64 @@ select.form-control { cursor:pointer; }
   .guide-table-wrap .table tr { display:table-row !important; border-bottom:none !important; padding:0 !important; }
   .guide-table-wrap .table td { display:table-cell !important; width:auto !important; padding:8px 10px !important; font-size:0.78rem !important; }
   .guide-table-wrap .table td::before { display:none !important; }
+}
+
+/* ─── Empty State Container (rich / full-width) ──────────── */
+.empty-state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  padding: 56px 32px;
+  background: var(--green-50);
+  border: 1.5px solid var(--green-100);
+  border-radius: var(--radius-lg);
+  text-align: center;
+  box-sizing: border-box;
+  width: 100%;
+}
+.empty-state-container .esc-icon {
+  font-size: 5rem;
+  color: var(--green-800);
+  opacity: 0.12;
+  margin-bottom: 24px;
+  line-height: 1;
+  transition: opacity 0.3s ease;
+}
+.empty-state-container:hover .esc-icon { opacity: 0.2; }
+.empty-state-container .esc-title {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 600;
+  color: var(--green-800);
+  margin: 0 0 10px;
+  line-height: 1.25;
+}
+.empty-state-container .esc-subtitle {
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  color: var(--gray-500);
+  max-width: 400px;
+  margin: 0 auto 28px;
+  line-height: 1.6;
+}
+.empty-state-container .esc-divider {
+  width: 40px;
+  height: 3px;
+  background: var(--gold-500);
+  border-radius: var(--radius-full);
+  margin: 0 auto 28px;
+  opacity: 0.6;
+}
+@media (max-width: 600px) {
+  .empty-state-container {
+    min-height: 240px;
+    padding: 40px 20px;
+  }
+  .empty-state-container .esc-icon { font-size: 3.5rem; margin-bottom: 18px; }
+  .empty-state-container .esc-title { font-size: 1.2rem; }
+  .empty-state-container .esc-subtitle { font-size: 0.86rem; }
 }
 
 /* ─── Badges ─────────────────────────────────────────────── */

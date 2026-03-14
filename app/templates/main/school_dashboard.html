@@ -290,7 +290,7 @@ function initiatePayment() {
             </tr>
             {% else %}
             <tr>
-              <td colspan="6" class="td-empty-state">
+              <td colspan="6" class="td-empty-state" style="padding: 0; border: none;">
                 <div class="empty-state">
                   <div class="empty-state-icon"><i class="fa-solid fa-users" style="color: var(--gray-300);"></i></div>
                   <p>No students yet. Upload an Excel file or share your access code to add students.</p>
@@ -348,15 +348,15 @@ function initiatePayment() {
               <td data-label="Date" style="color: var(--gray-500); font-size: 0.82rem;">{{ r.taken_at.strftime('%d %b %Y') }}</td>
             </tr>
             {% else %}
-            {# In the results {% else %} block — already has padding:0; border:none inline,
-   but add the class for the ::before suppression #}
-<td colspan="5" class="td-empty-state" style="padding: 0; border: none;">
-              <div class="empty-state">
-                <div class="empty-state-icon"><i class="fa-solid fa-clipboard-list" style="color: var(--gray-400);"></i></div>
-                <p>No recent assessments. Encourage students to take the SESA test.</p>
-                <a href="{{ url_for('main.school_guide', fragment='assessments') }}" class="btn btn-secondary btn-sm" style="margin-top: 8px;">How to Get Started</a>
-              </div>
-            </td></tr>
+            <tr>
+              <td colspan="5" class="td-empty-state" style="padding: 0; border: none;">
+                <div class="empty-state">
+                  <div class="empty-state-icon"><i class="fa-solid fa-clipboard-list" style="color: var(--gray-400);"></i></div>
+                  <p>No recent assessments. Encourage students to take the SESA test.</p>
+                  <a href="{{ url_for('main.school_guide', fragment='assessments') }}" class="btn btn-secondary btn-sm" style="margin-top: 8px;">How to Get Started</a>
+                </div>
+              </td>
+            </tr>
             {% endfor %}
           </tbody>
         </table>
