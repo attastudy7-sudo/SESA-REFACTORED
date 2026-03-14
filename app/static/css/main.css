@@ -120,6 +120,12 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
   z-index: 10;
 }
 
+@media (max-width: 768px) {
+  .scroll-indicator {
+    bottom: calc(60px + env(safe-area-inset-bottom) + 16px);
+  }
+}
+
 .scroll-indicator:hover {
   color: #fff;
 }
@@ -174,9 +180,8 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
 }
 .navbar-links a:hover,
 .navbar-links a.active { color: var(--gold-200) }
-.navbar-links .btn-nav-logout {
-  color: #fca5a5;;
-}
+.navbar-links .btn-nav-logout  { background:var(--red-600); color:#fff; }
+.btn-danger:hover  { background:#b91c1c; }
 .navbar-links .btn-nav-logout:hover { color: rgba(255, 0, 0, 0.65);}
 
 
@@ -217,7 +222,7 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
   background: linear-gradient(135deg, var(--green-900) 0%, var(--green-700) 55%, var(--green-800) 100%);
   color: #fff;
   margin-top: calc(-1 * var(--navbar-height));
-  padding: calc(52px + var(--navbar-height)) 24px 60px;
+  padding: calc(60px + var(--navbar-height)) 24px 60px;
   position: relative;
 }
 
@@ -359,8 +364,7 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
 .btn-gold:hover    { background:var(--gold-700); }
 .btn-outline       { background:transparent; color:var(--green-700); border:2px solid var(--green-700); }
 .btn-outline:hover { background:var(--green-50); }
-.btn-ghost         { background:var(--gray-100); color:var(--gray-700); }
-.btn-ghost:hover   { background:var(--gray-300); }
+.btn-ghost         { color:var(--gray-700); }
 .btn-danger        { background:var(--red-600); color:#fff; }
 .btn-danger:hover  { background:#b91c1c; }
 .btn-sm    { padding:10px 14px; font-size:0.82rem; border-radius:var(--radius-sm); }

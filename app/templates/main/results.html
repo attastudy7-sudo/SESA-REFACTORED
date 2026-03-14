@@ -136,9 +136,13 @@
       responsive: true,
       scales: {
         y: {
-          beginAtZero: true,
+          reverse: true,
+          min: 0,
           max: 100,
-          title: { display: true, text: 'Percentage' }
+          title: { display: true, text: 'Distress Level (higher = more concern)' },
+          ticks: {
+            callback: function(value) { return value + '%'; }
+          }
         }
       },
       plugins: {

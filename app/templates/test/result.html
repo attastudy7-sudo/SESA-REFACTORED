@@ -183,18 +183,21 @@
             {{ form.feedback(class="form-control", placeholder="Is there something you want to talk about, feel free to get it off your chest 🥺", rows=3) }}
           </div>
 
-          <div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 20px;" class="quiz-result-actions">
-            <button type="submit" name="action" value="finish" class="btn btn-outline" style="flex: 1; min-width: 140px;">
-              Finish & Save
-            </button>
+          <div style="border-top: 1px solid var(--gray-100); margin-top: 24px; padding-top: 20px;">
             {% if next_test_type %}
-            <button type="submit" name="action" value="next" class="btn btn-primary" style="flex: 1; min-width: 140px;">
-              Next: {{ next_test_type | truncate(5) }} →
+            <button type="submit" name="action" value="next" class="btn btn-primary btn-block" style="margin-bottom: 10px;">
+              Continue to Next Assessment →
+            </button>
+            <button type="submit" name="action" value="finish" class="btn btn-secondary btn-block">
+              Save &amp; Come Back Later
             </button>
             {% else %}
-            <button type="submit" name="action" value="finish" class="btn btn-primary" style="flex: 1; min-width: 140px;">
+            <button type="submit" name="action" value="finish" class="btn btn-primary btn-block" style="margin-bottom: 10px;">
               Complete All Assessments ✓
             </button>
+            <a href="{{ url_for('main.home') }}" class="btn btn-secondary btn-block">
+              Back to Home
+            </a>
             {% endif %}
           </div>
         </form>
