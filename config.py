@@ -57,6 +57,18 @@ class ProductionConfig(Config):
     # Set RATELIMIT_STORAGE_URI=redis://localhost:6379/0 in your .env
     # Without Redis, rate limits reset independently per gunicorn worker.
 
+    # ── Database connection pool ──────────────────────────────────────────────
+    # Neon (and other serverless Postgres providers) close idle connections
+    # after ~300s. pool_pre_ping tests the connection before every query and
+    # silently reconnects if it is dead — prevents the SSL 500 on first request.
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_pre_ping': True,
+        'pool_recycle': 280,
+        'pool_timeout': 20,
+        'pool_size': 5,
+        'max_overflow': 2,
+    }
+
     @classmethod
     def init_app(cls, app):
         Config.init_app(app) if hasattr(Config, 'init_app') else None

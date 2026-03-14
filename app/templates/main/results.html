@@ -114,22 +114,40 @@
 (function() {
   const ctx = document.getElementById('monthlyChart');
   if (!ctx) return;
-  
+
   const data = {{ monthly_data | tojson }};
+  const scores = data.map(d => d.average);
+
+  /* Determine segment colours — green if improving (falling), red if worsening (rising) */
+  const segmentColors = scores.map(function(val, i) {
+    if (i === 0) return '#3d8b58';
+    return scores[i] <= scores[i - 1] ? '#3d8b58' : '#dc2626';
+  });
+
   new Chart(ctx, {
     type: 'line',
     data: {
       labels: data.map(d => d.label),
       datasets: [{
         label: 'Average Score (%)',
-        data: data.map(d => d.average),
-        borderColor: '#3d8b58',
-        backgroundColor: 'rgba(61, 139, 88, 0.1)',
-        fill: true,
+        data: scores,
+        borderColor: function(context) {
+          const i = context.p1DataIndex;
+          if (i === undefined) return '#3d8b58';
+          return scores[i] <= scores[i - 1] ? '#3d8b58' : '#dc2626';
+        },
+        segment: {
+          borderColor: function(ctx) {
+            return ctx.p1.parsed.y <= ctx.p0.parsed.y ? '#3d8b58' : '#dc2626';
+          }
+        },
+        backgroundColor: 'transparent',
+        fill: false,
         tension: 0.3,
-        pointBackgroundColor: '#3d8b58',
+        pointBackgroundColor: segmentColors,
         pointRadius: 5,
-        pointHoverRadius: 7
+        pointHoverRadius: 7,
+        borderWidth: 2.5
       }]
     },
     options: {
@@ -146,7 +164,14 @@
         }
       },
       plugins: {
-        legend: { display: false }
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(item) {
+              return 'Score: ' + item.parsed.y + '%';
+            }
+          }
+        }
       }
     }
   });
