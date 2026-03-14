@@ -190,8 +190,15 @@
     {# ── Accounts Tab ── #}
     <div id="all_accounts" class="admin-tab-panel">
       <div class="section-head"><h3>Student Accounts</h3></div>
-      <div class="card">
-        <div class="table-wrapper">
+    <div class="card">
+      <div class="admin-toolbar">
+        <div class="admin-toolbar-search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" class="admin-search-input" placeholder="Search accounts…" data-panel="all_accounts">
+        </div>
+        <div class="admin-record-count"><span id="count-all_accounts">{{ accounts | length }}</span> records</div>
+      </div>
+      <div class="table-wrapper">
           <table class="table">
             <thead>
               <tr><th>Name</th><th>Username</th><th>Email</th><th>Level</th><th>School</th><th>Joined</th><th>Actions</th></tr>
@@ -229,8 +236,15 @@
     {# ── Schools Tab ── #}
     <div id="all_schools" class="admin-tab-panel">
       <div class="section-head"><h3>Registered Schools</h3></div>
-      <div class="card">
-        <div class="table-wrapper">
+    <div class="card">
+      <div class="admin-toolbar">
+        <div class="admin-toolbar-search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" class="admin-search-input" placeholder="Search schools…" data-panel="all_schools">
+        </div>
+        <div class="admin-record-count"><span id="count-all_schools">{{ schools | length }}</span> records</div>
+      </div>
+      <div class="table-wrapper">
           <table class="table">
             <thead>
               <tr><th>School Name</th><th>Admin</th><th>Email</th><th>Students</th><th>Upload</th><th>Registered</th><th>Actions</th></tr>
@@ -278,6 +292,13 @@
         <a href="{{ url_for('admin.add_question') }}" class="btn btn-primary btn-sm">+ Add Question</a>
       </div>
       <div class="card">
+        <div class="admin-toolbar">
+          <div class="admin-toolbar-search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" class="admin-search-input" placeholder="Search questions…" data-panel="question_database">
+          </div>
+          <div class="admin-record-count"><span id="count-question_database">{{ questions | length }}</span> records</div>
+        </div>
         <div class="table-wrapper">
           <table class="table">
             <thead>
@@ -310,8 +331,15 @@
     {# ── Results Tab ── #}
     <div id="all_results" class="admin-tab-panel">
       <div class="section-head"><h3>All Assessment Results</h3></div>
-      <div class="card">
-        <div class="table-wrapper">
+    <div class="card">
+      <div class="admin-toolbar">
+        <div class="admin-toolbar-search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" class="admin-search-input" placeholder="Search results…" data-panel="all_results">
+        </div>
+        <div class="admin-record-count"><span id="count-all_results">{{ results | length }}</span> records</div>
+      </div>
+      <div class="table-wrapper">
           <table class="table">
             <thead>
               <tr><th>Student</th><th>Assessment</th><th>Score</th><th>Stage</th><th>Date</th></tr>
@@ -344,66 +372,75 @@
 
   </div>
 
-  {% block scripts %}
-  <script>
-  (function () {
-    const STORAGE_KEY = 'adminActiveTab';
-    const tabs   = document.querySelectorAll('.admin-tab');
-    const panels = document.querySelectorAll('.admin-tab-panel');
+{% block scripts %}
+<script>
+(function () {
+  const STORAGE_KEY = 'adminActiveTab';
+  const tabs   = document.querySelectorAll('.admin-tab');
+  const panels = document.querySelectorAll('.admin-tab-panel');
 
-    function activate(tabId) {
-      tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === tabId));
-      panels.forEach(p => p.classList.toggle('active', p.id === tabId));
-      try { localStorage.setItem(STORAGE_KEY, tabId); } catch (_) {}
-    }
+  function activate(tabId) {
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === tabId));
+    panels.forEach(p => p.classList.toggle('active', p.id === tabId));
+    try { localStorage.setItem(STORAGE_KEY, tabId); } catch (_) {}
+  }
 
-    tabs.forEach(tab => tab.addEventListener('click', () => activate(tab.dataset.tab)));
+  tabs.forEach(tab => tab.addEventListener('click', () => activate(tab.dataset.tab)));
 
-    const saved  = (() => { try { return localStorage.getItem(STORAGE_KEY); } catch (_) { return null; } })();
-    const first  = tabs[0]?.dataset.tab;
-    const target = saved && document.getElementById(saved) ? saved : first;
-    if (target) activate(target);
+  const saved  = (() => { try { return localStorage.getItem(STORAGE_KEY); } catch (_) { return null; } })();
+  const first  = tabs[0]?.dataset.tab;
+  const target = saved && document.getElementById(saved) ? saved : first;
+  if (target) activate(target);
 
-    // ── Mobile row expander ──────────────────────────────────
-    // Only runs below 600px. Marks secondary cells, injects a
-    // "More / Less" toggle button after the primary cells in each row.
-    function initRowExpanders() {
-      if (window.innerWidth >= 600) return;
-      document.querySelectorAll('.admin-tab-panel .table tbody tr').forEach(function(row) {
-        // Skip empty-state rows
+  // ── Per-panel search ─────────────────────────────────────
+  document.querySelectorAll('.admin-search-input').forEach(function(input) {
+    input.addEventListener('input', function() {
+      const panelId = input.dataset.panel;
+      const panel   = document.getElementById(panelId);
+      if (!panel) return;
+      const q     = input.value.trim().toLowerCase();
+      const rows  = panel.querySelectorAll('tbody tr');
+      let visible = 0;
+      rows.forEach(function(row) {
         if (row.querySelector('[colspan]')) return;
-        // Already initialised
-        if (row.querySelector('.row-expand-btn')) return;
-
-        const cells = Array.from(row.querySelectorAll('td:not(.td-actions)'));
-        // First cell is always visible; everything from index 2 onward is secondary
-        cells.slice(2).forEach(function(td) { td.classList.add('td-secondary'); });
-
-        if (cells.length > 2) {
-          const btn = document.createElement('button');
-          btn.className = 'row-expand-btn';
-          btn.innerHTML = 'More <i class="expand-chevron">▼</i>';
-          btn.addEventListener('click', function() {
-            const expanded = row.classList.toggle('row-expanded');
-            btn.innerHTML = (expanded ? 'Less' : 'More') + ' <i class="expand-chevron">▼</i>';
-          });
-          // Insert button before the actions cell (or at end of row)
-          const actionsCell = row.querySelector('.td-actions');
-          if (actionsCell) {
-            row.insertBefore(btn, actionsCell);
-          } else {
-            row.appendChild(btn);
-          }
-        }
+        const text = row.textContent.toLowerCase();
+        const hide = q.length > 0 && !text.includes(q);
+        row.classList.toggle('search-hidden', hide);
+        if (!hide) visible++;
       });
-    }
+      const countEl = document.getElementById('count-' + panelId);
+      if (countEl) countEl.textContent = q.length > 0 ? visible : rows.length;
+    });
+  });
 
-    initRowExpanders();
-    // Re-run when the user switches tabs (new panel becomes visible)
-    tabs.forEach(tab => tab.addEventListener('click', function() {
-      setTimeout(initRowExpanders, 0);
-    }));
-  })();
-  </script>
-  {% endblock %}
+  // ── Mobile row expander ──────────────────────────────────
+  function initRowExpanders() {
+    if (window.innerWidth >= 600) return;
+    document.querySelectorAll('.admin-tab-panel .table tbody tr').forEach(function(row) {
+      if (row.querySelector('[colspan]')) return;
+      if (row.querySelector('.row-expand-btn')) return;
+      const cells = Array.from(row.querySelectorAll('td:not(.td-actions)'));
+      cells.slice(2).forEach(function(td) { td.classList.add('td-secondary'); });
+      if (cells.length > 2) {
+        const btn = document.createElement('button');
+        btn.className = 'row-expand-btn';
+        btn.innerHTML = 'More <i class="expand-chevron">▼</i>';
+        btn.addEventListener('click', function() {
+          const expanded = row.classList.toggle('row-expanded');
+          btn.innerHTML = (expanded ? 'Less' : 'More') + ' <i class="expand-chevron">▼</i>';
+        });
+        const actionsCell = row.querySelector('.td-actions');
+        if (actionsCell) row.insertBefore(btn, actionsCell);
+        else row.appendChild(btn);
+      }
+    });
+  }
+
+  initRowExpanders();
+  tabs.forEach(tab => tab.addEventListener('click', function() {
+    setTimeout(initRowExpanders, 0);
+  }));
+})();
+</script>
+{% endblock %}
   {% endblock %}
