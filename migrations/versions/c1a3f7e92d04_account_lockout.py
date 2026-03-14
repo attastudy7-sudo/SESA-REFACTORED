@@ -20,7 +20,7 @@ depends_on = None
 
 
 def upgrade():
-    # ── accounts ─────────────────────────────────────────────────────────────
+    # accounts
     with op.batch_alter_table('accounts', schema=None) as batch_op:
         batch_op.add_column(
             sa.Column('failed_attempts', sa.Integer(), nullable=False, server_default='0')
@@ -29,7 +29,7 @@ def upgrade():
             sa.Column('locked_until', sa.DateTime(), nullable=True)
         )
 
-    # ── school ────────────────────────────────────────────────────────────────
+    # school
     with op.batch_alter_table('school', schema=None) as batch_op:
         batch_op.add_column(
             sa.Column('failed_attempts', sa.Integer(), nullable=False, server_default='0')
@@ -39,8 +39,7 @@ def upgrade():
         )
 
 
-def do
-wngrade():
+def downgrade():
     with op.batch_alter_table('school', schema=None) as batch_op:
         batch_op.drop_column('locked_until')
         batch_op.drop_column('failed_attempts')
