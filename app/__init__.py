@@ -61,6 +61,16 @@ def _configure_logging(app: Flask) -> None:
 
 def _init_extensions(app: Flask) -> None:
     """Initialize Flask extensions."""
+
+    # ── Neon / serverless Postgres pool settings ───────────────────────────────
+    # Neon drops idle connections — these settings prevent stale connection errors
+    app.config.setdefault("SQLALCHEMY_ENGINE_OPTIONS", {}).update({
+        "pool_pre_ping": True,   # test connection before using it
+        "pool_recycle":  300,    # recycle connections every 5 minutes
+        "pool_size":     5,      # max persistent connections
+        "max_overflow":  2,      # extra connections under load
+    })
+
     db.init_app(app)
     migrate.init_app(app, db)
     csrf.init_app(app)
