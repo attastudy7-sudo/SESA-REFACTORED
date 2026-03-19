@@ -68,14 +68,14 @@ class Accounts(UserMixin, db.Model):
         """True if the account is currently locked out."""
         if self.locked_until is None:
             return False
-        return datetime.now(timezone.utc) < self.locked_until
+        return datetime.now(timezone.utc) < self.locked_until.replace(tzinfo=timezone.utc).replace(tzinfo=timezone.utc)
 
     def record_failed_login(self):
         """Increment counter; lock account after LOCKOUT_THRESHOLD failures."""
         from datetime import timedelta
         self.failed_attempts = (self.failed_attempts or 0) + 1
         if self.failed_attempts >= self.LOCKOUT_THRESHOLD:
-            self.locked_until = datetime.now(timezone.utc) + timedelta(minutes=self.LOCKOUT_MINUTES)
+            self.locked_until = datetime.utcnow() + timedelta(minutes=self.LOCKOUT_MINUTES)
 
     def record_successful_login(self):
         """Reset counter and clear any lockout on a good login."""
