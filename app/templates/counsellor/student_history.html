@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block title %}{{ student.full_name }} — History{% endblock %}
-{% block body_class %}has-page-hero{% endblock %}
+
 
 {% block nav_links %}
   <li><a href="{{ url_for('counsellor.dashboard') }}">My Students</a></li>
@@ -13,10 +13,9 @@
 {% endblock %}
 
 {% block body %}
-<div class="page-hero" style="background: linear-gradient(135deg, var(--green-800), var(--green-600));">
-  <div class="container">
-    <a href="{{ url_for('counsellor.dashboard') }}"
-       style="display:inline-block; color:rgba(255,255,255,0.75); font-size:0.85rem; margin-bottom:10px; text-decoration:none;">
+<div class="container" style="padding-bottom: 48px;">
+  <div class="page-context">
+    <a href="{{ url_for('counsellor.dashboard') }}" class="back-link">
       ← Back to Dashboard
     </a>
     <h1>{{ student.full_name }}</h1>
@@ -27,9 +26,6 @@
       · {{ results | length }} assessment{{ 's' if results | length != 1 }}
     </p>
   </div>
-</div>
-
-<div class="container" style="padding-top:32px; padding-bottom:48px;">
 
   <div style="display:grid; grid-template-columns:1fr 340px; gap:24px; align-items:start;">
 

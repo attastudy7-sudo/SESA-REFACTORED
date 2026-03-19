@@ -90,25 +90,48 @@
     was already scrolled when loaded (e.g. back-navigation, browser restore).
   */
   (function initNavScroll() {
-    // landingNav = landing page dedicated nav (starts transparent)
-    // mainNav    = base.html shared nav (always solid, scroll just adds shadow)
     const nav = document.getElementById('landingNav') || document.getElementById('mainNav');
     if (!nav) return;
 
-    // Nav starts transparent if it has the class — works for both landingNav and mainNav
     var startsTransparent = nav.classList.contains('transparent');
     if (startsTransparent) nav.dataset.wasTransparent = 'true';
 
-    function onScroll() {
-      var isScrolled = window.scrollY > 40;
-      nav.classList.toggle('scrolled', isScrolled);
-      if (nav.dataset.wasTransparent) {
+    // Landing page: use scroll position (no content boundary to observe)
+    if (nav.id === 'landingNav') {
+      function onScroll() {
+        var isScrolled = window.scrollY > 40;
+        nav.classList.toggle('scrolled', isScrolled);
         nav.classList.toggle('transparent', !isScrolled);
       }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+      return;
     }
 
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll(); // correct state on load / back-navigation
+    // App pages: use IntersectionObserver on first content section
+    // so the shadow fires exactly when content slides under the navbar
+    var sentinel = document.querySelector('.stat-grid') ||
+                   document.querySelector('.section') ||
+                   document.querySelector('.card') ||
+                   document.querySelector('.page-context');
+
+    if (sentinel && 'IntersectionObserver' in window) {
+      var observer = new IntersectionObserver(function(entries) {
+        // When sentinel leaves the top of the viewport, content is under the nav
+        nav.classList.toggle('scrolled', !entries[0].isIntersecting);
+      }, { rootMargin: '-' + (parseInt(getComputedStyle(document.documentElement)
+            .getPropertyValue('--navbar-height')) || 60) + 'px 0px 0px 0px' });
+      observer.observe(sentinel);
+      // Set correct initial state (e.g. back-navigation restores scroll position)
+      nav.classList.toggle('scrolled', sentinel.getBoundingClientRect().top < 60);
+    } else {
+      // Fallback for browsers without IntersectionObserver
+      function onScrollFallback() {
+        nav.classList.toggle('scrolled', window.scrollY > 40);
+      }
+      window.addEventListener('scroll', onScrollFallback, { passive: true });
+      onScrollFallback();
+    }
   })();
 
   /* ─── Landing Page Drawer ─────────────────────────────────── */

@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block title %}Students at Risk — {{ school.school_name }}{% endblock %}
-{% block body_class %}has-page-hero{% endblock %}
+
 
 {% block nav_links %}
   <li><a href="{{ url_for('main.school_dashboard', school_id=school.id) }}">Dashboard</a></li>
@@ -17,14 +17,11 @@
 {% endblock %}
 
 {% block body %}
-<div class="page-hero" style="background: linear-gradient(135deg, #7f1d1d, #b91c1c);">
-  <div class="container">
-    <h1><i class="fa-solid fa-triangle-exclamation"></i> Students at Risk</h1>
+<div class="container" style="padding-bottom: 48px;">
+  <div class="page-context">
+    <h1><i class="fa-solid fa-triangle-exclamation" style="color: var(--red-600);"></i> Students at Risk</h1>
     <p>{{ school.school_name }} · {{ pagination.total }} student{{ 's' if pagination.total != 1 }} flagged</p>
   </div>
-</div>
-
-<div class="container" style="padding-top: 32px; padding-bottom: 48px;">
 
   {# ── Filters ── #}
   <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:24px;">

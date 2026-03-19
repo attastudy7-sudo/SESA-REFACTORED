@@ -20,51 +20,38 @@
 {% endblock %}
 
 {% block body %}
-<div class="page-hero">
-  <div class="container">
-    <h1>Welcome back, {{ user.fname }}! <i class="fa-solid fa-hand-wave" style="color: var(--gold-200);"></i></h1>
+<div class="container" style="padding-bottom: 48px;">
+  <div class="page-context">
+    <h1>Welcome back, {{ user.fname }}! <i class="fa-solid fa-hand-wave" style="color: var(--gold-500); font-size: 1.2rem;"></i></h1>
     <p>Select an assessment below to begin or review your recent results.</p>
   </div>
-</div>
-
-<div class="container" style="padding-top: 40px; padding-bottom: 48px;">
 
   {# ── Stats Row ── #}
   <div class="stat-grid">
     <div class="stat-card">
       <div class="stat-icon"><i class="fa-solid fa-pen-to-square" style="color: var(--green-500);"></i></div>
-      <div>
-        <div class="stat-value">{{ total_tests }}</div>
-        <div class="stat-label">Assessments Taken</div>
-      </div>
+      <div class="stat-value">{{ total_tests }}</div>
+      <div class="stat-label">Assessments Taken</div>
     </div>
     <div class="stat-card gold">
       <div class="stat-icon"><i class="fa-solid fa-calendar-days" style="color: var(--gold-500);"></i></div>
-      <div>
-        <div class="stat-value">{{ prev_avg }}</div>
-        <div class="stat-label">This Month's Assessments</div>
-      </div>
+      <div class="stat-value">{{ prev_avg }}</div>
+      <div class="stat-label">This Month's Assessments</div>
     </div>
     <div class="stat-card teal">
       <div class="stat-icon"><i class="fa-solid fa-graduation-cap" style="color: #0891b2;"></i></div>
-      <div>
-        <div class="stat-value" style="font-size: 1.2rem; margin-top: 4px;">{{ user.level | capitalize if user.level else '—' }}</div>
-        <div class="stat-label">Education Level</div>
-      </div>
+      <div class="stat-value">{{ user.level | capitalize if user.level else '—' }}</div>
+      <div class="stat-label">Education Level</div>
     </div>
     <div class="stat-card">
       <div class="stat-icon"><i class="fa-solid fa-clock" style="color: var(--green-500);"></i></div>
-      <div>
-        <div class="stat-value" style="font-size: 1rem; margin-top: 4px;">
-          {% if most_recent %}{{ most_recent.taken_at.strftime('%d %b') }}{% else %}—{% endif %}
-        </div>
-        <div class="stat-label">Last Assessment</div>
-      </div>
+      <div class="stat-value">{% if most_recent %}{{ most_recent.taken_at.strftime('%d %b') }}{% else %}—{% endif %}</div>
+      <div class="stat-label">Last Assessment</div>
     </div>
   </div>
 
   {# ── Assessments ── #}
-  <div class="section">
+  <div class="section" id="assessments">
     <div class="section-head">
       <h2>Choose an Assessment</h2>
       <p style="font-size: 0.85rem; color: var(--gray-500);">Each test covers a different aspect of social-emotional health.</p>

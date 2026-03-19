@@ -1,6 +1,6 @@
   {% extends 'base.html' %}
   {% block title %}Admin Dashboard{% endblock %}
-  {% block body_class %}has-page-hero{% endblock %}
+  
 
 {% block extra_head %}
 <style>
@@ -87,10 +87,7 @@
 
 /* ── Mobile ── */
 @media (max-width: 768px) {
-  .stat-card  { padding: 14px 12px !important; gap: 10px !important; }
-  .stat-icon  { font-size: 1.1rem !important; }
-  .stat-value { font-size: 1.4rem !important; }
-  .stat-label { font-size: 0.72rem !important; }
+  
 
   .admin-tabs {
     display: grid !important;
@@ -130,28 +127,28 @@
   {% endblock %}
 
   {% block body %}
-  <div class="page-hero">
-    <div class="container">
+  <div class="container" style="padding-bottom: max(48px, calc(48px + env(safe-area-inset-bottom)));">
+    <div class="page-context">
       <h1>Super Admin Dashboard</h1>
       <p>Manage accounts, schools, questions, and view all assessment results.</p>
     </div>
-  </div>
-
-  <div class="container" style="padding-top: 28px; padding-bottom: max(48px, calc(48px + env(safe-area-inset-bottom)));">
 
     {# ── Stats ── #}
     <div class="stat-grid">
       <div class="stat-card">
         <div class="stat-icon"><i class="fa-solid fa-user" style="color: var(--green-500);"></i></div>
-        <div><div class="stat-value">{{ total_users }}</div><div class="stat-label">Total Students</div></div>
+        <div class="stat-value">{{ total_users }}</div>
+        <div class="stat-label">Total Students</div>
       </div>
       <div class="stat-card gold">
         <div class="stat-icon"><i class="fa-solid fa-clipboard-list" style="color: var(--gold-500);"></i></div>
-        <div><div class="stat-value">{{ total_tests }}</div><div class="stat-label">Total Tests Taken</div></div>
+        <div class="stat-value">{{ total_tests }}</div>
+        <div class="stat-label">Total Tests Taken</div>
       </div>
       <div class="stat-card teal">
         <div class="stat-icon"><i class="fa-solid fa-school" style="color: #0891b2;"></i></div>
-        <div><div class="stat-value">{{ total_schools }}</div><div class="stat-label">Schools</div></div>
+        <div class="stat-value">{{ total_schools }}</div>
+        <div class="stat-label">Schools</div>
       </div>
       {% for stage, count in stage_counts.items() %}
         {% if loop.index <= 1 %}
@@ -161,7 +158,8 @@
             {% elif 'elevated' in stage|lower %}<i class="fa-solid fa-circle-exclamation" style="color: var(--gold-500);"></i>
             {% else %}<i class="fa-solid fa-circle-check" style="color: var(--green-500);"></i>{% endif %}
           </div>
-          <div><div class="stat-value">{{ count }}</div><div class="stat-label">{{ stage }}</div></div>
+          <div class="stat-value">{{ count }}</div>
+          <div class="stat-label">{{ stage }}</div>
         </div>
         {% endif %}
       {% endfor %}

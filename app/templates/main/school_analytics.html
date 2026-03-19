@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block title %}School Analytics{% endblock %}
-{% block body_class %}has-page-hero{% endblock %}
+
 
 {% block extra_head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -19,14 +19,11 @@
 {% endblock %}
 
 {% block body %}
-<div class="page-hero">
-  <div class="container">
+<div class="container" style="padding-bottom: 48px;">
+  <div class="page-context">
     <h1>School Analytics</h1>
     <p>Overall student performance and trends for {{ school.school_name }}</p>
   </div>
-</div>
-
-<div class="container" style="padding-top: 32px; padding-bottom: 48px;">
   
   {% if total_assessments > 0 %}
   <div class="section">
@@ -34,24 +31,18 @@
     <div class="stat-grid" style="margin-bottom: 32px;">
       <div class="stat-card">
         <div class="stat-icon"><i class="fa-solid fa-users" style="color: var(--green-500);"></i></div>
-        <div>
-          <div class="stat-value">{{ total_students }}</div>
-          <div class="stat-label">Students Assessed</div>
-        </div>
+        <div class="stat-value">{{ total_students }}</div>
+        <div class="stat-label">Students Assessed</div>
       </div>
       <div class="stat-card gold">
         <div class="stat-icon"><i class="fa-solid fa-pen-to-square" style="color: var(--gold-500);"></i></div>
-        <div>
-          <div class="stat-value">{{ total_assessments }}</div>
-          <div class="stat-label">Total Assessments</div>
-        </div>
+        <div class="stat-value">{{ total_assessments }}</div>
+        <div class="stat-label">Total Assessments</div>
       </div>
       <div class="stat-card">
         <div class="stat-icon"><i class="fa-solid fa-chart-bar" style="color: var(--green-500);"></i></div>
-        <div>
-          <div class="stat-value">{{ avg_score.percentage }}%</div>
-          <div class="stat-label">Overall Average</div>
-        </div>
+        <div class="stat-value">{{ avg_score.percentage }}%</div>
+        <div class="stat-label">Overall Average</div>
       </div>
     </div>
     
