@@ -62,6 +62,67 @@
 
 /* ─── Reset & Base ───────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ─── Mobile Tap Highlight & Press Feedback ──────────────── */
+/* Remove the default blue/grey webkit tap highlight on all devices */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Restore natural press feedback for all interactive elements */
+a,
+button,
+.btn,
+.tab-item,
+.quiz-option,
+.test-card,
+.nav-dropdown a,
+.guide-nav-item,
+.crisis-option,
+.stat-card,
+.a2hs-btn-install,
+.a2hs-btn-later,
+.admin-tab {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation; /* eliminates 300ms tap delay */
+}
+
+/* Buttons and links: scale-down on press for tactile feedback */
+a:active:not(.btn):not(.tab-item),
+.btn:active,
+.guide-nav-item:active,
+.a2hs-btn-install:active,
+.a2hs-btn-later:active,
+.admin-tab:active {
+  transform: scale(0.97);
+  opacity: 0.88;
+}
+
+/* Tab bar items: subtle scale */
+.tab-item:active {
+  transform: scale(0.93);
+  opacity: 0.75;
+}
+
+/* Quiz options: background shift instead of scale */
+.quiz-option:active {
+  background: var(--green-50);
+  border-color: var(--green-400);
+}
+
+/* Test cards */
+.test-card:active {
+  transform: scale(0.98);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Crisis options */
+.crisis-option:active {
+  background: var(--green-50);
+  border-color: var(--green-400);
+}
+
+
 html { scroll-behavior: smooth; }
 body {
   font-family: var(--font-body);
@@ -1299,8 +1360,7 @@ select.form-control { cursor:pointer; }
 .admin-tab-panel.active { display:block; }
 
 /* ─── Search Box ─────────────────────────────────────────── */
-.search-box { display:flex; align-items:center; gap:8px; background:var(--white); border:1.5px solid var(--gray-300); border-radius:var(--radius-md); padding:8px 14px; max-width:100%; }
-@media (min-width:480px) { .search-box { max-width:320px; } }
+.search-box { display:flex; align-items:center; gap:8px; background:var(--white); border:1.5px solid var(--gray-300); border-radius:var(--radius-md); padding:8px 14px; width:100%; max-width:100%; }
 .search-box input { border:none; outline:none; width:100%; font-size:0.875rem; color:var(--gray-900); }
 .search-box svg { color:var(--gray-300); flex-shrink:0; }
 

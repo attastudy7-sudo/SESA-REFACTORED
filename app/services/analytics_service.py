@@ -65,7 +65,11 @@ def get_school_analytics(school_id: int) -> dict:
     # ── Query 2: monthly breakdown ────────────────────────────────────────────
     # Use PostgreSQL's to_char() for year-month grouping.
     # func.strftime() is SQLite-only and will raise UndefinedFunction on Postgres.
-    month_expr = func.to_char(TestResult.taken_at, 'YYYY-MM')
+    dialect = db.engine.dialect.name
+    if dialect == 'postgresql':
+        month_expr = func.to_char(TestResult.taken_at, 'YYYY-MM')
+    else:
+        month_expr = func.strftime('%Y-%m', TestResult.taken_at)
     monthly_rows = (
         db.session.query(
             month_expr.label('month_key'),

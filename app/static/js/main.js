@@ -220,39 +220,58 @@
     requestAnimationFrame(step);
   })();
 
-  /* ─── Student Search (school dashboard) ─────────────────── */
+  /* ─── Student Search (school students page) ─────────────── */
   (function initStudentSearch() {
     const input   = document.getElementById('studentSearch');
-    const results = document.getElementById('searchResults');
-    if (!input || !results) return;
+    const tbody   = document.querySelector('.table tbody');
+    const countEl = document.querySelector('.section-head h2');
+    const totalStudents = countEl ? parseInt(countEl.textContent.match(/\d+/)?.[0] || '0') : 0;
+    if (!input || !tbody) return;
 
     const schoolId = input.dataset.schoolId;
     let debounce;
 
+    // Store original rows for restore when search is cleared
+    const originalHTML = tbody.innerHTML;
+
     input.addEventListener('input', () => {
       clearTimeout(debounce);
       const q = input.value.trim();
-      if (!q) { results.innerHTML = ''; results.hidden = true; return; }
+
+      if (!q) {
+        tbody.innerHTML = originalHTML;
+        if (countEl) countEl.textContent = `All Students (${totalStudents})`;
+        return;
+      }
+
       debounce = setTimeout(async () => {
         try {
           const res  = await fetch(`/school/${schoolId}/search-students?query=${encodeURIComponent(q)}`);
           const data = await res.json();
+
           if (!data.length) {
-            results.innerHTML = '<li class="search-empty">No students found</li>';
+            tbody.innerHTML = `
+              <tr><td colspan="6" style="text-align:center; padding:32px; color:var(--gray-500);">
+                No students found matching "<strong>${q}</strong>"
+              </td></tr>`;
+            if (countEl) countEl.textContent = `All Students (0)`;
           } else {
-            results.innerHTML = data.map(s =>
-              `<li><strong>${s.fname} ${s.lname}</strong> <span>@${s.username}</span></li>`
-            ).join('');
+            tbody.innerHTML = data.map(s => `
+              <tr>
+                <td data-label="Name"><strong>${s.fname} ${s.lname}</strong><br>
+                  <small style="color:var(--gray-500)">${s.email || '—'}</small></td>
+                <td data-label="Username">@${s.username}</td>
+                <td data-label="Class">${s.class_group || '—'}</td>
+                <td data-label="School">${s.school_name || '—'}</td>
+                <td data-label="Tests">—</td>
+                <td data-label="Joined" style="color:var(--gray-500); font-size:0.82rem;">—</td>
+              </tr>`).join('');
+            if (countEl) countEl.textContent = `All Students (${data.length})`;
           }
-          results.hidden = false;
         } catch (err) {
           console.error(err);
         }
       }, 300);
-    });
-
-    document.addEventListener('click', e => {
-      if (!input.contains(e.target)) results.hidden = true;
     });
   })();
 

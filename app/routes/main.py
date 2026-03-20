@@ -410,6 +410,8 @@ def search_students(school_id):
         'lname': s.lname,
         'username': s.username,
         'email': s.email,
+        'class_group': s.class_group,
+        'school_name': s.school_name,
     } for s in students])
 
 

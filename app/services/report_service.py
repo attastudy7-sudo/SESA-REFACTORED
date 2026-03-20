@@ -198,7 +198,11 @@ def get_report_data(school_id: int, period: str) -> dict:
 
     # ── Monthly trend (last 6 months regardless of period) ───────────────────
     six_months_ago = datetime.now(timezone.utc) - timedelta(days=180)
-    month_expr = func.to_char(TestResult.taken_at, 'YYYY-MM')
+    dialect = db.engine.dialect.name
+    if dialect == 'postgresql':
+        month_expr = func.to_char(TestResult.taken_at, 'YYYY-MM')
+    else:
+        month_expr = func.strftime('%Y-%m', TestResult.taken_at)
     trend_rows = (
         db.session.query(
             month_expr.label('month_key'),
