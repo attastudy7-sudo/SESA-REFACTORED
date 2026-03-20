@@ -73,12 +73,13 @@ def get_stage_summary():
     from app.models.test_result import TestResult
     from sqlalchemy import func
 
+    stage_expr = func.coalesce(TestResult.stage, 'Unknown')
     rows = (
         db.session.query(
-            func.coalesce(TestResult.stage, TestResult.details, 'Unknown').label('stage'),
+            stage_expr.label('stage'),
             func.count(TestResult.id).label('count'),
         )
-        .group_by('stage')
+        .group_by(stage_expr)
         .all()
     )
 
