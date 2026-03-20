@@ -36,6 +36,13 @@ def counsellor_apply():
             form.years_experience.errors.append('Please enter a valid number.')
             return render_template('auth/counsellor_apply.html', form=form)
 
+        # ── Upload photo to Cloudinary ────────────────────────────────────────
+        photo_url = None
+        photo_file = form.photo.data
+        if photo_file and photo_file.filename:
+            from app.services.cloudinary_service import upload_counsellor_photo
+            photo_url = upload_counsellor_photo(photo_file, form.username.data.strip())
+
         try:
             # ── Create base account ───────────────────────────────────────────
             account = Accounts(
@@ -60,6 +67,7 @@ def counsellor_apply():
                 specialisations=form.specialisations.data.strip(),
                 bio=form.bio.data.strip(),
                 verification_status='pending',
+                photo_url=photo_url,
             )
             db.session.add(profile)
             db.session.commit()
@@ -83,10 +91,12 @@ def counsellor_apply():
 
     return render_template('auth/counsellor_apply.html', form=form)
 
-
 @counsellor_signup_bp.route('/counsellor/pending')
 def counsellor_pending():
     """Holding page shown after signup and on login for unverified counsellors."""
+    from flask_login import current_user
+    if current_user.is_authenticated and current_user.counsellor_profile and current_user.counsellor_profile.is_verified:
+        return redirect(url_for('counsellor.dashboard'))
     return render_template('auth/counsellor_pending.html')
 
 

@@ -48,7 +48,7 @@
           ← Back
         </button>
         <div style="display: flex; align-items: center; gap: 8px;">
-          <span style="font-size: 0.8rem; color: var(--gray-500);" id="answerHint">Select an answer to continue</span>
+          <span style="font-size: 0.8rem; color: var(--gray-400); font-style: italic;" id="answerHint">Select an answer to continue</span>
         </div>
         <button type="button" id="nextBtn" class="btn btn-primary" onclick="sendAnswer('next')" disabled>
           Next →
@@ -87,7 +87,7 @@ async function sendAnswer(action) {
 
   // Loading state
   document.getElementById('nextBtn').disabled = true;
-  document.getElementById('nextBtn').textContent = '…';
+  document.getElementById('nextBtn').innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="font-size:0.85rem;"></i>';
 
   try {
     const res = await fetch(`/test/api/${encodeURIComponent(TEST_TYPE)}/next`, {
@@ -128,13 +128,13 @@ async function sendAnswer(action) {
     });
 
     document.getElementById('nextBtn').disabled = true;
-    document.getElementById('nextBtn').textContent = 'Next →';
+    document.getElementById('nextBtn').innerHTML = 'Next &rarr;';
     document.getElementById('answerHint').style.display = 'inline';
     currentQ = data.question_number;
   } catch (err) {
     console.error(err);
     document.getElementById('nextBtn').disabled = false;
-    document.getElementById('nextBtn').textContent = 'Next →';
+    document.getElementById('nextBtn').innerHTML = 'Next &rarr;';
   }
 }
 

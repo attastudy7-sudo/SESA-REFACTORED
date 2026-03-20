@@ -87,8 +87,6 @@
 
 /* ── Mobile ── */
 @media (max-width: 768px) {
-  
-
   .admin-tabs {
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
@@ -113,10 +111,37 @@
     color: #fff !important;
     border-color: var(--green-800) !important;
   }
-
   .admin-toolbar { padding: 10px 12px; }
   .admin-toolbar-search { max-width: 100%; }
-  .admin-tab-panel .table-wrapper { max-height: 420px; }
+  .admin-tab-panel .table-wrapper {
+    max-height: 420px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .admin-tab-panel .table {
+    display: table !important;
+    min-width: 600px;
+  }
+  .admin-tab-panel .table thead {
+    display: table-header-group !important;
+  }
+  .admin-tab-panel .table tbody {
+    display: table-row-group !important;
+  }
+  .admin-tab-panel .table tr {
+    display: table-row !important;
+    border-bottom: none !important;
+    padding: 0 !important;
+  }
+  .admin-tab-panel .table td {
+    display: table-cell !important;
+    padding: 10px 12px !important;
+    border-bottom: 1px solid var(--gray-100) !important;
+    white-space: nowrap;
+  }
+  .admin-tab-panel .table td::before {
+    display: none !important;
+  }
 }
 </style>
 {% endblock %}
@@ -409,8 +434,8 @@
               {% for r in results %}
               <tr>
                 <td data-label="Student">
-                  <strong>{{ r.account.full_name }}</strong><br>
-                  <small style="color:var(--gray-500);">@{{ r.account.username }}</small>
+                  <strong>STU-{{ '%04X' | format(r.account.id) }}</strong><br>
+                  <small style="color:var(--gray-500);">{{ r.account.school.school_name if r.account.school else '—' }}</small>
                 </td>
                 <td data-label="School">{{ r.account.school.school_name if r.account.school else '—' }}</td>
                 <td data-label="Assessment">{{ r.test_type }}</td>
@@ -479,33 +504,7 @@
     });
   });
 
-  // ── Mobile row expander ──────────────────────────────────
-  function initRowExpanders() {
-    if (window.innerWidth >= 600) return;
-    document.querySelectorAll('.admin-tab-panel .table tbody tr').forEach(function(row) {
-      if (row.querySelector('[colspan]')) return;
-      if (row.querySelector('.row-expand-btn')) return;
-      const cells = Array.from(row.querySelectorAll('td:not(.td-actions)'));
-      cells.slice(2).forEach(function(td) { td.classList.add('td-secondary'); });
-      if (cells.length > 2) {
-        const btn = document.createElement('button');
-        btn.className = 'row-expand-btn';
-        btn.innerHTML = 'More <i class="expand-chevron">▼</i>';
-        btn.addEventListener('click', function() {
-          const expanded = row.classList.toggle('row-expanded');
-          btn.innerHTML = (expanded ? 'Less' : 'More') + ' <i class="expand-chevron">▼</i>';
-        });
-        const actionsCell = row.querySelector('.td-actions');
-        if (actionsCell) row.insertBefore(btn, actionsCell);
-        else row.appendChild(btn);
-      }
-    });
-  }
-
-  initRowExpanders();
-  tabs.forEach(tab => tab.addEventListener('click', function() {
-    setTimeout(initRowExpanders, 0);
-  }));
+  
 
   // ── Stage chart ──────────────────────────────────────────────────────────
   const stageCtx = document.getElementById('stageChart');

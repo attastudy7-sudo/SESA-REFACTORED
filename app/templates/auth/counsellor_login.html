@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}Counsellor Login{% endblock %}
+
+{% block full_page %}
+<div class="auth-page">
+  <div class="auth-page-brand">
+    <div>
+      <div class="auth-page-brand-logo">
+        <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="FOPA Logo">
+        <span class="auth-page-brand-sesa">SESA</span>
+      </div>
+      <div class="auth-page-brand-quote">"Supporting student <em>emotional wellbeing</em> across Ghana's schools."</div>
+    </div>
+    <div class="auth-page-brand-org">FOPA DILLIGENT CONSULT</div>
+  </div>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-stack" role="status" aria-live="polite">
+        {% for category, message in messages %}
+          <div class="flash-toast {{ category }}" role="alert"><span>{{ message }}</span></div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <div class="auth-card">
+    <div class="auth-logo-area">
+      <h1 class="auth-title">Counsellor Login</h1>
+      <p class="auth-subtitle">Sign in to your counsellor account</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('auth.counsellor_login') }}" novalidate>
+      {{ form.hidden_tag() }}
+
+      <div class="form-group">
+        {{ form.username.label(class="form-label") }}
+        <div class="form-control-icon">
+          {{ form.username(class="form-control" ~ (" is-invalid" if form.username.errors else ""), placeholder="Enter your username", autocomplete="username") }}
+          <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        {% for error in form.username.errors %}
+          <div class="form-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-group">
+        {{ form.password.label(class="form-label") }}
+        <div class="form-control-icon">
+          {{ form.password(class="form-control" ~ (" is-invalid" if form.password.errors else ""), placeholder="Enter your password", autocomplete="current-password") }}
+          <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        {% for error in form.password.errors %}
+          <div class="form-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: 8px;">
+        Sign In
+      </button>
+    </form>
+
+    <div class="auth-divider"><span>or</span></div>
+
+    <a href="{{ url_for('auth.login') }}" class="btn btn-ghost btn-block">Student Login</a>
+    <a href="{{ url_for('auth.school_login') }}" class="btn btn-ghost btn-block" style="margin-top: 8px;">School Administrator Login</a>
+
+    <div class="auth-footer-links">
+      <p>Not yet a counsellor? <a href="{{ url_for('counsellor_signup.counsellor_apply') }}">Apply here</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.querySelectorAll('.flash-toast').forEach((el, i) => {
+  el.addEventListener('click', () => { el.style.opacity='0'; setTimeout(()=>el.remove(),400); });
+  setTimeout(() => { el.style.transition='opacity 0.4s'; el.style.opacity='0'; setTimeout(()=>el.remove(),400); }, 4000 + i*300);
+});
+</script>
+{% endblock %}

@@ -47,8 +47,17 @@ self.addEventListener('fetch', event => {
   if (request.method !== 'GET') return;
   if (url.origin !== self.location.origin) return;
 
-  // API routes: network-only
-  if (url.pathname.startsWith('/test/api/')) return;
+  // Network-only: API endpoints and all pages that show health data
+  const NEVER_CACHE = [
+    '/test/api/',
+    '/test/result/',
+    '/home',
+    '/results',
+    '/counsellor/',
+    '/admin/',
+    '/school/',
+  ];
+  if (NEVER_CACHE.some(p => url.pathname.startsWith(p))) return;
 
   // Static assets: cache-first
   if (

@@ -168,11 +168,14 @@
     <a href="{{ url_for('main.school_dashboard', school_id=session.get('school_id')) }}" class="tab-item {% if request.endpoint == 'main.school_dashboard' %}active{% endif %}">
       <i class="fa-solid fa-gauge tab-icon"></i><span class="tab-label">Dashboard</span>
     </a>
+    <a href="{{ url_for('main.school_students', school_id=session.get('school_id')) }}" class="tab-item {% if request.endpoint == 'main.school_students' %}active{% endif %}">
+      <i class="fa-solid fa-users tab-icon"></i><span class="tab-label">Students</span>
+    </a>
+    <a href="{{ url_for('main.school_results', school_id=session.get('school_id')) }}" class="tab-item {% if request.endpoint == 'main.school_results' %}active{% endif %}">
+      <i class="fa-solid fa-clipboard-list tab-icon"></i><span class="tab-label">Results</span>
+    </a>
     <a href="{{ url_for('main.school_analytics', school_id=session.get('school_id')) }}" class="tab-item {% if request.endpoint == 'main.school_analytics' %}active{% endif %}">
       <i class="fa-solid fa-chart-line tab-icon"></i><span class="tab-label">Analytics</span>
-    </a>
-    <a href="{{ url_for('main.students_at_risk', school_id=session.get('school_id')) }}" class="tab-item {% if request.endpoint == 'main.students_at_risk' %}active{% endif %}">
-      <i class="fa-solid fa-triangle-exclamation tab-icon" style="color:var(--gold-400);"></i><span class="tab-label">At Risk</span>
     </a>
     <button class="tab-item" id="profileTabBtn" aria-label="Account">
       <i class="fa-solid fa-circle-user tab-icon"></i><span class="tab-label">Account</span>

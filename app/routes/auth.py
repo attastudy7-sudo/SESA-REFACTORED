@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, timezone
 from flask import Blueprint, render_template, redirect, url_for, flash, session, request
 from flask_login import login_user, logout_user, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -7,7 +8,7 @@ from app.extensions import db, limiter
 from app.models.account import Accounts
 from app.models.school import School
 from app.models.audit_log import audit
-from app.forms import LoginForm, SchoolLoginForm, SignupForm, SchoolSignupForm, PasswordResetForm
+from app.forms import LoginForm, CounsellorLoginForm, SchoolLoginForm, SignupForm, SchoolSignupForm, PasswordResetForm
 
 auth_bp = Blueprint('auth', __name__)
 logger = logging.getLogger(__name__)
@@ -38,6 +39,10 @@ def login():
             return render_template('auth/login.html', form=form)
 
         if user and check_password_hash(user.password, form.password.data):
+            if user.is_counsellor:
+                flash('Please use the Counsellor Login page to sign in.', 'error')
+                return render_template('auth/login.html', form=form)
+
             user.record_successful_login()
             login_user(user)
             session.permanent = True
@@ -48,8 +53,6 @@ def login():
 
             if user.is_super_admin:
                 return redirect(url_for('admin.dashboard'))
-            if user.is_counsellor:
-                return redirect(url_for('counsellor.dashboard'))
             next_page = request.args.get('next')
             if next_page:
                 from urllib.parse import urlparse
@@ -85,6 +88,58 @@ def login():
             flash('Invalid username or password. Please try again.', 'error')
 
     return render_template('auth/login.html', form=form)
+
+
+@auth_bp.route('/counsellor-login', methods=['GET', 'POST'])
+@limiter.limit("10 per minute")
+def counsellor_login():
+    if current_user.is_authenticated:
+        return redirect(url_for('counsellor.dashboard'))
+
+    form = CounsellorLoginForm()
+    if form.validate_on_submit():
+        username = form.username.data.strip()
+        user = Accounts.query.filter_by(username=username, is_counsellor=True).first()
+
+        if user and user.is_locked:
+            logger.warning('Counsellor login blocked — locked | user=%s ip=%s', username, request.remote_addr)
+            audit('LOGIN_BLOCKED', actor_id=user.id, school_id=user.school_id,
+                  ip_address=request.remote_addr, detail='Account locked')
+            db.session.commit()
+            flash(_LOCKED_MSG, 'error')
+            return render_template('auth/counsellor_login.html', form=form)
+
+        if user and check_password_hash(user.password, form.password.data):
+            user.record_successful_login()
+            login_user(user)
+            session.permanent = True
+            audit('LOGIN_SUCCESS', actor_id=user.id, school_id=user.school_id,
+                  ip_address=request.remote_addr)
+            db.session.commit()
+            logger.info('Counsellor login | user=%s ip=%s', user.username, request.remote_addr)
+            return redirect(url_for('counsellor.dashboard'))
+
+        if user:
+            user.record_failed_login()
+            remaining = max(0, user.LOCKOUT_THRESHOLD - user.failed_attempts)
+            audit('LOGIN_FAILED', actor_id=user.id, school_id=user.school_id,
+                  ip_address=request.remote_addr,
+                  detail=f'Attempt {user.failed_attempts}/{user.LOCKOUT_THRESHOLD}')
+            db.session.commit()
+            if user.is_locked:
+                flash(_LOCKED_MSG, 'error')
+            elif remaining <= 2:
+                flash(
+                    f'Invalid password. {remaining} attempt{"s" if remaining != 1 else ""} '
+                    f'remaining before your account is temporarily locked.',
+                    'error',
+                )
+            else:
+                flash('Invalid username or password. Please try again.', 'error')
+        else:
+            flash('Invalid username or password. Please try again.', 'error')
+
+    return render_template('auth/counsellor_login.html', form=form)
 
 
 @auth_bp.route('/school-login', methods=['GET', 'POST'])
@@ -156,13 +211,18 @@ def signup():
             birthdate=form.birthdate.data,
             gender=form.gender.data,
             school_name=None,
+            consent_given=True,
+            consent_given_at=datetime.now(timezone.utc),
+            consent_version='v1.0',
         )
         try:
             db.session.add(account)
             db.session.commit()
+            login_user(account)
+            session.permanent = True
             logger.info('New account | username=%s ip=%s', account.username, request.remote_addr)
-            flash('Account created successfully! Please log in.', 'success')
-            return redirect(url_for('auth.login'))
+            flash(f'Welcome to SESA, {account.fname}!', 'success')
+            return redirect(url_for('main.home'))
         except Exception:
             db.session.rollback()
             flash('An error occurred while creating your account. Please try again.', 'error')
@@ -189,9 +249,11 @@ def school_signup():
         try:
             db.session.add(school)
             db.session.commit()
+            session['school_id'] = school.id
+            session.permanent = True
             logger.info('New school | school=%s ip=%s', school.school_name, request.remote_addr)
-            flash('School registered successfully! Please log in.', 'success')
-            return redirect(url_for('auth.school_login'))
+            flash(f'Welcome to SESA, {school.admin_name}! Your school has been registered.', 'success')
+            return redirect(url_for('main.school_dashboard', school_id=school.id))
         except Exception:
             db.session.rollback()
             flash('An error occurred. Please try again.', 'error')

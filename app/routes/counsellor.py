@@ -18,6 +18,18 @@ counsellor_bp = Blueprint('counsellor', __name__)
 logger = logging.getLogger(__name__)
 
 
+def _encrypt_note(text: str) -> str:
+    import os
+    from cryptography.fernet import Fernet
+    key = os.environ.get('PHI_ENCRYPTION_KEY', '')
+    if not key:
+        return text
+    try:
+        return Fernet(key.encode()).encrypt(text.encode()).decode()
+    except Exception:
+        return text
+
+
 @counsellor_bp.route('/dashboard')
 @login_required
 @counsellor_required
@@ -26,95 +38,29 @@ def dashboard():
     if current_user.counsellor_profile and not current_user.counsellor_profile.is_verified:
         return redirect(url_for('counsellor_signup.counsellor_pending'))
 
-    school_id = current_user.school_id
-    selected_class = request.args.get('class_group', '').strip()
-    page = request.args.get('page', 1, type=int)
-
-    # Subquery: latest taken_at per student per test type
-    latest_subq = (
-        db.session.query(
-            TestResult.user_id,
-            TestResult.test_type,
-            func.max(TestResult.taken_at).label('latest_at'),
-        )
-        .join(Accounts, Accounts.id == TestResult.user_id)
-        .filter(Accounts.school_id == school_id)
-        .group_by(TestResult.user_id, TestResult.test_type)
-        .subquery()
-    )
-
-    at_risk_q = (
-        db.session.query(TestResult, Accounts)
-        .join(Accounts, Accounts.id == TestResult.user_id)
-        .join(
-            latest_subq,
-            (latest_subq.c.user_id == TestResult.user_id) &
-            (latest_subq.c.test_type == TestResult.test_type) &
-            (latest_subq.c.latest_at == TestResult.taken_at),
-        )
-        .filter(
-            Accounts.school_id == school_id,
-            TestResult.stage.in_(['Elevated Stage', 'Clinical Stage']),
-        )
-    )
-
-    if selected_class:
-        at_risk_q = at_risk_q.filter(Accounts.class_group == selected_class)
-
-    at_risk_q = at_risk_q.order_by(
-        db.case((TestResult.stage == 'Clinical Stage', 0), else_=1),
-        TestResult.taken_at.desc(),
-    )
-
-    pagination = at_risk_q.paginate(page=page, per_page=20, error_out=False)
-
-    # All class groups in this school for the filter dropdown
-    class_groups = sorted([
-        row.class_group
-        for row in db.session.query(Accounts.class_group)
-        .filter(
-            Accounts.school_id == school_id,
-            Accounts.class_group.isnot(None),
-        )
-        .distinct()
-        .all()
-    ])
-
-    # IDs of students already contacted (from audit log) — for badge display
-    contacted_ids = {
-        row.target_id
-        for row in db.session.query(AuditLog.target_id)
-        .filter(
-            AuditLog.event_type == 'STUDENT_CONTACTED',
-            AuditLog.school_id == school_id,
-            AuditLog.target_id.isnot(None),
-        )
-        .distinct()
-        .all()
-    }
-
     return render_template(
         'counsellor/dashboard.html',
-        at_risk=pagination.items,
-        pagination=pagination,
+        at_risk=[],
+        pagination=None,
         counsellor=current_user,
-        class_groups=class_groups,
-        selected_class=selected_class,
-        contacted_ids=contacted_ids,
+        class_groups=[],
+        selected_class='',
+        contacted_ids=set(),
     )
-
 
 @counsellor_bp.route('/student/<int:student_id>')
 @login_required
 @counsellor_required
 def student_history(student_id):
     """Full assessment history for a single student."""
-    student = Accounts.query.get_or_404(student_id)
+    student = Accounts.query.filter_by(
+        id=student_id,
+        school_id=current_user.school_id,
+    ).first_or_404()
 
-    # Scope check — must be same school
-    if student.school_id != current_user.school_id:
-        flash('Access denied.', 'error')
-        return redirect(url_for('counsellor.dashboard'))
+    # Referral system not yet built — block direct access
+    flash('Student history will be available once the referral system is active.', 'warning')
+    return redirect(url_for('counsellor.dashboard'))
 
     results = (
         TestResult.query
@@ -170,7 +116,7 @@ def add_note(student_id):
         school_id=current_user.school_id,
         target_id=student_id,
         ip_address=request.remote_addr,
-        detail=note_text[:500],
+        detail=_encrypt_note(note_text[:500]),
     )
     db.session.commit()
 

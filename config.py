@@ -1,12 +1,14 @@
 import os
+import secrets
 from datetime import timedelta
-
 basedir = os.path.abspath(os.path.dirname(__file__))
+
+_SECRET_KEY_FROM_ENV = os.environ.get('SECRET_KEY', '')
 
 
 class Config:
     """Base configuration."""
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'change-this-in-production-use-env-var'
+    SECRET_KEY = _SECRET_KEY_FROM_ENV or secrets.token_hex(32)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # ── Session security ──────────────────────────────────────────────────────
@@ -76,11 +78,15 @@ class ProductionConfig(Config):
     @classmethod
     def init_app(cls, app):
         Config.init_app(app) if hasattr(Config, 'init_app') else None
-        secret = app.config.get('SECRET_KEY', '')
-        if 'change-this' in secret or len(secret) < 24:
+        if not _SECRET_KEY_FROM_ENV:
             raise RuntimeError(
-                'SECRET_KEY is insecure or using the default value. '
-                'Set a strong SECRET_KEY environment variable before deploying.'
+                'SECRET_KEY environment variable is not set. '
+                'Generate one with: python -c "import secrets; print(secrets.token_hex(32))"'
+            )
+        if len(_SECRET_KEY_FROM_ENV) < 32:
+            raise RuntimeError(
+                'SECRET_KEY is too short (minimum 32 characters). '
+                'Generate one with: python -c "import secrets; print(secrets.token_hex(32))"'
             )
 
 

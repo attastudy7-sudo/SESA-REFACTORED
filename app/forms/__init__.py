@@ -3,6 +3,7 @@ WTForms form definitions for SESA.
 Centralises validation and CSRF protection.
 """
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileAllowed
 from wtforms import (StringField, PasswordField, SelectField, BooleanField,
                      DateField, TextAreaField, SubmitField, HiddenField)
 from wtforms.validators import (DataRequired, Email, Length, EqualTo,
@@ -55,6 +56,10 @@ class SignupForm(FlaskForm):
     gender = SelectField('Gender', choices=GENDER_CHOICES, validators=[DataRequired()])
     school_name = StringField('School Name', validators=[Optional()])
     submit = SubmitField('Create Account')
+    parental_consent = BooleanField(
+        'I confirm that my parent or guardian has consented to my participation and understands that assessment results will be shared with my school\'s pastoral care team.',
+        validators=[DataRequired(message='Parental consent is required to create an account.')]
+    )
 
 
 class SchoolSignupForm(FlaskForm):
@@ -101,19 +106,23 @@ class QuestionForm(FlaskForm):
 
 class FeedbackForm(FlaskForm):
     result_id = HiddenField()
-    test_type = HiddenField()
-    score = HiddenField()
-    stage = HiddenField()
-    message = HiddenField()
+    stage     = HiddenField()
+    message   = HiddenField()
     max_score = HiddenField()
     feedback = TextAreaField('How are you feeling?', validators=[Optional(), Length(max=1000)])
     submit = SubmitField('Save & Continue')
 
 
+class CounsellorLoginForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired(), Length(min=3, max=50)])
+    password = PasswordField('Password', validators=[DataRequired()])
+    submit = SubmitField('Sign In')
+
+
 class PasswordResetForm(FlaskForm):
     school_code = StringField('School Access Code', validators=[DataRequired(), Length(min=6, max=8)])
     username = StringField('Your Username', validators=[DataRequired(), Length(min=3, max=50)])
-    new_password = PasswordField('New Password', validators=[DataRequired(), Length(min=6)])
+    new_password = PasswordField('New Password', validators=[DataRequired(), Length(min=8)])
     confirm_password = PasswordField(
         'Confirm New Password',
         validators=[DataRequired(), EqualTo('new_password', message='Passwords must match.')]
@@ -129,6 +138,9 @@ class CounsellorSignupForm(FlaskForm):
     username = StringField('Username',   validators=[DataRequired(), Length(min=3, max=50)])
     phone    = StringField('Phone Number', validators=[DataRequired(), Length(max=20)])
     password = PasswordField('Password', validators=[DataRequired(), Length(min=8)])
+    photo = FileField('Profile Photo', validators=[
+    FileAllowed(['jpg', 'jpeg', 'png', 'webp'], 'Images only — jpg, png, or webp.')
+])
 
     # ── Professional details ──────────────────────────────────────────────────
     gpc_number        = StringField('GPC Registration Number',  validators=[Optional(), Length(max=50)])

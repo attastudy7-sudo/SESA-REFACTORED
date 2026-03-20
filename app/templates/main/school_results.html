@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}Assessment Results — {{ school.school_name }}{% endblock %}
+
+{% block nav_links %}
+  <li><a href="{{ url_for('main.school_dashboard', school_id=school.id) }}">Dashboard</a></li>
+  <li><a href="{{ url_for('main.school_analytics', school_id=school.id) }}">Analytics</a></li>
+  <li><a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a></li>
+{% endblock %}
+
+{% block body %}
+<div class="container" style="padding-bottom: 48px;">
+  <div class="page-context">
+    <h1>Assessment Results</h1>
+    <p>{{ school.school_name }} · {{ total_results }} result{{ 's' if total_results != 1 }}</p>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <h2>All Results ({{ total_results }})</h2>
+    </div>
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Assessment</th>
+              <th>Score</th>
+              <th>Stage</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in results_pagination.items %}
+            <tr>
+              <td data-label="Student">{{ r.account.full_name }}</td>
+              <td data-label="Assessment" style="font-size:0.85rem;">{{ r.test_type }}</td>
+              <td data-label="Score">{{ r.score }}{% if r.max_score %}/{{ r.max_score }}{% endif %}</td>
+              <td data-label="Stage">
+                {% set s = (r.stage or '') | lower %}
+                <span class="badge {% if 'normal' in s %}stage-normal{% elif 'mild' in s %}stage-mild{% elif 'elevated' in s %}stage-elevated{% elif 'clinical' in s %}stage-clinical{% else %}badge-gray{% endif %}">
+                  {{ r.stage or 'Unknown' }}
+                </span>
+              </td>
+              <td data-label="Date" style="color:var(--gray-500); font-size:0.82rem;">{{ r.taken_at.strftime('%d %b %Y') }}</td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="5" class="td-empty-state" style="padding:0; border:none;">
+                <div class="empty-state">
+                  <div class="empty-state-icon"><i class="fa-solid fa-clipboard-list" style="color:var(--gray-400);"></i></div>
+                  <p>No assessment results yet.</p>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if results_pagination.pages > 1 %}
+      <div style="display:flex; justify-content:center; align-items:center; gap:8px; padding:16px; border-top:1px solid var(--gray-100);">
+        {% if results_pagination.has_prev %}
+          <a href="{{ url_for('main.school_results', school_id=school.id, results_page=results_pagination.prev_num) }}"
+             style="padding:6px 14px; border-radius:6px; background:var(--ivory); color:var(--green-800); text-decoration:none; font-size:0.85rem; font-weight:600;">← Prev</a>
+        {% endif %}
+        <span style="font-size:0.82rem; color:var(--gray-500);">Page {{ results_pagination.page }} of {{ results_pagination.pages }}</span>
+        {% if results_pagination.has_next %}
+          <a href="{{ url_for('main.school_results', school_id=school.id, results_page=results_pagination.next_num) }}"
+             style="padding:6px 14px; border-radius:6px; background:var(--ivory); color:var(--green-800); text-decoration:none; font-size:0.85rem; font-weight:600;">Next →</a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block bottom_tab_bar %}
+{% set school_id = session.get('school_id') %}
+{% if school_id %}
+<nav class="bottom-tab-bar" aria-label="School admin navigation">
+  <a href="{{ url_for('main.school_dashboard', school_id=school_id) }}" class="tab-item">
+    <i class="fa-solid fa-gauge tab-icon"></i><span class="tab-label">Dashboard</span>
+  </a>
+  <a href="{{ url_for('main.school_students', school_id=school_id) }}" class="tab-item">
+    <i class="fa-solid fa-users tab-icon"></i><span class="tab-label">Students</span>
+  </a>
+  <a href="{{ url_for('main.school_results', school_id=school_id) }}" class="tab-item active">
+    <i class="fa-solid fa-clipboard-list tab-icon"></i><span class="tab-label">Results</span>
+  </a>
+  <a href="{{ url_for('main.school_analytics', school_id=school_id) }}" class="tab-item">
+    <i class="fa-solid fa-chart-line tab-icon"></i><span class="tab-label">Analytics</span>
+  </a>
+  <a href="{{ url_for('auth.logout') }}" class="tab-item tab-logout">
+    <span class="tab-icon">↩</span><span class="tab-label">Logout</span>
+  </a>
+</nav>
+{% endif %}
+{% endblock %}  

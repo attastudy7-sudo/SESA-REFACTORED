@@ -4,8 +4,13 @@
 {% block full_page %}
 <div class="auth-page">
   <div class="auth-page-brand">
-    <div class="auth-page-brand-sesa">SESA</div>
-    <div class="auth-page-brand-quote">"Supporting student <em>emotional wellbeing</em> across Ghana's schools."</div>
+    <div>
+      <div class="auth-page-brand-logo">
+        <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="FOPA Logo">
+        <span class="auth-page-brand-sesa">SESA</span>
+      </div>
+      <div class="auth-page-brand-quote">"Supporting student <em>emotional wellbeing</em> across Ghana's schools."</div>
+    </div>
     <div class="auth-page-brand-org">FOPA DILLIGENT CONSULT</div>
   </div>
   {% with messages = get_flashed_messages(with_categories=true) %}
@@ -20,11 +25,6 @@
 
   <div class="auth-card">
     <div class="auth-logo-area">
-      <div class="auth-wordmark">
-        <span class="auth-wordmark-sesa">SESA</span>
-        <span class="auth-wordmark-dot"></span>
-      </div>
-      <div class="auth-org">FOPA DILLIGENT CONSULT</div>
       <h1 class="auth-title">Welcome back</h1>
       <p class="auth-subtitle">Sign in to your student account</p>
     </div>
@@ -46,8 +46,10 @@
       <div class="form-group">
         {{ form.password.label(class="form-label") }}
         <div class="form-control-icon">
-          {{ form.password(class="form-control" ~ (" is-invalid" if form.password.errors else ""), placeholder="Enter your password", autocomplete="current-password") }}
-          <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          {{ form.password(class="form-control" ~ (" is-invalid" if form.password.errors else ""), placeholder="Enter your password", autocomplete="current-password", id="passwordField") }}
+          <button type="button" id="togglePassword" aria-label="Show password" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;color:var(--gray-400);">
+            <i class="fa-solid fa-eye" id="toggleIcon"></i>
+          </button>
         </div>
         {% for error in form.password.errors %}
           <div class="form-error">{{ error }}</div>
@@ -69,6 +71,7 @@
     <div class="auth-footer-links">
       <p>New to SESA? <a href="{{ url_for('auth.signup') }}">Create an account</a></p>
       <p>Forgot your password? <a href="{{ url_for('auth.reset_password') }}">Reset it here</a></p>
+      <!-- <p>Are you a counsellor? <a href="{{ url_for('auth.counsellor_login') }}">Counsellor login</a> or <a href="{{ url_for('counsellor_signup.counsellor_apply') }}">apply here</a>.</p> -->
     </div>
   </div>
 </div>
@@ -76,6 +79,17 @@
 
 {% block extra_scripts %}
 <script>
+const toggleBtn = document.getElementById('togglePassword');
+const pwField = document.getElementById('passwordField');
+const toggleIcon = document.getElementById('toggleIcon');
+if (toggleBtn && pwField) {
+  toggleBtn.addEventListener('click', () => {
+    const isHidden = pwField.type === 'password';
+    pwField.type = isHidden ? 'text' : 'password';
+    toggleIcon.className = isHidden ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+  });
+}
+
 document.querySelectorAll('.flash-toast').forEach((el, i) => {
   el.addEventListener('click', () => { el.style.opacity='0'; setTimeout(()=>el.remove(),400); });
   setTimeout(() => { el.style.transition='opacity 0.4s'; el.style.opacity='0'; setTimeout(()=>el.remove(),400); }, 4000 + i*300);

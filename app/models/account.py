@@ -35,6 +35,11 @@ class Accounts(UserMixin, db.Model):
     locked_until = db.Column(db.DateTime, nullable=True)  # NULL = not locked
     phone = db.Column(db.String(20), nullable=True)
 
+    # Consent record — required under Ghana Data Protection Act 2012
+    consent_given = db.Column(db.Boolean, default=False, nullable=False, server_default='0')
+    consent_given_at = db.Column(db.DateTime, nullable=True)
+    consent_version = db.Column(db.String(10), nullable=True)  # e.g. 'v1.0'
+
     test_results = db.relationship(
         'TestResult',
         backref='account',

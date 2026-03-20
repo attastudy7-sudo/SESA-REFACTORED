@@ -183,19 +183,19 @@
             {{ form.feedback(class="form-control", placeholder="Is there something you want to talk about, feel free to get it off your chest 🥺", rows=3) }}
           </div>
 
-          <div style="border-top: 1px solid var(--gray-100); margin-top: 24px; padding-top: 20px;">
+          <div style="border-top: 1px solid var(--gray-100); margin-top: 24px; padding-top: 20px; display: flex; flex-direction: column; gap: 10px;">
             {% if next_test_type %}
-            <button type="submit" name="action" value="next" class="btn btn-primary btn-block" style="margin-bottom: 10px;">
+            <button type="submit" name="action" value="next" class="btn btn-primary btn-block btn-lg">
               Continue to Next Assessment →
             </button>
-            <button type="submit" name="action" value="finish" class="btn btn-secondary btn-block">
+            <button type="submit" name="action" value="finish" class="btn btn-block" style="padding: 13px 24px; background: transparent; color: var(--green-800); border: 1.5px solid var(--green-700); border-radius: var(--radius-md); font-size: 0.9rem; opacity: 0.8;">
               Save &amp; Come Back Later
             </button>
             {% else %}
-            <button type="submit" name="action" value="finish" class="btn btn-primary btn-block" style="margin-bottom: 10px;">
+            <button type="submit" name="action" value="finish" class="btn btn-primary btn-block btn-lg">
               Complete All Assessments ✓
             </button>
-            <a href="{{ url_for('main.home') }}" class="btn btn-secondary btn-block">
+            <a href="{{ url_for('main.home') }}" class="btn btn-block" style="padding: 13px 24px; background: transparent; color: var(--green-800); border: 1.5px solid var(--green-700); border-radius: var(--radius-md); font-size: 0.9rem; opacity: 0.8; text-align: center;">
               Back to Home
             </a>
             {% endif %}

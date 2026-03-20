@@ -154,9 +154,13 @@
           reverse: true,
           min: 0,
           max: 100,
-          title: { display: true, text: 'Distress Level (higher = more concern)' },
+          title: { display: true, text: 'Distress Level (lower on chart = more concern)' },
           ticks: {
-            callback: function(value) { return value + '%'; }
+            callback: function(value) {
+              if (value === 0) return '0% ← better';
+              if (value === 100) return '100% ← concern';
+              return value + '%';
+            }
           }
         }
       },

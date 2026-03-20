@@ -205,3 +205,16 @@ def verify_counsellor(profile_id):
 
     if action == 'approve':
         profile.verification_status = 'verified'
+        profile.verified_at = datetime.now(timezone.utc)
+        profile.rejection_reason = None
+        db.session.commit()
+        flash('Counsellor approved successfully.', 'success')
+
+    elif action == 'reject':
+        reason = request.form.get('rejection_reason', '').strip()
+        profile.verification_status = 'rejected'
+        profile.rejection_reason = reason or 'Your application did not meet our verification requirements.'
+        db.session.commit()
+        flash('Counsellor application rejected.', 'warning')
+
+    return redirect(url_for('admin.counsellor_applications'))

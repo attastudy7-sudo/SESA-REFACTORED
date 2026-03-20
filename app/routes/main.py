@@ -5,7 +5,7 @@ import logging
 from flask import Blueprint, render_template, redirect, url_for, flash, session, request, jsonify, current_app
 from flask_login import login_required, current_user
 from sqlalchemy import or_, func
-from app.extensions import db, csrf
+from app.extensions import db, csrf, limiter
 from app.models.account import Accounts
 from app.models.school import School
 from app.models.test_result import TestResult
@@ -186,20 +186,32 @@ def school_dashboard(school_id):
         .paginate(page=results_page, per_page=20, error_out=False)
     )
 
+    from app.models.account import Accounts as _Acc
+    counsellors = _Acc.query.filter_by(school_id=school.id, is_counsellor=True).all()
+    
+    coverage_counts = {
+        tt: db.session.query(func.count(func.distinct(TestResult.user_id)))
+            .filter(TestResult.user_id.in_(
+                db.session.query(Accounts.id).filter_by(school_id=school_id)
+            ))
+            .filter(TestResult.test_type == tt)
+            .scalar() or 0
+        for tt in current_app.config.get('TEST_TYPES', [])
+    }
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        from flask import jsonify
+        return jsonify({
+            'stage_counts': stage_counts,
+            'coverage_counts': coverage_counts,
+            'period': period,
+        })
+
     return render_template(
         'main/school_dashboard.html',
-        coverage_counts={
-            tt: db.session.query(func.count(func.distinct(TestResult.user_id)))
-                .filter(TestResult.user_id.in_(
-                    db.session.query(Accounts.id).filter_by(school_id=school_id)
-                ))
-                .filter(TestResult.test_type == tt)
-                .scalar() or 0
-            for tt in current_app.config.get('TEST_TYPES', [])
-        },
+        coverage_counts=coverage_counts,
         school=school,
-        students_pagination=students_pagination,
-        results_pagination=results_pagination,
+        counsellors=counsellors,
         total_students=total_students,
         total_results=total_results,
         at_risk_count=at_risk_count,
@@ -370,6 +382,8 @@ def upload_students(school_id):
 
 
 @main_bp.route('/school/<int:school_id>/search-students')
+@school_login_required
+@limiter.limit("60 per minute")
 def search_students(school_id):
     """AJAX student search for school dashboard."""
     school = _get_school_from_session()
@@ -456,6 +470,64 @@ def verify_payment(school_id):
     return redirect(url_for('main.school_dashboard', school_id=school_id))
 
 
+@main_bp.route('/school/<int:school_id>/students')
+def school_students(school_id):
+    school = _get_school_from_session()
+    if current_user.is_authenticated and current_user.is_super_admin:
+        school = School.query.get_or_404(school_id)
+    elif school and school.id == school_id:
+        pass
+    else:
+        flash('Please log in as a school administrator.', 'warning')
+        return redirect(url_for('auth.school_login'))
+
+    accounts_q = (Accounts.query
+                  .filter_by(school_id=school.id)
+                  .order_by(Accounts.fname))
+    total_students = accounts_q.count()
+    student_page = request.args.get('student_page', 1, type=int)
+    students_pagination = accounts_q.paginate(page=student_page, per_page=25, error_out=False)
+
+    return render_template(
+        'main/school_students.html',
+        school=school,
+        students_pagination=students_pagination,
+        total_students=total_students,
+    )
+
+
+@main_bp.route('/school/<int:school_id>/results')
+def school_results(school_id):
+    school = _get_school_from_session()
+    if current_user.is_authenticated and current_user.is_super_admin:
+        school = School.query.get_or_404(school_id)
+    elif school and school.id == school_id:
+        pass
+    else:
+        flash('Please log in as a school administrator.', 'warning')
+        return redirect(url_for('auth.school_login'))
+
+    results_page = request.args.get('results_page', 1, type=int)
+    results_pagination = (
+        TestResult.query
+        .join(Accounts, Accounts.id == TestResult.user_id)
+        .filter(Accounts.school_id == school.id)
+        .order_by(TestResult.taken_at.desc())
+        .paginate(page=results_page, per_page=25, error_out=False)
+    )
+    total_results = (TestResult.query
+                     .join(Accounts, Accounts.id == TestResult.user_id)
+                     .filter(Accounts.school_id == school.id)
+                     .count())
+
+    return render_template(
+        'main/school_results.html',
+        school=school,
+        results_pagination=results_pagination,
+        total_results=total_results,
+    )
+
+
 @main_bp.route('/school/<int:school_id>/analytics')
 @school_login_required
 def school_analytics(school_id):
@@ -512,6 +584,7 @@ def download_report(school_id):
 # ── Access Code Self-Registration (Group 1) ──────────────────────────────────
 
 @main_bp.route('/join', methods=['GET', 'POST'])
+@limiter.limit("20 per hour")
 def join_with_code():
     """Student self-registration via 6-digit school access code."""
     from werkzeug.security import generate_password_hash
@@ -593,7 +666,7 @@ def generate_access_code(school_id):
         if not School.query.filter_by(access_code=code).first():
             school.access_code = code
             db.session.commit()
-            logger.info('Access code generated | school=%s code=%s', school.school_name, code)
+            logger.info('Access code rotated | school_id=%s', school.id)
             flash(f'New access code generated: {code}', 'success')
             break
     else:

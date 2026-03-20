@@ -360,15 +360,19 @@
 <nav class="bottom-tab-bar" aria-label="School admin navigation">
   <a href="{{ url_for('main.school_dashboard', school_id=school_id) }}"
      class="tab-item {% if request.endpoint == 'main.school_dashboard' %}active{% endif %}">
-    <i class="fa-solid fa-school tab-icon"></i><span class="tab-label">Dashboard</span>
+    <i class="fa-solid fa-gauge tab-icon"></i><span class="tab-label">Dashboard</span>
+  </a>
+  <a href="{{ url_for('main.school_students', school_id=school_id) }}"
+     class="tab-item {% if request.endpoint == 'main.school_students' %}active{% endif %}">
+    <i class="fa-solid fa-users tab-icon"></i><span class="tab-label">Students</span>
+  </a>
+  <a href="{{ url_for('main.school_results', school_id=school_id) }}"
+     class="tab-item {% if request.endpoint == 'main.school_results' %}active{% endif %}">
+    <i class="fa-solid fa-clipboard-list tab-icon"></i><span class="tab-label">Results</span>
   </a>
   <a href="{{ url_for('main.school_analytics', school_id=school_id) }}"
      class="tab-item {% if request.endpoint == 'main.school_analytics' %}active{% endif %}">
     <i class="fa-solid fa-chart-line tab-icon"></i><span class="tab-label">Analytics</span>
-  </a>
-  <a href="{{ url_for('main.school_guide') }}"
-     class="tab-item {% if request.endpoint == 'main.school_guide' %}active{% endif %}">
-    <i class="fa-solid fa-book-open tab-icon"></i><span class="tab-label">Guide</span>
   </a>
   <a href="{{ url_for('auth.logout') }}" class="tab-item tab-logout">
     <span class="tab-icon">↩</span><span class="tab-label">Logout</span>

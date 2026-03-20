@@ -1,8 +1,9 @@
 import io
 from flask import Blueprint, send_file, abort, render_template, current_app, request
-from flask_login import login_required
+from flask import session
+from flask_login import current_user
 from app.models.school import School
-from app.utils.decorators import super_admin_required
+from app.utils.decorators import super_admin_required, school_login_required
 
 qr_bp = Blueprint('qr', __name__)
 
@@ -15,6 +16,7 @@ def _build_join_url(school: School) -> str:
 
 
 @qr_bp.route('/<int:school_id>/qr.png')
+@school_login_required
 def school_qr_png(school_id: int):
     import qrcode
     try:
@@ -23,6 +25,9 @@ def school_qr_png(school_id: int):
         from qrcode.image.pure import PyPNGImage as ImageFactory
 
     school = School.query.get_or_404(school_id)
+    is_admin = current_user.is_authenticated and current_user.is_super_admin
+    if not is_admin and session.get('school_id') != school_id:
+        abort(403)
 
     if not school.access_code:
         abort(400)
@@ -52,8 +57,12 @@ def school_qr_png(school_id: int):
 
 
 @qr_bp.route('/<int:school_id>/qr/print')
+@school_login_required
 def school_qr_print(school_id: int):
     school = School.query.get_or_404(school_id)
+    is_admin = current_user.is_authenticated and current_user.is_super_admin
+    if not is_admin and session.get('school_id') != school_id:
+        abort(403)
     join_url = _build_join_url(school)
     qr_url = request.url_root.rstrip('/') + f"/school/{school_id}/qr.png?size=14"
     return render_template('admin/qr_print.html', school=school, join_url=join_url, qr_url=qr_url)

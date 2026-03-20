@@ -18,6 +18,19 @@
 
 {% block body %}
 <div class="container" style="padding-bottom: 48px;">
+  {% if at_risk_count > 0 %}
+  <div style="background:#fef2f2; border:1.5px solid var(--red-600); border-radius:var(--radius-md); padding:12px 16px; margin-bottom:20px; display:flex; align-items:center; gap:12px; margin-top:16px;">
+    <i class="fa-solid fa-triangle-exclamation" style="color:var(--red-600); font-size:1.1rem; flex-shrink:0;"></i>
+    <div style="flex:1;">
+      <strong style="color:#991b1b; font-size:0.9rem;">{{ at_risk_count }} student{{ 's' if at_risk_count != 1 }} require{{ '' if at_risk_count != 1 else 's' }} attention</strong>
+      <span style="color:#b91c1c; font-size:0.85rem; margin-left:8px; display:none;" class="alert-detail-text">Elevated or Clinical stage results recorded.</span>
+    </div>
+    <a href="{{ url_for('main.students_at_risk', school_id=school.id) }}"
+       style="flex-shrink:0; padding:6px 14px; background:var(--red-600); color:#fff; border-radius:var(--radius-sm); font-size:0.8rem; font-weight:600; text-decoration:none;">
+      View Students
+    </a>
+  </div>
+  {% endif %}
   <div class="page-context">
     <h1>{{ school.school_name }}</h1>
     <p>School Administrator Dashboard · {{ total_students }} student{{ 's' if total_students != 1 }}</p>
@@ -35,11 +48,7 @@
       <div class="stat-value">{{ total_results }}</div>
       <div class="stat-label">Total Assessments</div>
     </div>
-    <div class="stat-card {% if upload_enabled %}teal{% else %}red{% endif %}">
-      <div class="stat-icon">{% if upload_enabled %}<i class="fa-solid fa-circle-check" style="color: #0891b2;"></i>{% else %}<i class="fa-solid fa-lock" style="color: var(--red-600);"></i>{% endif %}</div>
-      <div class="stat-value">{% if upload_enabled %}Enabled{% else %}Disabled{% endif %}</div>
-      <div class="stat-label">Upload Access</div>
-    </div>
+    
     <div class="stat-card">
       <div class="stat-icon"><i class="fa-solid fa-calendar-days" style="color: var(--green-500);"></i></div>
       <div class="stat-value">{{ stage_counts.values() | sum if stage_counts else 0 }}</div>
@@ -53,49 +62,44 @@
     </a>
   </div>
 
-  {# ── Quick Actions ── #}
-  <div class="card" style="margin-bottom: 28px; padding: 12px 14px;">
-    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px; text-align:center;">
-      <a href="#upload-section" style="text-decoration:none; padding:12px 4px; border-radius:var(--radius-md); background:var(--ivory); cursor:pointer; display:block;">
-        <i class="fa-solid fa-upload" style="font-size:1.2rem; color:var(--green-700); margin-bottom:6px; display:block;"></i>
-        <div style="font-size:0.75rem; font-weight:600; color:var(--gray-700);">Upload Students</div>
+  {# ── Quick Actions + Reports ── #}
+  <div class="card" style="margin-bottom: 28px; padding: 16px 18px;">
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px; text-align:center; margin-bottom:16px;">
+      <a href="{{ url_for('main.school_students', school_id=school.id) }}" style="text-decoration:none; padding:12px 4px; border-radius:var(--radius-md); background:var(--ivory); cursor:pointer; display:block;">
+        <i class="fa-solid fa-users" style="font-size:1.2rem; color:var(--green-700); margin-bottom:6px; display:block;"></i>
+        <div style="font-size:0.75rem; font-weight:600; color:var(--gray-700);">Students</div>
+      </a>
+      <a href="{{ url_for('main.school_results', school_id=school.id) }}" style="text-decoration:none; padding:12px 4px; border-radius:var(--radius-md); background:var(--ivory); cursor:pointer; display:block;">
+        <i class="fa-solid fa-clipboard-list" style="font-size:1.2rem; color:var(--green-700); margin-bottom:6px; display:block;"></i>
+        <div style="font-size:0.75rem; font-weight:600; color:var(--gray-700);">Results</div>
       </a>
       <a href="{{ url_for('main.students_at_risk', school_id=school.id) }}" style="text-decoration:none; padding:12px 4px; border-radius:var(--radius-md); background:var(--ivory); cursor:pointer; display:block;">
         <i class="fa-solid fa-triangle-exclamation" style="font-size:1.2rem; color:var(--red-600); margin-bottom:6px; display:block;"></i>
-        <div style="font-size:0.75rem; font-weight:600; color:var(--gray-700);">At-Risk Students</div>
-      </a>
-      <a href="{{ url_for('main.school_guide') }}" style="text-decoration:none; padding:12px 4px; border-radius:var(--radius-md); background:var(--ivory); cursor:pointer; display:block;">
-        <i class="fa-solid fa-book-open" style="font-size:1.2rem; color:var(--green-700); margin-bottom:6px; display:block;"></i>
-        <div style="font-size:0.75rem; font-weight:600; color:var(--gray-700);">View Guide</div>
+        <div style="font-size:0.75rem; font-weight:600; color:var(--gray-700);">At Risk</div>
       </a>
       <a href="{{ url_for('main.school_analytics', school_id=school.id) }}" style="text-decoration:none; padding:12px 4px; border-radius:var(--radius-md); background:var(--ivory); cursor:pointer; display:block;">
         <i class="fa-solid fa-chart-bar" style="font-size:1.2rem; color:var(--green-700); margin-bottom:6px; display:block;"></i>
         <div style="font-size:0.75rem; font-weight:600; color:var(--gray-700);">Analytics</div>
       </a>
     </div>
-  </div>
-
-  {# ── Report Downloads ── #}
-  <div class="card" style="margin-bottom: 28px; padding: 16px 18px;">
-    <h3 style="margin-bottom: 10px; font-size: 0.95rem; color: var(--green-800);">
-      <i class="fa-solid fa-file-pdf" style="color: var(--red-600); margin-right: 6px;"></i>Download Performance Report
-    </h3>
-    <p style="font-size: 0.78rem; color: var(--gray-500); margin-bottom: 12px;">
-      Generate a PDF report of your school's assessment results for the selected period.
-    </p>
-    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-      <a href="{{ url_for('main.download_report', school_id=school.id, period='weekly') }}"
-         style="text-decoration:none; padding: 8px 16px; border-radius: var(--radius-sm); border: 1px solid var(--green-600); color: var(--green-700); font-size: 0.8rem; font-weight: 600; background: var(--ivory);">
-        <i class="fa-solid fa-download" style="margin-right: 4px;"></i>Weekly
-      </a>
-      <a href="{{ url_for('main.download_report', school_id=school.id, period='monthly') }}"
-         style="text-decoration:none; padding: 8px 16px; border-radius: var(--radius-sm); border: 1px solid var(--green-600); color: var(--green-700); font-size: 0.8rem; font-weight: 600; background: var(--ivory);">
-        <i class="fa-solid fa-download" style="margin-right: 4px;"></i>Monthly
-      </a>
-      <a href="{{ url_for('main.download_report', school_id=school.id, period='yearly') }}"
-         style="text-decoration:none; padding: 8px 16px; border-radius: var(--radius-sm); border: 1px solid var(--green-600); color: var(--green-700); font-size: 0.8rem; font-weight: 600; background: var(--ivory);">
-        <i class="fa-solid fa-download" style="margin-right: 4px;"></i>Yearly
-      </a>
+    <div style="border-top:1px solid var(--gray-100); padding-top:14px;">
+      <div style="font-size:0.72rem; font-weight:600; color:var(--gray-500); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px;">
+        <i class="fa-solid fa-file-pdf" style="color:var(--red-600); margin-right:4px;"></i> Download Report
+      </div>
+      <div style="display:flex; gap:8px;">
+        <a href="{{ url_for('main.download_report', school_id=school.id, period='weekly') }}"
+           style="flex:1; text-align:center; text-decoration:none; padding:7px 0; border-radius:var(--radius-sm); border:1px solid var(--green-600); color:var(--green-700); font-size:0.78rem; font-weight:600; background:var(--ivory);">
+          Weekly
+        </a>
+        <a href="{{ url_for('main.download_report', school_id=school.id, period='monthly') }}"
+           style="flex:1; text-align:center; text-decoration:none; padding:7px 0; border-radius:var(--radius-sm); border:1px solid var(--green-600); color:var(--green-700); font-size:0.78rem; font-weight:600; background:var(--ivory);">
+          Monthly
+        </a>
+        <a href="{{ url_for('main.download_report', school_id=school.id, period='yearly') }}"
+           style="flex:1; text-align:center; text-decoration:none; padding:7px 0; border-radius:var(--radius-sm); border:1px solid var(--green-600); color:var(--green-700); font-size:0.78rem; font-weight:600; background:var(--ivory);">
+          Yearly
+        </a>
+      </div>
     </div>
   </div>
 
@@ -135,16 +139,16 @@
       <div style="height:1px; background:var(--gray-100); margin:12px 0;"></div>
 
       {# Bottom row: action buttons #}
-      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-        <a href="{{ url_for('qr.school_qr_png', school_id=school.id, download=1) }}" class="btn btn-primary btn-sm" style="font-size:0.75rem;">
-          <i class="fa-solid fa-download"></i> Download QR
+      <div style="display:flex; gap:8px; align-items:center;">
+        <a href="{{ url_for('qr.school_qr_png', school_id=school.id, download=1) }}" class="btn btn-primary btn-sm" style="font-size:0.75rem; flex:1; text-align:center;">
+          <i class="fa-solid fa-download"></i> Download
         </a>
-        <a href="{{ url_for('qr.school_qr_print', school_id=school.id) }}" target="_blank" class="btn btn-ghost btn-sm" style="font-size:0.75rem;">
-          <i class="fa-solid fa-print"></i> Print QR Sheet
+        <a href="{{ url_for('qr.school_qr_print', school_id=school.id) }}" target="_blank" class="btn btn-secondary btn-sm" style="font-size:0.75rem; flex:1; text-align:center;">
+          <i class="fa-solid fa-print"></i> Print
         </a>
-        <form method="POST" action="{{ url_for('main.generate_access_code', school_id=school.id) }}" style="margin-left:auto;">
+        <form method="POST" action="{{ url_for('main.generate_access_code', school_id=school.id) }}" style="margin:0;">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button type="submit" class="btn btn-ghost btn-sm" style="font-size:0.75rem; color:var(--gray-500);">
+          <button type="submit" class="btn btn-ghost btn-sm" style="font-size:0.75rem; color:var(--gray-500); white-space:nowrap;">
             <i class="fa-solid fa-rotate"></i> Regenerate
           </button>
         </form>
@@ -186,9 +190,10 @@
     <div class="card-header" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
       <h3 style="margin:0;">Stage Distribution</h3>
       {# Period selector #}
-      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+      <div style="display:flex; gap:6px; flex-wrap:wrap;" id="periodTabs">
         {% for p, label in [('month','This Month'), ('term','This Term'), ('year','This Year'), ('all','All Time')] %}
           <a href="{{ url_for('main.school_dashboard', school_id=school.id, period=p) }}"
+             data-period="{{ p }}"
              style="padding:5px 12px; border-radius:20px; font-size:0.78rem; font-weight:600; text-decoration:none;
                     {% if period == p %}background:var(--green-800); color:#fff;{% else %}background:var(--ivory); color:var(--green-800); border:1px solid var(--green-200);{% endif %}">
             {{ label }}
@@ -196,7 +201,7 @@
         {% endfor %}
       </div>
     </div>
-    <div class="card-body">
+    <div class="card-body" id="stageDistributionBody">
       {% if stage_counts %}
       {% set total_for_period = stage_counts.values() | sum %}
       <div style="display:flex; flex-direction:column; gap:10px;">
@@ -213,8 +218,8 @@
               <span style="font-size:0.82rem; color:var(--gray-700);">{{ stage }}</span>
               <span style="font-size:0.82rem; font-weight:600; color:var(--gray-800);">{{ count }} <span style="font-weight:400; color:var(--gray-400);">({{ pct }}%)</span></span>
             </div>
-            <div style="height:6px; background:var(--gray-100); border-radius:3px; overflow:hidden;">
-              <div style="width:{{ pct }}%; height:100%; background:{{ bar_color }}; border-radius:3px; transition:width 0.4s ease;"></div>
+            <div style="height:10px; background:var(--gray-100); border-radius:5px; overflow:hidden;">
+              <div style="width:{{ pct }}%; height:100%; background:{{ bar_color }}; border-radius:5px; transition:width 0.4s ease;"></div>
             </div>
           </div>
         {% endfor %}
@@ -244,7 +249,7 @@
         'Major Depressive Disorder'
       ] %}
       {% if total_students > 0 %}
-      <div style="display:flex; flex-direction:column; gap:10px;">
+      <div style="display:flex; flex-direction:column; gap:10px;" id="coverageBody">
         {% for test_type in test_types %}
           {% set count = namespace(val=0) %}
           {% for stage, c in stage_counts.items() %}
@@ -257,8 +262,8 @@
           {% else %}{% set bar_color = '#dc2626' %}{% endif %}
           <div style="display:flex; align-items:center; gap:10px;">
             <span style="font-size:0.8rem; color:var(--gray-700); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ test_type }}</span>
-            <div style="width:100px; height:5px; background:var(--gray-100); border-radius:3px; overflow:hidden; flex-shrink:0;">
-              <div style="width:{{ pct }}%; height:100%; background:{{ bar_color }}; border-radius:3px;"></div>
+            <div style="flex:1; height:8px; background:var(--gray-100); border-radius:4px; overflow:hidden;">
+              <div style="width:{{ pct }}%; height:100%; background:{{ bar_color }}; border-radius:4px;"></div>
             </div>
             <span style="font-size:0.75rem; color:var(--gray-400); flex-shrink:0; width:28px; text-align:right;">{{ result_count }}</span>
           </div>
@@ -277,8 +282,7 @@
   </div>
 
   {# ── Counsellors ── #}
-  {% set counsellors = students_pagination.items | selectattr('is_counsellor') | list %}
-  {# Get all counsellors (not just current page) #}
+  {# counsellors passed directly from route #}
   <div class="card" style="margin-bottom: 28px;">
     <div class="card-header">
       <h3>Counsellors</h3>
@@ -295,19 +299,25 @@
           {% endfor %}
         </ul>
       {% else %}
-        <div class="empty-state">
-          <div class="empty-state-icon"><i class="fa-solid fa-user-nurse" style="color: var(--gray-400);"></i></div>
-          <p>No counsellors assigned yet.</p>
-          <p style="color: var(--gray-500); font-size: 0.88rem; margin-top: 8px;">Contact your SESA administrator to assign counsellor accounts.</p>
-        </div>
+        <p style="font-size:0.88rem; color:var(--gray-500); padding:8px 0;">
+          <i class="fa-solid fa-user-nurse" style="color:var(--gray-300); margin-right:6px;"></i>
+          No counsellors assigned yet. Contact your SESA administrator to assign counsellor accounts.
+        </p>
       {% endif %}
     </div>
   </div>
 
   {# ── Payment / Upload Section ── #}
-  <div class="card" style="margin-bottom: 28px;">
-    <div class="card-header">
-      <h3>Student Upload</h3>
+  <div class="card" style="margin-bottom: 28px; {% if not upload_enabled %}border: 2px solid var(--gold-400); background: var(--gold-50);{% endif %}" id="upload-section">
+    <div class="card-header" style="{% if not upload_enabled %}background: var(--gold-50); border-bottom: 1px solid var(--gold-200);{% endif %}">
+      <h3 style="{% if not upload_enabled %}color: var(--gold-700);{% endif %}; display:flex; align-items:center; gap:10px;">
+        {% if not upload_enabled %}<i class="fa-solid fa-lock" style="color:var(--gold-500);"></i>{% endif %}Student Upload
+        <span style="margin-left:auto; font-size:0.72rem; font-weight:600; padding:3px 10px; border-radius:20px;
+          {% if upload_enabled %}background:#d1fae5; color:#065f46; border:1px solid #6ee7b7;
+          {% else %}background:var(--gold-100); color:var(--gold-700); border:1px solid var(--gold-200);{% endif %}">
+          {% if upload_enabled %}<i class="fa-solid fa-circle-check"></i> Active{% else %}<i class="fa-solid fa-lock"></i> Inactive{% endif %}
+        </span>
+      </h3>
     </div>
     <div class="card-body">
 
@@ -395,155 +405,122 @@ function initiatePayment() {
     </div>
   </div>
 
-  {# ── Student List ── #}
-  <div class="section">
-    <div class="section-head">
-      <h2>Students ({{ total_students }})</h2>
-      <div class="search-box">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="studentSearch" data-school-id="{{ school.id }}" placeholder="Search students…">
-      </div>
-    </div>
-
-    <ul id="searchResults" hidden style="list-style:none; background: var(--white); border-radius: var(--radius-md); box-shadow: var(--shadow-md); padding: 8px; margin-bottom: 16px;"></ul>
-
-    <div class="card">
-      <div class="table-wrapper">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Username</th>
-              <th>Class</th>
-              <th>Level</th>
-              <th>Tests</th>
-              <th>Joined</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for acc in students_pagination.items %}
-            <tr>
-              <td data-label="Name"><strong>{{ acc.fname }} {{ acc.lname }}</strong><br><small style="color:var(--gray-500)">{{ acc.email or '—' }}</small></td>
-              <td data-label="Username">@{{ acc.username }}</td>
-              <td data-label="Class">{{ acc.class_group or '—' }}</td>
-              <td data-label="School">{{ acc.school_name if acc.school_name else '—' }}</td>
-              <td data-label="Tests">{{ acc.test_results.count() }}</td>
-              <td data-label="Joined" style="color: var(--gray-500); font-size: 0.82rem;">{{ acc.created_at.strftime('%d %b %Y') }}</td>
-            </tr>
-            {% else %}
-            <tr>
-              <td colspan="6" class="td-empty-state" style="padding: 0; border: none;">
-                <div class="empty-state">
-                  <div class="empty-state-icon"><i class="fa-solid fa-users" style="color: var(--gray-300);"></i></div>
-                  <p>No students yet. Upload an Excel file or share your access code to add students.</p>
-                  <a href="{{ url_for('main.school_guide') }}" class="btn btn-secondary btn-sm" style="margin-top: 12px;">
-                    <i class="fa-solid fa-book-open"></i> View Upload Guide
-                  </a>
-                </div>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-
-      {# Student pagination #}
-      {% if students_pagination.pages > 1 %}
-      <div style="display:flex; justify-content:center; align-items:center; gap:8px; padding:16px; border-top:1px solid var(--gray-100);">
-        {% if students_pagination.has_prev %}
-          <a href="{{ url_for('main.school_dashboard', school_id=school.id, student_page=students_pagination.prev_num, period=period) }}"
-             style="padding:6px 14px; border-radius:6px; background:var(--ivory); color:var(--green-800); text-decoration:none; font-size:0.85rem; font-weight:600;">← Prev</a>
-        {% endif %}
-        <span style="font-size:0.82rem; color:var(--gray-500);">
-          Page {{ students_pagination.page }} of {{ students_pagination.pages }}
-        </span>
-        {% if students_pagination.has_next %}
-          <a href="{{ url_for('main.school_dashboard', school_id=school.id, student_page=students_pagination.next_num, period=period) }}"
-             style="padding:6px 14px; border-radius:6px; background:var(--ivory); color:var(--green-800); text-decoration:none; font-size:0.85rem; font-weight:600;">Next →</a>
-        {% endif %}
-      </div>
-      {% endif %}
-    </div>
-  </div>
-
-  {# ── Recent Results ── #}
-  <div class="section">
-    <div class="section-head"><h2>Recent Assessment Results</h2></div>
-    <div class="card">
-      <div class="table-wrapper">
-        <table class="table">
-          <thead>
-            <tr><th>Student</th><th>Assessment</th><th>Score</th><th>Stage</th><th>Date</th></tr>
-          </thead>
-          <tbody>
-            {% for r in results_pagination.items %}
-            <tr>
-              <td data-label="Student">{{ r.account.full_name }}</td>
-              <td data-label="Assessment" style="font-size: 0.85rem;">{{ r.test_type }}</td>
-              <td data-label="Score">{{ r.score }}{% if r.max_score %}/{{ r.max_score }}{% endif %}</td>
-              <td data-label="Stage">
-                {% set s = (r.stage or '') | lower %}
-                <span class="badge {% if 'normal' in s %}stage-normal{% elif 'mild' in s %}stage-mild{% elif 'elevated' in s %}stage-elevated{% elif 'clinical' in s %}stage-clinical{% else %}badge-gray{% endif %}">
-                  {{ r.stage or 'Unknown' }}
-                </span>
-              </td>
-              <td data-label="Date" style="color: var(--gray-500); font-size: 0.82rem;">{{ r.taken_at.strftime('%d %b %Y') }}</td>
-            </tr>
-            {% else %}
-            <tr>
-              <td colspan="5" class="td-empty-state" style="padding: 0; border: none;">
-                <div class="empty-state">
-                  <div class="empty-state-icon"><i class="fa-solid fa-clipboard-list" style="color: var(--gray-400);"></i></div>
-                  <p>No recent assessments. Encourage students to take the SESA test.</p>
-                  <a href="{{ url_for('main.school_guide', fragment='assessments') }}" class="btn btn-secondary btn-sm" style="margin-top: 8px;">How to Get Started</a>
-                </div>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-
-      {# Results pagination #}
-      {% if results_pagination.pages > 1 %}
-      <div style="display:flex; justify-content:center; align-items:center; gap:8px; padding:16px; border-top:1px solid var(--gray-100);">
-        {% if results_pagination.has_prev %}
-          <a href="{{ url_for('main.school_dashboard', school_id=school.id, results_page=results_pagination.prev_num, period=period) }}"
-             style="padding:6px 14px; border-radius:6px; background:var(--ivory); color:var(--green-800); text-decoration:none; font-size:0.85rem; font-weight:600;">← Prev</a>
-        {% endif %}
-        <span style="font-size:0.82rem; color:var(--gray-500);">
-          Page {{ results_pagination.page }} of {{ results_pagination.pages }}
-        </span>
-        {% if results_pagination.has_next %}
-          <a href="{{ url_for('main.school_dashboard', school_id=school.id, results_page=results_pagination.next_num, period=period) }}"
-             style="padding:6px 14px; border-radius:6px; background:var(--ivory); color:var(--green-800); text-decoration:none; font-size:0.85rem; font-weight:600;">Next →</a>
-        {% endif %}
-      </div>
-      {% endif %}
-    </div>
-  </div>
-
-</div>
 {% block bottom_tab_bar %}
 {% set school_id = session.get('school_id') %}
 {% if school_id %}
 <nav class="bottom-tab-bar" aria-label="School admin navigation">
   <a href="{{ url_for('main.school_dashboard', school_id=school_id) }}"
      class="tab-item {% if request.endpoint == 'main.school_dashboard' %}active{% endif %}">
-    <i class="fa-solid fa-school tab-icon"></i><span class="tab-label">Dashboard</span>
+    <i class="fa-solid fa-gauge tab-icon"></i><span class="tab-label">Dashboard</span>
+  </a>
+  <a href="{{ url_for('main.school_students', school_id=school_id) }}"
+     class="tab-item {% if request.endpoint == 'main.school_students' %}active{% endif %}">
+    <i class="fa-solid fa-users tab-icon"></i><span class="tab-label">Students</span>
+  </a>
+  <a href="{{ url_for('main.school_results', school_id=school_id) }}"
+     class="tab-item {% if request.endpoint == 'main.school_results' %}active{% endif %}">
+    <i class="fa-solid fa-clipboard-list tab-icon"></i><span class="tab-label">Results</span>
   </a>
   <a href="{{ url_for('main.school_analytics', school_id=school_id) }}"
      class="tab-item {% if request.endpoint == 'main.school_analytics' %}active{% endif %}">
     <i class="fa-solid fa-chart-line tab-icon"></i><span class="tab-label">Analytics</span>
-  </a>
-  <a href="{{ url_for('main.school_guide') }}"
-     class="tab-item {% if request.endpoint == 'main.school_guide' %}active{% endif %}">
-    <i class="fa-solid fa-book-open tab-icon"></i><span class="tab-label">Guide</span>
   </a>
   <a href="{{ url_for('auth.logout') }}" class="tab-item tab-logout">
     <span class="tab-icon">↩</span><span class="tab-label">Logout</span>
   </a>
 </nav>
 {% endif %}
+<script>
+(function() {
+  var stageColors = { normal:'#10b981', mild:'#f59e0b', elevated:'#f97316', moderate:'#f97316', clinical:'#dc2626' };
+  var totalStudents = {{ total_students }};
+
+  function getColor(stage) {
+    var s = stage.toLowerCase();
+    for (var k in stageColors) { if (s.indexOf(k) !== -1) return stageColors[k]; }
+    return '#9ca3af';
+  }
+
+  function renderStage(counts) {
+    var body = document.getElementById('stageDistributionBody');
+    if (!body) return;
+    var total = Object.values(counts).reduce(function(a,b){ return a+b; }, 0);
+    if (!total) {
+      body.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><i class="fa-solid fa-chart-line" style="color:var(--gray-400);"></i></div><p>No assessments recorded for this period.</p></div>';
+      return;
+    }
+    var html = '<div style="display:flex;flex-direction:column;gap:10px;">';
+    Object.entries(counts).forEach(function(entry) {
+      var stage = entry[0], count = entry[1];
+      var pct = total > 0 ? Math.round((count / total) * 1000) / 10 : 0;
+      var color = getColor(stage);
+      html += '<div>';
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">';
+      html += '<span style="font-size:0.82rem;color:var(--gray-700);">' + stage + '</span>';
+      html += '<span style="font-size:0.82rem;font-weight:600;color:var(--gray-800);">' + count + ' <span style="font-weight:400;color:var(--gray-400);">(' + pct + '%)</span></span>';
+      html += '</div>';
+      html += '<div style="height:10px;background:var(--gray-100);border-radius:5px;overflow:hidden;">';
+      html += '<div style="width:' + pct + '%;height:100%;background:' + color + ';border-radius:5px;transition:width 0.4s ease;"></div>';
+      html += '</div></div>';
+    });
+    html += '</div>';
+    body.innerHTML = html;
+  }
+
+  function renderCoverage(counts) {
+    var body = document.getElementById('coverageBody');
+    if (!body || !totalStudents) return;
+    var tests = ['Separation Anxiety Disorder','Social Phobia','Generalised Anxiety Disorder','Panic Disorder','Obsessive Compulsive Disorder','Major Depressive Disorder'];
+    var html = '';
+    tests.forEach(function(test) {
+      var count = counts[test] || 0;
+      var pct = totalStudents > 0 ? Math.round((count / totalStudents) * 100) : 0;
+      var color = pct >= 60 ? '#1a3a2a' : pct >= 30 ? '#c9921a' : '#dc2626';
+      html += '<div style="display:flex;align-items:center;gap:10px;">';
+      html += '<span style="font-size:0.8rem;color:var(--gray-700);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + test + '</span>';
+      html += '<div style="flex:1;height:8px;background:var(--gray-100);border-radius:4px;overflow:hidden;">';
+      html += '<div style="width:' + pct + '%;height:100%;background:' + color + ';border-radius:4px;"></div></div>';
+      html += '<span style="font-size:0.75rem;color:var(--gray-400);flex-shrink:0;width:28px;text-align:right;">' + count + '</span>';
+      html += '</div>';
+    });
+    body.innerHTML = html;
+  }
+
+  function setActiveTab(period) {
+    document.querySelectorAll('#periodTabs a').forEach(function(a) {
+      if (a.dataset.period === period) {
+        a.style.background = 'var(--green-800)';
+        a.style.color = '#fff';
+        a.style.border = 'none';
+      } else {
+        a.style.background = 'var(--ivory)';
+        a.style.color = 'var(--green-800)';
+        a.style.border = '1px solid var(--green-200)';
+      }
+    });
+  }
+
+  document.getElementById('periodTabs') && document.getElementById('periodTabs').addEventListener('click', function(e) {
+    var a = e.target.closest('a[data-period]');
+    if (!a) return;
+    e.preventDefault();
+    var period = a.dataset.period;
+    var url = a.href;
+
+    setActiveTab(period);
+
+    fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        renderStage(data.stage_counts);
+        renderCoverage(data.coverage_counts);
+        history.replaceState(null, '', url);
+      })
+      .catch(function() {
+        window.location.href = url;
+      });
+  });
+})();
+</script>
 {% endblock %}
 {% endblock %}

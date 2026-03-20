@@ -43,6 +43,9 @@ def create_app(config_name: str = None) -> Flask:
     # Register CLI commands
     _register_cli(app)
 
+    # Security response headers
+    _register_security_headers(app)
+
     return app
 
 
@@ -148,6 +151,34 @@ def _register_error_handlers(app: Flask) -> None:
         return render_template('errors/403.html'), 403
 
 
+def _register_security_headers(app: Flask) -> None:
+    """Set security response headers on every response."""
+    from flask import request as _req
+    from flask import session as _sess
+
+    @app.after_request
+    def set_security_headers(response):
+        response.headers['X-Frame-Options'] = 'DENY'
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+        if not app.debug:
+            response.headers['Strict-Transport-Security'] = (
+                'max-age=31536000; includeSubDomains'
+            )
+        if response.status_code == 200:
+            is_static = _req.path.startswith('/static/')
+            is_public = _req.path in (
+                '/', '/offline', '/auth/login', '/auth/signup',
+                '/auth/school-login', '/auth/school-signup',
+            )
+            if not is_static and not is_public:
+                response.headers['Cache-Control'] = (
+                    'no-store, no-cache, must-revalidate, max-age=0'
+                )
+                response.headers['Pragma'] = 'no-cache'
+        return response
+
+
 def _register_cli(app: Flask) -> None:
     """Register CLI commands."""
     @app.cli.command('init-db')
@@ -200,3 +231,4 @@ def _register_cli(app: Flask) -> None:
             click.echo(f'Imported {count} students for school {school_id}.')
         except Exception as e:
             click.echo(f'Error: {e}')
+

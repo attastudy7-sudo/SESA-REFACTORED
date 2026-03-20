@@ -9,8 +9,17 @@ Verification flow:
     A verified counsellor can log in and access their dashboard.
     A pending/rejected counsellor sees a holding page after login.
 """
+import os
 from datetime import datetime, timezone
+from cryptography.fernet import Fernet
 from app.extensions import db
+
+
+def _get_fernet():
+    key = os.environ.get('PHI_ENCRYPTION_KEY', '')
+    if not key:
+        return None
+    return Fernet(key.encode())
 
 
 class CounsellorProfile(db.Model):
@@ -31,7 +40,30 @@ class CounsellorProfile(db.Model):
     # ── Professional credentials ──────────────────────────────────────────────
     gpc_number    = db.Column(db.String(50),  nullable=True)   # Ghana Psychology Council
     gacc_number   = db.Column(db.String(50),  nullable=True)   # Ghana Assoc. of Certified Counsellors
-    ghana_card_number = db.Column(db.String(30), nullable=True)  # National ID
+    _ghana_card_encrypted = db.Column('ghana_card_number', db.String(500), nullable=True)  # National ID — encrypted
+
+    @property
+    def ghana_card_number(self):
+        if not self._ghana_card_encrypted:
+            return None
+        f = _get_fernet()
+        if not f:
+            return self._ghana_card_encrypted
+        try:
+            return f.decrypt(self._ghana_card_encrypted.encode()).decode()
+        except Exception:
+            return self._ghana_card_encrypted
+
+    @ghana_card_number.setter
+    def ghana_card_number(self, value):
+        if not value:
+            self._ghana_card_encrypted = None
+            return
+        f = _get_fernet()
+        if not f:
+            self._ghana_card_encrypted = value
+            return
+        self._ghana_card_encrypted = f.encrypt(value.encode()).decode()
 
     specialisations = db.Column(db.String(300), nullable=True)  # comma-separated
     bio             = db.Column(db.Text,         nullable=True)

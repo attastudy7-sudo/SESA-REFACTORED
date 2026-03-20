@@ -239,12 +239,12 @@ def submit_feedback():
 def _fire_clinical_alerts(result_obj, stage):
     """SMS all counsellors at the student's school when a Clinical result is saved."""
     if 'clinical' not in stage.lower():
-        logger.info('Result saved | user=%s test=%s score=%d stage=%s',
-                    current_user.username, result_obj.test_type, result_obj.score, stage)
+        logger.info('Result saved | result_id=%s school_id=%s',
+                    result_obj.id, current_user.school_id)
         return
 
-    logger.warning('Clinical stage | user=%s test=%s score=%d stage=%s',
-                   current_user.username, result_obj.test_type, result_obj.score, stage)
+    logger.warning('Clinical stage recorded | result_id=%s school_id=%s',
+                   result_obj.id, current_user.school_id)
 
     if not current_user.school_id:
         return
@@ -260,8 +260,7 @@ def _fire_clinical_alerts(result_obj, stage):
                 target=send_clinical_alert,
                 kwargs={
                     'counsellor_phone': counsellor.phone,
-                    'student_name': current_user.full_name,
-                    'test_type': result_obj.test_type,
+                    'student_id': current_user.id,
                     'school_name': (
                         current_user.school.school_name
                         if current_user.school else 'your school'

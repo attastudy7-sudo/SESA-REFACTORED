@@ -100,15 +100,15 @@ def _send_africastalking(phone: str, message: str) -> bool:
     return False
 
 
-def send_clinical_alert(counsellor_phone: str, student_name: str,
-                        test_type: str, school_name: str) -> bool:
+def send_clinical_alert(counsellor_phone: str, student_id: int,
+                        school_name: str) -> bool:
     """
     Pre-built message for a clinical-stage result alert.
-    Keep under 160 chars so it fits in one SMS unit.
+    Student name and diagnosis are intentionally excluded — counsellor
+    must log in to SESA to view details. Keeps PHI off SMS carrier networks.
     """
     message = (
-        f'SESA ALERT: {student_name} at {school_name} scored '
-        f'Clinical Stage on {test_type}. '
-        f'Please follow up as soon as possible.'
+        f'SESA ALERT: A student (ref #{student_id}) at {school_name} '
+        f'requires follow-up. Please log in to SESA for details.'
     )
     return send_sms(counsellor_phone, message)
