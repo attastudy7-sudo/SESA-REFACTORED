@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, session, request, jsonify
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 import logging
 
@@ -6,6 +6,7 @@ from app.extensions import db, csrf
 from app.models.question import Question
 from app.models.test_result import TestResult
 from app.models.account import Accounts
+from app.models.quiz_session import QuizSession
 from app.forms import FeedbackForm
 from app.services.test_service import classify_score, get_next_test, ANSWER_SCORES
 from app.services.sms_service import send_clinical_alert
@@ -14,6 +15,7 @@ from app.models.audit_log import audit
 test_bp = Blueprint('test', __name__)
 logger = logging.getLogger(__name__)
 MHAP_HELPLINE = '0800 111 222'  # Ghana Mental Health Authority helpline
+
 
 @test_bp.route('/<path:test_type>', methods=['GET'])
 @login_required
@@ -45,11 +47,11 @@ def display_questions(test_type):
         )
         return redirect(url_for('main.home'))
 
-    quiz_key = f'quiz_{test_type}'
-    if quiz_key not in session:
-        session[quiz_key] = {'q_index': 0, 'score': 0}
+    # Get or create a DB-backed quiz session (replaces cookie session)
+    quiz_session, _ = QuizSession.get_or_create(current_user.id, test_type)
+    db.session.commit()
 
-    q_index = session[quiz_key]['q_index']
+    q_index = quiz_session.q_index
     question = questions[q_index]
     question_count = len(questions)
     progress = round(((q_index + 1) / question_count) * 100, 1)
@@ -75,21 +77,30 @@ def next_question_api(test_type):
     if not question_count:
         return jsonify({'error': f'No questions for "{test_type}"'}), 404
 
-    # Namespace session state by test_type so two open tabs can't corrupt each other
-    quiz_key = f'quiz_{test_type}'
-    if quiz_key not in session:
-        session[quiz_key] = {'q_index': 0, 'score': 0}
+    # Load DB-backed quiz session
+    quiz_session = QuizSession.query.filter_by(
+        user_id=current_user.id,
+        test_type=test_type,
+    ).first()
 
-    quiz_state = session[quiz_key]
-    q_index = quiz_state['q_index']
+    if not quiz_session or quiz_session.is_expired:
+        # Session gone or expired — restart from scratch
+        if quiz_session:
+            db.session.delete(quiz_session)
+            db.session.flush()
+        quiz_session = QuizSession(user_id=current_user.id, test_type=test_type)
+        db.session.add(quiz_session)
+        db.session.flush()
+
+    q_index = quiz_session.q_index
     data = request.get_json(silent=True) or {}
     answer = data.get('answer')
     action = data.get('action')
 
     if action == 'back' and q_index > 0:
-        quiz_state['q_index'] -= 1
-        session[quiz_key] = quiz_state
-        q_index = quiz_state['q_index']
+        quiz_session.q_index -= 1
+        db.session.commit()
+        q_index = quiz_session.q_index
         question = questions[q_index]
         return jsonify({
             'question_number': q_index + 1,
@@ -99,18 +110,19 @@ def next_question_api(test_type):
         })
 
     if answer:
-        quiz_state['score'] = quiz_state.get('score', 0) + ANSWER_SCORES.get(answer, 0)
-        quiz_state['q_index'] = q_index + 1
-        session[quiz_key] = quiz_state
-        q_index = quiz_state['q_index']
+        quiz_session.score = quiz_session.score + ANSWER_SCORES.get(answer, 0)
+        quiz_session.q_index = q_index + 1
+        db.session.commit()
+        q_index = quiz_session.q_index
 
     if q_index >= question_count:
-        total_score = quiz_state.get('score', 0)
-        session.pop(quiz_key, None)
+        total_score = quiz_session.score
 
-        # Save result to DB here — score never travels through the URL
-        questions_for_max = Question.query.filter_by(test_type=test_type).all()
-        max_score = len(questions_for_max) * 3
+        # Clean up the in-progress session row
+        QuizSession.delete_for(current_user.id, test_type)
+
+        # Save result to DB — score never travels through the URL
+        max_score = question_count * 3
         result_data = classify_score(test_type, total_score)
 
         result_obj = TestResult(
@@ -119,7 +131,6 @@ def next_question_api(test_type):
             score=total_score,
             max_score=max_score,
             stage=result_data['stage'],
-            details=result_data['stage'],
         )
         db.session.add(result_obj)
         db.session.flush()
@@ -242,14 +253,20 @@ def _fire_clinical_alerts(result_obj, stage):
         school_id=current_user.school_id,
         is_counsellor=True,
     ).all()
+    import threading
     for counsellor in counsellors:
         if counsellor.phone:
-            send_clinical_alert(
-                counsellor_phone=counsellor.phone,
-                student_name=current_user.full_name,
-                test_type=result_obj.test_type,
-                school_name=(
-                    current_user.school.school_name
-                    if current_user.school else 'your school'
-                ),
+            t = threading.Thread(
+                target=send_clinical_alert,
+                kwargs={
+                    'counsellor_phone': counsellor.phone,
+                    'student_name': current_user.full_name,
+                    'test_type': result_obj.test_type,
+                    'school_name': (
+                        current_user.school.school_name
+                        if current_user.school else 'your school'
+                    ),
+                },
+                daemon=True,
             )
+            t.start()

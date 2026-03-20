@@ -23,6 +23,9 @@ logger = logging.getLogger(__name__)
 @counsellor_required
 def dashboard():
     """Show all Elevated + Clinical students in the counsellor's school."""
+    if current_user.counsellor_profile and not current_user.counsellor_profile.is_verified:
+        return redirect(url_for('counsellor_signup.counsellor_pending'))
+
     school_id = current_user.school_id
     selected_class = request.args.get('class_group', '').strip()
     page = request.args.get('page', 1, type=int)
@@ -66,23 +69,28 @@ def dashboard():
     pagination = at_risk_q.paginate(page=page, per_page=20, error_out=False)
 
     # All class groups in this school for the filter dropdown
-    class_groups = sorted({
+    class_groups = sorted([
         row.class_group
-        for row in Accounts.query
-            .filter_by(school_id=school_id)
-            .with_entities(Accounts.class_group)
-            .all()
-        if row.class_group
-    })
+        for row in db.session.query(Accounts.class_group)
+        .filter(
+            Accounts.school_id == school_id,
+            Accounts.class_group.isnot(None),
+        )
+        .distinct()
+        .all()
+    ])
 
     # IDs of students already contacted (from audit log) — for badge display
     contacted_ids = {
         row.target_id
-        for row in AuditLog.query
-            .filter_by(event_type='STUDENT_CONTACTED', school_id=school_id)
-            .with_entities(AuditLog.target_id)
-            .all()
-        if row.target_id
+        for row in db.session.query(AuditLog.target_id)
+        .filter(
+            AuditLog.event_type == 'STUDENT_CONTACTED',
+            AuditLog.school_id == school_id,
+            AuditLog.target_id.isnot(None),
+        )
+        .distinct()
+        .all()
     }
 
     return render_template(
@@ -173,8 +181,13 @@ def add_note(student_id):
     flash(f'Note saved for {student.full_name}.', 'success')
 
     # Return to wherever the request came from
-    next_url = request.form.get('next') or url_for('counsellor.student_history', student_id=student_id)
-    return redirect(next_url)
+    next_url = request.form.get('next', '')
+    if next_url:
+        from urllib.parse import urlparse
+        parsed = urlparse(next_url)
+        if parsed.scheme or parsed.netloc:
+            next_url = ''
+    return redirect(next_url or url_for('counsellor.student_history', student_id=student_id))
 
 
 @counsellor_bp.route('/mark-contacted/<int:student_id>', methods=['POST'])
@@ -199,5 +212,10 @@ def mark_contacted(student_id):
     db.session.commit()
 
     flash(f'{student.full_name} marked as contacted.', 'success')
-    next_url = request.form.get('next') or url_for('counsellor.dashboard')
-    return redirect(next_url)
+    next_url = request.form.get('next', '')
+    if next_url:
+        from urllib.parse import urlparse
+        parsed = urlparse(next_url)
+        if parsed.scheme or parsed.netloc:
+            next_url = ''
+    return redirect(next_url or url_for('counsellor.dashboard'))

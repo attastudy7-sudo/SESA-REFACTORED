@@ -10,6 +10,7 @@ from app.models.account import Accounts
 from app.models.school import School
 from app.models.test_result import TestResult
 from app.models.question import Question
+from flask import send_file
 from app.utils.decorators import school_login_required
 
 main_bp = Blueprint('main', __name__)
@@ -35,16 +36,24 @@ def home():
     total_tests = len(results)
     most_recent = results[0] if results else None
 
-    def q_count(test_type):
-        return Question.query.filter_by(test_type=test_type).count()
+    # Cache question counts in app context — they never change at runtime
+    if not hasattr(current_app, '_question_counts'):
+        current_app._question_counts = {
+            row.test_type: row.count
+            for row in db.session.query(
+                Question.test_type,
+                func.count(Question.id).label('count')
+            ).group_by(Question.test_type).all()
+        }
+    question_counts = current_app._question_counts
 
     tests_meta = [
-        {'name': 'Separation Anxiety Disorder',   'key': 'sad',  'count': q_count('Separation Anxiety Disorder'),   'icon': '🏠', 'color': 'teal'},
-        {'name': 'Social Phobia',                 'key': 'sp',   'count': q_count('Social Phobia'),                 'icon': '👥', 'color': 'blue'},
-        {'name': 'Generalised Anxiety Disorder',  'key': 'gad',  'count': q_count('Generalised Anxiety Disorder'),  'icon': '🌀', 'color': 'purple'},
-        {'name': 'Panic Disorder',                'key': 'pd',   'count': q_count('Panic Disorder'),                'icon': '💨', 'color': 'orange'},
-        {'name': 'Obsessive Compulsive Disorder', 'key': 'ocd',  'count': q_count('Obsessive Compulsive Disorder'), 'icon': '🔄', 'color': 'red'},
-        {'name': 'Major Depressive Disorder',     'key': 'mdd',  'count': q_count('Major Depressive Disorder'),     'icon': '🌧', 'color': 'indigo'},
+        {'name': 'Separation Anxiety Disorder',   'key': 'sad',  'count': question_counts.get('Separation Anxiety Disorder',   0), 'icon': '🏠', 'color': 'teal'},
+        {'name': 'Social Phobia',                 'key': 'sp',   'count': question_counts.get('Social Phobia',                 0), 'icon': '👥', 'color': 'blue'},
+        {'name': 'Generalised Anxiety Disorder',  'key': 'gad',  'count': question_counts.get('Generalised Anxiety Disorder',  0), 'icon': '🌀', 'color': 'purple'},
+        {'name': 'Panic Disorder',                'key': 'pd',   'count': question_counts.get('Panic Disorder',                0), 'icon': '💨', 'color': 'orange'},
+        {'name': 'Obsessive Compulsive Disorder', 'key': 'ocd',  'count': question_counts.get('Obsessive Compulsive Disorder', 0), 'icon': '🔄', 'color': 'red'},
+        {'name': 'Major Depressive Disorder',     'key': 'mdd',  'count': question_counts.get('Major Depressive Disorder',    0), 'icon': '🌧', 'color': 'indigo'},
     ]
 
     # Cross-test average removed — clinically invalid (tests have different max scores).
@@ -179,6 +188,15 @@ def school_dashboard(school_id):
 
     return render_template(
         'main/school_dashboard.html',
+        coverage_counts={
+            tt: db.session.query(func.count(func.distinct(TestResult.user_id)))
+                .filter(TestResult.user_id.in_(
+                    db.session.query(Accounts.id).filter_by(school_id=school_id)
+                ))
+                .filter(TestResult.test_type == tt)
+                .scalar() or 0
+            for tt in current_app.config.get('TEST_TYPES', [])
+        },
         school=school,
         students_pagination=students_pagination,
         results_pagination=results_pagination,
@@ -201,8 +219,8 @@ def upload_students(school_id):
     """
     Bulk upload students from Excel.
     Required columns: first_name, last_name
-    Optional: student_id, class_group, level, gender, email
-    Usernames and passwords are auto-generated — no longer required.
+    Optional: student_id, class_group, gender, email
+    Usernames and passwords are auto-generated.
     """
     import re as _re
     import pandas as pd
@@ -227,52 +245,83 @@ def upload_students(school_id):
         flash('Invalid file type. Please upload an Excel file (.xlsx or .xls).', 'error')
         return redirect(url_for('main.school_dashboard', school_id=school_id))
 
-    # Short school code for auto-generated usernames
     school_code = _re.sub(r'[^a-z0-9]', '', school.school_name.lower())[:6] or 'sch'
 
     try:
         df = pd.read_excel(file)
         df.columns = [c.strip().lower().replace(' ', '_') for c in df.columns]
 
+        # ── Required columns check ───────────────────────────────────────────
         required = {'first_name', 'last_name'}
         missing = required - set(df.columns)
         if missing:
             flash(
                 f'Missing required columns: {", ".join(sorted(missing))}. '
                 f'Required: first_name, last_name. '
-                f'Optional: student_id, class_group, level, gender, email.',
+                f'Optional: student_id, class_group, gender, email.',
                 'error'
             )
             return redirect(url_for('main.school_dashboard', school_id=school_id))
 
-        created, skipped = 0, 0
-        for _, row in df.iterrows():
+        # ── Row limit ────────────────────────────────────────────────────────
+        if len(df) > 1000:
+            flash(
+                f'File contains {len(df)} rows. Maximum allowed is 1,000 per upload. '
+                f'Please split the file and upload in batches.',
+                'error'
+            )
+            return redirect(url_for('main.school_dashboard', school_id=school_id))
+
+        # ── Pre-load existing data into sets for fast in-memory lookup ───────
+        existing_usernames = {
+            r.username for r in
+            Accounts.query.filter_by(school_id=school.id).with_entities(Accounts.username).all()
+        }
+        existing_emails = {
+            r.email for r in
+            Accounts.query.filter(Accounts.email.isnot(None)).with_entities(Accounts.email).all()
+        }
+        existing_names = {
+            (r.fname.strip().lower(), r.lname.strip().lower()) for r in
+            Accounts.query.filter_by(school_id=school.id).with_entities(Accounts.fname, Accounts.lname).all()
+        }
+
+        created    = 0
+        skipped    = 0
+        duplicates = 0
+        warnings   = []
+
+        for i, row in df.iterrows():
             fname = str(row.get('first_name', '')).strip()
-            lname = str(row.get('last_name', '')).strip()
+            lname = str(row.get('last_name',  '')).strip()
+
             if not fname or not lname or fname == 'nan' or lname == 'nan':
                 skipped += 1
                 continue
 
-            # Auto-generate unique username
+            if (fname.lower(), lname.lower()) in existing_names:
+                duplicates += 1
+                continue
+
             base_uname = _re.sub(r'[^a-z0-9.]', '', f"{fname.lower()}.{lname.lower()}.{school_code}")[:48]
             username = base_uname
             suffix = 1
-            while Accounts.query.filter_by(username=username).first():
+            while username in existing_usernames:
                 username = f"{base_uname}{suffix}"
                 suffix += 1
+            existing_usernames.add(username)
 
-            # student_id or username as temporary password
-            student_id = str(row.get('student_id', '')).strip()
-            temp_password = student_id if student_id and student_id != 'nan' else username
+            student_id_raw = str(row.get('student_id', '')).strip()
+            temp_password = student_id_raw if student_id_raw and student_id_raw != 'nan' else username
 
-            # Optional email
             email_raw = str(row.get('email', '')).strip()
             email = email_raw.lower() if email_raw and email_raw != 'nan' else None
-            if email and Accounts.query.filter_by(email=email).first():
-                email = None
-
-            level_raw = str(row.get('level', '')).strip().lower()
-            level = level_raw if level_raw in ('primaryschool', 'middleschool', 'highschool', 'university') else None
+            if email:
+                if email in existing_emails:
+                    warnings.append(f'Row {i + 2}: email {email} already exists — saved without email.')
+                    email = None
+                else:
+                    existing_emails.add(email)
 
             cg_raw = str(row.get('class_group', row.get('class', ''))).strip()
             class_group = cg_raw if cg_raw and cg_raw != 'nan' else None
@@ -286,25 +335,35 @@ def upload_students(school_id):
                 email=email,
                 username=username,
                 password=generate_password_hash(temp_password),
-                level=level,
+                school_name=school.school_name,
                 gender=gender,
                 class_group=class_group,
                 school_id=school.id,
             ))
+            existing_names.add((fname.lower(), lname.lower()))
             created += 1
 
         db.session.commit()
         logger.info(
-            'Bulk upload | school=%s created=%d skipped=%d ip=%s',
-            school.school_name, created, skipped, request.remote_addr,
+            'Bulk upload | school=%s created=%d skipped=%d duplicates=%d ip=%s',
+            school.school_name, created, skipped, duplicates, request.remote_addr,
         )
+
         msg = f'Successfully created {created} student account(s).'
+        if duplicates:
+            msg += f' {duplicates} skipped (already exist in this school).'
         if skipped:
-            msg += f' {skipped} row(s) skipped (missing name).'
+            msg += f' {skipped} skipped (missing name).'
         flash(msg, 'success')
+
+        for w in warnings[:5]:
+            flash(w, 'warning')
+        if len(warnings) > 5:
+            flash(f'...and {len(warnings) - 5} more email warning(s). Check your file.', 'warning')
 
     except Exception as e:
         db.session.rollback()
+        logger.error('Bulk upload error | school=%s error=%s', school.school_name, e)
         flash(f'An error occurred while processing the file: {e}', 'error')
 
     return redirect(url_for('main.school_dashboard', school_id=school_id))
@@ -369,6 +428,12 @@ def verify_payment(school_id):
             flash('Payment amount insufficient.', 'error')
             return redirect(url_for('main.school_dashboard', school_id=school_id))
 
+        # Guard against reference replay — one reference can only activate once
+        already_used = School.query.filter_by(paystack_reference=reference).first()
+        if already_used:
+            flash('This payment reference has already been used.', 'error')
+            return redirect(url_for('main.school_dashboard', school_id=school_id))
+
         # ✅ Activate upload — subscription valid for 365 days
         from datetime import timedelta
         now = datetime.now(timezone.utc)
@@ -400,26 +465,49 @@ def school_analytics(school_id):
         flash('Please log in as a school administrator.', 'warning')
         return redirect(url_for('auth.school_login'))
 
-    # Get all test results for this school
-    results = (TestResult.query
-               .join(Accounts)
-               .filter(Accounts.school_id == school.id)
-               .order_by(TestResult.taken_at.desc())
-               .all())
-    
-    # Calculate school average
-    avg_data = calculate_average_score(results)
-    monthly_data = get_school_monthly_averages(results)
-    
+    from app.services.analytics_service import get_school_analytics
+
+    analytics = get_school_analytics(school.id)
+
     return render_template(
         'main/school_analytics.html',
         school=school,
-        avg_score=avg_data,
-        monthly_data=monthly_data,
-        total_students=len(set(r.user_id for r in results)),
-        total_assessments=len(results),
+        avg_score=analytics['avg_score'],
+        monthly_data=analytics['monthly_data'],
+        total_students=analytics['total_students'],
+        total_assessments=analytics['total_assessments'],
     )
 
+@main_bp.route('/school/<int:school_id>/report/download')
+@school_login_required
+def download_report(school_id):
+    """Generate and download a PDF performance report for the school."""
+    school = _get_school_from_session()
+    if not school or school.id != school_id:
+        flash('Please log in as a school administrator.', 'warning')
+        return redirect(url_for('auth.school_login'))
+
+    period = request.args.get('period', 'monthly')
+    if period not in ('weekly', 'monthly', 'yearly'):
+        period = 'monthly'
+
+    from app.services.report_service import get_report_data
+    from app.services.pdf_service import generate_report_pdf
+
+    data = get_report_data(school_id, period)
+    buf = generate_report_pdf(school.school_name, data)
+
+    filename = (
+        f"SESA_Report_{school.school_name.replace(' ', '_')}"
+        f"_{period}_{data['generated_at'].strftime('%Y%m%d')}.pdf"
+    )
+
+    return send_file(
+        buf,
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name=filename,
+    )
 
 # ── Access Code Self-Registration (Group 1) ──────────────────────────────────
 
@@ -567,14 +655,16 @@ def students_at_risk(school_id):
     pagination = at_risk_q.paginate(page=page, per_page=25, error_out=False)
 
     # All class groups for this school (for the filter dropdown)
-    all_class_groups = sorted({
-        a.class_group
-        for a in Accounts.query.filter(
+    all_class_groups = sorted([
+        row.class_group
+        for row in db.session.query(Accounts.class_group)
+        .filter(
             Accounts.school_id == school_id,
             Accounts.class_group.isnot(None),
-        ).with_entities(Accounts.class_group).all()
-        if a.class_group
-    })
+        )
+        .distinct()
+        .all()
+    ])
 
     return render_template(
         'main/students_at_risk.html',
@@ -589,3 +679,51 @@ def students_at_risk(school_id):
 @school_login_required
 def school_guide():
     return render_template('main/school_guide.html')
+
+
+# ── SEO: robots.txt ──────────────────────────────────────────────────────────
+@main_bp.route('/robots.txt')
+def robots_txt():
+    from flask import Response
+    lines = [
+        "User-agent: *",
+        "Allow: /$",
+        "Allow: /static/",
+        "Disallow: /home",
+        "Disallow: /results",
+        "Disallow: /admin",
+        "Disallow: /school/",
+        "Disallow: /counsellor/",
+        "Disallow: /test/",
+        "Disallow: /auth/",
+        "",
+        f"Sitemap: {request.url_root.rstrip('/')}/sitemap.xml",
+    ]
+    return Response("\n".join(lines), mimetype="text/plain")
+
+
+# ── SEO: sitemap.xml ─────────────────────────────────────────────────────────
+@main_bp.route('/sitemap.xml')
+def sitemap_xml():
+    from flask import Response
+    import datetime
+    base = request.url_root.rstrip('/')
+    today = datetime.date.today().isoformat()
+    urls = [
+        {"loc": base + "/", "priority": "1.0", "changefreq": "monthly"},
+        {"loc": base + "/auth/login", "priority": "0.6", "changefreq": "yearly"},
+        {"loc": base + "/auth/signup", "priority": "0.5", "changefreq": "yearly"},
+        {"loc": base + "/auth/school-signup", "priority": "0.7", "changefreq": "yearly"},
+        {"loc": base + "/join", "priority": "0.5", "changefreq": "yearly"},
+    ]
+    xml_parts = ['<?xml version="1.0" encoding="UTF-8"?>',
+                 '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+    for u in urls:
+        xml_parts.append(
+            f'  <url><loc>{u["loc"]}</loc>'
+            f'<lastmod>{today}</lastmod>'
+            f'<changefreq>{u["changefreq"]}</changefreq>'
+            f'<priority>{u["priority"]}</priority></url>'
+        )
+    xml_parts.append('</urlset>')
+    return Response("\n".join(xml_parts), mimetype="application/xml")

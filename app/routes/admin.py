@@ -10,6 +10,7 @@ from app.models.test_result import TestResult
 from app.models.question import Question
 from app.forms import EditAccountForm, EditSchoolForm, QuestionForm
 from app.utils.decorators import super_admin_required
+from app.routes.qr import get_stage_summary
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -18,23 +19,16 @@ admin_bp = Blueprint('admin', __name__)
 @login_required
 @super_admin_required
 def dashboard():
-    stage_counts = dict(
-        db.session.query(
-            func.coalesce(TestResult.stage, TestResult.details, 'Unknown'),
-            func.count(TestResult.id)
-        ).group_by(func.coalesce(TestResult.stage, TestResult.details, 'Unknown')).all()
-    )
-
     return render_template(
         'admin/dashboard.html',
         results=TestResult.query.order_by(TestResult.taken_at.desc()).limit(200).all(),
-        accounts=Accounts.query.order_by(Accounts.created_at.desc()).all(),
+        accounts=Accounts.query.order_by(Accounts.created_at.desc()).limit(500).all(),
         total_tests=TestResult.query.count(),
         total_users=Accounts.query.count(),
         total_schools=School.query.count(),
-        stage_counts=stage_counts,
+        stage_summary=get_stage_summary(),
         schools=School.query.order_by(School.school_name).all(),
-        questions=Question.query.order_by(Question.test_type, Question.id).all(),
+        questions=Question.query.order_by(Question.test_type, Question.id).limit(500).all(),
     )
 
 
@@ -51,7 +45,7 @@ def edit_account(account_id):
         account.lname = form.lname.data.strip()
         account.email = form.email.data.strip().lower()
         account.username = form.username.data.strip()
-        account.level = form.level.data
+        account.school_name = form.school_name.data if hasattr(form, 'school_name') else None
         account.birthdate = form.birthdate.data
         account.gender = form.gender.data
         account.is_admin = form.is_admin.data
@@ -161,3 +155,53 @@ def delete_question(question_id):
     db.session.commit()
     flash('Question deleted successfully.', 'success')
     return redirect(url_for('admin.dashboard') + '#question_database')
+
+# ── Counsellor verification ───────────────────────────────────────────────────
+
+@admin_bp.route('/counsellors')
+@login_required
+@super_admin_required
+def counsellor_applications():
+    """List all counsellor applications grouped by status."""
+    from app.models.counsellor_profile import CounsellorProfile
+    pending = (
+        db.session.query(CounsellorProfile, Accounts)
+        .join(Accounts, Accounts.id == CounsellorProfile.account_id)
+        .filter(CounsellorProfile.verification_status == 'pending')
+        .order_by(CounsellorProfile.submitted_at.asc())
+        .all()
+    )
+    verified = (
+        db.session.query(CounsellorProfile, Accounts)
+        .join(Accounts, Accounts.id == CounsellorProfile.account_id)
+        .filter(CounsellorProfile.verification_status == 'verified')
+        .order_by(CounsellorProfile.verified_at.desc())
+        .all()
+    )
+    rejected = (
+        db.session.query(CounsellorProfile, Accounts)
+        .join(Accounts, Accounts.id == CounsellorProfile.account_id)
+        .filter(CounsellorProfile.verification_status == 'rejected')
+        .order_by(CounsellorProfile.submitted_at.desc())
+        .all()
+    )
+    return render_template(
+        'admin/counsellor_applications.html',
+        pending=pending,
+        verified=verified,
+        rejected=rejected,
+    )
+
+
+@admin_bp.route('/counsellors/<int:profile_id>/verify', methods=['POST'])
+@login_required
+@super_admin_required
+def verify_counsellor(profile_id):
+    """Approve or reject a counsellor application."""
+    from app.models.counsellor_profile import CounsellorProfile
+    from datetime import datetime, timezone
+    profile = CounsellorProfile.query.get_or_404(profile_id)
+    action = request.form.get('action')
+
+    if action == 'approve':
+        profile.verification_status = 'verified'

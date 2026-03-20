@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code — {{ school.school_name }}</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f5f5f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .qr-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 48px 40px;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 4px 32px rgba(0,0,0,0.10);
+    }
+
+    .school-icon {
+      width: 64px; height: 64px;
+      border-radius: 16px;
+      background: #1a3a2a;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 28px; color: #fff;
+    }
+
+    .school-name {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #1a3a2a;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: #6b7280;
+      margin-bottom: 28px;
+    }
+
+    .qr-frame {
+      border: 3px solid #1a3a2a;
+      border-radius: 16px;
+      padding: 16px;
+      display: inline-block;
+      margin-bottom: 28px;
+    }
+
+    .qr-frame img {
+      display: block;
+      width: 240px;
+      height: 240px;
+    }
+
+    .access-code-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: #9ca3af;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .access-code {
+      font-size: 2.4rem;
+      font-weight: 900;
+      letter-spacing: 0.22em;
+      color: #1a3a2a;
+      margin-bottom: 20px;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #e5e7eb;
+      margin: 20px 0;
+    }
+
+    .instructions {
+      font-size: 0.82rem;
+      color: #6b7280;
+      line-height: 1.65;
+      margin-bottom: 24px;
+    }
+
+    .instructions strong { color: #1a3a2a; }
+
+    .url-box {
+      background: #f5f5f0;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.72rem;
+      font-family: monospace;
+      color: #374151;
+      word-break: break-all;
+      margin-bottom: 28px;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 0.85rem; font-weight: 600;
+      text-decoration: none;
+      border: none; cursor: pointer;
+      transition: opacity .15s;
+    }
+    .btn:hover { opacity: .85; }
+    .btn-primary { background: #1a3a2a; color: #fff; }
+    .btn-outline  { background: #fff; color: #1a3a2a; border: 2px solid #1a3a2a; }
+
+    .powered-by {
+      margin-top: 28px;
+      font-size: 0.68rem;
+      color: #d1d5db;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    @media print {
+      body { background: #fff; padding: 0; }
+      .qr-card { box-shadow: none; border: none; padding: 0; max-width: 100%; }
+      .btn-row { display: none; }
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+  <div class="qr-card">
+
+    <div class="school-icon">
+      <i class="fa-solid fa-school"></i>
+    </div>
+
+    <div class="school-name">{{ school.school_name }}</div>
+    <div class="subtitle">Student Self-Registration</div>
+
+    <div class="qr-frame">
+      <img src="{{ qr_url }}" alt="QR Code for {{ school.school_name }}">
+    </div>
+
+    {% if school.access_code %}
+    <div class="access-code-label">Or enter access code</div>
+    <div class="access-code">{{ school.access_code }}</div>
+    {% endif %}
+
+    <hr class="divider">
+
+    <p class="instructions">
+      <strong>Students:</strong> scan the QR code above with your phone camera,
+      or visit the link below and enter your access code to register for SESA.
+      No email required.
+    </p>
+
+    <div class="url-box">{{ join_url }}</div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="window.print()">
+        <i class="fa-solid fa-print"></i> Print this page
+      </button>
+      <a class="btn btn-outline" href="{{ url_for('qr.school_qr_png', school_id=school.id, download=1) }}">
+        <i class="fa-solid fa-download"></i> Download PNG
+      </a>
+    </div>
+
+    <div class="powered-by">Powered by SESA</div>
+
+  </div>
+</body>
+</html>

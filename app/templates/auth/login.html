@@ -3,6 +3,11 @@
 
 {% block full_page %}
 <div class="auth-page">
+  <div class="auth-page-brand">
+    <div class="auth-page-brand-sesa">SESA</div>
+    <div class="auth-page-brand-quote">"Supporting student <em>emotional wellbeing</em> across Ghana's schools."</div>
+    <div class="auth-page-brand-org">FOPA DILLIGENT CONSULT</div>
+  </div>
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       <div class="flash-stack" role="status" aria-live="polite">

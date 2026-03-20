@@ -12,7 +12,7 @@ class Accounts(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     username = db.Column(db.String(50), unique=True, nullable=False, index=True)
     password = db.Column(db.String(256), nullable=False)
-    level = db.Column(db.String(50), nullable=True)
+    school_name = db.Column(db.String(200), nullable=True)
     gender = db.Column(db.String(20), nullable=True)
     birthdate = db.Column(db.Date, nullable=True)
     last_login = db.Column(db.DateTime, nullable=True)
@@ -33,6 +33,7 @@ class Accounts(UserMixin, db.Model):
     # Account lockout — incremented on each failed login, reset on success
     failed_attempts = db.Column(db.Integer, default=0, server_default='0', nullable=False)
     locked_until = db.Column(db.DateTime, nullable=True)  # NULL = not locked
+    phone = db.Column(db.String(20), nullable=True)
 
     test_results = db.relationship(
         'TestResult',
@@ -75,7 +76,7 @@ class Accounts(UserMixin, db.Model):
         from datetime import timedelta
         self.failed_attempts = (self.failed_attempts or 0) + 1
         if self.failed_attempts >= self.LOCKOUT_THRESHOLD:
-            self.locked_until = datetime.utcnow() + timedelta(minutes=self.LOCKOUT_MINUTES)
+            self.locked_until = datetime.now(timezone.utc) + timedelta(minutes=self.LOCKOUT_MINUTES)
 
     def record_successful_login(self):
         """Reset counter and clear any lockout on a good login."""

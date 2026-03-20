@@ -51,6 +51,11 @@ def login():
             if user.is_counsellor:
                 return redirect(url_for('counsellor.dashboard'))
             next_page = request.args.get('next')
+            if next_page:
+                from urllib.parse import urlparse
+                parsed = urlparse(next_page)
+                if parsed.scheme or parsed.netloc:
+                    next_page = None  # reject absolute URLs — open redirect protection
             return redirect(next_page or url_for('main.home'))
 
         # Failed attempt
@@ -150,7 +155,7 @@ def signup():
             password=generate_password_hash(form.password.data),
             birthdate=form.birthdate.data,
             gender=form.gender.data,
-            level=form.level.data,
+            school_name=None,
         )
         try:
             db.session.add(account)
@@ -171,13 +176,14 @@ def school_signup():
     form = SchoolSignupForm()
     if form.validate_on_submit():
         if School.query.filter_by(school_name=form.school_name.data).first():
-            flash('A school with this name is already registered.', 'error')
+            form.school_name.errors.append('A school with this name is already registered.')
             return render_template('auth/school_signup.html', form=form)
 
         school = School(
             school_name=form.school_name.data.strip(),
             admin_name=form.admin_name.data.strip(),
             email=form.email.data.strip().lower() if form.email.data else None,
+            phone=form.phone.data.strip() if form.phone.data else None,
             admin_password=generate_password_hash(form.admin_password.data),
         )
         try:
@@ -203,13 +209,10 @@ def reset_password():
         username = form.username.data.strip()
 
         school = School.query.filter_by(access_code=code).first()
-        if not school:
-            flash('Invalid school access code.', 'error')
-            return render_template('auth/reset_password.html', form=form)
+        account = Accounts.query.filter_by(username=username, school_id=school.id).first() if school else None
 
-        account = Accounts.query.filter_by(username=username, school_id=school.id).first()
-        if not account:
-            flash('No account found with that username at this school.', 'error')
+        if not school or not account:
+            flash('Invalid school code or username. Please check your details and try again.', 'error')
             return render_template('auth/reset_password.html', form=form)
 
         account.password = generate_password_hash(form.new_password.data)

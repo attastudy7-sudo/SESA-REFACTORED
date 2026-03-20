@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="SESA - Social Emotional Students' Audit by FOPA DILLIGENT CONSULT">
-  <title>{% block title %}SESA{% endblock %} - SESA</title>
+  <meta name="description" content="{% block meta_description %}SESA – Ghana's school-based social-emotional wellbeing screening platform by FOPA Dilligent Consult.{% endblock %}">
+  <meta name="robots" content="{% block meta_robots %}noindex, nofollow{% endblock %}">
+  <title>{% block title %}SESA{% endblock %} – SESA by FOPA Dilligent Consult</title>
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
@@ -171,7 +172,7 @@
       <i class="fa-solid fa-chart-line tab-icon"></i><span class="tab-label">Analytics</span>
     </a>
     <a href="{{ url_for('main.students_at_risk', school_id=session.get('school_id')) }}" class="tab-item {% if request.endpoint == 'main.students_at_risk' %}active{% endif %}">
-      <i class="fa-solid fa-triangle-exclamation tab-icon"></i><span class="tab-label">At Risk</span>
+      <i class="fa-solid fa-triangle-exclamation tab-icon" style="color:var(--gold-400);"></i><span class="tab-label">At Risk</span>
     </a>
     <button class="tab-item" id="profileTabBtn" aria-label="Account">
       <i class="fa-solid fa-circle-user tab-icon"></i><span class="tab-label">Account</span>

@@ -2,7 +2,12 @@
 {% block title %}Create Account{% endblock %}
 
 {% block full_page %}
-<div class="auth-page" style="align-items: flex-start; padding: 0px 0;">
+<div class="auth-page">
+  <div class="auth-page-brand">
+    <div class="auth-page-brand-sesa">SESA</div>
+    <div class="auth-page-brand-quote">"Supporting student <em>emotional wellbeing</em> across Ghana's schools."</div>
+    <div class="auth-page-brand-org">FOPA DILLIGENT CONSULT</div>
+  </div>
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       <div class="flash-stack" role="status">
@@ -78,9 +83,8 @@
           {% for e in form.gender.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
         </div>
         <div class="form-group">
-          {{ form.level.label(class="form-label") }}
-          {{ form.level(class="form-control" ~ (" is-invalid" if form.level.errors else "")) }}
-          {% for e in form.level.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+          <label class="form-label">School Name</label>
+          <input type="text" name="school_name" class="form-control" placeholder="e.g. St. Hubert's SHS">
         </div>
       </div>
 

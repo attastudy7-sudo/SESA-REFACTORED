@@ -8,7 +8,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Results — {{ test_type }} — SESA</title>
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa.jpg') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa.png') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
@@ -18,7 +18,7 @@
 
   <div class="quiz-header-bar">
     <a href="{{ url_for('main.home') }}" style="display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.9);text-decoration:none;">
-      <img src="{{ url_for('static', filename='images/Pofa.jpg') }}" alt="Logo" style="width:30px;height:30px;border-radius:50%;">
+      <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="Logo" style="width:30px;height:30px;border-radius:50%;">
       <span style="font-family:var(--font-display);font-weight:600;color:var(--gold-200);">SESA</span>
     </a>
     <a href="{{ url_for('main.home') }}" style="color:rgba(255,255,255,.6);font-size:0.85rem;">← Back to Home</a>

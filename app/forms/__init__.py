@@ -7,14 +7,9 @@ from wtforms import (StringField, PasswordField, SelectField, BooleanField,
                      DateField, TextAreaField, SubmitField, HiddenField)
 from wtforms.validators import (DataRequired, Email, Length, EqualTo,
                                 Optional, ValidationError)
+                                
 
-LEVEL_CHOICES = [
-    ('', 'Select education level'),
-    ('primaryschool', 'Primary School'),
-    ('middleschool', 'Middle School'),
-    ('highschool', 'High School'),
-    ('university', 'University / College / Higher Education'),
-]
+
 
 GENDER_CHOICES = [
     ('', 'Select gender'),
@@ -58,7 +53,7 @@ class SignupForm(FlaskForm):
     )
     birthdate = DateField('Birth Date', validators=[DataRequired()])
     gender = SelectField('Gender', choices=GENDER_CHOICES, validators=[DataRequired()])
-    level = SelectField('Education Level', choices=LEVEL_CHOICES, validators=[DataRequired()])
+    school_name = StringField('School Name', validators=[Optional()])
     submit = SubmitField('Create Account')
 
 
@@ -66,6 +61,7 @@ class SchoolSignupForm(FlaskForm):
     school_name = StringField('School Name', validators=[DataRequired(), Length(min=3, max=200)])
     admin_name = StringField('Administrator Name', validators=[DataRequired(), Length(min=2, max=100)])
     email = StringField('Email', validators=[Optional(), Email(), Length(max=120)])
+    phone = StringField('Phone Number', validators=[Optional(), Length(max=20)])
     admin_password = PasswordField('Password', validators=[DataRequired(), Length(min=8)])
     confirm_password = PasswordField(
         'Confirm Password',
@@ -79,7 +75,7 @@ class EditAccountForm(FlaskForm):
     lname = StringField('Last Name', validators=[DataRequired(), Length(min=2, max=100)])
     email = StringField('Email', validators=[DataRequired(), Email(), Length(max=120)])
     username = StringField('Username', validators=[DataRequired(), Length(min=3, max=50)])
-    level = SelectField('Education Level', choices=LEVEL_CHOICES, validators=[Optional()])
+    school_name = StringField('School Name', validators=[Optional()])
     birthdate = DateField('Birth Date', validators=[Optional()])
     gender = SelectField('Gender', choices=GENDER_CHOICES, validators=[Optional()])
     is_admin = BooleanField('Grant Admin Privileges')
@@ -123,3 +119,29 @@ class PasswordResetForm(FlaskForm):
         validators=[DataRequired(), EqualTo('new_password', message='Passwords must match.')]
     )
     submit = SubmitField('Reset Password')
+
+
+class CounsellorSignupForm(FlaskForm):
+    # ── Personal details ──────────────────────────────────────────────────────
+    fname    = StringField('First Name', validators=[DataRequired(), Length(max=100)])
+    lname    = StringField('Last Name',  validators=[DataRequired(), Length(max=100)])
+    email    = StringField('Email',      validators=[DataRequired(), Email(), Length(max=120)])
+    username = StringField('Username',   validators=[DataRequired(), Length(min=3, max=50)])
+    phone    = StringField('Phone Number', validators=[DataRequired(), Length(max=20)])
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=8)])
+
+    # ── Professional details ──────────────────────────────────────────────────
+    gpc_number        = StringField('GPC Registration Number',  validators=[Optional(), Length(max=50)])
+    gacc_number       = StringField('GACC Membership Number',   validators=[Optional(), Length(max=50)])
+    ghana_card_number = StringField('Ghana Card Number',        validators=[DataRequired(), Length(max=30)])
+    years_experience  = StringField('Years of Experience',      validators=[DataRequired()])
+    specialisations   = StringField('Specialisations',          validators=[DataRequired(), Length(max=300)])
+    bio               = TextAreaField('Professional Bio',       validators=[DataRequired(), Length(min=50, max=1000)])
+
+    # ── Consent ───────────────────────────────────────────────────────────────
+    confirm_qualified = BooleanField(
+        'I confirm I hold a valid counselling qualification recognised in Ghana',
+        validators=[DataRequired()]
+    )
+
+    submit = SubmitField('Submit Application')

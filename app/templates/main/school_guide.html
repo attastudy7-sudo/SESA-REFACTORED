@@ -9,7 +9,7 @@
   <nav class="navbar scrolled" id="mainNav">
     <div class="navbar-inner">
       <a href="{{ url_for('main.school_dashboard', school_id=session.get('school_id', 0)) }}" class="navbar-brand">
-        <img src="{{ url_for('static', filename='images/Pofa.jpg') }}" alt="SESA" class="navbar-logo">
+        <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="SESA" class="navbar-logo">
         <span class="navbar-title">SESA</span>
       </a>
       <ul class="navbar-links">
@@ -19,9 +19,9 @@
     </div>
   </nav>
 
-  <main>
+  <main style="overflow-x:hidden; width:100%; max-width:100vw;">
     {# ── Hero ── #}
-    <div class="container-md" style="padding-bottom: 60px;">
+    <div class="container-md" style="padding-bottom: 60px; max-width: 100%; overflow-x: hidden;">
       <div class="page-context">
         <p style="font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--green-600); margin-bottom:4px;">
           <i class="fa-solid fa-book-open"></i> &nbsp;SESA School Guide

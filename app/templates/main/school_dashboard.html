@@ -5,14 +5,14 @@
 {% block nav_links %}
   <li><a href="{{ url_for('main.school_dashboard', school_id=school.id) }}">Dashboard</a></li>
   <li><a href="{{ url_for('main.school_analytics', school_id=school.id) }}">Analytics</a></li>
-  <li><a href="{{ url_for('main.students_at_risk', school_id=school.id) }}" style="color:#ef4444; font-weight:700; background: var(--gray-200)"><i class="fa-solid fa-triangle-exclamation"></i> At Risk</a></li>
+  <li><a href="{{ url_for('main.students_at_risk', school_id=school.id) }}" style="color:var(--gold-200); border:1px solid var(--gold-400); border-radius:var(--radius-sm); padding:5px 12px; font-weight:600; font-size:0.85rem;"><i class="fa-solid fa-triangle-exclamation"></i> At Risk</a></li>
   <li><a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a></li>
 {% endblock %}
 
 {% block drawer_links %}
   <a href="{{ url_for('main.school_dashboard', school_id=school.id) }}">Dashboard</a>
   <a href="{{ url_for('main.school_analytics', school_id=school.id) }}">Analytics</a>
-  <a href="{{ url_for('main.students_at_risk', school_id=school.id) }}"><i class="fa-solid fa-triangle-exclamation" style="color:#ef4444;"></i> Students at Risk</a>
+  <a href="{{ url_for('main.students_at_risk', school_id=school.id) }}" style="color:var(--gold-200); font-weight:600;"><i class="fa-solid fa-triangle-exclamation" style="color:var(--gold-400);"></i> Students at Risk</a>
   <a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a>
 {% endblock %}
 
@@ -53,37 +53,133 @@
     </a>
   </div>
 
+  {# ── Quick Actions ── #}
+  <div class="card" style="margin-bottom: 28px; padding: 12px 14px;">
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px; text-align:center;">
+      <a href="#upload-section" style="text-decoration:none; padding:12px 4px; border-radius:var(--radius-md); background:var(--ivory); cursor:pointer; display:block;">
+        <i class="fa-solid fa-upload" style="font-size:1.2rem; color:var(--green-700); margin-bottom:6px; display:block;"></i>
+        <div style="font-size:0.75rem; font-weight:600; color:var(--gray-700);">Upload Students</div>
+      </a>
+      <a href="{{ url_for('main.students_at_risk', school_id=school.id) }}" style="text-decoration:none; padding:12px 4px; border-radius:var(--radius-md); background:var(--ivory); cursor:pointer; display:block;">
+        <i class="fa-solid fa-triangle-exclamation" style="font-size:1.2rem; color:var(--red-600); margin-bottom:6px; display:block;"></i>
+        <div style="font-size:0.75rem; font-weight:600; color:var(--gray-700);">At-Risk Students</div>
+      </a>
+      <a href="{{ url_for('main.school_guide') }}" style="text-decoration:none; padding:12px 4px; border-radius:var(--radius-md); background:var(--ivory); cursor:pointer; display:block;">
+        <i class="fa-solid fa-book-open" style="font-size:1.2rem; color:var(--green-700); margin-bottom:6px; display:block;"></i>
+        <div style="font-size:0.75rem; font-weight:600; color:var(--gray-700);">View Guide</div>
+      </a>
+      <a href="{{ url_for('main.school_analytics', school_id=school.id) }}" style="text-decoration:none; padding:12px 4px; border-radius:var(--radius-md); background:var(--ivory); cursor:pointer; display:block;">
+        <i class="fa-solid fa-chart-bar" style="font-size:1.2rem; color:var(--green-700); margin-bottom:6px; display:block;"></i>
+        <div style="font-size:0.75rem; font-weight:600; color:var(--gray-700);">Analytics</div>
+      </a>
+    </div>
+  </div>
+
+  {# ── Report Downloads ── #}
+  <div class="card" style="margin-bottom: 28px; padding: 16px 18px;">
+    <h3 style="margin-bottom: 10px; font-size: 0.95rem; color: var(--green-800);">
+      <i class="fa-solid fa-file-pdf" style="color: var(--red-600); margin-right: 6px;"></i>Download Performance Report
+    </h3>
+    <p style="font-size: 0.78rem; color: var(--gray-500); margin-bottom: 12px;">
+      Generate a PDF report of your school's assessment results for the selected period.
+    </p>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <a href="{{ url_for('main.download_report', school_id=school.id, period='weekly') }}"
+         style="text-decoration:none; padding: 8px 16px; border-radius: var(--radius-sm); border: 1px solid var(--green-600); color: var(--green-700); font-size: 0.8rem; font-weight: 600; background: var(--ivory);">
+        <i class="fa-solid fa-download" style="margin-right: 4px;"></i>Weekly
+      </a>
+      <a href="{{ url_for('main.download_report', school_id=school.id, period='monthly') }}"
+         style="text-decoration:none; padding: 8px 16px; border-radius: var(--radius-sm); border: 1px solid var(--green-600); color: var(--green-700); font-size: 0.8rem; font-weight: 600; background: var(--ivory);">
+        <i class="fa-solid fa-download" style="margin-right: 4px;"></i>Monthly
+      </a>
+      <a href="{{ url_for('main.download_report', school_id=school.id, period='yearly') }}"
+         style="text-decoration:none; padding: 8px 16px; border-radius: var(--radius-sm); border: 1px solid var(--green-600); color: var(--green-700); font-size: 0.8rem; font-weight: 600; background: var(--ivory);">
+        <i class="fa-solid fa-download" style="margin-right: 4px;"></i>Yearly
+      </a>
+    </div>
+  </div>
+
   {# ── Access Code — Self Registration ── #}
   <div class="card" style="margin-bottom: 28px;">
-    <div class="card-header">
+    <div class="card-header" style="display:flex; align-items:center; justify-content:space-between;">
       <h3>Student Self-Registration</h3>
+      {% if school.access_code %}
+      <span style="font-size:0.72rem; font-weight:600; background:#d1fae5; color:#065f46; border:1px solid #6ee7b7; border-radius:20px; padding:3px 10px;">
+        <i class="fa-solid fa-circle-check"></i> Active
+      </span>
+      {% endif %}
     </div>
     <div class="card-body">
-      <p style="font-size:0.88rem; color:var(--gray-500); margin-bottom:16px;">
-        Share this access code or link with students — they sign themselves up with just their name and a password. No spreadsheet needed.
-      </p>
       {% if school.access_code %}
-      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px;">
-        <div style="background:var(--ivory); border: 2px dashed var(--green-700); border-radius:10px; padding:14px 24px; text-align:center; min-width:130px;">
-          <div style="font-size:1.8rem; font-weight:800; letter-spacing:0.18em; color:var(--green-800);">{{ school.access_code }}</div>
-          <div style="font-size:0.7rem; color:var(--gray-400); margin-top:2px;">ACCESS CODE</div>
-        </div>
-        <div style="flex:1; min-width:200px;">
-          <p style="font-size:0.82rem; font-weight:600; color:var(--green-800); margin-bottom:4px;">Self-registration link:</p>
-          <code style="font-size:0.78rem; background:var(--ivory); padding:6px 10px; border-radius:6px; display:block; word-break:break-all;">
-            {{ request.host_url }}join?code={{ school.access_code }}
-          </code>
+
+      {# Top row: QR + access code side by side #}
+      <div style="display:flex; gap:14px; align-items:flex-start; margin-bottom:14px;">
+        <img src="{{ url_for('qr.school_qr_png', school_id=school.id) }}"
+             alt="QR code for {{ school.school_name }}"
+             style="width:88px; height:88px; border:1.5px solid var(--green-700); border-radius:10px; object-fit:contain; flex-shrink:0;"
+             loading="lazy">
+        <div style="flex:1; min-width:0;">
+          <div style="font-size:0.72rem; color:var(--gray-400); font-weight:600; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:2px;">Access code</div>
+          <div style="font-size:1.6rem; font-weight:800; letter-spacing:0.18em; color:var(--green-800); margin-bottom:8px;">{{ school.access_code }}</div>
+          <div style="display:flex; align-items:center; gap:6px; background:var(--ivory); border-radius:8px; padding:7px 10px;">
+            <code style="font-size:0.72rem; color:var(--gray-600); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ request.host_url }}join?code={{ school.access_code }}</code>
+            <button id="copyLinkBtn" data-link="{{ request.host_url }}join?code={{ school.access_code }}"
+                    style="flex-shrink:0; font-size:0.72rem; font-weight:600; padding:3px 8px; border-radius:4px; border:0.5px solid var(--gray-300); background:var(--white); color:var(--gray-700); cursor:pointer;">
+              <i class="fa-solid fa-copy"></i> <span id="copyLinkLabel">Copy</span>
+            </button>
+          </div>
         </div>
       </div>
-      {% endif %}
+
+      {# Divider #}
+      <div style="height:1px; background:var(--gray-100); margin:12px 0;"></div>
+
+      {# Bottom row: action buttons #}
+      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+        <a href="{{ url_for('qr.school_qr_png', school_id=school.id, download=1) }}" class="btn btn-primary btn-sm" style="font-size:0.75rem;">
+          <i class="fa-solid fa-download"></i> Download QR
+        </a>
+        <a href="{{ url_for('qr.school_qr_print', school_id=school.id) }}" target="_blank" class="btn btn-ghost btn-sm" style="font-size:0.75rem;">
+          <i class="fa-solid fa-print"></i> Print QR Sheet
+        </a>
+        <form method="POST" action="{{ url_for('main.generate_access_code', school_id=school.id) }}" style="margin-left:auto;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-ghost btn-sm" style="font-size:0.75rem; color:var(--gray-500);">
+            <i class="fa-solid fa-rotate"></i> Regenerate
+          </button>
+        </form>
+      </div>
+
+      {% else %}
+
+      <p style="font-size:0.88rem; color:var(--gray-500); margin-bottom:14px;">
+        Generate an access code so students can register themselves instantly.
+      </p>
       <form method="POST" action="{{ url_for('main.generate_access_code', school_id=school.id) }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn btn-secondary btn-sm">
-          {% if school.access_code %}<i class="fa-solid fa-rotate"></i> Regenerate Code{% else %}<i class="fa-solid fa-wand-magic-sparkles"></i> Generate Access Code{% endif %}
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Access Code
         </button>
       </form>
+
+      {% endif %}
     </div>
   </div>
+
+  <script>
+  (function() {
+    var btn = document.getElementById('copyLinkBtn');
+    if (!btn) return;
+    btn.addEventListener('click', function() {
+      navigator.clipboard.writeText(btn.dataset.link).then(function() {
+        document.getElementById('copyLinkLabel').textContent = 'Copied!';
+        setTimeout(function() {
+          document.getElementById('copyLinkLabel').textContent = 'Copy';
+        }, 2000);
+      });
+    });
+  })();
+  </script>
 
   {# ── Stage Summary ── #}
   <div class="card" style="margin-bottom: 28px;">
@@ -102,12 +198,24 @@
     </div>
     <div class="card-body">
       {% if stage_counts %}
-      <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+      {% set total_for_period = stage_counts.values() | sum %}
+      <div style="display:flex; flex-direction:column; gap:10px;">
         {% for stage, count in stage_counts.items() %}
           {% set s = stage | lower %}
-          <div style="flex: 1; min-width: 130px; background: var(--ivory); border-radius: var(--radius-md); padding: 16px; text-align: center;">
-            <div style="font-size: 1.6rem; font-weight: 700; color: var(--green-800);">{{ count }}</div>
-            <span class="badge {% if 'normal' in s %}stage-normal{% elif 'mild' in s %}stage-mild{% elif 'elevated' in s %}stage-elevated{% elif 'clinical' in s %}stage-clinical{% else %}badge-gray{% endif %}" style="margin-top: 6px;">{{ stage }}</span>
+          {% if 'normal' in s %}{% set bar_color = '#10b981' %}
+          {% elif 'mild' in s %}{% set bar_color = '#f59e0b' %}
+          {% elif 'elevated' in s or 'moderate' in s %}{% set bar_color = '#f97316' %}
+          {% elif 'clinical' in s %}{% set bar_color = '#dc2626' %}
+          {% else %}{% set bar_color = '#9ca3af' %}{% endif %}
+          {% set pct = ((count / total_for_period) * 100) | round(1) if total_for_period > 0 else 0 %}
+          <div>
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:5px;">
+              <span style="font-size:0.82rem; color:var(--gray-700);">{{ stage }}</span>
+              <span style="font-size:0.82rem; font-weight:600; color:var(--gray-800);">{{ count }} <span style="font-weight:400; color:var(--gray-400);">({{ pct }}%)</span></span>
+            </div>
+            <div style="height:6px; background:var(--gray-100); border-radius:3px; overflow:hidden;">
+              <div style="width:{{ pct }}%; height:100%; background:{{ bar_color }}; border-radius:3px; transition:width 0.4s ease;"></div>
+            </div>
           </div>
         {% endfor %}
       </div>
@@ -116,6 +224,53 @@
         <div class="empty-state-icon"><i class="fa-solid fa-chart-line" style="color: var(--gray-400);"></i></div>
         <p>No assessments recorded for {{ period | capitalize }}. Encourage students to complete SESA tests.</p>
         <a href="{{ url_for('main.school_guide', fragment='assessments') }}" class="btn btn-secondary btn-sm">Student Testing Guide</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Assessment Coverage ── #}
+  <div class="card" style="margin-bottom: 28px;">
+    <div class="card-header">
+      <h3>Assessment Coverage</h3>
+    </div>
+    <div class="card-body">
+      {% set test_types = [
+        'Separation Anxiety Disorder',
+        'Social Phobia',
+        'Generalised Anxiety Disorder',
+        'Panic Disorder',
+        'Obsessive Compulsive Disorder',
+        'Major Depressive Disorder'
+      ] %}
+      {% if total_students > 0 %}
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        {% for test_type in test_types %}
+          {% set count = namespace(val=0) %}
+          {% for stage, c in stage_counts.items() %}
+            {# We approximate using total results; backend can refine this later #}
+          {% endfor %}
+          {% set result_count = coverage_counts.get(test_type, 0) if coverage_counts is defined else 0 %}
+          {% set pct = ((result_count / total_students) * 100) | round(0) | int if total_students > 0 else 0 %}
+          {% if pct >= 60 %}{% set bar_color = '#1a3a2a' %}
+          {% elif pct >= 30 %}{% set bar_color = '#c9921a' %}
+          {% else %}{% set bar_color = '#dc2626' %}{% endif %}
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:0.8rem; color:var(--gray-700); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ test_type }}</span>
+            <div style="width:100px; height:5px; background:var(--gray-100); border-radius:3px; overflow:hidden; flex-shrink:0;">
+              <div style="width:{{ pct }}%; height:100%; background:{{ bar_color }}; border-radius:3px;"></div>
+            </div>
+            <span style="font-size:0.75rem; color:var(--gray-400); flex-shrink:0; width:28px; text-align:right;">{{ result_count }}</span>
+          </div>
+        {% endfor %}
+      </div>
+      <p style="font-size:0.72rem; color:var(--gray-400); margin-top:12px;">
+        <i class="fa-solid fa-circle-info"></i> Count shows unique students who completed each assessment this {{ period }}.
+      </p>
+      {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon"><i class="fa-solid fa-clipboard-list" style="color:var(--gray-400);"></i></div>
+        <p>No students yet. Add students to start tracking assessment coverage.</p>
       </div>
       {% endif %}
     </div>
@@ -271,7 +426,7 @@ function initiatePayment() {
               <td data-label="Name"><strong>{{ acc.fname }} {{ acc.lname }}</strong><br><small style="color:var(--gray-500)">{{ acc.email or '—' }}</small></td>
               <td data-label="Username">@{{ acc.username }}</td>
               <td data-label="Class">{{ acc.class_group or '—' }}</td>
-              <td data-label="Level">{{ acc.level | capitalize if acc.level else '—' }}</td>
+              <td data-label="School">{{ acc.school_name if acc.school_name else '—' }}</td>
               <td data-label="Tests">{{ acc.test_results.count() }}</td>
               <td data-label="Joined" style="color: var(--gray-500); font-size: 0.82rem;">{{ acc.created_at.strftime('%d %b %Y') }}</td>
             </tr>

@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% block title %}Counsellor Applications — Admin{% endblock %}
+
+{% block body %}
+<div class="container" style="padding-bottom: 48px;">
+  <div class="page-context">
+    <a href="{{ url_for('admin.dashboard') }}" class="back-link">← Back to Admin</a>
+    <h1>Counsellor Applications</h1>
+    <p>{{ pending|length }} pending · {{ verified|length }} verified · {{ rejected|length }} rejected</p>
+  </div>
+
+  {# ── Pending ── #}
+  <h2 style="font-size: 1rem; color: var(--green-800); margin-bottom: 12px;">
+    <i class="fa-solid fa-clock" style="color: var(--gold-500);"></i> Pending Review ({{ pending|length }})
+  </h2>
+
+  {% if pending %}
+  {% for profile, account in pending %}
+  <div class="card" style="margin-bottom: 16px; padding: 20px 24px; border-left: 4px solid var(--gold-400);">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+
+      <div>
+        <div style="font-weight: 700; font-size: 1rem; color: var(--green-800);">{{ account.full_name }}</div>
+        <div style="font-size: 0.82rem; color: var(--gray-500); margin-top: 2px;">
+          @{{ account.username }} · {{ account.email }}
+          {% if account.phone %} · {{ account.phone }}{% endif %}
+        </div>
+        <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.82rem;">
+          {% if profile.gpc_number %}
+          <span style="background: #f0fdf4; border: 1px solid #86efac; color: #166534; padding: 3px 10px; border-radius: 12px; font-weight: 600;">
+            GPC: {{ profile.gpc_number }}
+          </span>
+          {% endif %}
+          {% if profile.gacc_number %}
+          <span style="background: #f0fdf4; border: 1px solid #86efac; color: #166534; padding: 3px 10px; border-radius: 12px; font-weight: 600;">
+            GACC: {{ profile.gacc_number }}
+          </span>
+          {% endif %}
+          <span style="background: var(--ivory); border: 1px solid var(--gray-200); color: var(--gray-700); padding: 3px 10px; border-radius: 12px;">
+            Ghana Card: {{ profile.ghana_card_number }}
+          </span>
+          <span style="background: var(--ivory); border: 1px solid var(--gray-200); color: var(--gray-700); padding: 3px 10px; border-radius: 12px;">
+            {{ profile.years_experience }} yrs experience
+          </span>
+        </div>
+        {% if profile.specialisations %}
+        <div style="font-size: 0.82rem; color: var(--gray-600); margin-top: 8px;">
+          <strong>Specialisations:</strong> {{ profile.specialisations }}
+        </div>
+        {% endif %}
+        {% if profile.bio %}
+        <div style="font-size: 0.82rem; color: var(--gray-600); margin-top: 6px; max-width: 500px; line-height: 1.5;">
+          {{ profile.bio }}
+        </div>
+        {% endif %}
+        <div style="font-size: 0.75rem; color: var(--gray-400); margin-top: 8px;">
+          Submitted {{ profile.submitted_at.strftime('%d %b %Y, %H:%M') }}
+        </div>
+      </div>
+
+      {# Action buttons #}
+      <div style="display: flex; flex-direction: column; gap: 10px; min-width: 200px;">
+        <form method="POST" action="{{ url_for('admin.verify_counsellor', profile_id=profile.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="action" value="approve">
+          <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 0.85rem;">
+            <i class="fa-solid fa-circle-check"></i> Approve
+          </button>
+        </form>
+
+        <form method="POST" action="{{ url_for('admin.verify_counsellor', profile_id=profile.id) }}"
+              style="display: flex; flex-direction: column; gap: 6px;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="action" value="reject">
+          <textarea name="rejection_reason" rows="2"
+            style="width: 100%; padding: 8px; border: 1px solid var(--gray-300); border-radius: 6px;
+                   font-size: 0.8rem; font-family: inherit; resize: vertical; box-sizing: border-box;"
+            placeholder="Rejection reason (optional)…"></textarea>
+          <button type="submit" class="btn btn-ghost" style="width: 100%; font-size: 0.85rem; color: var(--red-600); border-color: var(--red-300);">
+            <i class="fa-solid fa-circle-xmark"></i> Reject
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="card" style="padding: 20px; text-align: center; color: var(--gray-500); font-size: 0.88rem; margin-bottom: 24px;">
+    No pending applications.
+  </div>
+  {% endif %}
+
+  {# ── Verified ── #}
+  <h2 style="font-size: 1rem; color: var(--green-800); margin: 28px 0 12px;">
+    <i class="fa-solid fa-circle-check" style="color: var(--green-500);"></i> Verified ({{ verified|length }})
+  </h2>
+
+  {% if verified %}
+  <div class="table-wrapper" style="margin-bottom: 24px;">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Username</th>
+          <th>GPC / GACC</th>
+          <th>Verified</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for profile, account in verified %}
+        <tr>
+          <td style="font-weight: 600;">{{ account.full_name }}</td>
+          <td style="color: var(--gray-500);">@{{ account.username }}</td>
+          <td style="font-size: 0.82rem;">
+            {% if profile.gpc_number %}GPC: {{ profile.gpc_number }}{% endif %}
+            {% if profile.gacc_number %} GACC: {{ profile.gacc_number }}{% endif %}
+            {% if not profile.gpc_number and not profile.gacc_number %}—{% endif %}
+          </td>
+          <td style="font-size: 0.82rem; color: var(--gray-500);">
+            {{ profile.verified_at.strftime('%d %b %Y') if profile.verified_at else '—' }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {# ── Rejected ── #}
+  {% if rejected %}
+  <h2 style="font-size: 1rem; color: var(--green-800); margin: 28px 0 12px;">
+    <i class="fa-solid fa-circle-xmark" style="color: var(--red-400);"></i> Rejected ({{ rejected|length }})
+  </h2>
+  <div class="table-wrapper">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Username</th>
+          <th>Reason</th>
+          <th>Submitted</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for profile, account in rejected %}
+        <tr>
+          <td style="font-weight: 600;">{{ account.full_name }}</td>
+          <td style="color: var(--gray-500);">@{{ account.username }}</td>
+          <td style="font-size: 0.82rem; color: var(--gray-600);">{{ profile.rejection_reason or '—' }}</td>
+          <td style="font-size: 0.82rem; color: var(--gray-500);">{{ profile.submitted_at.strftime('%d %b %Y') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

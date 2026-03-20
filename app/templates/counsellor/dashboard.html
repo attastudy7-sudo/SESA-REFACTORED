@@ -24,15 +24,15 @@
   {% set elevated_count = at_risk | selectattr('0.stage', 'equalto', 'Elevated Stage') | list | length %}
 
   <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:24px;">
-    <div style="background:#fef2f2; border:1px solid #fca5a5; border-radius:10px; padding:12px 20px; text-align:center; min-width:130px;">
+    <div style="background:#fef2f2; border:1px solid #fca5a5; border-radius:10px; padding:12px 20px; text-align:center; min-width:0; flex:1 1 120px;">
       <div style="font-size:1.8rem; font-weight:800; color:#b91c1c;">{{ pagination.total }}</div>
       <div style="font-size:0.78rem; color:#7f1d1d; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Total Flagged</div>
     </div>
-    <div style="background:#fef2f2; border:1px solid #fca5a5; border-radius:10px; padding:12px 20px; text-align:center; min-width:130px;">
+    <div style="background:#fef2f2; border:1px solid #fca5a5; border-radius:10px; padding:12px 20px; text-align:center; min-width:0; flex:1 1 120px;">
       <div style="font-size:1.8rem; font-weight:800; color:#b91c1c;">{{ clinical_count }}</div>
       <div style="font-size:0.78rem; color:#7f1d1d; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Clinical (this page)</div>
     </div>
-    <div style="background:#fffbeb; border:1px solid #fcd34d; border-radius:10px; padding:12px 20px; text-align:center; min-width:130px;">
+    <div style="background:#fffbeb; border:1px solid #fcd34d; border-radius:10px; padding:12px 20px; text-align:center; min-width:0; flex:1 1 120px;">
       <div style="font-size:1.8rem; font-weight:800; color:#b45309;">{{ elevated_count }}</div>
       <div style="font-size:0.78rem; color:#78350f; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Elevated (this page)</div>
     </div>

@@ -12,14 +12,14 @@
 {% block drawer_links %}
   <a href="{{ url_for('main.school_dashboard', school_id=school.id) }}">Dashboard</a>
   <a href="{{ url_for('main.school_analytics', school_id=school.id) }}">Analytics</a>
-  <a href="{{ url_for('main.students_at_risk', school_id=school.id) }}"><i class="fa-solid fa-triangle-exclamation" style="color:#ef4444;"></i> Students at Risk</a>
+  <a href="{{ url_for('main.students_at_risk', school_id=school.id) }}" style="color:var(--gold-200); font-weight:600;"><i class="fa-solid fa-triangle-exclamation" style="color:var(--gold-400);"></i> Students at Risk</a>
   <a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a>
 {% endblock %}
 
 {% block body %}
 <div class="container" style="padding-bottom: 48px;">
   <div class="page-context">
-    <h1><i class="fa-solid fa-triangle-exclamation" style="color: var(--red-600);"></i> Students at Risk</h1>
+    <h1><i class="fa-solid fa-triangle-exclamation" style="color: var(--gold-400);"></i> Students at Risk</h1>
     <p>{{ school.school_name }} · {{ pagination.total }} student{{ 's' if pagination.total != 1 }} flagged</p>
   </div>
 
@@ -51,15 +51,15 @@
   {% set elevated_count = at_risk | selectattr('0.stage', 'equalto', 'Elevated Stage') | list | length %}
 
   <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom: 24px;">
-    <div style="background:#fef2f2; border: 1px solid #fca5a5; border-radius: 10px; padding: 12px 20px; text-align:center; min-width: 130px;">
+    <div style="background:#fef2f2; border: 1px solid #fca5a5; border-radius: 10px; padding: 12px 20px; text-align:center; min-width:0; flex:1 1 120px;">
       <div style="font-size:1.8rem; font-weight:800; color:#b91c1c;">{{ pagination.total }}</div>
       <div style="font-size:0.78rem; color:#7f1d1d; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Total Flagged</div>
     </div>
-    <div style="background:#fef2f2; border: 1px solid #fca5a5; border-radius: 10px; padding: 12px 20px; text-align:center; min-width: 130px;">
+    <div style="background:#fef2f2; border: 1px solid #fca5a5; border-radius: 10px; padding: 12px 20px; text-align:center; min-width:0; flex:1 1 120px;">
       <div style="font-size:1.8rem; font-weight:800; color:#b91c1c;">{{ clinical_count }}</div>
       <div style="font-size:0.78rem; color:#7f1d1d; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Clinical Stage</div>
     </div>
-    <div style="background:#fffbeb; border: 1px solid #fcd34d; border-radius: 10px; padding: 12px 20px; text-align:center; min-width: 130px;">
+    <div style="background:#fffbeb; border: 1px solid #fcd34d; border-radius: 10px; padding: 12px 20px; text-align:center; min-width:0; flex:1 1 120px;">
       <div style="font-size:1.8rem; font-weight:800; color:#b45309;">{{ elevated_count }}</div>
       <div style="font-size:0.78rem; color:#78350f; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Elevated Stage</div>
     </div>
@@ -165,7 +165,7 @@
   </a>
   <a href="{{ url_for('main.students_at_risk', school_id=school_id) }}"
      class="tab-item active">
-    <i class="fa-solid fa-triangle-exclamation tab-icon" style="color:#ef4444;"></i><span class="tab-label">At Risk</span>
+    <i class="fa-solid fa-triangle-exclamation tab-icon" style="color:var(--gold-400);"></i><span class="tab-label">At Risk</span>
   </a>
   <a href="{{ url_for('auth.logout') }}" class="tab-item tab-logout">
     <span class="tab-icon">↩</span><span class="tab-label">Logout</span>

@@ -78,6 +78,8 @@ def _init_extensions(app: Flask) -> None:
     limiter.init_app(app)
 
     from app.models.account import Accounts
+    from app.models.quiz_session import QuizSession  # noqa: F401
+    from app.models.counsellor_profile import CounsellorProfile  # noqa: F401
 
     @login_manager.user_loader
     def load_user(user_id: str):
@@ -91,12 +93,17 @@ def _register_blueprints(app: Flask) -> None:
     from app.routes.test import test_bp
     from app.routes.admin import admin_bp
     from app.routes.counsellor import counsellor_bp
+    from app.routes.qr import qr_bp
+    from app.routes.counsellor_signup import counsellor_signup_bp
 
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(main_bp, url_prefix='/')
     app.register_blueprint(test_bp, url_prefix='/test')
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(counsellor_bp, url_prefix='/counsellor')
+    app.register_blueprint(qr_bp, url_prefix='/school')
+    app.register_blueprint(counsellor_signup_bp)
+
 
 
 def _register_pwa_routes(app: Flask) -> None:
@@ -165,7 +172,7 @@ def _register_cli(app: Flask) -> None:
             df = pd.read_excel(excel_path, engine='openpyxl')
             df.columns = [c.strip().lower() for c in df.columns]
 
-            expected = {'first name', 'last name', 'email', 'username', 'password', 'level', 'gender', 'birthdate'}
+            expected = {'first name', 'last name', 'email', 'username', 'password', 'gender', 'birthdate'}
             missing = expected - set(df.columns)
             if missing:
                 click.echo(f'Missing columns: {missing}')
@@ -181,7 +188,7 @@ def _register_cli(app: Flask) -> None:
                     email=row['email'],
                     username=row['username'],
                     password=generate_password_hash(str(row['password'])),
-                    level=str(row['level']).strip().lower(),
+                    school_name=None,
                     gender=row.get('gender', ''),
                     birthdate=pd.to_datetime(row['birthdate']).date() if not pd.isna(row['birthdate']) else None,
                     school_id=int(school_id)

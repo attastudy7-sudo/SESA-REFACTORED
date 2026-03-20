@@ -25,6 +25,7 @@ class School(db.Model):
     )
 
     # Self-registration fields (Group 1 — access code + QR onboarding)
+    phone = db.Column(db.String(20), nullable=True)
     access_code = db.Column(db.String(8), nullable=True, unique=True, index=True)
     qr_token = db.Column(db.String(64), nullable=True, unique=True, index=True)
 

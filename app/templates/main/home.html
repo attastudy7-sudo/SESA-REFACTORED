@@ -40,8 +40,8 @@
     </div>
     <div class="stat-card teal">
       <div class="stat-icon"><i class="fa-solid fa-graduation-cap" style="color: #0891b2;"></i></div>
-      <div class="stat-value">{{ user.level | capitalize if user.level else '—' }}</div>
-      <div class="stat-label">Education Level</div>
+      <div class="stat-value" style="font-size: clamp(0.85rem, 3vw, 1.4rem); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">{{ user.school_name if user.school_name else '—' }}</div>
+      <div class="stat-label">School</div>
     </div>
     <div class="stat-card">
       <div class="stat-icon"><i class="fa-solid fa-clock" style="color: var(--green-500);"></i></div>

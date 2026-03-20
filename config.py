@@ -22,6 +22,9 @@ class Config:
     MAX_CONTENT_LENGTH = 5 * 1024 * 1024  # 5MB max upload
 
     ALLOWED_UPLOAD_EXTENSIONS = {'xlsx', 'xls'}
+    COUNSELLOR_PHOTO_UPLOAD_FOLDER = 'app/static/uploads/counsellors'
+    ALLOWED_PHOTO_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp'}
+    MAX_PHOTO_SIZE = 2 * 1024 * 1024  # 2MB
 
     TEST_TYPES = [
         "Separation Anxiety Disorder",
@@ -32,6 +35,7 @@ class Config:
         "Major Depressive Disorder",
     ]
 
+    APP_BASE_URL = os.environ.get('APP_BASE_URL', '')
     PAYSTACK_SECRET_KEY = os.environ.get('PAYSTACK_SECRET_KEY', '')
     PAYSTACK_PUBLIC_KEY = os.environ.get('PAYSTACK_PUBLIC_KEY', '')
     SUBSCRIPTION_AMOUNT = int(os.environ.get('SUBSCRIPTION_AMOUNT', 10000))  # in pesewas

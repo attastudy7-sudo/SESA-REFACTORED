@@ -2,7 +2,13 @@
 {% block title %}Register School{% endblock %}
 
 {% block full_page %}
-<div class="auth-page" style="align-items: flex-start; padding: 0px 0;">
+<div class="auth-page">
+  <div class="auth-page-brand">
+    <div class="auth-page-brand-sesa">SESA</div>
+    <div class="auth-page-brand-quote">"Supporting student <em>emotional wellbeing</em> across Ghana's schools."</div>
+    <div class="auth-page-brand-org">FOPA DILLIGENT CONSULT</div>
+  </div>
+
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       <div class="flash-stack">
@@ -14,56 +20,114 @@
   {% endwith %}
 
   <div class="auth-card auth-card--wide">
+
     <div class="auth-logo-area">
       <div class="auth-wordmark">
         <span class="auth-wordmark-sesa">SESA</span>
         <span class="auth-wordmark-dot"></span>
       </div>
       <div class="auth-org">FOPA DILLIGENT CONSULT</div>
-      <h1 class="auth-title">Register School</h1>
-      <p class="auth-subtitle">Join the SESA programme</p>
+      <h1 class="auth-title" id="stepTitle">Your school</h1>
+      <p class="auth-subtitle" id="stepSubtitle">Tell us about the school joining SESA.</p>
     </div>
 
-    <form method="POST" action="{{ url_for('auth.school_signup') }}" novalidate>
+    <div class="reg-progress">
+      <div class="reg-step-row">
+        <div class="reg-dot active" id="dot1">1</div>
+        <div class="reg-line" id="line1"></div>
+        <div class="reg-dot" id="dot2">2</div>
+        <div class="reg-line" id="line2"></div>
+        <div class="reg-dot" id="dot3">3</div>
+        <div class="reg-line" id="line3"></div>
+        <div class="reg-dot" id="dot4">4</div>
+      </div>
+      <div class="reg-step-labels">
+        <span>School</span>
+        <span>Admin</span>
+        <span>Password</span>
+        <span>Confirm</span>
+      </div>
+    </div>
+
+    <form method="POST" action="{{ url_for('auth.school_signup') }}" novalidate id="regForm">
       {{ form.hidden_tag() }}
 
-      <div class="form-group">
-        {{ form.school_name.label(class="form-label") }}
-        {{ form.school_name(class="form-control" ~ (" is-invalid" if form.school_name.errors else ""), placeholder="e.g. Accra High School") }}
-        {% for e in form.school_name.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+      <div class="reg-step" id="step1">
+        <div class="form-group">
+          {{ form.school_name.label(class="form-label") }}
+          {{ form.school_name(class="form-control" ~ (" is-invalid" if form.school_name.errors else ""), placeholder="e.g. Accra High School", id="school_name") }}
+          {% for e in form.school_name.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+        </div>
+        <button type="button" class="btn btn-primary btn-block btn-lg" onclick="goTo(2)">Continue &rarr;</button>
       </div>
 
-      <div class="form-group">
-        {{ form.admin_name.label(class="form-label") }}
-        {{ form.admin_name(class="form-control" ~ (" is-invalid" if form.admin_name.errors else ""), placeholder="School counsellor / administrator name") }}
-        {% for e in form.admin_name.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+      <div class="reg-step" id="step2" style="display:none;">
+        <div class="form-group">
+          {{ form.admin_name.label(class="form-label") }}
+          {{ form.admin_name(class="form-control" ~ (" is-invalid" if form.admin_name.errors else ""), placeholder="School counsellor / administrator name", id="admin_name") }}
+          {% for e in form.admin_name.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="form-group">
+          {{ form.email.label(class="form-label") }}
+          {{ form.email(class="form-control" ~ (" is-invalid" if form.email.errors else ""), placeholder="school@example.com (optional)", id="email") }}
+          {% for e in form.email.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="form-group">
+          {{ form.phone.label(class="form-label") }}
+          {{ form.phone(class="form-control", placeholder="e.g. 024 000 0000 (optional)", id="phone", type="tel") }}
+        </div>
+        <div class="reg-nav">
+          <button type="button" class="btn btn-secondary" onclick="goTo(1)">&larr; Back</button>
+          <button type="button" class="btn btn-primary" onclick="goTo(3)">Continue &rarr;</button>
+        </div>
       </div>
 
-      <div class="form-group">
-        {{ form.email.label(class="form-label") }}
-        {{ form.email(class="form-control" ~ (" is-invalid" if form.email.errors else ""), placeholder="school@example.com (optional)") }}
-        {% for e in form.email.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
-      </div>
-
-      <div class="auth-two-col">
+      <div class="reg-step" id="step3" style="display:none;">
         <div class="form-group">
           {{ form.admin_password.label(class="form-label") }}
-          {{ form.admin_password(class="form-control" ~ (" is-invalid" if form.admin_password.errors else ""), placeholder="Min. 8 characters") }}
+          {{ form.admin_password(class="form-control" ~ (" is-invalid" if form.admin_password.errors else ""), placeholder="Min. 8 characters", id="admin_password") }}
           {% for e in form.admin_password.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
         </div>
         <div class="form-group">
           {{ form.confirm_password.label(class="form-label") }}
-          {{ form.confirm_password(class="form-control" ~ (" is-invalid" if form.confirm_password.errors else ""), placeholder="Repeat password") }}
+          {{ form.confirm_password(class="form-control" ~ (" is-invalid" if form.confirm_password.errors else ""), placeholder="Repeat password", id="confirm_password") }}
           {% for e in form.confirm_password.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="auth-notice">
+          <i class="fa-solid fa-circle-info"></i>
+          <span><strong>Note:</strong> After registration, student upload access must be enabled by FOPA DILLIGENT CONSULT following payment confirmation.</span>
+        </div>
+        <div class="reg-nav">
+          <button type="button" class="btn btn-secondary" onclick="goTo(2)">&larr; Back</button>
+          <button type="button" class="btn btn-primary" onclick="goTo(4)">Continue &rarr;</button>
         </div>
       </div>
 
-      <div class="auth-notice">
-        <i class="fa-solid fa-circle-info"></i>
-        <span><strong>Note:</strong> After registration, student upload access must be enabled by FOPA DILLIGENT CONSULT following payment confirmation.</span>
+      <div class="reg-step" id="step4" style="display:none;">
+        <div class="reg-confirm-card">
+          <div class="reg-confirm-row">
+            <span class="reg-confirm-label">School</span>
+            <span class="reg-confirm-value" id="conf_school">&mdash;</span>
+          </div>
+          <div class="reg-confirm-row">
+            <span class="reg-confirm-label">Administrator</span>
+            <span class="reg-confirm-value" id="conf_admin">&mdash;</span>
+          </div>
+          <div class="reg-confirm-row">
+            <span class="reg-confirm-label">Email</span>
+            <span class="reg-confirm-value" id="conf_email">&mdash;</span>
+          </div>
+          <div class="reg-confirm-row">
+            <span class="reg-confirm-label">Phone</span>
+            <span class="reg-confirm-value" id="conf_phone">&mdash;</span>
+          </div>
+        </div>
+        <div class="reg-nav">
+          <button type="button" class="btn btn-secondary" onclick="goTo(3)">&larr; Back</button>
+          <button type="submit" class="btn btn-gold btn-lg" style="flex:1;">Register School &#10003;</button>
+        </div>
       </div>
 
-      <button type="submit" class="btn btn-primary btn-block btn-lg">Register School</button>
     </form>
 
     <div class="auth-footer-links">
@@ -74,10 +138,211 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<style>
+.reg-progress { margin-bottom: 28px; }
+.reg-step-row { display: flex; align-items: center; }
+.reg-dot {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; font-weight: 700; flex-shrink: 0;
+  background: var(--gray-100); color: var(--gray-400);
+  border: 2px solid var(--gray-200);
+  transition: background 0.25s, color 0.25s, border-color 0.25s;
+}
+.reg-dot.active { background: var(--gold-500); color: #fff; border-color: var(--gold-500); }
+.reg-dot.done   { background: var(--green-700); color: #fff; border-color: var(--green-700); }
+.reg-line { flex: 1; height: 2px; background: var(--gray-200); transition: background 0.25s; }
+.reg-line.done { background: var(--green-700); }
+.reg-step-labels { display: flex; justify-content: space-between; margin-top: 6px; padding: 0 4px; }
+.reg-step-labels span {
+  font-size: 0.68rem; color: var(--gray-400); font-weight: 500;
+  text-transform: uppercase; letter-spacing: .06em;
+  flex: 1; text-align: center;
+}
+.reg-step-labels span:first-child { text-align: left; }
+.reg-step-labels span:last-child  { text-align: right; }
+.reg-nav { display: flex; gap: 10px; margin-top: 4px; }
+.reg-nav .btn-secondary { flex-shrink: 0; }
+.reg-nav .btn-primary   { flex: 1; }
+.reg-confirm-card {
+  background: var(--ivory); border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-md); padding: 4px 16px; margin-bottom: 20px;
+}
+.reg-confirm-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 0; border-bottom: 1px solid var(--gray-100); font-size: 0.875rem;
+}
+.reg-confirm-row:last-child { border-bottom: none; }
+.reg-confirm-label { color: var(--gray-500); }
+.reg-confirm-value { color: var(--green-800); font-weight: 600; text-align: right; max-width: 60%; word-break: break-word; }
+
+/* Inline validation */
+.field-error {
+  font-size: 0.78rem; color: var(--red-600);
+  margin-top: 4px; display: none;
+}
+.field-error.visible { display: block; }
+.form-control.field-invalid { border-color: var(--red-600); }
+.form-control.field-valid   { border-color: var(--green-500); }
+</style>
+
 <script>
-document.querySelectorAll('.flash-toast').forEach((el,i)=>{
-  el.addEventListener('click',()=>{el.style.opacity='0';setTimeout(()=>el.remove(),400);});
-  setTimeout(()=>{el.style.transition='opacity 0.4s';el.style.opacity='0';setTimeout(()=>el.remove(),400);},4000+i*300);
-});
+(function() {
+  var titles = ['','Your school','Administrator','Set a password','Confirm & register'];
+  var subs   = ['','Tell us about the school joining SESA.','Who will manage this account?','You\'ll use this to sign in to your dashboard.','Everything look right?'];
+  var current = 1;
+
+  {% if form.errors %}
+  current = {{ 3 if (form.admin_password.errors or form.confirm_password.errors) else (2 if (form.admin_name.errors or form.email.errors) else 1) }};
+  {% endif %}
+
+  /* ── Helpers ── */
+  function showError(fieldId, msg) {
+    var el = document.getElementById(fieldId);
+    if (!el) return;
+    el.classList.add('field-invalid');
+    el.classList.remove('field-valid');
+    var err = document.getElementById(fieldId + '_err');
+    if (err) { err.textContent = msg; err.classList.add('visible'); }
+  }
+
+  function clearError(fieldId) {
+    var el = document.getElementById(fieldId);
+    if (!el) return;
+    el.classList.remove('field-invalid');
+    var err = document.getElementById(fieldId + '_err');
+    if (err) { err.classList.remove('visible'); }
+  }
+
+  function markValid(fieldId) {
+    var el = document.getElementById(fieldId);
+    if (!el) return;
+    el.classList.remove('field-invalid');
+    el.classList.add('field-valid');
+    var err = document.getElementById(fieldId + '_err');
+    if (err) err.classList.remove('visible');
+  }
+
+  function injectError(fieldId) {
+    var el = document.getElementById(fieldId);
+    if (!el || document.getElementById(fieldId + '_err')) return;
+    var div = document.createElement('div');
+    div.id = fieldId + '_err';
+    div.className = 'field-error';
+    el.parentNode.insertBefore(div, el.nextSibling);
+  }
+
+  /* Inject error containers for all fields */
+  ['school_name','admin_name','email','phone','admin_password','confirm_password'].forEach(injectError);
+
+  /* Live validation on blur */
+  function attachLive(fieldId, fn) {
+    var el = document.getElementById(fieldId);
+    if (el) el.addEventListener('blur', function() { fn(true); });
+  }
+
+  function validateSchoolName(silent) {
+    var v = document.getElementById('school_name').value.trim();
+    if (!v) { if (!silent) showError('school_name', 'School name is required.'); else showError('school_name', 'School name is required.'); return false; }
+    if (v.length < 3) { showError('school_name', 'Must be at least 3 characters.'); return false; }
+    markValid('school_name'); return true;
+  }
+
+  function validateAdminName(silent) {
+    var v = document.getElementById('admin_name').value.trim();
+    if (!v) { showError('admin_name', 'Administrator name is required.'); return false; }
+    if (v.length < 2) { showError('admin_name', 'Must be at least 2 characters.'); return false; }
+    markValid('admin_name'); return true;
+  }
+
+  function validateEmail() {
+    var v = document.getElementById('email').value.trim();
+    if (!v) { clearError('email'); markValid('email'); return true; } /* optional */
+    var ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+    if (!ok) { showError('email', 'Enter a valid email address.'); return false; }
+    markValid('email'); return true;
+  }
+
+  function validatePhone() {
+    var v = document.getElementById('phone').value.trim();
+    if (!v) { clearError('phone'); return true; } /* optional */
+    var ok = /^[0-9\s\+\-\(\)]{7,20}$/.test(v);
+    if (!ok) { showError('phone', 'Enter a valid phone number.'); return false; }
+    markValid('phone'); return true;
+  }
+
+  function validatePassword() {
+    var p = document.getElementById('admin_password').value;
+    if (!p) { showError('admin_password', 'Password is required.'); return false; }
+    if (p.length < 8) { showError('admin_password', 'Password must be at least 8 characters.'); return false; }
+    markValid('admin_password'); return true;
+  }
+
+  function validateConfirm() {
+    var p = document.getElementById('admin_password').value;
+    var c = document.getElementById('confirm_password').value;
+    if (!c) { showError('confirm_password', 'Please confirm your password.'); return false; }
+    if (p !== c) { showError('confirm_password', 'Passwords do not match.'); return false; }
+    markValid('confirm_password'); return true;
+  }
+
+  attachLive('school_name',      function() { validateSchoolName(true); });
+  attachLive('admin_name',       function() { validateAdminName(true); });
+  attachLive('email',            validateEmail);
+  attachLive('phone',            validatePhone);
+  attachLive('admin_password',   validatePassword);
+  attachLive('confirm_password', validateConfirm);
+
+  /* ── Step validation ── */
+  function validate(step) {
+    if (step === 1) return validateSchoolName(false);
+    if (step === 2) return validateAdminName(false) & validateEmail() & validatePhone();
+    if (step === 3) return validatePassword() & validateConfirm();
+    return true;
+  }
+
+  /* ── Dots & titles ── */
+  function updateDots(step) {
+    for (var i = 1; i <= 4; i++) {
+      var dot  = document.getElementById('dot'  + i);
+      var line = document.getElementById('line' + i);
+      dot.className = 'reg-dot' + (i < step ? ' done' : i === step ? ' active' : '');
+      dot.textContent = i < step ? '\u2713' : String(i);
+      if (i < 4 && line) line.className = 'reg-line' + (i < step ? ' done' : '');
+    }
+    document.getElementById('stepTitle').textContent    = titles[step];
+    document.getElementById('stepSubtitle').textContent = subs[step];
+  }
+
+  function fillConfirm() {
+    var s = document.getElementById('school_name').value.trim();
+    var a = document.getElementById('admin_name').value.trim();
+    var e = document.getElementById('email').value.trim();
+    var p = document.getElementById('phone').value.trim();
+    document.getElementById('conf_school').textContent = s || '\u2014';
+    document.getElementById('conf_admin').textContent  = a || '\u2014';
+    document.getElementById('conf_email').textContent  = e || 'Not provided';
+    document.getElementById('conf_phone').textContent  = p || 'Not provided';
+  }
+
+  window.goTo = function(step) {
+    if (step > current && !validate(current)) return;
+    document.getElementById('step' + current).style.display = 'none';
+    document.getElementById('step' + step).style.display    = '';
+    current = step;
+    updateDots(step);
+    if (step === 4) fillConfirm();
+  };
+
+  updateDots(current);
+  for (var i = 1; i <= 4; i++) {
+    document.getElementById('step' + i).style.display = (i === current) ? '' : 'none';
+  }
+
+  document.querySelectorAll('.flash-toast').forEach(function(el, i) {
+    el.addEventListener('click', function() { el.style.opacity='0'; setTimeout(function(){el.remove();},400); });
+    setTimeout(function(){ el.style.transition='opacity 0.4s'; el.style.opacity='0'; setTimeout(function(){el.remove();},400); }, 4000+i*300);
+  });
+})();
 </script>
 {% endblock %}
