@@ -760,17 +760,8 @@ def robots_txt():
     from flask import Response
     lines = [
         "User-agent: *",
-        "Allow: /$",
-        "Allow: /static/",
-        "Allow: /auth/login$",
-        "Allow: /auth/signup$",
-        "Allow: /auth/school-signup$",
-        "Allow: /auth/school-login$",
-        "Allow: /auth/counsellor-login$",
-        "Allow: /join$",
         "Disallow: /auth/reset-password",
         "Disallow: /auth/logout",
-        "Disallow: /auth/",
         "Disallow: /home",
         "Disallow: /results",
         "Disallow: /admin",
