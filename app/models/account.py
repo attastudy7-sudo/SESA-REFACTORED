@@ -9,7 +9,7 @@ class Accounts(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     fname = db.Column(db.String(100), nullable=False)
     lname = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False, index=True)
+    email = db.Column(db.String(120), unique=True, nullable=True, index=True)
     username = db.Column(db.String(50), unique=True, nullable=False, index=True)
     password = db.Column(db.String(256), nullable=False)
     school_name = db.Column(db.String(200), nullable=True)
@@ -74,7 +74,10 @@ class Accounts(UserMixin, db.Model):
         """True if the account is currently locked out."""
         if self.locked_until is None:
             return False
-        return datetime.now(timezone.utc) < self.locked_until.replace(tzinfo=timezone.utc).replace(tzinfo=timezone.utc)
+        locked_until = self.locked_until
+        if locked_until.tzinfo is None:
+            locked_until = locked_until.replace(tzinfo=timezone.utc)
+        return datetime.now(timezone.utc) < locked_until
 
     def record_failed_login(self):
         """Increment counter; lock account after LOCKOUT_THRESHOLD failures."""

@@ -63,11 +63,12 @@ def get_school_analytics(school_id: int) -> dict:
         }
 
     # ── Query 2: monthly breakdown ────────────────────────────────────────────
-    # SQLite and Postgres both support strftime-style extraction via func.
-    # We use a portable approach: pull year+month as a string.
+    # Use PostgreSQL's to_char() for year-month grouping.
+    # func.strftime() is SQLite-only and will raise UndefinedFunction on Postgres.
+    month_expr = func.to_char(TestResult.taken_at, 'YYYY-MM')
     monthly_rows = (
         db.session.query(
-            func.strftime('%Y-%m', TestResult.taken_at).label('month_key'),
+            month_expr.label('month_key'),
             func.sum(TestResult.score).label('sum_score'),
             func.sum(TestResult.max_score).label('sum_max'),
             func.count(TestResult.id).label('count'),
@@ -78,8 +79,8 @@ def get_school_analytics(school_id: int) -> dict:
             TestResult.max_score > 0,
             TestResult.taken_at.isnot(None),
         )
-        .group_by(func.strftime('%Y-%m', TestResult.taken_at))
-        .order_by(func.strftime('%Y-%m', TestResult.taken_at))
+        .group_by(month_expr)
+        .order_by(month_expr)
         .all()
     )
 

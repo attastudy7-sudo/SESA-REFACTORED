@@ -58,9 +58,12 @@ def student_history(student_id):
         school_id=current_user.school_id,
     ).first_or_404()
 
-    # Referral system not yet built — block direct access
+    # TODO: Referral system not yet built. The code below is a placeholder
+    # and is intentionally unreachable. Do not remove — restore by deleting
+    # the flash + return above once the referral system is implemented.
     flash('Student history will be available once the referral system is active.', 'warning')
     return redirect(url_for('counsellor.dashboard'))
+    # -- UNREACHABLE UNTIL REFERRAL SYSTEM IS ACTIVE --
 
     results = (
         TestResult.query

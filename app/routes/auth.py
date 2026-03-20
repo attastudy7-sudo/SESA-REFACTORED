@@ -153,6 +153,9 @@ def school_login():
         if school and school.is_locked:
             logger.warning('School login blocked — locked | school=%s ip=%s',
                            admin_name, request.remote_addr)
+            audit('LOGIN_BLOCKED', actor_id=None, school_id=school.id,
+                  ip_address=request.remote_addr, detail='School account locked')
+            db.session.commit()
             flash(_LOCKED_MSG, 'error')
             return render_template('auth/school_login.html', form=form)
 
@@ -161,6 +164,8 @@ def school_login():
             session.clear()
             session['school_id'] = school.id
             session.permanent = True
+            audit('LOGIN_SUCCESS', actor_id=None, school_id=school.id,
+                  ip_address=request.remote_addr, detail=f'School admin: {admin_name}')
             db.session.commit()
             logger.info('School login | school=%s ip=%s', school.school_name, request.remote_addr)
             flash(f'Welcome back, {school.admin_name}!', 'success')
@@ -170,6 +175,9 @@ def school_login():
         if school:
             school.record_failed_login()
             remaining = max(0, school.LOCKOUT_THRESHOLD - school.failed_attempts)
+            audit('LOGIN_FAILED', actor_id=None, school_id=school.id,
+                  ip_address=request.remote_addr,
+                  detail=f'Attempt {school.failed_attempts}/{school.LOCKOUT_THRESHOLD}')
             db.session.commit()
             logger.warning('Failed school login | school=%s attempt=%s ip=%s',
                            admin_name, school.failed_attempts, request.remote_addr)

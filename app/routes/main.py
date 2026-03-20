@@ -36,16 +36,15 @@ def home():
     total_tests = len(results)
     most_recent = results[0] if results else None
 
-    # Cache question counts in app context — they never change at runtime
-    if not hasattr(current_app, '_question_counts'):
-        current_app._question_counts = {
-            row.test_type: row.count
-            for row in db.session.query(
-                Question.test_type,
-                func.count(Question.id).label('count')
-            ).group_by(Question.test_type).all()
-        }
-    question_counts = current_app._question_counts
+    # Query question counts fresh each request.
+    # Permanent caching on current_app caused stale counts after admin edits.
+    question_counts = {
+        row.test_type: row.count
+        for row in db.session.query(
+            Question.test_type,
+            func.count(Question.id).label('count')
+        ).group_by(Question.test_type).all()
+    }
 
     tests_meta = [
         {'name': 'Separation Anxiety Disorder',   'key': 'sad',  'count': question_counts.get('Separation Anxiety Disorder',   0), 'icon': '🏠', 'color': 'teal'},
@@ -72,21 +71,20 @@ def home():
         if r.test_type not in latest_by_type:
             latest_by_type[r.test_type] = r
 
-    avg_score = total_tests        # repurposed: total assessments taken
-    prev_avg = tests_this_month    # repurposed: assessments this month
-    score_change = None            # no longer used
+    total_assessments_taken = total_tests   # passed to template as total count
+    assessments_this_month  = tests_this_month
 
-    recent_results = results[:3]  # 5 most recent for the home table
+    recent_results = results[:3]  # 3 most recent for the home table
 
     return render_template(
         'main/home.html',
         user=user,
         total_tests=total_tests,
-        avg_score=avg_score,
+        avg_score=total_assessments_taken,
         most_recent=most_recent,
         tests_meta=tests_meta,
-        score_change=score_change,
-        prev_avg=prev_avg,
+        score_change=None,
+        prev_avg=assessments_this_month,
         recent_results=recent_results,
         latest_by_type=latest_by_type,
     )
@@ -471,6 +469,7 @@ def verify_payment(school_id):
 
 
 @main_bp.route('/school/<int:school_id>/students')
+@school_login_required
 def school_students(school_id):
     school = _get_school_from_session()
     if current_user.is_authenticated and current_user.is_super_admin:
@@ -497,6 +496,7 @@ def school_students(school_id):
 
 
 @main_bp.route('/school/<int:school_id>/results')
+@school_login_required
 def school_results(school_id):
     school = _get_school_from_session()
     if current_user.is_authenticated and current_user.is_super_admin:
@@ -628,6 +628,7 @@ def join_with_code():
                     fname=fname,
                     lname=lname,
                     username=username,
+                    email=None,  # self-registration via access code — email not required
                     password=generate_password_hash(password),
                     class_group=class_group,
                     school_id=school.id,

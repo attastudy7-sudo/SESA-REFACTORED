@@ -198,9 +198,10 @@ def get_report_data(school_id: int, period: str) -> dict:
 
     # ── Monthly trend (last 6 months regardless of period) ───────────────────
     six_months_ago = datetime.now(timezone.utc) - timedelta(days=180)
+    month_expr = func.to_char(TestResult.taken_at, 'YYYY-MM')
     trend_rows = (
         db.session.query(
-            func.strftime('%Y-%m', TestResult.taken_at).label('month_key'),
+            month_expr.label('month_key'),
             func.count(TestResult.id).label('count'),
             func.sum(TestResult.score).label('sum_score'),
             func.sum(TestResult.max_score).label('sum_max'),
@@ -211,8 +212,8 @@ def get_report_data(school_id: int, period: str) -> dict:
             TestResult.taken_at >= six_months_ago,
             TestResult.max_score > 0,
         )
-        .group_by(func.strftime('%Y-%m', TestResult.taken_at))
-        .order_by(func.strftime('%Y-%m', TestResult.taken_at))
+        .group_by(month_expr)
+        .order_by(month_expr)
         .all()
     )
 

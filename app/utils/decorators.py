@@ -28,7 +28,7 @@ def counsellor_required(f):
     def decorated(*args, **kwargs):
         if not current_user.is_authenticated:
             flash('Please log in to access the counsellor portal.', 'warning')
-            return redirect(url_for('auth.login'))
+            return redirect(url_for('auth.counsellor_login'))
         if not current_user.is_counsellor:
             logger.warning(
                 'Unauthorised counsellor access | user=%s ip=%s path=%s',
