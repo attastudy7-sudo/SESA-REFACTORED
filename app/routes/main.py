@@ -758,7 +758,7 @@ def school_guide():
 @main_bp.route('/robots.txt')
 def robots_txt():
     from flask import Response
-        lines = [
+    lines = [
         "User-agent: *",
         "Allow: /$",
         "Allow: /static/",
