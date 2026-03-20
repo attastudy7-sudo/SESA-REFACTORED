@@ -758,17 +758,24 @@ def school_guide():
 @main_bp.route('/robots.txt')
 def robots_txt():
     from flask import Response
-    lines = [
+        lines = [
         "User-agent: *",
         "Allow: /$",
         "Allow: /static/",
+        "Allow: /auth/login",
+        "Allow: /auth/signup",
+        "Allow: /auth/school-signup",
+        "Allow: /auth/school-login",
+        "Allow: /auth/counsellor-login",
+        "Allow: /join",
         "Disallow: /home",
         "Disallow: /results",
         "Disallow: /admin",
         "Disallow: /school/",
         "Disallow: /counsellor/",
         "Disallow: /test/",
-        "Disallow: /auth/",
+        "Disallow: /auth/reset-password",
+        "Disallow: /auth/logout",
         "",
         f"Sitemap: {request.url_root.rstrip('/')}/sitemap.xml",
     ]
@@ -783,11 +790,13 @@ def sitemap_xml():
     base = request.url_root.rstrip('/')
     today = datetime.date.today().isoformat()
     urls = [
-        {"loc": base + "/", "priority": "1.0", "changefreq": "monthly"},
-        {"loc": base + "/auth/login", "priority": "0.6", "changefreq": "yearly"},
-        {"loc": base + "/auth/signup", "priority": "0.5", "changefreq": "yearly"},
-        {"loc": base + "/auth/school-signup", "priority": "0.7", "changefreq": "yearly"},
-        {"loc": base + "/join", "priority": "0.5", "changefreq": "yearly"},
+        {"loc": base + "/",                        "priority": "1.0", "changefreq": "monthly"},
+        {"loc": base + "/auth/school-signup",      "priority": "0.8", "changefreq": "yearly"},
+        {"loc": base + "/auth/login",              "priority": "0.6", "changefreq": "yearly"},
+        {"loc": base + "/auth/signup",             "priority": "0.5", "changefreq": "yearly"},
+        {"loc": base + "/auth/school-login",       "priority": "0.5", "changefreq": "yearly"},
+        {"loc": base + "/auth/counsellor-login",   "priority": "0.4", "changefreq": "yearly"},
+        {"loc": base + "/join",                    "priority": "0.5", "changefreq": "yearly"},
     ]
     xml_parts = ['<?xml version="1.0" encoding="UTF-8"?>',
                  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
