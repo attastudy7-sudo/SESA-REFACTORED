@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+{% block title %}Student Login{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "secondary-fixed-dim": "#efc136", "on-secondary": "#ffffff", "secondary": "#755b00",
+          "on-secondary-container": "#725800", "surface": "#f4fbf4", "on-secondary-fixed": "#241a00",
+          "primary-container": "#1a3e2c", "tertiary-fixed": "#acf0dd", "secondary-container": "#fecf44",
+          "primary-fixed-dim": "#a8d0b7", "primary-fixed": "#c3ecd2", "outline": "#727973",
+          "on-primary-fixed": "#002112", "primary": "#022818", "error": "#ba1a1a",
+          "background": "#f4fbf4", "tertiary-fixed-dim": "#91d3c1", "on-tertiary-fixed": "#00201a",
+          "on-primary": "#ffffff", "inverse-surface": "#2b322e", "surface-container-lowest": "#ffffff",
+          "on-primary-container": "#83a992", "surface-container-highest": "#dde4de",
+          "on-tertiary-container": "#6bac9b", "on-tertiary": "#ffffff", "outline-variant": "#c1c8c1",
+          "on-secondary-fixed-variant": "#584400", "secondary-fixed": "#ffdf90",
+          "on-tertiary-fixed-variant": "#005143", "on-primary-fixed-variant": "#2a4e3b",
+          "inverse-on-surface": "#ecf2ec", "surface-dim": "#d5dcd5", "surface-variant": "#dde4de",
+          "surface-container": "#e9f0e9", "on-error-container": "#93000a", "inverse-primary": "#a8d0b7",
+          "tertiary-container": "#003f34", "surface-tint": "#426652", "on-error": "#ffffff",
+          "on-surface-variant": "#414843", "surface-bright": "#f4fbf4", "on-background": "#161d19",
+          "error-container": "#ffdad6", "tertiary": "#002720", "surface-container-high": "#e3eae3",
+          "on-surface": "#161d19", "surface-container-low": "#eff5ef"
+        },
+        fontFamily: { "headline": ["Manrope"], "body": ["Inter"], "label": ["Inter"] },
+        borderRadius: { "DEFAULT": "0.25rem", "lg": "1.0rem", "xl": "1.5rem", "full": "9999px" },
+      },
+    },
+  }
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  .glass-card { background: rgba(244,251,244,0.7); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+  body { font-family: 'Inter', sans-serif; }
+  h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+</style>
+{% endblock %}
+
+{% block full_page %}
+<div class="bg-surface text-on-surface min-h-screen flex flex-col">
+
+  {# ── Flash Messages ── #}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="fixed top-4 right-4 z-[100] space-y-2" role="status" aria-live="polite">
+        {% for category, message in messages %}
+          <div class="flash-toast-new {{ category }} flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium cursor-pointer
+            {% if category == 'error' or category == 'danger' %}bg-red-50 border border-red-200 text-red-800
+            {% elif category == 'success' %}bg-green-50 border border-green-200 text-green-800
+            {% else %}bg-yellow-50 border border-yellow-200 text-yellow-800{% endif %}"
+            role="alert">
+            <span class="material-symbols-outlined text-base">
+              {% if category == 'success' %}check_circle{% elif category == 'error' or category == 'danger' %}error{% else %}info{% endif %}
+            </span>
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {# ── Header ── #}
+  <header class="fixed top-0 left-0 right-0 z-50 bg-[#f4fbf4] flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto">
+    <a href="{{ url_for('main.landing') }}" class="text-xl font-extrabold text-[#022818] font-['Manrope'] tracking-tight">
+      FOPA Diligent
+    </a>
+    <div class="flex items-center gap-4">
+      <a class="text-[#161d19] font-['Inter'] text-sm hover:text-[#755b00] transition-colors" href="{{ url_for('auth.school_login') }}">School Portal</a>
+      <a class="text-[#022818] font-bold text-sm px-4 py-2 bg-[#fecf44] rounded-xl hover:bg-opacity-90 transition-all" href="{{ url_for('auth.signup') }}">Create Account</a>
+    </div>
+  </header>
+
+  <main class="flex-grow flex flex-col md:flex-row pt-16">
+
+    {# ── Left Branding Panel ── #}
+    <section class="hidden md:flex md:w-1/2 lg:w-3/5 bg-[#022818] relative overflow-hidden items-center justify-center p-12 lg:p-24">
+      <div class="absolute inset-0 bg-gradient-to-br from-[#022818] to-[#1a3e2c] opacity-90"></div>
+      <div class="relative z-10 max-w-xl text-left">
+        <span class="inline-block px-3 py-1 bg-[#acf0dd] text-[#005143] text-xs font-bold uppercase tracking-widest rounded-full mb-6">
+          Diligent Heritage
+        </span>
+        <h1 class="text-white text-5xl lg:text-6xl font-extrabold leading-tight tracking-tighter mb-8 font-['Manrope']">
+          Empowering the <span class="text-[#ffdf90]">Scholarly Journey</span> in Ghana.
+        </h1>
+        <p class="text-[#c3ecd2] text-lg lg:text-xl font-medium leading-relaxed mb-10 opacity-90">
+          A dedicated platform for social wellbeing and academic excellence. Your pathway to curated educational resources and expert consultation starts here.
+        </p>
+        <div class="bg-[#1a3e2c] p-8 rounded-xl border border-[#c1c8c1] border-opacity-10">
+          <div class="flex gap-4 items-start">
+            <div class="p-3 bg-[#acf0dd] rounded-lg text-[#005143]">
+              <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">auto_stories</span>
+            </div>
+            <div>
+              <h4 class="text-[#acf0dd] font-bold text-lg mb-2">Scholarly Insight</h4>
+              <p class="text-[#83a992] text-sm leading-relaxed">
+                Continuous reflection is the cornerstone of wellbeing. Access your student portal to track your progress and engage with the Diligent community.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="absolute -bottom-20 -right-20 w-80 h-80 bg-[#fecf44] rounded-full blur-3xl opacity-20"></div>
+    </section>
+
+    {# ── Right Form Panel ── #}
+    <section class="w-full md:w-1/2 lg:w-2/5 bg-[#f4fbf4] flex flex-col items-center justify-center p-8 md:p-12 lg:p-20">
+      <div class="w-full max-w-md">
+
+        <div class="mb-12">
+          <h2 class="text-[#022818] text-3xl font-extrabold tracking-tight mb-3 font-['Manrope']">Welcome Back, Scholar</h2>
+          <p class="text-[#414843] font-['Inter']">Please enter your credentials to access your student dashboard.</p>
+        </div>
+
+        <div class="bg-[#eff5ef] p-1 rounded-xl">
+          <form method="POST" action="{{ url_for('auth.login') }}" novalidate
+                class="bg-white p-8 rounded-xl shadow-[0_40px_60px_-15px_rgba(22,29,25,0.06)] space-y-6">
+            {{ form.hidden_tag() }}
+
+            {# Username #}
+            <div class="space-y-2">
+              <label class="block text-sm font-bold text-[#755b00] uppercase tracking-wider font-['Inter']" for="username">
+                {{ form.username.label.text }}
+              </label>
+              <div class="relative">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#727973] material-symbols-outlined text-xl">person</span>
+                {{ form.username(
+                    id="username",
+                    class="w-full pl-12 pr-4 py-4 bg-[#e3eae3] rounded-lg border-none focus:ring-2 focus:ring-[#022818]/20 focus:bg-white transition-all text-[#161d19] placeholder-[#727973]/60" ~ (" ring-2 ring-red-400" if form.username.errors else ""),
+                    placeholder="Enter your username",
+                    autocomplete="username"
+                ) }}
+              </div>
+              {% for error in form.username.errors %}
+                <p class="text-red-600 text-xs mt-1 font-medium">{{ error }}</p>
+              {% endfor %}
+            </div>
+
+            {# Password #}
+            <div class="space-y-2">
+              <div class="flex justify-between items-center">
+                <label class="block text-sm font-bold text-[#755b00] uppercase tracking-wider font-['Inter']" for="passwordField">
+                  {{ form.password.label.text }}
+                </label>
+                <a class="text-xs font-semibold text-[#022818] hover:text-[#755b00] transition-colors" href="{{ url_for('auth.reset_password') }}">Forgot Password?</a>
+              </div>
+              <div class="relative">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#727973] material-symbols-outlined text-xl">lock</span>
+                {{ form.password(
+                    id="passwordField",
+                    class="w-full pl-12 pr-12 py-4 bg-[#e3eae3] rounded-lg border-none focus:ring-2 focus:ring-[#022818]/20 focus:bg-white transition-all text-[#161d19] placeholder-[#727973]/60" ~ (" ring-2 ring-red-400" if form.password.errors else ""),
+                    placeholder="••••••••",
+                    autocomplete="current-password"
+                ) }}
+                <button type="button" id="togglePassword" aria-label="Toggle password visibility"
+                        class="absolute right-4 top-1/2 -translate-y-1/2 text-[#727973] hover:text-[#022818] transition-colors">
+                  <span class="material-symbols-outlined text-xl" id="toggleIcon">visibility</span>
+                </button>
+              </div>
+              {% for error in form.password.errors %}
+                <p class="text-red-600 text-xs mt-1 font-medium">{{ error }}</p>
+              {% endfor %}
+            </div>
+
+            {# Submit #}
+            <button type="submit"
+                    class="w-full bg-gradient-to-r from-[#022818] to-[#1a3e2c] text-white py-4 px-6 rounded-xl font-bold text-lg hover:shadow-lg transition-all active:scale-95 duration-200 flex items-center justify-center gap-2 group font-['Manrope']">
+              <span>Secure Scholar Login</span>
+              <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            </button>
+          </form>
+        </div>
+
+        {# School Admin CTA #}
+        <div class="mt-8 p-6 bg-[#fecf44]/10 border-l-4 border-[#755b00] rounded-lg flex items-center justify-between gap-4">
+          <div class="flex-1">
+            <p class="text-[#725800] text-sm font-medium leading-relaxed">
+              <strong class="text-[#755b00]">Administrative Access?</strong><br/>
+              For school administrators and education partners.
+            </p>
+          </div>
+          <a class="bg-[#fecf44] text-[#725800] px-4 py-2 rounded-lg font-bold text-xs whitespace-nowrap hover:bg-[#ffdf90] transition-colors"
+             href="{{ url_for('auth.school_login') }}">
+            Portal Login
+          </a>
+        </div>
+
+        {# Footer links #}
+        <div class="mt-8 text-center space-y-2 text-sm text-[#414843] font-['Inter']">
+          <p>New to SESA? <a href="{{ url_for('auth.signup') }}" class="font-semibold text-[#022818] hover:text-[#755b00]">Create an account</a></p>
+        </div>
+
+        {# Trust badges #}
+        <div class="mt-10 flex items-center justify-center gap-8 opacity-40 grayscale hover:grayscale-0 transition-all">
+          <div class="flex flex-col items-center">
+            <span class="material-symbols-outlined text-3xl mb-1">verified_user</span>
+            <span class="text-[10px] font-bold uppercase tracking-widest font-['Inter']">Secure TLS</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <span class="material-symbols-outlined text-3xl mb-1">policy</span>
+            <span class="text-[10px] font-bold uppercase tracking-widest font-['Inter']">Privacy First</span>
+          </div>
+          <div class="flex flex-col items-center">
+            <span class="material-symbols-outlined text-3xl mb-1">gavel</span>
+            <span class="text-[10px] font-bold uppercase tracking-widest font-['Inter']">Ethical Standard</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bg-[#022818] w-full py-10 px-8 flex flex-col md:flex-row justify-between items-center gap-6">
+    <div class="text-lg font-['Manrope'] font-black text-[#fecf44]">FOPA Diligent</div>
+    <div class="text-white font-['Inter'] text-sm tracking-wide text-center md:text-left">
+      &copy; {{ 2024 }} FOPA Diligent. Scholarly Excellence in Wellbeing.
+    </div>
+    <div class="flex flex-wrap justify-center gap-6">
+      <a class="text-[#dde4de] opacity-80 hover:text-white transition-opacity font-['Inter'] text-sm" href="#">Terms of Service</a>
+      <a class="text-[#dde4de] opacity-80 hover:text-white transition-opacity font-['Inter'] text-sm" href="#">Ethical Standards</a>
+      <a class="text-[#dde4de] opacity-80 hover:text-white transition-opacity font-['Inter'] text-sm" href="{{ url_for('auth.signup') }}">Create Account</a>
+    </div>
+  </footer>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const toggleBtn = document.getElementById('togglePassword');
+const pwField = document.getElementById('passwordField');
+const toggleIcon = document.getElementById('toggleIcon');
+if (toggleBtn && pwField) {
+  toggleBtn.addEventListener('click', () => {
+    const isHidden = pwField.type === 'password';
+    pwField.type = isHidden ? 'text' : 'password';
+    toggleIcon.textContent = isHidden ? 'visibility_off' : 'visibility';
+  });
+}
+document.querySelectorAll('.flash-toast-new').forEach((el, i) => {
+  el.addEventListener('click', () => { el.style.opacity='0'; setTimeout(()=>el.remove(),400); });
+  setTimeout(() => { el.style.transition='opacity 0.4s'; el.style.opacity='0'; setTimeout(()=>el.remove(),400); }, 4000 + i*300);
+});
+</script>
+{% endblock %}

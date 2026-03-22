@@ -1,0 +1,539 @@
+{% extends 'base.html' %}
+{% block title %}Counsellor Application — SESA{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config={darkMode:"class",theme:{extend:{
+    colors:{
+      "secondary":"#755b00","secondary-container":"#fecf44","on-secondary-container":"#725800",
+      "primary-container":"#1a3e2c","tertiary-fixed":"#acf0dd","primary":"#022818",
+      "surface":"#f4fbf4","on-primary":"#ffffff","surface-container-lowest":"#ffffff",
+      "outline":"#727973","outline-variant":"#c1c8c1","surface-container-low":"#eff5ef",
+      "surface-container":"#e9f0e9","surface-container-high":"#e3eae3",
+      "on-surface-variant":"#414843","on-surface":"#161d19","on-background":"#161d19",
+      "on-primary-container":"#83a992","secondary-fixed":"#ffdf90",
+    },
+    fontFamily:{"headline":["Manrope"],"body":["Inter"],"label":["Inter"]},
+    borderRadius:{"DEFAULT":"0.25rem","lg":"1.0rem","xl":"1.5rem","full":"9999px"},
+  }}}
+</script>
+<style>
+  .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;}
+  body{font-family:'Inter',sans-serif;}h1,h2,h3,h4{font-family:'Manrope',sans-serif;}
+  .editorial-gradient{background:linear-gradient(135deg,#022818 0%,#1a3e2c 100%);}
+</style>
+{% endblock %}
+
+{% block full_page %}
+<div class="bg-[#f4fbf4] text-[#161d19] min-h-screen">
+
+  {# ── Header ── #}
+  <header class="bg-[#f4fbf4] sticky top-0 z-50 border-b border-[#e3eae3]">
+    <div class="flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto">
+      <a href="{{ url_for('main.landing') }}" class="text-xl font-extrabold text-[#022818] font-['Manrope'] tracking-tight">FOPA Diligent</a>
+      <div class="flex items-center gap-4">
+        <a class="text-[#414843] text-sm hover:text-[#755b00] transition-colors" href="{{ url_for('auth.login') }}">Student Login</a>
+        <a class="text-[#022818] font-bold text-sm px-4 py-2 bg-[#fecf44] rounded-xl hover:bg-[#ffdf90] transition-all" href="{{ url_for('auth.school_login') }}">School Portal</a>
+      </div>
+    </div>
+  </header>
+
+  {# ── Flash Messages ── #}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="fixed top-20 right-4 z-[100] space-y-2">
+        {% for category, message in messages %}
+          <div class="flash-toast flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium cursor-pointer
+            {% if category in ('error','danger') %}bg-red-50 border border-red-200 text-red-800
+            {% elif category == 'success' %}bg-green-50 border border-green-200 text-green-800
+            {% else %}bg-yellow-50 border border-yellow-200 text-yellow-800{% endif %}" role="alert">
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {# ── Hero ── #}
+  <section class="editorial-gradient py-14 px-6">
+    <div class="max-w-4xl mx-auto">
+      <span class="inline-block text-[#fecf44] font-bold tracking-widest uppercase text-xs mb-3">Counsellor Affiliation Program</span>
+      <h1 class="text-white font-['Manrope'] font-extrabold text-3xl md:text-5xl leading-tight mb-4">
+        Join the SESA Professional Network
+      </h1>
+      <p class="text-[#83a992] text-base max-w-2xl leading-relaxed">
+        Complete your professional credentials to begin your journey as a certified SESA counsellor, connecting students across Ghana with qualified mental health professionals.
+      </p>
+    </div>
+  </section>
+
+  {# ── Main Canvas ── #}
+  <div class="max-w-6xl mx-auto px-4 md:px-6 -mt-10 pb-20">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-7 items-start">
+
+      {# ── Sidebar ── #}
+      <aside class="lg:col-span-3 space-y-5 order-2 lg:order-1 lg:sticky lg:top-24">
+        <div class="bg-[#e9f0e9] p-6 rounded-xl space-y-5">
+          {% for step_num, step_label, step_sub in [('01','Personal Identity','Name & credentials'),('02','Clinical Credentials','Licences & bio'),('03','Review & Submit','Confirm & send')] %}
+          <div class="flex items-center gap-4 counsellor-step-nav" id="nav-{{ loop.index }}"
+               style="{% if loop.index != 1 %}opacity:0.45;{% endif %}">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 font-['Manrope'] transition-all
+              {% if loop.index == 1 %}bg-[#022818] text-white{% else %}bg-[#dde4de] text-[#414843]{% endif %}"
+              id="nav-dot-{{ loop.index }}">{{ step_num }}</div>
+            <div>
+              <p class="text-xs font-bold uppercase tracking-tight {% if loop.index == 1 %}text-[#755b00]{% else %}text-[#727973]{% endif %}" id="nav-status-{{ loop.index }}">
+                {% if loop.index == 1 %}Current{% else %}Pending{% endif %}
+              </p>
+              <p class="text-[#022818] font-semibold text-sm">{{ step_label }}</p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        {# Security badge #}
+        <div class="bg-[#1a3e2c] text-white p-6 rounded-xl">
+          <span class="material-symbols-outlined text-[#acf0dd] mb-2 block" style="font-variation-settings:'FILL' 1;">verified_user</span>
+          <h4 class="font-['Manrope'] font-bold text-base mb-2">Secure Application</h4>
+          <p class="text-[#83a992] text-xs leading-relaxed">Your professional data is encrypted and processed securely according to FOPA Diligent's academic security standards.</p>
+        </div>
+      </aside>
+
+      {# ── Form Canvas ── #}
+      <div class="lg:col-span-9 order-1 lg:order-2">
+        <div class="bg-white rounded-xl p-7 md:p-10 shadow-[0_40px_60px_rgba(22,29,25,0.04)] border border-[#c1c8c1]/10">
+
+          <form method="POST" action="{{ url_for('counsellor_signup.counsellor_apply') }}" novalidate id="counsellor-form" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+
+            {# ── Step 1: Personal Details ── #}
+            <div id="step-1" class="space-y-8">
+              <div class="border-l-4 border-[#755b00] pl-5">
+                <h2 class="font-['Manrope'] font-extrabold text-2xl text-[#022818]">Personal Identity</h2>
+                <p class="text-[#414843] text-sm mt-1" id="step-subtitle">Provide your legal and professional identification details.</p>
+              </div>
+
+              {# Name row #}
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div class="space-y-1.5">
+                  <label class="text-xs font-bold text-[#022818] uppercase tracking-wider">{{ form.fname.label.text }} <span class="text-[#755b00]">•</span></label>
+                  {{ form.fname(
+                      class="w-full bg-[#e3eae3] border-none rounded-lg px-4 py-3 focus:bg-white focus:ring-2 focus:ring-[#022818]/20 transition-all text-[#161d19] placeholder-[#727973]/60" ~ (" ring-2 ring-red-400" if form.fname.errors else ""),
+                      placeholder="First name", autocomplete="given-name"
+                  ) }}
+                  {% for e in form.fname.errors %}<p class="text-red-600 text-xs mt-1">{{ e }}</p>{% endfor %}
+                </div>
+                <div class="space-y-1.5">
+                  <label class="text-xs font-bold text-[#022818] uppercase tracking-wider">{{ form.lname.label.text }} <span class="text-[#755b00]">•</span></label>
+                  {{ form.lname(
+                      class="w-full bg-[#e3eae3] border-none rounded-lg px-4 py-3 focus:bg-white focus:ring-2 focus:ring-[#022818]/20 transition-all text-[#161d19] placeholder-[#727973]/60" ~ (" ring-2 ring-red-400" if form.lname.errors else ""),
+                      placeholder="Last name", autocomplete="family-name"
+                  ) }}
+                  {% for e in form.lname.errors %}<p class="text-red-600 text-xs mt-1">{{ e }}</p>{% endfor %}
+                </div>
+              </div>
+
+              {# Email #}
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-[#022818] uppercase tracking-wider">{{ form.email.label.text }} <span class="text-[#755b00]">•</span></label>
+                <div class="relative">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#727973] material-symbols-outlined text-lg">mail</span>
+                  {{ form.email(
+                      class="w-full pl-11 pr-4 bg-[#e3eae3] border-none rounded-lg px-4 py-3 focus:bg-white focus:ring-2 focus:ring-[#022818]/20 transition-all text-[#161d19] placeholder-[#727973]/60" ~ (" ring-2 ring-red-400" if form.email.errors else ""),
+                      placeholder="your@email.com", autocomplete="email"
+                  ) }}
+                </div>
+                {% for e in form.email.errors %}<p class="text-red-600 text-xs mt-1">{{ e }}</p>{% endfor %}
+              </div>
+
+              {# Username & Phone row #}
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div class="space-y-1.5">
+                  <label class="text-xs font-bold text-[#022818] uppercase tracking-wider">{{ form.username.label.text }} <span class="text-[#755b00]">•</span></label>
+                  {{ form.username(
+                      class="w-full bg-[#e3eae3] border-none rounded-lg px-4 py-3 focus:bg-white focus:ring-2 focus:ring-[#022818]/20 transition-all text-[#161d19] placeholder-[#727973]/60" ~ (" ring-2 ring-red-400" if form.username.errors else ""),
+                      placeholder="Choose a username", autocomplete="username"
+                  ) }}
+                  {% for e in form.username.errors %}<p class="text-red-600 text-xs mt-1">{{ e }}</p>{% endfor %}
+                </div>
+                <div class="space-y-1.5">
+                  <label class="text-xs font-bold text-[#022818] uppercase tracking-wider">{{ form.phone.label.text }} <span class="text-[#755b00]">•</span></label>
+                  {{ form.phone(
+                      class="w-full bg-[#e3eae3] border-none rounded-lg px-4 py-3 focus:bg-white focus:ring-2 focus:ring-[#022818]/20 transition-all text-[#161d19] placeholder-[#727973]/60" ~ (" ring-2 ring-red-400" if form.phone.errors else ""),
+                      placeholder="+233 XX XXX XXXX", autocomplete="tel"
+                  ) }}
+                  {% for e in form.phone.errors %}<p class="text-red-600 text-xs mt-1">{{ e }}</p>{% endfor %}
+                </div>
+              </div>
+
+              {# Password #}
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-[#022818] uppercase tracking-wider">{{ form.password.label.text }} <span class="text-[#755b00]">•</span></label>
+                <div class="relative">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#727973] material-symbols-outlined text-lg">lock</span>
+                  {{ form.password(
+                      id="password-field",
+                      class="w-full pl-11 pr-11 bg-[#e3eae3] border-none rounded-lg py-3 focus:bg-white focus:ring-2 focus:ring-[#022818]/20 transition-all text-[#161d19]" ~ (" ring-2 ring-red-400" if form.password.errors else ""),
+                      placeholder="Min. 8 characters", autocomplete="new-password"
+                  ) }}
+                  <button type="button" onclick="togglePassword()"
+                          class="absolute right-3 top-1/2 -translate-y-1/2 text-[#727973] hover:text-[#022818]">
+                    <span class="material-symbols-outlined text-lg" id="pw-eye-icon">visibility</span>
+                  </button>
+                </div>
+                {% for e in form.password.errors %}<p class="text-red-600 text-xs mt-1">{{ e }}</p>{% endfor %}
+              </div>
+
+              {# Profile photo #}
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-[#022818] uppercase tracking-wider">{{ form.photo.label.text }}</label>
+                <label class="flex items-center gap-5 p-5 bg-[#e9f0e9] rounded-xl cursor-pointer hover:bg-[#e3eae3] transition-colors" id="photoZone" for="{{ form.photo.id }}">
+                  <div class="w-14 h-14 rounded-full bg-[#dde4de] flex items-center justify-center overflow-hidden flex-shrink-0">
+                    <span class="material-symbols-outlined text-[#727973] text-3xl" id="photoIconEl">person</span>
+                    <img id="photoImg" class="hidden w-full h-full object-cover" alt="Profile preview">
+                  </div>
+                  <div>
+                    <p class="font-semibold text-[#022818] text-sm" id="photoCtaText">Upload a profile photo</p>
+                    <p class="text-xs text-[#727973]">Optional · JPG, PNG or WEBP · Max 2MB</p>
+                  </div>
+                  {{ form.photo(class="hidden", accept="image/jpeg,image/png,image/webp", id=form.photo.id) }}
+                </label>
+                {% for e in form.photo.errors %}<p class="text-red-600 text-xs mt-1">{{ e }}</p>{% endfor %}
+              </div>
+
+              <div class="pt-4 flex justify-end">
+                <button type="button" onclick="goToStep(2)"
+                        class="bg-[#fecf44] text-[#241a00] px-8 py-3.5 rounded-xl font-['Manrope'] font-bold text-base flex items-center gap-2 hover:scale-105 active:scale-95 transition-transform">
+                  Continue to Credentials
+                  <span class="material-symbols-outlined">arrow_forward</span>
+                </button>
+              </div>
+
+              <div class="text-center text-sm text-[#414843]">
+                Already applied? <a href="{{ url_for('auth.login') }}" class="font-semibold text-[#022818] hover:text-[#755b00]">Sign in here</a>
+              </div>
+            </div>
+
+            {# ── Step 2: Credentials ── #}
+            <div id="step-2" class="hidden space-y-8">
+              <div class="border-l-4 border-[#755b00] pl-5">
+                <h2 class="font-['Manrope'] font-extrabold text-2xl text-[#022818]">Clinical Credentials</h2>
+                <p class="text-[#414843] text-sm mt-1">Verify your standing with the Ghana Psychology Council and affiliated bodies.</p>
+              </div>
+
+              {# GPC & GACC #}
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div class="bg-[#eff5ef] p-5 rounded-xl border-l-4 border-[#022818] space-y-3">
+                  <h3 class="font-bold text-[#022818] text-sm font-['Manrope']">GPC Registration</h3>
+                  <div class="space-y-1.5">
+                    <label class="text-xs text-[#727973] uppercase tracking-wider font-semibold">{{ form.gpc_number.label.text }}</label>
+                    {{ form.gpc_number(
+                        class="w-full bg-white border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#022818]/20 transition-all text-[#161d19] placeholder-[#727973]/60 text-sm",
+                        placeholder="GPC-XXXX"
+                    ) }}
+                    <p class="text-xs text-[#727973]">Optional</p>
+                  </div>
+                </div>
+                <div class="bg-[#eff5ef] p-5 rounded-xl border-l-4 border-[#755b00] space-y-3">
+                  <h3 class="font-bold text-[#022818] text-sm font-['Manrope']">GACC Certification</h3>
+                  <div class="space-y-1.5">
+                    <label class="text-xs text-[#727973] uppercase tracking-wider font-semibold">{{ form.gacc_number.label.text }}</label>
+                    {{ form.gacc_number(
+                        class="w-full bg-white border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#022818]/20 transition-all text-[#161d19] placeholder-[#727973]/60 text-sm",
+                        placeholder="GACC-XXXX"
+                    ) }}
+                    <p class="text-xs text-[#727973]">Optional</p>
+                  </div>
+                </div>
+              </div>
+
+              {# Ghana Card & Experience #}
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div class="space-y-1.5">
+                  <label class="text-xs font-bold text-[#022818] uppercase tracking-wider">{{ form.ghana_card_number.label.text }} <span class="text-[#755b00]">•</span></label>
+                  {{ form.ghana_card_number(
+                      class="w-full bg-[#e3eae3] border-none rounded-lg px-4 py-3 focus:bg-white focus:ring-2 focus:ring-[#022818]/20 transition-all text-[#161d19] placeholder-[#727973]/60" ~ (" ring-2 ring-red-400" if form.ghana_card_number.errors else ""),
+                      placeholder="GHA-XXXXXXXXX-X"
+                  ) }}
+                  {% for e in form.ghana_card_number.errors %}<p class="text-red-600 text-xs mt-1">{{ e }}</p>{% endfor %}
+                </div>
+                <div class="space-y-1.5">
+                  <label class="text-xs font-bold text-[#022818] uppercase tracking-wider">{{ form.years_experience.label.text }} <span class="text-[#755b00]">•</span></label>
+                  {{ form.years_experience(
+                      class="w-full bg-[#e3eae3] border-none rounded-lg px-4 py-3 focus:bg-white focus:ring-2 focus:ring-[#022818]/20 transition-all text-[#161d19] placeholder-[#727973]/60" ~ (" ring-2 ring-red-400" if form.years_experience.errors else ""),
+                      placeholder="e.g. 5"
+                  ) }}
+                  {% for e in form.years_experience.errors %}<p class="text-red-600 text-xs mt-1">{{ e }}</p>{% endfor %}
+                </div>
+              </div>
+
+              {# Specialisations #}
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-[#022818] uppercase tracking-wider">{{ form.specialisations.label.text }} <span class="text-[#755b00]">•</span></label>
+                {{ form.specialisations(
+                    class="w-full bg-[#e3eae3] border-none rounded-lg px-4 py-3 focus:bg-white focus:ring-2 focus:ring-[#022818]/20 transition-all text-[#161d19] placeholder-[#727973]/60" ~ (" ring-2 ring-red-400" if form.specialisations.errors else ""),
+                    placeholder="e.g. Anxiety, Depression, Trauma, Adolescent Counselling"
+                ) }}
+                <p class="text-xs text-[#727973]">Separate multiple specialisations with commas</p>
+                {% for e in form.specialisations.errors %}<p class="text-red-600 text-xs mt-1">{{ e }}</p>{% endfor %}
+              </div>
+
+              {# Bio #}
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-[#022818] uppercase tracking-wider">{{ form.bio.label.text }} <span class="text-[#755b00]">•</span></label>
+                {{ form.bio(
+                    id="bio-field",
+                    class="w-full bg-[#e3eae3] border-none rounded-lg px-4 py-3 focus:bg-white focus:ring-2 focus:ring-[#022818]/20 transition-all text-[#161d19] placeholder-[#727973]/60" ~ (" ring-2 ring-red-400" if form.bio.errors else ""),
+                    rows=4,
+                    placeholder="Tell schools about your background, approach, and experience (minimum 50 characters)…",
+                    oninput="updateCharCount()"
+                ) }}
+                <div class="flex justify-between items-center">
+                  <p class="text-xs text-[#727973]">Minimum 50 characters</p>
+                  <p class="text-xs text-[#727973]"><span id="char-count">0</span> / 1000</p>
+                </div>
+                {% for e in form.bio.errors %}<p class="text-red-600 text-xs mt-1">{{ e }}</p>{% endfor %}
+              </div>
+
+              <div class="flex gap-3 pt-4">
+                <button type="button" onclick="goToStep(1)"
+                        class="flex-shrink-0 px-5 py-3 border-2 border-[#e3eae3] rounded-xl text-[#414843] font-bold text-sm hover:border-[#022818] transition-colors flex items-center gap-1">
+                  <span class="material-symbols-outlined text-lg">arrow_back</span> Back
+                </button>
+                <button type="button" onclick="goToStep(3)"
+                        class="flex-1 bg-[#fecf44] text-[#241a00] py-3 rounded-xl font-['Manrope'] font-bold flex items-center justify-center gap-2 group hover:scale-105 active:scale-95 transition-transform">
+                  <span>Continue to Review</span>
+                  <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                </button>
+              </div>
+            </div>
+
+            {# ── Step 3: Review & Submit ── #}
+            <div id="step-3" class="hidden space-y-8">
+              <div class="border-l-4 border-[#755b00] pl-5">
+                <h2 class="font-['Manrope'] font-extrabold text-2xl text-[#022818]">Review &amp; Submit</h2>
+                <p class="text-[#414843] text-sm mt-1">Please review your details before submitting your application.</p>
+              </div>
+
+              <div class="bg-[#e9f0e9] rounded-xl overflow-hidden">
+                <div class="px-5 py-3 bg-[#022818] text-white text-xs font-bold uppercase tracking-wider">Personal Details</div>
+                <div class="divide-y divide-[#dde4de]">
+                  {% for rev_id, rev_label in [('rev-name','Name'),('rev-email','Email'),('rev-username','Username'),('rev-phone','Phone')] %}
+                  <div class="flex justify-between items-center px-5 py-3">
+                    <span class="text-xs font-bold text-[#727973] uppercase">{{ rev_label }}</span>
+                    <span class="text-sm font-semibold text-[#022818] text-right max-w-[60%] break-words" id="{{ rev_id }}">—</span>
+                  </div>
+                  {% endfor %}
+                </div>
+                <div class="px-5 py-3 bg-[#022818] text-white text-xs font-bold uppercase tracking-wider">Professional Details</div>
+                <div class="divide-y divide-[#dde4de]">
+                  {% for rev_id, rev_label in [('rev-gpc','GPC Number'),('rev-gacc','GACC Number'),('rev-card','Ghana Card'),('rev-exp','Experience'),('rev-specs','Specialisations')] %}
+                  <div class="flex justify-between items-center px-5 py-3">
+                    <span class="text-xs font-bold text-[#727973] uppercase">{{ rev_label }}</span>
+                    <span class="text-sm font-semibold text-[#022818] text-right max-w-[60%] break-words" id="{{ rev_id }}">—</span>
+                  </div>
+                  {% endfor %}
+                  <div class="px-5 py-3">
+                    <span class="text-xs font-bold text-[#727973] uppercase block mb-1">Bio</span>
+                    <p class="text-sm text-[#414843] leading-relaxed" id="rev-bio">—</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-3 p-5 bg-[#fecf44]/15 border border-[#fecf44]/40 rounded-xl">
+                <span class="material-symbols-outlined text-[#755b00] flex-shrink-0" style="font-variation-settings:'FILL' 1;">info</span>
+                <p class="text-sm text-[#725800] leading-relaxed">
+                  By submitting, you confirm that all academic and professional credentials provided are authentic and currently in good standing. False declarations may result in permanent disqualification.
+                </p>
+              </div>
+
+              <div class="flex gap-3">
+                <button type="button" onclick="goToStep(2)"
+                        class="flex-shrink-0 px-5 py-3 border-2 border-[#e3eae3] rounded-xl text-[#414843] font-bold text-sm hover:border-[#022818] transition-colors flex items-center gap-1">
+                  <span class="material-symbols-outlined text-lg">arrow_back</span> Back
+                </button>
+                <button type="submit"
+                        class="flex-1 bg-gradient-to-r from-[#022818] to-[#1a3e2c] text-white py-3.5 rounded-xl font-['Manrope'] font-bold flex items-center justify-center gap-2 hover:shadow-lg transition-all active:scale-95">
+                  <span class="material-symbols-outlined">send</span>
+                  Submit Application
+                </button>
+              </div>
+            </div>
+
+          </form>
+        </div>
+
+        {# Insight Module #}
+        <div class="mt-6 bg-[#1a3e2c] rounded-xl p-7 flex flex-col md:flex-row items-center gap-7">
+          <div class="flex-1">
+            <h5 class="text-[#acf0dd] font-['Manrope'] font-bold text-lg mb-2">The Diligent Standard</h5>
+            <p class="text-[#83a992] text-sm leading-relaxed">
+              Our vetting process involves a comprehensive review of clinical history and professional contributions. Verified counsellors gain access to the Diligent Heritage network and exclusive school consultancy opportunities.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="bg-[#022818] w-full py-10 px-8 flex flex-col md:flex-row justify-between items-center gap-4">
+    <div class="text-lg font-['Manrope'] font-black text-[#fecf44]">FOPA Diligent</div>
+    <div class="text-white font-['Inter'] text-sm">&copy; 2024 FOPA Diligent. Scholarly Excellence in Wellbeing.</div>
+    <div class="flex gap-6">
+      <a class="text-[#dde4de] opacity-80 hover:text-white text-sm" href="#">Terms</a>
+      <a class="text-[#dde4de] opacity-80 hover:text-white text-sm" href="#">Privacy</a>
+    </div>
+  </footer>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+var currentStep = 1;
+var subtitles = {
+  1: 'Provide your legal and professional identification details.',
+  2: 'Verify your standing with the Ghana Psychology Council.',
+  3: 'Review your information and submit your application.'
+};
+
+function goToStep(n) {
+  if (n > currentStep && !validateStep(currentStep)) return;
+  document.getElementById('step-' + currentStep).classList.add('hidden');
+  document.getElementById('step-' + n).classList.remove('hidden');
+  if (n === 3) populateReview();
+  currentStep = n;
+  updateNav();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateNav() {
+  for (var i = 1; i <= 3; i++) {
+    var dot = document.getElementById('nav-dot-' + i);
+    var status = document.getElementById('nav-status-' + i);
+    var nav = document.getElementById('nav-' + i);
+    if (!dot || !status || !nav) continue;
+    nav.style.opacity = i <= currentStep ? '1' : '0.45';
+    if (i < currentStep) {
+      dot.className = dot.className.replace(/bg-\S+|text-\S+/g, '').trim() + ' bg-[#022818] text-white';
+      dot.innerHTML = '<span class="material-symbols-outlined text-sm">check</span>';
+      status.textContent = 'Done';
+      status.className = 'text-xs font-bold uppercase tracking-tight text-green-600';
+    } else if (i === currentStep) {
+      dot.className = dot.className.replace(/bg-\S+|text-\S+/g, '').trim() + ' bg-[#022818] text-white';
+      dot.textContent = '0' + i;
+      status.textContent = 'Current';
+      status.className = 'text-xs font-bold uppercase tracking-tight text-[#755b00]';
+    } else {
+      dot.className = dot.className.replace(/bg-\S+|text-\S+/g, '').trim() + ' bg-[#dde4de] text-[#414843]';
+      dot.textContent = '0' + i;
+      status.textContent = 'Pending';
+      status.className = 'text-xs font-bold uppercase tracking-tight text-[#727973]';
+    }
+  }
+}
+
+function validateStep(step) {
+  var ok = true;
+  var required = step === 1
+    ? ['fname','lname','email','username','phone','password']
+    : step === 2
+    ? ['ghana_card_number','years_experience','specialisations','bio']
+    : [];
+
+  required.forEach(function(name) {
+    var el = document.querySelector('[name="' + name + '"]');
+    if (!el) return;
+    el.parentNode.querySelectorAll('.step-error').forEach(function(e){ e.remove(); });
+    el.classList.remove('ring-2','ring-red-400');
+    if (!el.value.trim()) {
+      el.classList.add('ring-2','ring-red-400');
+      var err = document.createElement('p');
+      err.className = 'text-red-600 text-xs mt-1 step-error';
+      err.textContent = 'This field is required.';
+      el.closest('div').appendChild(err);
+      ok = false;
+    }
+  });
+
+  if (step === 1) {
+    var emailEl = document.querySelector('[name="email"]');
+    if (emailEl && emailEl.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailEl.value)) {
+      emailEl.classList.add('ring-2','ring-red-400');
+      ok = false;
+    }
+    var pwEl = document.querySelector('[name="password"]');
+    if (pwEl && pwEl.value && pwEl.value.length < 8) {
+      pwEl.classList.add('ring-2','ring-red-400');
+      ok = false;
+    }
+  }
+  if (step === 2) {
+    var bioEl = document.getElementById('bio-field');
+    if (bioEl && bioEl.value.trim().length < 50) {
+      bioEl.classList.add('ring-2','ring-red-400');
+      ok = false;
+    }
+  }
+  return ok;
+}
+
+function populateReview() {
+  function val(name) {
+    var el = document.querySelector('[name="' + name + '"]');
+    return el && el.value.trim() ? el.value.trim() : '\u2014';
+  }
+  document.getElementById('rev-name').textContent     = val('fname') + ' ' + val('lname');
+  document.getElementById('rev-email').textContent    = val('email');
+  document.getElementById('rev-username').textContent = val('username');
+  document.getElementById('rev-phone').textContent    = val('phone');
+  document.getElementById('rev-gpc').textContent      = val('gpc_number');
+  document.getElementById('rev-gacc').textContent     = val('gacc_number');
+  document.getElementById('rev-card').textContent     = val('ghana_card_number');
+  var exp = val('years_experience');
+  document.getElementById('rev-exp').textContent      = exp !== '\u2014' ? exp + ' year' + (exp === '1' ? '' : 's') : '\u2014';
+  document.getElementById('rev-specs').textContent    = val('specialisations');
+  document.getElementById('rev-bio').textContent      = val('bio');
+}
+
+function updateCharCount() {
+  var bio = document.getElementById('bio-field');
+  if (bio) document.getElementById('char-count').textContent = bio.value.length;
+}
+
+function togglePassword() {
+  var pw = document.getElementById('password-field');
+  var icon = document.getElementById('pw-eye-icon');
+  if (pw) {
+    pw.type = pw.type === 'password' ? 'text' : 'password';
+    icon.textContent = pw.type === 'password' ? 'visibility' : 'visibility_off';
+  }
+}
+
+var photoInput = document.getElementById('{{ form.photo.id }}');
+if (photoInput) {
+  photoInput.addEventListener('change', function() {
+    var file = photoInput.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var img = document.getElementById('photoImg');
+      var icon = document.getElementById('photoIconEl');
+      img.src = e.target.result;
+      img.classList.remove('hidden');
+      icon.style.display = 'none';
+      document.getElementById('photoCtaText').textContent = file.name;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+document.querySelectorAll('.flash-toast').forEach(function(el, i) {
+  el.addEventListener('click', function() { el.style.opacity='0'; setTimeout(function(){el.remove();},400); });
+  setTimeout(function() { el.style.transition='opacity 0.4s'; el.style.opacity='0'; setTimeout(function(){el.remove();},400); }, 4000 + i*300);
+});
+
+updateNav();
+</script>
+{% endblock %}

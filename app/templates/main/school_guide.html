@@ -1,8 +1,7 @@
 {% extends 'base.html' %}
-{% block title %}School Guide{% endblock %}
+{% block title %}School Guide — SESA{% endblock %}
 
 {% block full_page %}
-
 <div class="app-layout">
 
   {# ── Navbar ── #}
@@ -14,40 +13,44 @@
       </a>
       <ul class="navbar-links">
         <a href="{{ url_for('main.school_dashboard', school_id=session.get('school_id', 0)) }}" class="btn btn-sm btn-ghost">← Back to Dashboard</a>
-        <a href="{{ url_for('auth.school_login') }}" class="btn btn-sm btn-danger">Logout</a>
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-danger">Logout</a>
       </ul>
     </div>
   </nav>
 
   <main style="overflow-x:hidden; width:100%; max-width:100vw;">
+
     {# ── Hero ── #}
-    <div class="container-md" style="padding-bottom: 60px; max-width: 100%; overflow-x: hidden;">
-      <div class="page-context">
-        <p style="font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--green-600); margin-bottom:4px;">
+    <div style="background:linear-gradient(135deg, var(--green-800), var(--green-700)); padding:40px 24px 56px;">
+      <div class="container-md">
+        <p style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.12em; color:var(--gold-300, #fcd34d); margin-bottom:8px;">
           <i class="fa-solid fa-book-open"></i> &nbsp;SESA School Guide
         </p>
-        <h1>Getting Started with SESA</h1>
-        <p>Everything you need to register your school, upload students, and get assessments running.</p>
+        <h1 style="font-family:var(--font-display); font-size:clamp(1.6rem,3vw,2.2rem); color:#fff; margin-bottom:10px;">Getting Started with SESA</h1>
+        <p style="color:rgba(255,255,255,.7); font-size:0.95rem; max-width:520px; line-height:1.65; margin:0;">
+          Everything you need to register your school, upload students, and get assessments running.
+        </p>
       </div>
+    </div>
+
+    <div class="container-md" style="padding-bottom:80px; max-width:100%; overflow-x:hidden; margin-top:-20px;">
 
       {# ── Quick Nav ── #}
-      <div class="guide-nav">
-        <a href="#registration" class="guide-nav-item">
-          <i class="fa-solid fa-school"></i>
-          <span>School Registration</span>
+      <div style="background:#fff; border-radius:var(--radius-lg); box-shadow:var(--shadow-md); padding:6px; display:flex; gap:4px; flex-wrap:wrap; margin-bottom:36px;">
+        {% for anchor, icon, label in [
+          ('#registration', 'fa-school',         'School Registration'),
+          ('#upload',       'fa-file-excel',      'Excel Upload'),
+          ('#code',         'fa-qrcode',          'Join by Code'),
+          ('#troubleshooting','fa-circle-question','Troubleshooting')
+        ] %}
+        <a href="{{ anchor }}"
+           style="display:flex; align-items:center; gap:8px; padding:10px 16px; border-radius:var(--radius-md); background:var(--ivory); color:var(--green-800); font-size:0.82rem; font-weight:600; text-decoration:none; flex:1; min-width:140px; transition:background 0.2s, color 0.2s;"
+           onmouseover="this.style.background='var(--green-800)'; this.style.color='#fff';"
+           onmouseout="this.style.background='var(--ivory)'; this.style.color='var(--green-800)';">
+          <i class="fa-solid {{ icon }}" style="width:14px;"></i>
+          <span>{{ label }}</span>
         </a>
-        <a href="#upload" class="guide-nav-item">
-          <i class="fa-solid fa-file-excel"></i>
-          <span>Excel Upload</span>
-        </a>
-        <a href="#code" class="guide-nav-item">
-          <i class="fa-solid fa-qrcode"></i>
-          <span>Join by Code</span>
-        </a>
-        <a href="#troubleshooting" class="guide-nav-item">
-          <i class="fa-solid fa-circle-question"></i>
-          <span>Troubleshooting</span>
-        </a>
+        {% endfor %}
       </div>
 
       {# ══════════════════════════════════════════════════════
@@ -106,7 +109,7 @@
           </div>
         </div>
 
-        {# Download button #}
+        {# Download box #}
         <div class="guide-download-box">
           <div>
             <strong>Download the official template</strong>
@@ -182,7 +185,6 @@
           </table>
         </div>
 
-        {# How usernames work #}
         <div class="guide-info-box">
           <i class="fa-solid fa-circle-info"></i>
           <div>
@@ -191,7 +193,6 @@
           </div>
         </div>
 
-        {# Step by step #}
         <h3 class="guide-subsection-title">Step-by-Step Upload</h3>
         <div class="guide-steps">
           <div class="guide-step">
@@ -261,7 +262,7 @@
           <div class="guide-method-card">
             <div class="guide-method-icon"><i class="fa-solid fa-qrcode"></i></div>
             <h3>QR Code</h3>
-            <p>Your dashboard also shows a <strong>QR Code</strong> that students can scan with their phone. This takes them directly to the sign-up page pre-linked to your school — no code typing required. Print it and display it in your school.</p>
+            <p>Your dashboard also shows a <strong>QR Code</strong> that students can scan with their phone. This takes them directly to the sign-up page pre-linked to your school. Print it and display it in your school notice board.</p>
           </div>
         </div>
 
@@ -338,47 +339,51 @@
     </div>{# end container #}
 
     {# ── Final CTA ── #}
-    <div style="text-align: center; background: linear-gradient(135deg, var(--green-800), var(--green-700)); padding: 48px 24px;">
-  <div style="color: var(--gold-200); font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 10px;">
-    <i class="fa-solid fa-download"></i> &nbsp;Ready to get started?
-  </div>
-  <h2 style="font-family: var(--font-display); color: #fff; font-size: 1.4rem; margin-bottom: 10px;">Download the Student Upload Template</h2>
-  <p style="color: rgba(255,255,255,.7); font-size: 0.9rem; margin-bottom: 24px; max-width: 480px; margin-left: auto; margin-right: auto;">
-    Fill it in with your student data and upload it from your school dashboard to create all accounts at once.
-  </p>
-  <a href="{{ url_for('static', filename='downloads/SESA_Student_Upload_Template.xlsx') }}" class="btn btn-gold btn-lg" download>
-    <i class="fa-solid fa-file-excel"></i> Download Template (.xlsx)
-  </a>
-  <p style="margin-top: 16px;">
-    <a href="{{ url_for('main.school_dashboard', school_id=session.get('school_id', 0)) }}" style="color: rgba(255,255,255,.6); font-size: 0.85rem;">
-      ← Back to Dashboard
-    </a>
-    </p>
-  </div>
-{% set school_id = session.get('school_id') %}
-{% if school_id %}
-<nav class="bottom-tab-bar" aria-label="School admin navigation">
-  <a href="{{ url_for('main.school_dashboard', school_id=school_id) }}"
-     class="tab-item {% if request.endpoint == 'main.school_dashboard' %}active{% endif %}">
-    <i class="fa-solid fa-gauge tab-icon"></i><span class="tab-label">Dashboard</span>
-  </a>
-  <a href="{{ url_for('main.school_students', school_id=school_id) }}"
-     class="tab-item {% if request.endpoint == 'main.school_students' %}active{% endif %}">
-    <i class="fa-solid fa-users tab-icon"></i><span class="tab-label">Students</span>
-  </a>
-  <a href="{{ url_for('main.school_results', school_id=school_id) }}"
-     class="tab-item {% if request.endpoint == 'main.school_results' %}active{% endif %}">
-    <i class="fa-solid fa-clipboard-list tab-icon"></i><span class="tab-label">Results</span>
-  </a>
-  <a href="{{ url_for('main.school_analytics', school_id=school_id) }}"
-     class="tab-item {% if request.endpoint == 'main.school_analytics' %}active{% endif %}">
-    <i class="fa-solid fa-chart-line tab-icon"></i><span class="tab-label">Analytics</span>
-  </a>
-  <a href="{{ url_for('auth.logout') }}" class="tab-item tab-logout">
-    <span class="tab-icon">↩</span><span class="tab-label">Logout</span>
-  </a>
-</nav>
-{% endif %}
+    <div style="background:linear-gradient(135deg, var(--green-800), var(--green-700)); padding:52px 24px; text-align:center;">
+      <p style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.12em; color:var(--gold-300, #fcd34d); margin-bottom:10px;">
+        <i class="fa-solid fa-download"></i> &nbsp;Ready to get started?
+      </p>
+      <h2 style="font-family:var(--font-display); color:#fff; font-size:1.5rem; margin-bottom:10px;">Download the Student Upload Template</h2>
+      <p style="color:rgba(255,255,255,.7); font-size:0.9rem; margin-bottom:28px; max-width:480px; margin-left:auto; margin-right:auto; line-height:1.65;">
+        Fill it in with your student data and upload it from your school dashboard to create all accounts at once.
+      </p>
+      <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+        <a href="{{ url_for('static', filename='downloads/SESA_Student_Upload_Template.xlsx') }}" class="btn btn-gold btn-lg" download>
+          <i class="fa-solid fa-file-excel"></i> Download Template (.xlsx)
+        </a>
+        <a href="{{ url_for('main.school_dashboard', school_id=session.get('school_id', 0)) }}"
+           class="btn btn-outline btn-lg" style="color:#fff; border-color:rgba(255,255,255,.4);">
+          ← Back to Dashboard
+        </a>
+      </div>
+    </div>
+
+    {# ── Bottom Tab Bar ── #}
+    {% set school_id = session.get('school_id') %}
+    {% if school_id %}
+    <nav class="bottom-tab-bar" aria-label="School admin navigation">
+      <a href="{{ url_for('main.school_dashboard', school_id=school_id) }}"
+         class="tab-item {% if request.endpoint == 'main.school_dashboard' %}active{% endif %}">
+        <i class="fa-solid fa-gauge tab-icon"></i><span class="tab-label">Dashboard</span>
+      </a>
+      <a href="{{ url_for('main.school_students', school_id=school_id) }}"
+         class="tab-item {% if request.endpoint == 'main.school_students' %}active{% endif %}">
+        <i class="fa-solid fa-users tab-icon"></i><span class="tab-label">Students</span>
+      </a>
+      <a href="{{ url_for('main.school_results', school_id=school_id) }}"
+         class="tab-item {% if request.endpoint == 'main.school_results' %}active{% endif %}">
+        <i class="fa-solid fa-clipboard-list tab-icon"></i><span class="tab-label">Results</span>
+      </a>
+      <a href="{{ url_for('main.school_analytics', school_id=school_id) }}"
+         class="tab-item {% if request.endpoint == 'main.school_analytics' %}active{% endif %}">
+        <i class="fa-solid fa-chart-line tab-icon"></i><span class="tab-label">Analytics</span>
+      </a>
+      <a href="{{ url_for('auth.logout') }}" class="tab-item tab-logout">
+        <span class="tab-icon">↩</span><span class="tab-label">Logout</span>
+      </a>
+    </nav>
+    {% endif %}
+
   </main>
 </div>
 

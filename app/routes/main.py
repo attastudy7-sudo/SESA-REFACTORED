@@ -205,6 +205,7 @@ def school_dashboard(school_id):
             'period': period,
         })
 
+    from app.services.payment_service import is_test_mode
     return render_template(
         'main/school_dashboard.html',
         coverage_counts=coverage_counts,
@@ -217,6 +218,7 @@ def school_dashboard(school_id):
         period=period,
         upload_enabled=school.upload_enabled,
         now=now,
+        test_mode=is_test_mode(),
         paystack_public_key=current_app.config.get('PAYSTACK_PUBLIC_KEY', ''),
         subscription_amount=current_app.config.get('SUBSCRIPTION_AMOUNT', 10000),
         subscription_currency=current_app.config.get('SUBSCRIPTION_CURRENCY', 'GHS'),
@@ -418,6 +420,15 @@ def search_students(school_id):
 @main_bp.route('/school/<int:school_id>/pay/verify')
 @school_login_required
 def verify_payment(school_id):
+    """
+    Verify a Paystack payment callback and activate the school's upload subscription.
+
+    TEST MODE (PAYSTACK_TEST_MODE=True):
+      - The payment_service bypasses the real API and returns a synthetic success.
+      - Amount check is skipped so any test-card transaction goes through cleanly.
+      - Reference replay guard still runs to keep the code path realistic.
+    """
+    from app.services.payment_service import is_test_mode
 
     school = _get_school_from_session()
     if not school or school.id != school_id:
@@ -432,19 +443,21 @@ def verify_payment(school_id):
     try:
         data = verify_paystack_payment(reference)
 
-        expected_amount = current_app.config['SUBSCRIPTION_AMOUNT']
-
         if data['status'] != 'success':
             flash('Payment was not completed successfully.', 'error')
             return redirect(url_for('main.school_dashboard', school_id=school_id))
 
-        if data['amount'] < expected_amount:
-            flash('Payment amount insufficient.', 'error')
-            return redirect(url_for('main.school_dashboard', school_id=school_id))
+        # In live mode only: enforce the expected amount
+        if not is_test_mode():
+            expected_amount = current_app.config.get('SUBSCRIPTION_AMOUNT', 10000)
+            if data['amount'] < expected_amount:
+                flash('Payment amount insufficient.', 'error')
+                return redirect(url_for('main.school_dashboard', school_id=school_id))
 
         # Guard against reference replay — one reference can only activate once
+        # (applies in both modes so we can catch accidental double-submits in testing)
         already_used = School.query.filter_by(paystack_reference=reference).first()
-        if already_used:
+        if already_used and already_used.id != school_id:
             flash('This payment reference has already been used.', 'error')
             return redirect(url_for('main.school_dashboard', school_id=school_id))
 
@@ -457,16 +470,55 @@ def verify_payment(school_id):
         school.payment_date = now
         school.subscription_expires = now + timedelta(days=365)
         db.session.commit()
+
+        mode_label = ' [TEST MODE]' if is_test_mode() else ''
         logger.info(
-            'Payment confirmed | school=%s ref=%s ip=%s',
-            school.school_name, reference, request.remote_addr,
+            'Payment confirmed%s | school=%s ref=%s ip=%s',
+            mode_label, school.school_name, reference, request.remote_addr,
         )
-        flash('Payment confirmed! Upload is now enabled.', 'success')
+        flash('Payment confirmed! Student upload is now active.', 'success')
 
     except Exception as e:
         flash(f'Could not verify payment: {e}', 'error')
 
-    # ✅ IMPORTANT: redirect instead of render
+    return redirect(url_for('main.school_dashboard', school_id=school_id))
+
+
+@main_bp.route('/school/<int:school_id>/pay/test-activate', methods=['POST'])
+@school_login_required
+def test_activate_upload(school_id):
+    """
+    TEST MODE ONLY — instantly activates upload without touching Paystack.
+    Exposed only when PAYSTACK_TEST_MODE=True. Returns 403 in production.
+
+    This lets developers test the full post-activation UX (dashboard unlocks,
+    upload form appears, etc.) without completing a Paystack test transaction.
+    """
+    from app.services.payment_service import is_test_mode
+    from datetime import timedelta
+
+    if not is_test_mode():
+        from flask import abort
+        abort(403)
+
+    school = _get_school_from_session()
+    if not school or school.id != school_id:
+        flash('Session expired.', 'error')
+        return redirect(url_for('auth.school_login'))
+
+    now = datetime.now(timezone.utc)
+    school.subscription_paid = True
+    school.upload_enabled = True
+    school.paystack_reference = f'TEST-{school_id}-{int(now.timestamp())}'
+    school.payment_date = now
+    school.subscription_expires = now + timedelta(days=365)
+    db.session.commit()
+
+    logger.info(
+        'TEST activation | school=%s ip=%s',
+        school.school_name, request.remote_addr,
+    )
+    flash('Test activation complete. Upload is now enabled.', 'success')
     return redirect(url_for('main.school_dashboard', school_id=school_id))
 
 

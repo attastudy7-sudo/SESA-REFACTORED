@@ -46,15 +46,23 @@ class School(db.Model):
         if not self.subscription_paid:
             return False
         if self.subscription_expires is None:
-            return True   # legacy rows with no expiry date — treat as active
-        return datetime.now(timezone.utc) < self.subscription_expires
+            return True
+        now = datetime.now(timezone.utc)
+        expires = self.subscription_expires
+        if expires.tzinfo is None:
+            expires = expires.replace(tzinfo=timezone.utc)
+        return now < expires
 
     @property
     def subscription_days_remaining(self):
         """Integer days left, or None if no expiry set."""
         if not self.subscription_expires:
             return None
-        delta = self.subscription_expires - datetime.now(timezone.utc)
+        now = datetime.now(timezone.utc)
+        expires = self.subscription_expires
+        if expires.tzinfo is None:
+            expires = expires.replace(tzinfo=timezone.utc)
+        delta = expires - now
         return max(delta.days, 0)
 
     # ── Lockout helpers ──────────────────────────────────────────────────────

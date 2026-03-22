@@ -749,6 +749,108 @@ select.form-control { cursor:pointer; }
 .stage-elevated { background:#ffedd5; color:#9a3412; }
 .stage-clinical { background:var(--red-100); color:#7f1d1d; }
 
+/* ─── Recent Results — horizontal scroll cards (home page) ── */
+.recent-results-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.recent-results-scroll::-webkit-scrollbar { display: none; }
+.recent-result-card {
+  flex-shrink: 0;
+  width: 148px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--gray-100);
+  background: var(--white);
+  padding: 12px 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-decoration: none;
+}
+.recent-result-bar {
+  height: 3px;
+  border-radius: 2px;
+  width: 100%;
+  margin-bottom: 2px;
+}
+.recent-result-bar--normal   { background: #10b981; }
+.recent-result-bar--mild     { background: #f59e0b; }
+.recent-result-bar--elevated { background: #f97316; }
+.recent-result-bar--clinical { background: #dc2626; }
+.recent-result-title {
+  font-size: 0.69rem;
+  font-weight: 500;
+  color: var(--gray-600);
+  line-height: 1.35;
+}
+.recent-result-score {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--green-800);
+  line-height: 1;
+}
+.recent-result-score span {
+  font-size: 0.75rem;
+  color: var(--gray-400);
+  font-weight: 400;
+}
+.recent-result-bottom {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-top: 6px;
+  border-top: 1px solid var(--gray-100);
+}
+.recent-result-date { font-size: 0.65rem; color: var(--gray-400); }
+.recent-result-more {
+  flex-shrink: 0;
+  width: 100px;
+  border-radius: var(--radius-lg);
+  border: 1.5px dashed var(--gray-200);
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-decoration: none;
+  color: var(--gray-400);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-align: center;
+  padding: 12px 8px;
+  transition: border-color var(--transition), color var(--transition);
+}
+.recent-result-more:hover { border-color: var(--green-400); color: var(--green-700); }
+.recent-results-hint {
+  font-size: 0.68rem;
+  color: var(--gray-300);
+  margin-top: 5px;
+}
+
+@media (min-width: 768px) {
+  .recent-results-scroll {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+  .recent-result-card {
+    width: calc(25% - 8px);
+  }
+  .recent-result-more {
+    width: calc(25% - 8px);
+    min-height: 130px;
+  }
+  .recent-results-hint {
+    display: none;
+  }
+}
+
 /* ─── Progress Bar ───────────────────────────────────────── */
 .progress-wrap  { display:flex; align-items:center; gap:12px; margin-bottom:24px; }
 .progress-track { flex:1; height:8px; background:var(--gray-100); border-radius:var(--radius-full); overflow:hidden; }
@@ -849,6 +951,73 @@ select.form-control { cursor:pointer; }
   text-transform: uppercase;
   border-top: 1px solid rgba(255,255,255,0.08);
   padding-top: 16px;
+}
+
+.auth-page-brand-tagline {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--gold-300, #fcd34d);
+  margin-bottom: 8px;
+}
+
+.auth-page-brand-headline {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.25;
+  margin: 0 0 12px;
+}
+
+.auth-page-brand-body {
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.65;
+  margin-bottom: 20px;
+}
+
+.auth-page-brand-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.auth-page-brand-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.auth-page-brand-list li i {
+  color: var(--gold-300, #fcd34d);
+  width: 16px;
+  flex-shrink: 0;
+}
+
+.auth-page-brand-info-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.5;
+  margin-top: 16px;
+}
+
+.auth-page-brand-info-box i {
+  color: var(--gold-300, #fcd34d);
+  margin-top: 2px;
+  flex-shrink: 0;
 }
 
 .auth-card {
@@ -1176,43 +1345,219 @@ select.form-control { cursor:pointer; }
 
 /* ─── GES Alignment Banner (landing page) ─────────────────── */
 .ges-banner {
-  background: linear-gradient(135deg, var(--gold-50) 0%, #fef9e7 100%);
-  border-top: 3px solid var(--gold-400);
-  border-bottom: 3px solid var(--gold-400);
-  padding: 32px 24px;
+  background: var(--green-900, #022818);
+  padding: 64px 24px;
   text-align: center;
+  position: relative;
+  overflow: hidden;
 }
-.ges-banner-inner { max-width: 760px; margin: 0 auto; }
+.ges-banner::before {
+  content: '';
+  position: absolute;
+  width: 500px; height: 500px;
+  border-radius: 50%;
+  background: var(--gold-400, #fecf44);
+  opacity: 0.04;
+  top: -200px; right: -150px;
+  pointer-events: none;
+}
+.ges-banner::after {
+  content: '';
+  position: absolute;
+  width: 300px; height: 300px;
+  border-radius: 50%;
+  background: var(--green-600, #1a3e2c);
+  opacity: 0.4;
+  bottom: -120px; left: -80px;
+  pointer-events: none;
+}
+.ges-banner-inner {
+  max-width: 680px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
 .ges-badge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--gold-100);
-  border: 1.5px solid var(--gold-400);
+  background: rgba(254,207,68,.12);
+  border: 1.5px solid rgba(254,207,68,.35);
   border-radius: var(--radius-full);
-  padding: 4px 14px;
-  font-size: 0.75rem;
+  padding: 5px 16px;
+  font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: .08em;
-  color: var(--gold-700);
-  margin-bottom: 14px;
+  letter-spacing: .1em;
+  color: var(--gold-400, #fecf44);
+  margin-bottom: 20px;
 }
 .ges-banner h2 {
   font-family: var(--font-display);
-  font-size: clamp(1.3rem, 3vw, 1.75rem);
-  font-weight: 600;
-  color: var(--green-800);
-  margin-bottom: 10px;
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 16px;
+  line-height: 1.2;
 }
 .ges-banner p {
-  font-size: 0.95rem;
-  color: var(--gray-700);
-  line-height: 1.7;
-  max-width: 600px;
+  font-size: 1rem;
+  color: rgba(255,255,255,.7);
+  line-height: 1.75;
+  max-width: 560px;
   margin: 0 auto;
 }
+.ges-banner-cta {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 32px;
+}
+.ges-banner-cta .btn-outline-white {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 1rem;
+  border: 2px solid rgba(255,255,255,.5);
+  color: #fff;
+  background: rgba(255,255,255,.07);
+  text-decoration: none;
+  transition: background 0.2s, border-color 0.2s;
+}
+.ges-banner-cta .btn-outline-white:hover {
+  background: rgba(255,255,255,.15);
+  border-color: rgba(255,255,255,.8);
+}
+@media (min-width: 768px) {
+  .ges-banner { padding: 90px 40px; }
+}
 .landing-footer strong { color:rgba(255,255,255,.9); }
+
+/* ─── Section helpers ──────────────────────────────────── */
+.section-subtitle {
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--gray-500);
+  max-width: 560px;
+  margin: -30px auto 40px;
+  line-height: 1.65;
+}
+.landing-section { padding: 60px 20px; background: var(--ivory); }
+.landing-section--alt { padding: 60px 20px; background: var(--green-50, #f0faf4); }
+@media (min-width: 768px) {
+  .landing-section, .landing-section--alt { padding: 90px 40px; }
+}
+
+/* feature-item card variant (Invisible Barriers section) */
+.feature-item--card {
+  border-left: 3px solid var(--green-300, #6ee7b7);
+  background: var(--white);
+  text-align: left;
+}
+.feature-item--card .feature-icon { margin: 0 0 14px; }
+
+/* ─── GES Banner CTA ───────────────────────────────────── */
+.ges-banner-cta {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 24px;
+}
+
+/* ─── Assessment 6-Dimensions Grid ────────────────────── */
+.assessment-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+@media (min-width: 540px) {
+  .assessment-grid { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
+}
+.assessment-item {
+  background: var(--white);
+  border-left: 4px solid var(--gold-500, #eab308);
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+  padding: 24px 22px;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+.assessment-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.assessment-item h4 {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--green-800);
+  margin-bottom: 6px;
+}
+.assessment-item p {
+  font-size: 0.85rem;
+  color: var(--gray-500);
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+.assessment-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--gold-700, #a16207);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.assessment-badge i { color: var(--gold-500, #eab308); }
+
+/* ─── Full-width landing footer ───────────────────────── */
+.landing-footer-full {
+  background: var(--green-900, #022818);
+  color: rgba(255,255,255,.65);
+  padding: 60px 24px 40px;
+  font-size: 0.88rem;
+}
+.landing-footer-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 40px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+@media (min-width: 640px) {
+  .landing-footer-grid { grid-template-columns: 2fr 1fr 1fr; gap: 48px; }
+}
+.landing-footer-brand p {
+  font-size: 0.85rem;
+  line-height: 1.65;
+  max-width: 300px;
+  margin-bottom: 10px;
+}
+.landing-footer-copy { font-size: 0.75rem; opacity: 0.6; }
+.landing-footer-disclaimer { font-size: 0.72rem; opacity: 0.45; margin-top: 4px; }
+.landing-footer-col h4 {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gold-400, #fecf44);
+  margin-bottom: 14px;
+}
+.landing-footer-col a,
+.landing-footer-col p {
+  display: block;
+  color: rgba(255,255,255,.65);
+  text-decoration: none;
+  font-size: 0.88rem;
+  margin-bottom: 8px;
+  transition: color 0.2s;
+}
+.landing-footer-col a:hover { color: #fff; }
 
 /* ─── Test / Quiz Pages ──────────────────────────────────── */
 .quiz-layout { min-height:100vh; background:linear-gradient(160deg,var(--green-800) 0%,var(--green-700) 35%,var(--ivory) 35%); padding:0; }

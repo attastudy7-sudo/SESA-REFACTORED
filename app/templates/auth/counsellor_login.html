@@ -9,10 +9,18 @@
         <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="FOPA Logo">
         <span class="auth-page-brand-sesa">SESA</span>
       </div>
-      <div class="auth-page-brand-quote">"Supporting student <em>emotional wellbeing</em> across Ghana's schools."</div>
+      <div class="auth-page-brand-tagline">Counsellor Portal</div>
+      <h2 class="auth-page-brand-headline">Welcome Back, Counsellor.</h2>
+      <p class="auth-page-brand-body">Sign in to access your student dashboard, review referrals, and support your school community.</p>
+      <ul class="auth-page-brand-list">
+        <li><i class="fa-solid fa-brain"></i> View student referrals</li>
+        <li><i class="fa-solid fa-chart-line"></i> Track wellbeing trends</li>
+        <li><i class="fa-solid fa-headset"></i> Connect with administrators</li>
+      </ul>
     </div>
-    <div class="auth-page-brand-org">FOPA DILLIGENT CONSULT</div>
+    <div class="auth-page-brand-org">FOPA DILIGENT CONSULT</div>
   </div>
+
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       <div class="flash-stack" role="status" aria-live="polite">

@@ -94,36 +94,37 @@
   <div class="section">
     <div class="section-head">
       <h2>Recent Results</h2>
+      <a href="{{ url_for('main.results') }}" style="font-size:0.82rem; color:var(--gold-600, #b45309); font-weight:600;">View all →</a>
     </div>
-    <div class="card">
-      <div class="table-wrapper">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Assessment</th>
-              <th>Score</th>
-              <th>Stage</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for r in recent_results %}
-            <tr>
-              <td data-label="Assessment">{{ r.test_type }}</td>
-              <td data-label="Score">{{ r.score }}{% if r.max_score %} / {{ r.max_score }}{% endif %}</td>
-              <td data-label="Stage">
-                {% set s = (r.stage or r.details or 'Unknown') | lower %}
-                <span class="badge {% if 'normal' in s %}stage-normal{% elif 'mild' in s %}stage-mild{% elif 'elevated' in s %}stage-elevated{% elif 'clinical' in s %}stage-clinical{% else %}badge-gray{% endif %}">
-                  {{ r.stage or r.details or 'Unknown' }}
-                </span>
-              </td>
-              <td data-label="Date" style="color: var(--gray-500); font-size: 0.85rem;">{{ r.taken_at.strftime('%d %b %Y') }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+
+    <div class="recent-results-scroll">
+      {% for r in recent_results %}
+        {% set s = (r.stage or r.details or 'unknown') | lower %}
+        {% if 'normal' in s %}{% set bar_mod = 'normal' %}{% set badge_class = 'stage-normal' %}
+        {% elif 'mild' in s %}{% set bar_mod = 'mild' %}{% set badge_class = 'stage-mild' %}
+        {% elif 'elevated' in s %}{% set bar_mod = 'elevated' %}{% set badge_class = 'stage-elevated' %}
+        {% elif 'clinical' in s %}{% set bar_mod = 'clinical' %}{% set badge_class = 'stage-clinical' %}
+        {% else %}{% set bar_mod = 'mild' %}{% set badge_class = 'badge-gray' %}{% endif %}
+
+        <div class="recent-result-card">
+          <div class="recent-result-bar recent-result-bar--{{ bar_mod }}"></div>
+          <div class="recent-result-title">{{ r.test_type }}</div>
+          <div class="recent-result-score">
+            {{ r.score }}{% if r.max_score %}<span> / {{ r.max_score }}</span>{% endif %}
+          </div>
+          <div class="recent-result-bottom">
+            <span class="badge {{ badge_class }}">{{ r.stage or r.details or 'Unknown' }}</span>
+            <span class="recent-result-date">{{ r.taken_at.strftime('%d %b') }}</span>
+          </div>
+        </div>
+      {% endfor %}
+
+      <a href="{{ url_for('main.results') }}" class="recent-result-more">
+        <i class="fa-solid fa-chart-bar" style="font-size:1.1rem; opacity:0.4;"></i>
+        <span>View all<br>results</span>
+      </a>
     </div>
+    <p class="recent-results-hint">← swipe for more</p>
   </div>
   {% endif %}
 

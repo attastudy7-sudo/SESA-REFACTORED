@@ -3,6 +3,95 @@
 
 {% block extra_head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  .results-hero { background: var(--green-800); padding: 20px 20px 32px; margin: -1px; }
+  .results-hero-eye { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--gold-400, #fecf44); margin-bottom: 6px; }
+  .results-hero-title { font-size: 1.5rem; font-weight: 700; font-family: var(--font-display); color: #fff; margin-bottom: 16px; }
+  .results-hero-pills { display: flex; gap: 10px; }
+  .results-hero-pill { flex: 1; background: rgba(255,255,255,.08); border-radius: 10px; padding: 10px 12px; }
+  .results-hero-pill-val { font-size: 1.2rem; font-weight: 700; color: #fff; line-height: 1; }
+  .results-hero-pill-val--stage { font-size: 1rem; }
+  .results-hero-pill-label { font-size: 0.65rem; color: rgba(255,255,255,.5); margin-top: 3px; text-transform: uppercase; letter-spacing: .06em; }
+
+  .results-breakdown-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: 16px 18px;
+    margin: -16px 16px 20px;
+    position: relative;
+    z-index: 2;
+  }
+  .results-breakdown-title { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--gray-400); margin-bottom: 12px; }
+  .results-breakdown-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .results-breakdown-row:last-child { margin-bottom: 0; }
+  .results-breakdown-label { font-size: 0.72rem; font-weight: 600; color: var(--gray-600); width: 56px; flex-shrink: 0; }
+  .results-breakdown-track { flex: 1; height: 7px; background: var(--gray-100); border-radius: 4px; overflow: hidden; }
+  .results-breakdown-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+  .results-breakdown-count { font-size: 0.72rem; font-weight: 700; color: var(--green-800); width: 16px; text-align: right; flex-shrink: 0; }
+
+  .results-group { margin: 0 16px 14px; }
+  .results-group-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .results-group-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .results-group-name { font-size: 0.78rem; font-weight: 600; color: var(--green-800); }
+
+  .results-row { background: var(--white); border-radius: 10px; padding: 11px 13px; display: flex; align-items: center; gap: 10px; margin-bottom: 5px; border-left: 3px solid transparent; }
+  .results-row-date { font-size: 0.68rem; color: var(--gray-400); flex-shrink: 0; width: 44px; }
+  .results-row-score { font-size: 0.95rem; font-weight: 700; color: var(--green-800); flex-shrink: 0; }
+  .results-row-max { font-size: 0.72rem; color: var(--gray-300); font-weight: 400; }
+  .results-row-badge { flex-shrink: 0; margin-left: auto; }
+
+  .results-row--normal   { border-left-color: #10b981; }
+  .results-row--mild     { border-left-color: #f59e0b; }
+  .results-row--elevated { border-left-color: #f97316; }
+  .results-row--clinical { border-left-color: #dc2626; }
+
+  .results-group-dot--normal   { background: #10b981; }
+  .results-group-dot--mild     { background: #f59e0b; }
+  .results-group-dot--elevated { background: #f97316; }
+  .results-group-dot--clinical { background: #dc2626; }
+
+  .results-cta { margin: 4px 16px 20px; background: var(--green-800); border-radius: var(--radius-lg); padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .results-cta-text { font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,.8); }
+  .results-cta-btn { background: var(--gold-400, #fecf44); color: var(--green-900, #022818); font-size: 0.78rem; font-weight: 700; padding: 8px 16px; border-radius: var(--radius-md); text-decoration: none; white-space: nowrap; flex-shrink: 0; }
+
+  /* ── Desktop layout ── */
+  @media (min-width: 1024px) {
+    .results-hero { padding: 40px 0 56px; }
+    .results-hero-inner { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+    .results-hero-title { font-size: 2.2rem; }
+    .results-hero-pills { max-width: 560px; }
+    .results-hero-pill-val { font-size: 1.5rem; }
+
+    .results-body { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+
+    .results-breakdown-card {
+      margin: -24px 0 32px;
+      padding: 22px 24px;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0 32px;
+      align-items: center;
+    }
+    .results-breakdown-title { margin-bottom: 0; white-space: nowrap; }
+    .results-breakdown-rows { display: flex; flex-direction: column; gap: 8px; }
+
+    .results-two-col {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 28px;
+      align-items: start;
+    }
+
+    .results-group { margin: 0 0 14px; }
+    .results-cta { margin: 4px 0 20px; }
+    .results-side-card { margin: 0; }
+
+    .results-breakdown-label { font-size: 0.78rem; width: 70px; }
+    .results-group-name { font-size: 0.85rem; }
+    .results-row { padding: 13px 16px; }
+  }
+</style>
 {% endblock %}
 
 {% block nav_links %}
@@ -14,7 +103,7 @@
   <li><a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a></li>
 {% endblock %}
 
-  {% block drawer_links %}
+{% block drawer_links %}
   <a href="{{ url_for('main.home') }}">Home</a>
   <a href="{{ url_for('main.results') }}">Results</a>
   {% if current_user.is_super_admin %}
@@ -24,103 +113,192 @@
 {% endblock %}
 
 {% block body %}
-<div class="container" style="padding-bottom: 48px;">
-  <div class="page-context">
-    <h1>My Assessment Results</h1>
-    <p>View all your past assessment results and track your progress over time.</p>
-  </div>
-  
+<div style="padding-bottom: 80px;">
+
   {% if results %}
-  <div class="section">
-    <!-- Assessment Completion Summary -->
-    <div class="card" style="margin-bottom: 28px; background: linear-gradient(135deg, var(--green-800), var(--green-700));">
-      <div class="card-body" style="text-align: center; color: #fff; padding: 32px;">
-        <h3 style="font-family: var(--font-display); font-size: 1.1rem; margin-bottom: 16px; color: var(--gold-200);">Assessment Summary</h3>
-        <div style="display: flex; align-items: center; justify-content: center; gap: 24px; flex-wrap: wrap;">
-          <div style="background: rgba(255,255,255,.15); border-radius: 50%; width: 100px; height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-            <span style="font-family: var(--font-display); font-size: 2rem; font-weight: 700;">{{ results | length }}</span>
-            <span style="font-size: 0.72rem; color: rgba(255,255,255,.7); margin-top: 2px;">taken</span>
+
+  {# ── Hero strip ── #}
+  <div class="results-hero">
+    <div class="results-hero-inner">
+      <div class="results-hero-eye">Assessment History</div>
+      <div class="results-hero-title">Your Results</div>
+      <div class="results-hero-pills">
+        <div class="results-hero-pill">
+          <div class="results-hero-pill-val">{{ results | length }}</div>
+          <div class="results-hero-pill-label">Total taken</div>
+        </div>
+        <div class="results-hero-pill">
+          <div class="results-hero-pill-val results-hero-pill-val--stage"
+               style="color:{% if 'normal' in avg_score.stage|lower %}#acf0dd{% elif 'mild' in avg_score.stage|lower %}#fecf44{% elif 'elevated' in avg_score.stage|lower %}#ffb347{% else %}#f87171{% endif %};">
+            {{ avg_score.stage }}
           </div>
-          <div style="text-align: left;">
-            <span class="badge" style="font-size: 0.9rem; padding: 6px 16px; margin-bottom: 8px; background: rgba(255,255,255,.2); color: #fff;">{{ avg_score.stage }}</span>
-            <p style="font-size: 0.95rem; color: rgba(255,255,255,.85); max-width: 320px;">{{ avg_score.message }}</p>
+          <div class="results-hero-pill-label">Overall stage</div>
+        </div>
+        <div class="results-hero-pill">
+          <div class="results-hero-pill-val" style="font-size:0.9rem;">
+            {% if results %}{{ results[0].taken_at.strftime('%d %b') }}{% else %}—{% endif %}
           </div>
+          <div class="results-hero-pill-label">Last assessment</div>
         </div>
       </div>
     </div>
-    
-    <!-- Monthly Progress Chart -->
-    {% if monthly_data and monthly_data|length > 0 %}
-    <div class="card" style="margin-bottom: 28px;">
-      <div class="card-body">
-        <h3 style="font-family: var(--font-display); font-size: 1rem; margin-bottom: 16px; color: var(--green-800);">Monthly Progress</h3>
-        <canvas id="monthlyChart" height="80"></canvas>
-      </div>
-    </div>
+  </div>
+
+  <div class="results-body">
+
+  {# ── Stage breakdown — floats over hero ── #}
+  {% set stage_map = namespace(normal=0, mild=0, elevated=0, clinical=0) %}
+  {% for r in results %}
+    {% set s = (r.stage or r.details or '') | lower %}
+    {% if 'normal' in s %}{% set stage_map.normal = stage_map.normal + 1 %}
+    {% elif 'mild' in s %}{% set stage_map.mild = stage_map.mild + 1 %}
+    {% elif 'elevated' in s %}{% set stage_map.elevated = stage_map.elevated + 1 %}
+    {% elif 'clinical' in s %}{% set stage_map.clinical = stage_map.clinical + 1 %}
     {% endif %}
-    
-    <div class="section-head">
-      <h2>All Results</h2>
-      <p style="font-size: 0.85rem; color: var(--gray-500); width: 100%;">You have taken {{ results|length }} assessment(s).</p>
+  {% endfor %}
+  {% set total = results | length %}
+
+  <div class="results-breakdown-card">
+    <div class="results-breakdown-title">Stage Breakdown</div>
+    <div class="results-breakdown-rows">
+      {% for label, count, color in [
+        ('Normal',   stage_map.normal,   '#10b981'),
+        ('Mild',     stage_map.mild,     '#f59e0b'),
+        ('Elevated', stage_map.elevated, '#f97316'),
+        ('Clinical', stage_map.clinical, '#dc2626')
+      ] %}
+      <div class="results-breakdown-row">
+        <div class="results-breakdown-label">{{ label }}</div>
+        <div class="results-breakdown-track">
+          <div class="results-breakdown-fill" style="width:{{ ((count / total) * 100) | round(0) | int if total > 0 else 0 }}%; background:{{ color }};"></div>
+        </div>
+        <div class="results-breakdown-count">{{ count }}</div>
+      </div>
+      {% endfor %}
     </div>
-    
-    <div class="card">
-      <div class="table-wrapper">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Assessment</th>
-              <th>Score</th>
-              <th>Stage</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for r in results %}
-            <tr>
-              <td data-label="Assessment">{{ r.test_type }}</td>
-              <td data-label="Score">{% if r.max_score %}{{ r.score }} / {{ r.max_score }}{% else %}{{ r.score }}{% endif %}</td>
-              <td data-label="Stage">
-                {% set s = (r.stage or r.details or 'Unknown') | lower %}
-                <span class="badge {% if 'normal' in s %}stage-normal{% elif 'mild' in s %}stage-mild{% elif 'elevated' in s %}stage-elevated{% elif 'clinical' in s %}stage-clinical{% else %}badge-gray{% endif %}">
-                  {{ r.stage or r.details or 'Unknown' }}
-                </span>
-              </td>
-              <td data-label="Date">{{ r.taken_at.strftime('%d %b %Y') }}</td>
-            </tr>
+  </div>
+
+  {# ── Two-column layout ── #}
+  <div class="results-two-col">
+
+    <div>
+
+      {# ── Line chart ── #}
+      {% if monthly_data and monthly_data|length > 0 %}
+      <div style="margin-bottom: 20px;">
+        <div class="card">
+          <div class="card-body">
+            <h3 style="font-family:var(--font-display); font-size:0.95rem; color:var(--green-800); margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+              <i class="fa-solid fa-chart-line" style="color:var(--gold-500);"></i> Monthly Progress
+            </h3>
+            <canvas id="monthlyChart" height="90"></canvas>
+            <p style="font-size:0.72rem; color:var(--gray-400); margin-top:10px;">
+              <span style="display:inline-block; width:12px; height:2px; background:#3d8b58; border-radius:2px; vertical-align:middle; margin-right:4px;"></span>Improving &nbsp;
+              <span style="display:inline-block; width:12px; height:2px; background:#dc2626; border-radius:2px; vertical-align:middle; margin-right:4px;"></span>Needs attention
+            </p>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      {# ── Results grouped by assessment type ── #}
+      <div style="display:flex; justify-content:space-between; align-items:baseline; margin: 0 16px 12px;">
+        <span style="font-size:0.82rem; font-weight:600; color:var(--green-800);">All Results</span>
+        <span style="font-size:0.75rem; color:var(--gray-400);">{{ total }} assessment{{ 's' if total != 1 }}</span>
+      </div>
+
+      {% set seen_types = [] %}
+      {% for r in results %}
+        {% if r.test_type not in seen_types %}
+          {% set _ = seen_types.append(r.test_type) %}
+          {% set s = (r.stage or r.details or 'unknown') | lower %}
+          {% if 'normal' in s %}{% set dot_mod = 'normal' %}
+          {% elif 'mild' in s %}{% set dot_mod = 'mild' %}
+          {% elif 'elevated' in s %}{% set dot_mod = 'elevated' %}
+          {% elif 'clinical' in s %}{% set dot_mod = 'clinical' %}
+          {% else %}{% set dot_mod = 'mild' %}{% endif %}
+
+          <div class="results-group">
+            <div class="results-group-header">
+              <div class="results-group-dot results-group-dot--{{ dot_mod }}"></div>
+              <div class="results-group-name">{{ r.test_type }}</div>
+            </div>
+            {% for attempt in results %}
+              {% if attempt.test_type == r.test_type %}
+                {% set as = (attempt.stage or attempt.details or 'unknown') | lower %}
+                {% if 'normal' in as %}{% set row_mod = 'normal' %}{% set badge_cls = 'stage-normal' %}
+                {% elif 'mild' in as %}{% set row_mod = 'mild' %}{% set badge_cls = 'stage-mild' %}
+                {% elif 'elevated' in as %}{% set row_mod = 'elevated' %}{% set badge_cls = 'stage-elevated' %}
+                {% elif 'clinical' in as %}{% set row_mod = 'clinical' %}{% set badge_cls = 'stage-clinical' %}
+                {% else %}{% set row_mod = 'mild' %}{% set badge_cls = 'badge-gray' %}{% endif %}
+                <div class="results-row results-row--{{ row_mod }}">
+                  <div class="results-row-date">{{ attempt.taken_at.strftime('%d %b') }}</div>
+                  <div class="results-row-score">
+                    {{ attempt.score }}{% if attempt.max_score %}<span class="results-row-max"> / {{ attempt.max_score }}</span>{% endif %}
+                  </div>
+                  <span class="badge {{ badge_cls }} results-row-badge">{{ attempt.stage or attempt.details or 'Unknown' }}</span>
+                </div>
+              {% endif %}
             {% endfor %}
-          </tbody>
-        </table>
+          </div>
+        {% endif %}
+      {% endfor %}
+
+      <div class="results-cta">
+        <div class="results-cta-text">Ready for your next assessment?</div>
+        <a href="{{ url_for('main.home') }}" class="results-cta-btn">Start now →</a>
+      </div>
+
+    </div>
+
+    {# ── Right sidebar: overall wellness ── #}
+    <div>
+      <div class="card results-side-card" style="background:var(--green-800); color:#fff; overflow:hidden; position:relative; margin: 0 16px 16px;">
+        <div class="card-body" style="position:relative; z-index:1;">
+          <span style="background:rgba(254,207,68,.2); color:var(--gold-300, #fcd34d); font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; padding:3px 10px; border-radius:20px; display:inline-block; margin-bottom:12px;">Overall Wellness</span>
+          <div style="font-family:var(--font-display); font-size:1.8rem; font-weight:800; color:var(--gold-300, #fcd34d); margin-bottom:8px;">{{ avg_score.stage }}</div>
+          <p style="font-size:0.85rem; color:rgba(255,255,255,.75); line-height:1.6; margin-bottom:16px;">{{ avg_score.message }}</p>
+          <div style="border-top:1px solid rgba(255,255,255,.1); padding-top:14px;">
+            <a href="{{ url_for('main.home') }}" class="btn btn-gold btn-sm">
+              <i class="fa-solid fa-plus"></i> Take New Assessment
+            </a>
+          </div>
+        </div>
+        <div style="position:absolute; top:-20px; right:-20px; width:100px; height:100px; background:var(--gold-500); opacity:0.1; border-radius:50%;"></div>
       </div>
     </div>
-  </div>
+
+  </div>{# end two-col #}
+  </div>{# end results-body #}
+
   {% else %}
-  <div class="empty-state">
-    <div class="empty-state-icon"><i class="fa-solid fa-clipboard-list" style="color: var(--gray-300);"></i></div>
-    <h3>No Results Yet</h3>
-    <p>You haven't taken any assessments yet. Start by choosing an assessment below.</p>
-    <a href="{{ url_for('main.home') }}" class="btn btn-primary" style="margin-top: 16px;">Take an Assessment</a>
+
+  <div class="container" style="padding-top: 32px;">
+    <div class="empty-state">
+      <div class="empty-state-icon"><i class="fa-solid fa-clipboard-list" style="color: var(--gray-300);"></i></div>
+      <h3>No Results Yet</h3>
+      <p>You haven't taken any assessments yet. Start by choosing one below.</p>
+      <a href="{{ url_for('main.home') }}" class="btn btn-primary" style="margin-top: 16px;">Take an Assessment</a>
+    </div>
   </div>
+
   {% endif %}
 
 </div>
+{% endblock %}
 
-{% if monthly_data and monthly_data|length > 0 %}
 {% block extra_scripts %}
+{% if monthly_data and monthly_data|length > 0 %}
 <script>
 (function() {
   const ctx = document.getElementById('monthlyChart');
   if (!ctx) return;
-
   const data = {{ monthly_data | tojson }};
   const scores = data.map(d => d.average);
-
-  /* Determine segment colours — green if improving (falling), red if worsening (rising) */
   const segmentColors = scores.map(function(val, i) {
     if (i === 0) return '#3d8b58';
     return scores[i] <= scores[i - 1] ? '#3d8b58' : '#dc2626';
   });
-
   new Chart(ctx, {
     type: 'line',
     data: {
@@ -128,16 +306,7 @@
       datasets: [{
         label: 'Average Score (%)',
         data: scores,
-        borderColor: function(context) {
-          const i = context.p1DataIndex;
-          if (i === undefined) return '#3d8b58';
-          return scores[i] <= scores[i - 1] ? '#3d8b58' : '#dc2626';
-        },
-        segment: {
-          borderColor: function(ctx) {
-            return ctx.p1.parsed.y <= ctx.p0.parsed.y ? '#3d8b58' : '#dc2626';
-          }
-        },
+        segment: { borderColor: ctx => ctx.p1.parsed.y <= ctx.p0.parsed.y ? '#3d8b58' : '#dc2626' },
         backgroundColor: 'transparent',
         fill: false,
         tension: 0.3,
@@ -151,33 +320,22 @@
       responsive: true,
       scales: {
         y: {
-          reverse: true,
-          min: 0,
-          max: 100,
-          title: { display: true, text: 'Distress Level (lower on chart = more concern)' },
+          reverse: true, min: 0, max: 100,
+          grid: { color: 'rgba(0,0,0,0.04)' },
           ticks: {
-            callback: function(value) {
-              if (value === 0) return '0% ← better';
-              if (value === 100) return '100% ← concern';
-              return value + '%';
-            }
+            font: { size: 11 },
+            callback: v => v === 0 ? '0% ← better' : v === 100 ? '100% ← concern' : v + '%'
           }
-        }
+        },
+        x: { grid: { display: false }, ticks: { font: { size: 11 } } }
       },
       plugins: {
         legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: function(item) {
-              return 'Score: ' + item.parsed.y + '%';
-            }
-          }
-        }
+        tooltip: { callbacks: { label: item => 'Score: ' + item.parsed.y + '%' } }
       }
     }
   });
 })();
 </script>
-{% endblock %}
 {% endif %}
 {% endblock %}

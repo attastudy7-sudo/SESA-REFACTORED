@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+{% block title %}School Portal{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode:"class",
+    theme:{extend:{
+      colors:{
+        "secondary-fixed-dim":"#efc136","on-secondary":"#ffffff","secondary":"#755b00",
+        "on-secondary-container":"#725800","surface":"#f4fbf4","primary-container":"#1a3e2c",
+        "tertiary-fixed":"#acf0dd","secondary-container":"#fecf44","primary-fixed-dim":"#a8d0b7",
+        "primary-fixed":"#c3ecd2","outline":"#727973","primary":"#022818","error":"#ba1a1a",
+        "background":"#f4fbf4","on-primary":"#ffffff","surface-container-lowest":"#ffffff",
+        "on-primary-container":"#83a992","surface-container-highest":"#dde4de",
+        "outline-variant":"#c1c8c1","secondary-fixed":"#ffdf90","on-primary-fixed-variant":"#2a4e3b",
+        "surface-dim":"#d5dcd5","surface-variant":"#dde4de","surface-container":"#e9f0e9",
+        "inverse-primary":"#a8d0b7","tertiary-container":"#003f34","on-error":"#ffffff",
+        "on-surface-variant":"#414843","surface-bright":"#f4fbf4","on-background":"#161d19",
+        "error-container":"#ffdad6","surface-container-high":"#e3eae3","on-surface":"#161d19",
+        "surface-container-low":"#eff5ef"
+      },
+      fontFamily:{"headline":["Manrope"],"body":["Inter"],"label":["Inter"]},
+      borderRadius:{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},
+    }},
+  }
+</script>
+<style>
+  .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;}
+  body{font-family:'Inter',sans-serif;}h1,h2,h3{font-family:'Manrope',sans-serif;}
+  .editorial-shadow{box-shadow:0 40px 80px rgba(22,29,25,0.08);}
+</style>
+{% endblock %}
+
+{% block full_page %}
+<div class="bg-[#f4fbf4] text-[#161d19] min-h-screen flex flex-col">
+
+  {# ── Flash Messages ── #}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="fixed top-4 right-4 z-[100] space-y-2">
+        {% for category, message in messages %}
+          <div class="flash-toast-new flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium cursor-pointer
+            {% if category in ('error','danger') %}bg-red-50 border border-red-200 text-red-800
+            {% elif category == 'success' %}bg-green-50 border border-green-200 text-green-800
+            {% else %}bg-yellow-50 border border-yellow-200 text-yellow-800{% endif %}" role="alert">
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {# ── Header ── #}
+  <header class="fixed top-0 left-0 right-0 z-50 bg-[#f4fbf4]/90 backdrop-blur-md flex justify-between items-center px-6 py-4">
+    <a href="{{ url_for('main.landing') }}" class="text-xl font-extrabold text-[#022818] font-['Manrope'] tracking-tight">FOPA Diligent</a>
+    <div class="flex items-center gap-4">
+      <a class="text-sm text-[#414843] hover:text-[#755b00] transition-colors" href="{{ url_for('auth.login') }}">Student Portal</a>
+      <a class="bg-[#fecf44] text-[#725800] font-bold text-sm px-4 py-2 rounded-xl hover:bg-[#ffdf90] transition-all" href="{{ url_for('auth.school_signup') }}">Register School</a>
+    </div>
+  </header>
+
+  <main class="flex-grow flex flex-col md:flex-row pt-16">
+
+    {# ── Left Branding Panel ── #}
+    <section class="hidden md:flex md:w-2/5 bg-gradient-to-br from-[#755b00] to-[#241a00] relative overflow-hidden items-center justify-center p-12 lg:p-16">
+      <div class="relative z-10 max-w-sm text-left">
+        <span class="inline-block px-3 py-1 bg-[#fecf44] text-[#241a00] text-xs font-bold uppercase tracking-widest rounded-full mb-6">
+          School Administrator
+        </span>
+        <h1 class="text-white text-4xl lg:text-5xl font-extrabold leading-tight tracking-tighter mb-6 font-['Manrope']">
+          Your School's <span class="text-[#acf0dd]">Wellbeing Dashboard</span> Awaits.
+        </h1>
+        <p class="text-[#ffdf90]/80 text-base leading-relaxed mb-8">
+          Monitor student mental health trends, manage assessments, and access detailed analytics for your school community.
+        </p>
+        <div class="space-y-3">
+          {% for item in [('dashboard','Real-time school analytics'),('group','Manage all students'),('insert_chart','Download detailed reports')] %}
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-[#fecf44] text-lg">{{ item[0] }}</span>
+            <span class="text-[#ffdf90]/70 text-sm">{{ item[1] }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="absolute -bottom-16 -left-16 w-64 h-64 bg-[#022818] rounded-full blur-3xl opacity-30"></div>
+      <div class="absolute top-0 right-0 w-48 h-48 bg-[#fecf44] rounded-full blur-3xl opacity-10"></div>
+    </section>
+
+    {# ── Right Form Panel ── #}
+    <section class="w-full md:w-3/5 bg-[#f4fbf4] flex flex-col items-center justify-center p-8 md:p-12 lg:p-20">
+      <div class="w-full max-w-md">
+
+        <div class="mb-10">
+          <h2 class="text-[#022818] text-3xl font-extrabold tracking-tight mb-2 font-['Manrope']">School Portal</h2>
+          <p class="text-[#414843]">Sign in as a school administrator to access your dashboard.</p>
+        </div>
+
+        <div class="bg-[#eff5ef] p-1 rounded-xl">
+          <form method="POST" action="{{ url_for('auth.school_login') }}" novalidate
+                class="bg-white p-8 rounded-xl editorial-shadow space-y-5">
+            {{ form.hidden_tag() }}
+
+            {# Admin Name #}
+            <div class="space-y-2">
+              <label class="block text-xs font-bold text-[#755b00] uppercase tracking-wider">{{ form.admin_name.label.text }}</label>
+              <div class="relative">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#727973] material-symbols-outlined text-lg">manage_accounts</span>
+                {{ form.admin_name(
+                    class="w-full pl-11 pr-4 py-4 bg-[#e3eae3] rounded-lg border-none focus:ring-2 focus:ring-[#022818]/20 focus:bg-white transition-all text-[#161d19] placeholder-[#727973]/60" ~ (" ring-2 ring-red-400" if form.admin_name.errors else ""),
+                    placeholder="Enter your administrator name",
+                    autocomplete="username"
+                ) }}
+              </div>
+              {% for error in form.admin_name.errors %}<p class="text-red-600 text-xs mt-1">{{ error }}</p>{% endfor %}
+            </div>
+
+            {# Password #}
+            <div class="space-y-2">
+              <label class="block text-xs font-bold text-[#755b00] uppercase tracking-wider">{{ form.password.label.text }}</label>
+              <div class="relative">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#727973] material-symbols-outlined text-lg">lock</span>
+                {{ form.password(
+                    id="schoolPasswordField",
+                    class="w-full pl-11 pr-12 py-4 bg-[#e3eae3] rounded-lg border-none focus:ring-2 focus:ring-[#022818]/20 focus:bg-white transition-all text-[#161d19] placeholder-[#727973]/60" ~ (" ring-2 ring-red-400" if form.password.errors else ""),
+                    placeholder="••••••••",
+                    autocomplete="current-password"
+                ) }}
+                <button type="button" id="toggleSchoolPw" class="absolute right-4 top-1/2 -translate-y-1/2 text-[#727973] hover:text-[#022818] transition-colors">
+                  <span class="material-symbols-outlined text-xl" id="schoolToggleIcon">visibility</span>
+                </button>
+              </div>
+              {% for error in form.password.errors %}<p class="text-red-600 text-xs mt-1">{{ error }}</p>{% endfor %}
+            </div>
+
+            {# Submit #}
+            <button type="submit"
+                    class="w-full bg-gradient-to-r from-[#755b00] to-[#241a00] text-white py-4 px-6 rounded-xl font-bold text-base hover:shadow-lg transition-all active:scale-95 duration-200 flex items-center justify-center gap-2 group font-['Manrope']">
+              <span class="material-symbols-outlined text-lg">school</span>
+              <span>Access School Portal</span>
+              <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            </button>
+          </form>
+        </div>
+
+        {# Student login CTA #}
+        <div class="mt-8 p-5 bg-[#e9f0e9] rounded-xl flex items-center justify-between gap-4">
+          <p class="text-[#414843] text-sm">Are you a student?</p>
+          <a class="bg-[#022818] text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-[#1a3e2c] transition-colors" href="{{ url_for('auth.login') }}">
+            Student Login
+          </a>
+        </div>
+
+        <div class="mt-6 text-center text-sm text-[#414843]">
+          New school? <a href="{{ url_for('auth.school_signup') }}" class="font-semibold text-[#022818] hover:text-[#755b00]">Register your school</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bg-[#022818] w-full py-8 px-8 flex flex-col md:flex-row justify-between items-center gap-4">
+    <div class="text-lg font-['Manrope'] font-black text-[#fecf44]">FOPA Diligent</div>
+    <div class="text-white font-['Inter'] text-sm">&copy; 2024 FOPA Diligent. All rights reserved.</div>
+    <div class="flex gap-6">
+      <a class="text-[#dde4de] opacity-80 hover:text-white text-sm" href="#">Terms</a>
+      <a class="text-[#dde4de] opacity-80 hover:text-white text-sm" href="#">Privacy</a>
+    </div>
+  </footer>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const toggleBtn = document.getElementById('toggleSchoolPw');
+const pwField = document.getElementById('schoolPasswordField');
+const icon = document.getElementById('schoolToggleIcon');
+if (toggleBtn && pwField) {
+  toggleBtn.addEventListener('click', () => {
+    pwField.type = pwField.type === 'password' ? 'text' : 'password';
+    icon.textContent = pwField.type === 'password' ? 'visibility' : 'visibility_off';
+  });
+}
+document.querySelectorAll('.flash-toast-new').forEach((el, i) => {
+  el.addEventListener('click', () => { el.style.opacity='0'; setTimeout(()=>el.remove(),400); });
+  setTimeout(() => { el.style.transition='opacity 0.4s'; el.style.opacity='0'; setTimeout(()=>el.remove(),400); }, 4000 + i*300);
+});
+</script>
+{% endblock %}

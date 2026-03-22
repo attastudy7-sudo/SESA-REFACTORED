@@ -1,38 +1,185 @@
-  {% extends 'base.html' %}
-  {% block title %}Admin Dashboard{% endblock %}
-  
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard{% endblock %}
 
 {% block extra_head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-/* ── Admin table panel layout ── */
-.admin-tab-panel .table-wrapper {
-  overflow-x: auto;
-  overflow-y: auto;
-  max-height: 480px;
-  -webkit-overflow-scrolling: touch;
-  max-width: 100%;
-  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-}
-.admin-tab-panel .table {
-  min-width: 320px;
-  width: 100%;
+/* ── Admin shell ── */
+.admin-shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--ivory);
 }
 
-/* Sticky header inside scrollable wrapper */
-.admin-tab-panel .table thead th {
+/* ── Sidebar ── */
+.admin-sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--green-900, #022818);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  overflow-y: auto;
+  z-index: 10;
+}
+.admin-sidebar-brand {
+  padding: 20px 18px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.admin-sidebar-brand span {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--gold-400, #fecf44);
+}
+.admin-sidebar-brand small {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: rgba(255,255,255,.35);
+  margin-top: 1px;
+}
+.admin-nav { padding: 14px 10px; flex: 1; }
+.admin-nav-section {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: rgba(255,255,255,.25);
+  padding: 0 8px;
+  margin: 14px 0 6px;
+}
+.admin-nav-section:first-child { margin-top: 0; }
+.admin-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: rgba(255,255,255,.65);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.admin-nav-item i { width: 16px; text-align: center; font-size: 0.82rem; flex-shrink: 0; }
+.admin-nav-item:hover { background: rgba(255,255,255,.07); color: #fff; }
+.admin-nav-item.active { background: rgba(254,207,68,.12); color: var(--gold-400, #fecf44); }
+.admin-nav-item .nav-count {
+  margin-left: auto;
+  background: rgba(255,255,255,.1);
+  border-radius: 20px;
+  padding: 1px 7px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: rgba(255,255,255,.5);
+}
+.admin-nav-item.active .nav-count { background: rgba(254,207,68,.2); color: var(--gold-400, #fecf44); }
+.admin-sidebar-footer {
+  padding: 14px 10px;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+
+/* ── Main content ── */
+.admin-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  margin-left: 220px;
+}
+.admin-topbar {
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-100);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
   position: sticky;
   top: 0;
-  z-index: 2;
-  background: var(--green-50);
+  z-index: 5;
 }
+.admin-topbar-title { font-family: var(--font-display); font-size: 1rem; font-weight: 700; color: var(--green-800); }
+.admin-topbar-sub { font-size: 0.75rem; color: var(--gray-400); margin-top: 1px; }
+.admin-content { padding: 24px; flex: 1; }
 
-/* ── Toolbar: search + count ── */
+/* ── Stat grid ── */
+.admin-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+@media (min-width: 900px) { .admin-stat-grid { grid-template-columns: repeat(4, 1fr); } }
+.admin-stat {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  border-left: 4px solid var(--green-500);
+  box-shadow: var(--shadow-sm);
+}
+.admin-stat.gold { border-left-color: var(--gold-500); }
+.admin-stat.teal { border-left-color: #0891b2; }
+.admin-stat.red  { border-left-color: var(--red-600); }
+.admin-stat-icon { font-size: 1rem; margin-bottom: 10px; }
+.admin-stat-val { font-family: var(--font-display); font-size: 1.8rem; font-weight: 700; color: var(--green-800); line-height: 1; margin-bottom: 3px; }
+.admin-stat-label { font-size: 0.72rem; color: var(--gray-500); font-weight: 500; }
+
+/* ── Charts row ── */
+.admin-charts-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+@media (min-width: 768px) { .admin-charts-row { grid-template-columns: 1.4fr 1fr; } }
+@media (min-width: 1100px) { .admin-charts-row { grid-template-columns: 1.6fr 1fr 1fr; } }
+.admin-chart-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-sm);
+}
+.admin-chart-card--dark {
+  background: var(--green-800);
+  color: #fff;
+}
+.admin-chart-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--gray-400);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.admin-chart-card--dark .admin-chart-title { color: rgba(255,255,255,.5); }
+
+/* ── Toolbar ── */
 .admin-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 16px 12px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--gray-100);
   flex-wrap: wrap;
   background: var(--white);
@@ -51,451 +198,527 @@
   padding: 7px 12px;
   transition: border-color 0.15s;
 }
-.admin-toolbar-search:focus-within {
-  border-color: var(--green-400);
-}
-.admin-toolbar-search i { color: var(--gray-400); font-size: 0.82rem; flex-shrink: 0; }
-.admin-toolbar-search input {
-  border: none; outline: none; background: transparent;
-  font-size: 0.85rem; color: var(--gray-900); width: 100%;
-}
+.admin-toolbar-search:focus-within { border-color: var(--green-400); }
+.admin-toolbar-search i { color: var(--gray-400); font-size: 0.82rem; }
+.admin-toolbar-search input { border: none; outline: none; background: transparent; font-size: 0.85rem; color: var(--gray-900); width: 100%; }
 .admin-toolbar-search input::placeholder { color: var(--gray-300); }
-.admin-record-count {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--gray-500);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-.admin-record-count span {
-  color: var(--green-700);
-  font-variant-numeric: tabular-nums;
-}
+.admin-record-count { font-size: 0.75rem; font-weight: 600; color: var(--gray-500); white-space: nowrap; }
+.admin-record-count span { color: var(--green-700); }
 
-/* Hidden rows via search */
+/* ── Table panel ── */
+.admin-panel { display: none; }
+.admin-panel.active { display: block; }
+.admin-panel-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.admin-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--gray-100);
+  background: var(--green-800);
+}
+.admin-panel-header h3 { font-family: var(--font-display); font-size: 0.95rem; font-weight: 600; color: #fff; margin: 0; }
+.admin-panel-header a { font-size: 0.78rem; }
+.table-wrapper { overflow-x: auto; overflow-y: auto; max-height: 520px; -webkit-overflow-scrolling: touch; }
+.table thead th { position: sticky; top: 0; z-index: 2; background: var(--green-50); }
 .table tr.search-hidden { display: none !important; }
 
-/* ── Desktop: standard table layout ── */
-@media (min-width: 601px) {
-  .admin-tab-panel .table thead { display: table-header-group !important; }
-  .admin-tab-panel .table { display: table !important; }
-  .admin-tab-panel .table tbody { display: table-row-group !important; }
-  .admin-tab-panel .table tr { display: table-row !important; border-bottom: none !important; padding: 0 !important; }
-  .admin-tab-panel .table td { display: table-cell !important; padding: 11px 16px !important; border-bottom: 1px solid var(--gray-100) !important; }
-  .admin-tab-panel .table td::before { display: none !important; }
+/* ── Sidebar toggle for mobile ── */
+.admin-sidebar-toggle {
+  display: none;
+  background: var(--green-900, #022818);
+  color: var(--gold-400, #fecf44);
+  border: none;
+  padding: 10px 16px;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  gap: 8px;
+  align-items: center;
 }
-
-/* ── Mobile ── */
 @media (max-width: 768px) {
-  .admin-tabs {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    overflow-x: unset !important;
-    gap: 4px !important;
-    border-bottom: none !important;
-    margin-bottom: 20px !important;
-  }
-  .admin-tab {
-    border-radius: var(--radius-sm) !important;
-    border: 1.5px solid var(--gray-200) !important;
-    border-bottom: 1.5px solid var(--gray-200) !important;
-    margin-bottom: 0 !important;
-    padding: 10px 8px !important;
-    font-size: 0.78rem !important;
-    white-space: normal !important;
-    text-align: center !important;
-    background: var(--white) !important;
-  }
-  .admin-tab.active {
-    background: var(--green-800) !important;
-    color: #fff !important;
-    border-color: var(--green-800) !important;
-  }
-  .admin-toolbar { padding: 10px 12px; }
-  .admin-toolbar-search { max-width: 100%; }
-  .admin-tab-panel .table-wrapper {
-    max-height: 420px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  .admin-tab-panel .table {
-    display: table !important;
-    min-width: 600px;
-  }
-  .admin-tab-panel .table thead {
-    display: table-header-group !important;
-  }
-  .admin-tab-panel .table tbody {
-    display: table-row-group !important;
-  }
-  .admin-tab-panel .table tr {
-    display: table-row !important;
-    border-bottom: none !important;
-    padding: 0 !important;
-  }
-  .admin-tab-panel .table td {
-    display: table-cell !important;
-    padding: 10px 12px !important;
-    border-bottom: 1px solid var(--gray-100) !important;
-    white-space: nowrap;
-  }
-  .admin-tab-panel .table td::before {
-    display: none !important;
-  }
+  .admin-sidebar { position: fixed; left: -220px; top: 0; transition: left 0.25s; height: 100vh; }
+  .admin-main { margin-left: 0; }
+  .admin-sidebar.open { left: 0; }
+  .admin-sidebar-toggle { display: flex; }
+  .admin-content { padding: 16px; }
+  .admin-topbar { padding: 10px 16px; }
+  .admin-charts-row { grid-template-columns: 1fr; }
+  .admin-stat-grid { grid-template-columns: repeat(2,1fr); gap: 10px; }
+  .admin-stat-val { font-size: 1.4rem; }
 }
 </style>
 {% endblock %}
-  {% block nav_links %}
-    <li><a href="{{ url_for('admin.dashboard') }}" class="active">Admin</a></li>
-    <li><a href="{{ url_for('main.home') }}">Home</a></li>
-    <li><a href="{{ url_for('admin.counsellor_applications') }}">Counsellor Applications</a></li>
-    <li><a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a></li>
-  {% endblock %}
 
-  {% block body %}
-  <div class="container" style="padding-bottom: max(48px, calc(48px + env(safe-area-inset-bottom)));">
-    <div class="page-context">
-      <h1>Super Admin Dashboard</h1>
-      <p>Manage accounts, schools, questions, and view all assessment results.</p>
+{% block nav_links %}
+  <li><a href="{{ url_for('admin.dashboard') }}" class="active">Admin</a></li>
+  <li><a href="{{ url_for('main.home') }}">Home</a></li>
+  <li><a href="{{ url_for('admin.counsellor_applications') }}">Applications</a></li>
+  <li><a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a></li>
+{% endblock %}
+
+{% block body %}
+
+{# Build per-test-type counts from questions #}
+{% set test_type_counts = namespace() %}
+{% set test_q_counts = {} %}
+{% for q in questions %}
+  {% if q.test_type not in test_q_counts %}{% set _ = test_q_counts.update({q.test_type: 0}) %}{% endif %}
+  {% set _ = test_q_counts.update({q.test_type: test_q_counts[q.test_type] + 1}) %}
+{% endfor %}
+
+<button class="admin-sidebar-toggle" id="sidebarToggle">
+  <i class="fa-solid fa-bars"></i> &nbsp;Admin Menu
+</button>
+
+<div class="admin-shell">
+
+  <!-- ── Sidebar ── -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="admin-sidebar-brand">
+      <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="SESA" style="width:28px; height:28px; border-radius:6px; object-fit:contain;">
+      <div>
+        <span>SESA</span>
+        <small>Super Admin</small>
+      </div>
     </div>
 
-    {# ── Stats ── #}
-    <div class="stat-grid">
-      <div class="stat-card">
-        <div class="stat-icon"><i class="fa-solid fa-user" style="color: var(--green-500);"></i></div>
-        <div class="stat-value">{{ total_users }}</div>
-        <div class="stat-label">Total Students</div>
+    <nav class="admin-nav">
+      <div class="admin-nav-section">Overview</div>
+      <button class="admin-nav-item active" data-panel="overview">
+        <i class="fa-solid fa-gauge"></i> Dashboard
+      </button>
+
+      <div class="admin-nav-section">Data</div>
+      <button class="admin-nav-item" data-panel="all_accounts">
+        <i class="fa-solid fa-users"></i> Accounts
+        <span class="nav-count">{{ accounts | length }}</span>
+      </button>
+      <button class="admin-nav-item" data-panel="all_schools">
+        <i class="fa-solid fa-school"></i> Schools
+        <span class="nav-count">{{ schools | length }}</span>
+      </button>
+      <button class="admin-nav-item" data-panel="all_results">
+        <i class="fa-solid fa-clipboard-list"></i> Results
+        <span class="nav-count">{{ results | length }}</span>
+      </button>
+      <button class="admin-nav-item" data-panel="question_database">
+        <i class="fa-solid fa-circle-question"></i> Questions
+        <span class="nav-count">{{ questions | length }}</span>
+      </button>
+
+      <div class="admin-nav-section">Actions</div>
+      <a href="{{ url_for('admin.counsellor_applications') }}" class="admin-nav-item">
+        <i class="fa-solid fa-user-nurse"></i> Applications
+      </a>
+      <button class="admin-nav-item" id="navAddQuestion">
+        <i class="fa-solid fa-plus"></i> Add Question
+      </button>
+    </nav>
+
+    <div class="admin-sidebar-footer">
+      <a href="{{ url_for('auth.logout') }}" class="admin-nav-item" style="color:rgba(255,100,100,.7);">
+        <i class="fa-solid fa-right-from-bracket"></i> Logout
+      </a>
+    </div>
+  </aside>
+
+  <!-- ── Main ── -->
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <div>
+        <div class="admin-topbar-title" id="topbarTitle">Dashboard Overview</div>
+        <div class="admin-topbar-sub">{{ total_users }} students · {{ total_schools }} schools · {{ total_tests }} assessments</div>
       </div>
-      <div class="stat-card gold">
-        <div class="stat-icon"><i class="fa-solid fa-clipboard-list" style="color: var(--gold-500);"></i></div>
-        <div class="stat-value">{{ total_tests }}</div>
-        <div class="stat-label">Total Tests Taken</div>
-      </div>
-      <div class="stat-card teal">
-        <div class="stat-icon"><i class="fa-solid fa-school" style="color: #0891b2;"></i></div>
-        <div class="stat-value">{{ total_schools }}</div>
-        <div class="stat-label">Schools</div>
-      </div>
-      {% for item in stage_summary %}
-        {% if 'clinical' in item.stage | lower %}
-        <div class="stat-card red">
-          <div class="stat-icon"><i class="fa-solid fa-circle-exclamation" style="color: var(--red-600);"></i></div>
-          <div class="stat-value">{{ item.count }}</div>
-          <div class="stat-label">{{ item.stage }} <small style="font-weight:400;">({{ item.pct }}%)</small></div>
-        </div>
-        {% endif %}
-      {% endfor %}
+      <a href="{{ url_for('main.home') }}" class="btn btn-ghost btn-sm">← Back to App</a>
     </div>
 
-    {# ── Stage Distribution Chart ── #}
-    <div class="card" style="margin-bottom: 28px;">
-      <div class="card-header"><h3>Stage Distribution</h3></div>
-      <div class="card-body">
-        {% if stage_summary %}
-        <div style="position:relative; height:200px; width:100%;">
-          <canvas id="stageChart"></canvas>
+    <div class="admin-content">
+
+      <!-- ══ OVERVIEW PANEL ══ -->
+      <div id="overview" class="admin-panel active">
+
+        <!-- Stat cards -->
+        <div class="admin-stat-grid">
+          <div class="admin-stat">
+            <div class="admin-stat-icon"><i class="fa-solid fa-users" style="color:var(--green-500);"></i></div>
+            <div class="admin-stat-val">{{ total_users }}</div>
+            <div class="admin-stat-label">Total Students</div>
+          </div>
+          <div class="admin-stat gold">
+            <div class="admin-stat-icon"><i class="fa-solid fa-clipboard-list" style="color:var(--gold-500);"></i></div>
+            <div class="admin-stat-val">{{ total_tests }}</div>
+            <div class="admin-stat-label">Assessments Taken</div>
+          </div>
+          <div class="admin-stat teal">
+            <div class="admin-stat-icon"><i class="fa-solid fa-school" style="color:#0891b2;"></i></div>
+            <div class="admin-stat-val">{{ total_schools }}</div>
+            <div class="admin-stat-label">Registered Schools</div>
+          </div>
+          {% for item in stage_summary %}{% if 'clinical' in item.stage | lower %}
+          <div class="admin-stat red">
+            <div class="admin-stat-icon"><i class="fa-solid fa-circle-exclamation" style="color:var(--red-600);"></i></div>
+            <div class="admin-stat-val">{{ item.count }}</div>
+            <div class="admin-stat-label">Clinical Stage ({{ item.pct }}%)</div>
+          </div>
+          {% endif %}{% endfor %}
         </div>
-        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:14px;">
-          {% for item in stage_summary %}
-            {% set s = item.stage | lower %}
-            {% if 'normal' in s %}{% set color = '#16a34a' %}
-            {% elif 'mild' in s %}{% set color = '#ca8a04' %}
-            {% elif 'elevated' in s or 'moderate' in s %}{% set color = '#ea580c' %}
-            {% elif 'clinical' in s %}{% set color = '#dc2626' %}
-            {% else %}{% set color = '#9ca3af' %}{% endif %}
-            <div style="display:flex; align-items:center; gap:6px; font-size:0.78rem; font-weight:600; color:var(--gray-700);">
-              <div style="width:10px; height:10px; border-radius:50%; background:{{ color }}; flex-shrink:0;"></div>
-              {{ item.stage }}: <strong>{{ item.count }}</strong> ({{ item.pct }}%)
+
+        <!-- Charts row -->
+        <div class="admin-charts-row">
+
+          <!-- Stage distribution bar chart -->
+          <div class="admin-chart-card">
+            <div class="admin-chart-title"><i class="fa-solid fa-chart-bar" style="color:var(--gold-500);"></i> Stage Distribution</div>
+            {% if stage_summary %}
+            <div style="position:relative; height:200px;">
+              <canvas id="stageChart"></canvas>
             </div>
-          {% endfor %}
-        </div>
-        {% else %}
-        <div class="empty-state"><p>No assessments recorded yet.</p></div>
-        {% endif %}
-      </div>
-    </div>
-
-    {# ── Tabs ── #}
-    <div class="admin-tabs">
-      <button class="admin-tab" data-tab="all_accounts">
-        <i class="fa-solid fa-users"></i>
-        <span>Accounts</span><span class="tab-count"> ({{ accounts | length }})</span>
-      </button>
-      <button class="admin-tab" data-tab="all_schools">
-        <i class="fa-solid fa-school"></i>
-        <span>Schools</span><span class="tab-count"> ({{ schools | length }})</span>
-      </button>
-      <button class="admin-tab" data-tab="question_database">
-        <i class="fa-solid fa-circle-question"></i>
-        <span>Questions</span><span class="tab-count"> ({{ questions | length }})</span>
-      </button>
-      <button class="admin-tab" data-tab="all_results">
-        <i class="fa-solid fa-clipboard-list"></i>
-        <span>Results</span><span class="tab-count"> ({{ results | length }})</span>
-      </button>
-    </div>
-
-    {# ── Accounts Tab ── #}
-    <div id="all_accounts" class="admin-tab-panel">
-      <div class="section-head"><h3>Student Accounts</h3></div>
-    <div class="card">
-      <div class="admin-toolbar">
-        <div class="admin-toolbar-search">
-          <i class="fa-solid fa-magnifying-glass"></i>
-          <input type="text" class="admin-search-input" placeholder="Search accounts…" data-panel="all_accounts">
-        </div>
-        <div class="admin-record-count"><span id="count-all_accounts">{{ accounts | length }}</span> records</div>
-      </div>
-      <div class="table-wrapper">
-          <table class="table">
-            <thead>
-              <tr><th>Name</th><th>Username</th><th>Email</th><th>Level</th><th>School</th><th>Joined</th><th>Actions</th></tr>
-            </thead>
-            <tbody>
-              {% for acc in accounts %}
-              <tr>
-                <td data-label="Name"><strong>{{ acc.fname }} {{ acc.lname }}</strong></td>
-                <td data-label="Username">@{{ acc.username }}</td>
-                <td data-label="Email">{{ acc.email }}</td>
-                <td data-label="School Name">{{ acc.school_name if acc.school_name else '—' }}</td>
-                <td data-label="School">{{ acc.school.school_name if acc.school else '—' }}</td>
-                <td data-label="Joined">{{ acc.created_at.strftime('%d %b %Y') }}</td>
-                <td class="td-actions">
-                  <div>
-                    <a href="{{ url_for('admin.edit_account', account_id=acc.id) }}" class="btn btn-ghost btn-sm">Edit</a>
-                    {% if acc.id != 1 %}
-                    <form method="POST" action="{{ url_for('admin.delete_account', account_id=acc.id) }}" class="confirm-delete" data-item="{{ acc.username }}">
-                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                      <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                    </form>
-                    {% endif %}
-                  </div>
-                </td>
-              </tr>
-              {% else %}
-              <tr><td colspan="7"><div class="empty-state"><p>No accounts found.</p></div></td></tr>
+            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;">
+              {% for item in stage_summary %}
+                {% set s = item.stage | lower %}
+                {% if 'normal' in s %}{% set c = '#16a34a' %}{% elif 'mild' in s %}{% set c = '#ca8a04' %}{% elif 'elevated' in s or 'moderate' in s %}{% set c = '#ea580c' %}{% elif 'clinical' in s %}{% set c = '#dc2626' %}{% else %}{% set c = '#9ca3af' %}{% endif %}
+                <div style="display:flex; align-items:center; gap:5px; font-size:0.72rem; font-weight:600; color:var(--gray-600);">
+                  <div style="width:8px; height:8px; border-radius:50%; background:{{ c }};"></div>
+                  {{ item.stage }}: {{ item.count }} ({{ item.pct }}%)
+                </div>
               {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+            </div>
+            {% else %}
+            <div class="empty-state"><p>No assessments yet.</p></div>
+            {% endif %}
+          </div>
 
-    {# ── Schools Tab ── #}
-    <div id="all_schools" class="admin-tab-panel">
-      <div class="section-head"><h3>Registered Schools</h3></div>
-    <div class="card">
-      <div class="admin-toolbar">
-        <div class="admin-toolbar-search">
-          <i class="fa-solid fa-magnifying-glass"></i>
-          <input type="text" class="admin-search-input" placeholder="Search schools…" data-panel="all_schools">
+          <!-- Assessment type breakdown donut -->
+          <div class="admin-chart-card">
+            <div class="admin-chart-title"><i class="fa-solid fa-brain" style="color:var(--green-500);"></i> By Assessment Type</div>
+            <div style="position:relative; height:200px;">
+              <canvas id="typeChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Schools: upload enabled vs not -->
+          <div class="admin-chart-card admin-chart-card--dark">
+            <div class="admin-chart-title"><i class="fa-solid fa-school"></i> School Subscriptions</div>
+            {% set active_schools = schools | selectattr('upload_enabled') | list | length %}
+            {% set inactive_schools = total_schools - active_schools %}
+            <div style="position:relative; height:140px;">
+              <canvas id="schoolChart"></canvas>
+            </div>
+            <div style="margin-top:14px; display:flex; flex-direction:column; gap:8px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:0.75rem; color:rgba(255,255,255,.6); display:flex; align-items:center; gap:6px;"><span style="width:8px; height:8px; border-radius:50%; background:#10b981; display:inline-block;"></span>Active</span>
+                <span style="font-size:0.88rem; font-weight:700; color:#acf0dd;">{{ active_schools }}</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:0.75rem; color:rgba(255,255,255,.6); display:flex; align-items:center; gap:6px;"><span style="width:8px; height:8px; border-radius:50%; background:#f87171; display:inline-block;"></span>Inactive</span>
+                <span style="font-size:0.88rem; font-weight:700; color:#f87171;">{{ inactive_schools }}</span>
+              </div>
+              <div style="height:1px; background:rgba(255,255,255,.08); margin:4px 0;"></div>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:0.72rem; color:rgba(255,255,255,.4);">Activation rate</span>
+                <span style="font-size:0.82rem; font-weight:700; color:var(--gold-400, #fecf44);">
+                  {{ ((active_schools / total_schools) * 100) | round(0) | int if total_schools > 0 else 0 }}%
+                </span>
+              </div>
+            </div>
+          </div>
+
         </div>
-        <div class="admin-record-count"><span id="count-all_schools">{{ schools | length }}</span> records</div>
+
+        <!-- Recent results mini-table -->
+        <div class="admin-chart-card" style="margin-bottom:0;">
+          <div class="admin-chart-title"><i class="fa-solid fa-clock" style="color:var(--gold-500);"></i> Recent Assessments</div>
+          <div class="table-wrapper" style="max-height:280px;">
+            <table class="table">
+              <thead>
+                <tr><th>Student</th><th>Assessment</th><th>Score</th><th>Stage</th><th>Date</th></tr>
+              </thead>
+              <tbody>
+                {% for r in results[:10] %}
+                <tr>
+                  <td style="font-weight:600; font-size:0.82rem;">STU-{{ '%04X' | format(r.account.id) }}<div style="font-size:0.72rem; color:var(--gray-400);">{{ r.account.school.school_name if r.account.school else '—' }}</div></td>
+                  <td style="font-size:0.82rem;">{{ r.test_type }}</td>
+                  <td><strong>{{ r.score }}</strong>{% if r.max_score %}<span style="color:var(--gray-400);">/{{ r.max_score }}</span>{% endif %}</td>
+                  <td>
+                    {% set s = (r.stage or r.details or '') | lower %}
+                    <span class="badge {% if 'normal' in s %}stage-normal{% elif 'mild' in s %}stage-mild{% elif 'elevated' in s %}stage-elevated{% elif 'clinical' in s %}stage-clinical{% else %}badge-gray{% endif %}">{{ r.stage or r.details or 'Unknown' }}</span>
+                  </td>
+                  <td style="font-size:0.75rem; color:var(--gray-400);">{{ r.taken_at.strftime('%d %b %Y') }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <div style="padding:10px 16px; border-top:1px solid var(--gray-100); text-align:right;">
+            <button class="btn btn-ghost btn-sm" data-panel="all_results" onclick="activatePanel('all_results')">View all results →</button>
+          </div>
+        </div>
+
+      </div><!-- end overview -->
+
+      <!-- ══ ACCOUNTS PANEL ══ -->
+      <div id="all_accounts" class="admin-panel">
+        <div class="admin-panel-card">
+          <div class="admin-panel-header"><h3><i class="fa-solid fa-users" style="margin-right:8px;"></i>Student Accounts</h3></div>
+          <div class="admin-toolbar">
+            <div class="admin-toolbar-search">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" class="admin-search-input" placeholder="Search accounts…" data-panel="all_accounts">
+            </div>
+            <div class="admin-record-count"><span id="count-all_accounts">{{ accounts | length }}</span> records</div>
+          </div>
+          <div class="table-wrapper">
+            <table class="table">
+              <thead><tr><th>Name</th><th>Username</th><th>Email</th><th>School</th><th>Joined</th><th>Actions</th></tr></thead>
+              <tbody>
+                {% for acc in accounts %}
+                <tr>
+                  <td><strong>{{ acc.fname }} {{ acc.lname }}</strong></td>
+                  <td style="color:var(--gray-500);">@{{ acc.username }}</td>
+                  <td>{{ acc.email or '—' }}</td>
+                  <td>{{ acc.school.school_name if acc.school else '—' }}</td>
+                  <td style="font-size:0.78rem; color:var(--gray-400);">{{ acc.created_at.strftime('%d %b %Y') }}</td>
+                  <td>
+                    <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                      <a href="{{ url_for('admin.edit_account', account_id=acc.id) }}" class="btn btn-ghost btn-sm">Edit</a>
+                      {% if acc.id != 1 %}
+                      <form method="POST" action="{{ url_for('admin.delete_account', account_id=acc.id) }}" class="confirm-delete" data-item="{{ acc.username }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                      </form>
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6"><div class="empty-state"><p>No accounts found.</p></div></td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
-      <div class="table-wrapper">
-          <table class="table">
-            <thead>
-              <tr><th>School Name</th><th>Admin</th><th>Students</th><th>Upload</th><th>Subscription</th><th>QR / Code</th><th>Registered</th><th>Actions</th></tr>
-            </thead>
-            <tbody>
-              {% for s in schools %}
-              <tr>
-                <td data-label="School">
-                  <strong>{{ s.school_name }}</strong>
-                  {% if s.email %}<div style="font-size:0.75rem; color:var(--gray-400); margin-top:2px;">{{ s.email }}</div>{% endif %}
-                </td>
-                <td data-label="Admin">{{ s.admin_name }}</td>
-                <td data-label="Students"><strong>{{ s.student_count }}</strong></td>
-                <td data-label="Upload">
-                  <form method="POST" action="{{ url_for('admin.toggle_upload', school_id=s.id) }}" style="display:inline">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit" class="badge {% if s.upload_enabled %}stage-normal{% else %}stage-clinical{% endif %}" style="border:none; cursor:pointer; padding:5px 12px;" title="Click to toggle">
-                      {% if s.upload_enabled %}<i class="fa-solid fa-check"></i> Enabled{% else %}<i class="fa-solid fa-lock"></i> Disabled{% endif %}
-                    </button>
-                  </form>
-                </td>
-                <td data-label="Subscription">
-                  {% if s.subscription_active %}
-                    <span style="font-size:0.72rem; font-weight:600; background:#d1fae5; color:#065f46; border:1px solid #6ee7b7; border-radius:20px; padding:3px 10px; white-space:nowrap;">
-                      <i class="fa-solid fa-circle-check"></i> Active{% if s.subscription_days_remaining is not none %} &middot; {{ s.subscription_days_remaining }}d left{% endif %}
+
+      <!-- ══ SCHOOLS PANEL ══ -->
+      <div id="all_schools" class="admin-panel">
+        <div class="admin-panel-card">
+          <div class="admin-panel-header"><h3><i class="fa-solid fa-school" style="margin-right:8px;"></i>Registered Schools</h3></div>
+          <div class="admin-toolbar">
+            <div class="admin-toolbar-search">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" class="admin-search-input" placeholder="Search schools…" data-panel="all_schools">
+            </div>
+            <div class="admin-record-count"><span id="count-all_schools">{{ schools | length }}</span> records</div>
+          </div>
+          <div class="table-wrapper">
+            <table class="table">
+              <thead><tr><th>School</th><th>Admin</th><th>Students</th><th>Upload</th><th>Subscription</th><th>QR / Code</th><th>Registered</th><th>Actions</th></tr></thead>
+              <tbody>
+                {% for s in schools %}
+                <tr>
+                  <td><strong>{{ s.school_name }}</strong>{% if s.email %}<div style="font-size:0.72rem; color:var(--gray-400);">{{ s.email }}</div>{% endif %}</td>
+                  <td>{{ s.admin_name }}</td>
+                  <td><strong>{{ s.student_count }}</strong></td>
+                  <td>
+                    <form method="POST" action="{{ url_for('admin.toggle_upload', school_id=s.id) }}" style="display:inline">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button type="submit" class="badge {% if s.upload_enabled %}stage-normal{% else %}stage-clinical{% endif %}" style="border:none; cursor:pointer; padding:5px 12px;" title="Click to toggle">
+                        {% if s.upload_enabled %}<i class="fa-solid fa-check"></i> On{% else %}<i class="fa-solid fa-lock"></i> Off{% endif %}
+                      </button>
+                    </form>
+                  </td>
+                  <td>
+                    {% if s.subscription_active %}
+                    <span style="font-size:0.7rem; font-weight:600; background:#d1fae5; color:#065f46; border:1px solid #6ee7b7; border-radius:20px; padding:3px 10px; white-space:nowrap;">
+                      <i class="fa-solid fa-circle-check"></i> Active{% if s.subscription_days_remaining is not none %} · {{ s.subscription_days_remaining }}d{% endif %}
                     </span>
-                  {% else %}
-                    <span style="font-size:0.72rem; font-weight:600; background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; border-radius:20px; padding:3px 10px;">
+                    {% else %}
+                    <span style="font-size:0.7rem; font-weight:600; background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; border-radius:20px; padding:3px 10px;">
                       <i class="fa-solid fa-circle-xmark"></i> Inactive
                     </span>
-                  {% endif %}
-                </td>
-                <td data-label="QR / Code">
-                  {% if s.access_code %}
-                  <div style="display:flex; align-items:flex-start; gap:12px; flex-wrap:wrap;">
-                    <img src="{{ url_for('qr.school_qr_png', school_id=s.id) }}"
-                         style="width:64px; height:64px; border:2px solid var(--green-700); border-radius:8px; object-fit:contain; flex-shrink:0;"
-                         alt="QR for {{ s.school_name }}" loading="lazy">
-                    <div style="display:flex; flex-direction:column; gap:4px;">
-                      <code style="font-size:0.88rem; font-weight:800; letter-spacing:0.12em; color:var(--green-800);">{{ s.access_code }}</code>
-                      <button class="copy-btn" data-copy="{{ request.host_url }}join?code={{ s.access_code }}" style="display:inline-flex; align-items:center; gap:5px; font-size:0.75rem; font-weight:600; color:var(--green-700); background:transparent; border:none; cursor:pointer; padding:0;">
-                        <i class="fa-solid fa-copy"></i>
-                        <span class="copy-label">Copy link</span>
-                        <span class="copied-label" style="display:none; color:var(--green-500);"><i class="fa-solid fa-check"></i> Copied</span>
-                      </button>
-                      <a href="{{ url_for('qr.school_qr_print', school_id=s.id) }}" target="_blank" class="btn btn-ghost btn-sm" style="font-size:0.72rem; padding:3px 8px;">
-                        <i class="fa-solid fa-print"></i> Print QR
-                      </a>
-                      <a href="{{ url_for('qr.school_qr_png', school_id=s.id, download=1) }}" class="btn btn-ghost btn-sm" style="font-size:0.72rem; padding:3px 8px;">
-                        <i class="fa-solid fa-download"></i> Download
-                      </a>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if s.access_code %}
+                    <div style="display:flex; align-items:flex-start; gap:10px; flex-wrap:wrap;">
+                      <img src="{{ url_for('qr.school_qr_png', school_id=s.id) }}" style="width:56px; height:56px; border:2px solid var(--green-700); border-radius:8px; object-fit:contain;" alt="QR" loading="lazy">
+                      <div style="display:flex; flex-direction:column; gap:3px;">
+                        <code style="font-size:0.85rem; font-weight:800; letter-spacing:.1em; color:var(--green-800);">{{ s.access_code }}</code>
+                        <button class="copy-btn" data-copy="{{ request.host_url }}join?code={{ s.access_code }}" style="display:inline-flex; align-items:center; gap:4px; font-size:0.72rem; font-weight:600; color:var(--green-700); background:transparent; border:none; cursor:pointer; padding:0;">
+                          <i class="fa-solid fa-copy"></i><span class="copy-label">Copy</span><span class="copied-label" style="display:none; color:var(--green-500);"><i class="fa-solid fa-check"></i> Done</span>
+                        </button>
+                        <a href="{{ url_for('qr.school_qr_print', school_id=s.id) }}" target="_blank" class="btn btn-ghost btn-sm" style="font-size:0.68rem; padding:2px 7px;"><i class="fa-solid fa-print"></i> Print</a>
+                      </div>
                     </div>
-                  </div>
-                  {% else %}
-                  <span style="color:var(--gray-400); font-size:0.8rem;">No code yet</span>
-                  {% endif %}
-                </td>
-                <td data-label="Registered">{{ s.created_at.strftime('%d %b %Y') }}</td>
-                <td class="td-actions">
-                  <div>
-                    <a href="{{ url_for('main.school_dashboard', school_id=s.id) }}" class="btn btn-ghost btn-sm">View</a>
-                    <a href="{{ url_for('admin.edit_school', school_id=s.id) }}" class="btn btn-ghost btn-sm">Edit</a>
-                    <form method="POST" action="{{ url_for('admin.delete_school', school_id=s.id) }}" class="confirm-delete" data-item="{{ s.school_name }}">
-                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                      <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                    </form>
-                  </div>
-                </td>
-              </tr>
-              {% else %}
-              <tr><td colspan="8"><div class="empty-state"><p>No schools registered.</p></div></td></tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    {# ── Questions Tab ── #}
-    <div id="question_database" class="admin-tab-panel">
-      <div class="section-head">
-        <h3>Question Database</h3>
-        <a href="{{ url_for('admin.add_question') }}" class="btn btn-primary btn-sm">+ Add Question</a>
-      </div>
-      <div class="card">
-        <div class="admin-toolbar">
-          <div class="admin-toolbar-search">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" class="admin-search-input" placeholder="Search questions…" data-panel="question_database">
+                    {% else %}<span style="color:var(--gray-400); font-size:0.78rem;">None</span>{% endif %}
+                  </td>
+                  <td style="font-size:0.78rem; color:var(--gray-400);">{{ s.created_at.strftime('%d %b %Y') }}</td>
+                  <td>
+                    <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                      <a href="{{ url_for('main.school_dashboard', school_id=s.id) }}" class="btn btn-ghost btn-sm">View</a>
+                      <a href="{{ url_for('admin.edit_school', school_id=s.id) }}" class="btn btn-ghost btn-sm">Edit</a>
+                      <form method="POST" action="{{ url_for('admin.delete_school', school_id=s.id) }}" class="confirm-delete" data-item="{{ s.school_name }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="8"><div class="empty-state"><p>No schools registered.</p></div></td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
           </div>
-          <div class="admin-record-count"><span id="count-question_database">{{ questions | length }}</span> records</div>
-        </div>
-        <div class="table-wrapper">
-          <table class="table">
-            <thead>
-              <tr><th>#</th><th>Test Type</th><th>Question</th><th>Added</th><th>Actions</th></tr>
-            </thead>
-            <tbody>
-              {% for q in questions %}
-              <tr>
-                <td data-label="ID">{{ q.id }}</td>
-                <td data-label="Type"><span class="badge badge-green">{{ q.test_type }}</span></td>
-                <td data-label="Question">{{ q.question_content }}</td>
-                <td data-label="Added">{{ q.created_at.strftime('%d %b %Y') }}</td>
-                <td class="td-actions">
-                  <div>
-                    <a href="{{ url_for('admin.edit_question', question_id=q.id) }}" class="btn btn-ghost btn-sm">Edit</a>
-                    <form method="POST" action="{{ url_for('admin.delete_question', question_id=q.id) }}" class="confirm-delete" data-item="this question">
-                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                      <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                    </form>
-                  </div>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
         </div>
       </div>
-    </div>
 
-    {# ── Results Tab ── #}
-    <div id="all_results" class="admin-tab-panel">
-      <div class="section-head"><h3>All Assessment Results</h3></div>
-    <div class="card">
-      <div class="admin-toolbar">
-        <div class="admin-toolbar-search">
-          <i class="fa-solid fa-magnifying-glass"></i>
-          <input type="text" class="admin-search-input" placeholder="Search results…" data-panel="all_results">
-        </div>
-        <div class="admin-record-count"><span id="count-all_results">{{ results | length }}</span> records</div>
-      </div>
-      <div class="table-wrapper">
-          <table class="table">
-            <thead>
-              <tr><th>Student</th><th>School</th><th>Assessment</th><th>Score</th><th>Stage</th><th>Date</th></tr>
-            </thead>
-            <tbody>
-              {% for r in results %}
-              <tr>
-                <td data-label="Student">
-                  <strong>STU-{{ '%04X' | format(r.account.id) }}</strong><br>
-                  <small style="color:var(--gray-500);">{{ r.account.school.school_name if r.account.school else '—' }}</small>
-                </td>
-                <td data-label="School">{{ r.account.school.school_name if r.account.school else '—' }}</td>
-                <td data-label="Assessment">{{ r.test_type }}</td>
-                <td data-label="Score"><strong>{{ r.score }}</strong>{% if r.max_score %}/{{ r.max_score }}{% endif %}</td>
-                <td data-label="Stage">
-                  {% set s = (r.stage or r.details or '') | lower %}
-                  <span class="badge {% if 'normal' in s %}stage-normal{% elif 'mild' in s %}stage-mild{% elif 'elevated' in s %}stage-elevated{% elif 'clinical' in s %}stage-clinical{% else %}badge-gray{% endif %}">
-                    {{ r.stage or r.details or 'Unknown' }}
-                  </span>
-                  {% if 'clinical' in s %}
-                  <i class="fa-solid fa-circle-exclamation" style="color:var(--red-600); margin-left:4px;" title="Needs attention"></i>
-                  {% endif %}
-                </td>
-                <td data-label="Date">{{ r.taken_at.strftime('%d %b %Y %H:%M') }}</td>
-              </tr>
-              {% else %}
-              <tr><td colspan="6"><div class="empty-state"><p>No results yet.</p></div></td></tr>
-              {% endfor %}
-            </tbody>
-          </table>
+      <!-- ══ RESULTS PANEL ══ -->
+      <div id="all_results" class="admin-panel">
+        <div class="admin-panel-card">
+          <div class="admin-panel-header"><h3><i class="fa-solid fa-clipboard-list" style="margin-right:8px;"></i>All Assessment Results</h3></div>
+          <div class="admin-toolbar">
+            <div class="admin-toolbar-search">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" class="admin-search-input" placeholder="Search results…" data-panel="all_results">
+            </div>
+            <div class="admin-record-count"><span id="count-all_results">{{ results | length }}</span> records</div>
+          </div>
+          <div class="table-wrapper">
+            <table class="table">
+              <thead><tr><th>Student</th><th>School</th><th>Assessment</th><th>Score</th><th>Stage</th><th>Date</th></tr></thead>
+              <tbody>
+                {% for r in results %}
+                <tr>
+                  <td><strong style="font-size:0.82rem;">STU-{{ '%04X' | format(r.account.id) }}</strong></td>
+                  <td style="font-size:0.82rem;">{{ r.account.school.school_name if r.account.school else '—' }}</td>
+                  <td style="font-size:0.82rem;">{{ r.test_type }}</td>
+                  <td><strong>{{ r.score }}</strong>{% if r.max_score %}<span style="color:var(--gray-400);">/{{ r.max_score }}</span>{% endif %}</td>
+                  <td>
+                    {% set s = (r.stage or r.details or '') | lower %}
+                    <span class="badge {% if 'normal' in s %}stage-normal{% elif 'mild' in s %}stage-mild{% elif 'elevated' in s %}stage-elevated{% elif 'clinical' in s %}stage-clinical{% else %}badge-gray{% endif %}">{{ r.stage or r.details or 'Unknown' }}</span>
+                    {% if 'clinical' in s %}<i class="fa-solid fa-circle-exclamation" style="color:var(--red-600); margin-left:4px;"></i>{% endif %}
+                  </td>
+                  <td style="font-size:0.75rem; color:var(--gray-400);">{{ r.taken_at.strftime('%d %b %Y %H:%M') }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6"><div class="empty-state"><p>No results yet.</p></div></td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
 
-  </div>
+      <!-- ══ QUESTIONS PANEL ══ -->
+      <div id="question_database" class="admin-panel">
+        <div class="admin-panel-card">
+          <div class="admin-panel-header">
+            <h3><i class="fa-solid fa-circle-question" style="margin-right:8px;"></i>Question Database</h3>
+            <button id="panelAddQuestion" class="btn btn-gold btn-sm">+ Add Question</button>
+          </div>
+          <div class="admin-toolbar">
+            <div class="admin-toolbar-search">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" class="admin-search-input" placeholder="Search questions…" data-panel="question_database">
+            </div>
+            <div class="admin-record-count"><span id="count-question_database">{{ questions | length }}</span> records</div>
+          </div>
+          <div class="table-wrapper">
+            <table class="table">
+              <thead><tr><th>#</th><th>Test Type</th><th>Question</th><th>Added</th><th>Actions</th></tr></thead>
+              <tbody>
+                {% for q in questions %}
+                <tr>
+                  <td style="color:var(--gray-400); font-size:0.78rem;">{{ q.id }}</td>
+                  <td><span class="badge badge-green" style="font-size:0.7rem;">{{ q.test_type }}</span></td>
+                  <td style="font-size:0.82rem;">{{ q.question_content }}</td>
+                  <td style="font-size:0.75rem; color:var(--gray-400);">{{ q.created_at.strftime('%d %b %Y') }}</td>
+                  <td>
+                    <div style="display:flex; gap:4px;">
+                      <button class="btn btn-ghost btn-sm q-edit-btn"
+                              data-id="{{ q.id }}"
+                              data-type="{{ q.test_type }}"
+                              data-content="{{ q.question_content | e }}">Edit</button>
+                      <form method="POST" action="{{ url_for('admin.delete_question', question_id=q.id) }}" class="confirm-delete" data-item="this question">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
 
-{% block scripts %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    </div>{# end admin-content #}
+  </div>{# end admin-main #}
+</div>{# end admin-shell #}
+
 <script>
-(function () {
-  const STORAGE_KEY = 'adminActiveTab';
-  const tabs   = document.querySelectorAll('.admin-tab');
-  const panels = document.querySelectorAll('.admin-tab-panel');
+(function() {
+  const STORAGE_KEY = 'adminActivePanel';
+  const panels = document.querySelectorAll('.admin-panel');
+  const navItems = document.querySelectorAll('.admin-nav-item[data-panel]');
+  const topbarTitle = document.getElementById('topbarTitle');
 
-  function activate(tabId) {
-    tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === tabId));
-    panels.forEach(p => p.classList.toggle('active', p.id === tabId));
-    try { localStorage.setItem(STORAGE_KEY, tabId); } catch (_) {}
+  const panelTitles = {
+    overview: 'Dashboard Overview',
+    all_accounts: 'Student Accounts',
+    all_schools: 'Registered Schools',
+    all_results: 'Assessment Results',
+    question_database: 'Question Database',
+  };
+
+  function activatePanel(id) {
+    panels.forEach(p => p.classList.toggle('active', p.id === id));
+    navItems.forEach(n => n.classList.toggle('active', n.dataset.panel === id));
+    if (topbarTitle) topbarTitle.textContent = panelTitles[id] || id;
+    try { localStorage.setItem(STORAGE_KEY, id); } catch(_) {}
+    if (window.innerWidth <= 768) {
+      document.getElementById('adminSidebar').classList.remove('open');
+    }
   }
 
-  tabs.forEach(tab => tab.addEventListener('click', () => activate(tab.dataset.tab)));
+  window.activatePanel = activatePanel;
 
-  const saved  = (() => { try { return localStorage.getItem(STORAGE_KEY); } catch (_) { return null; } })();
-  const first  = tabs[0]?.dataset.tab;
-  const target = saved && document.getElementById(saved) ? saved : first;
-  if (target) activate(target);
+  navItems.forEach(btn => btn.addEventListener('click', () => activatePanel(btn.dataset.panel)));
 
-  // ── Per-panel search ─────────────────────────────────────
+  const saved = (() => { try { return localStorage.getItem(STORAGE_KEY); } catch(_) { return null; } })();
+  activatePanel((saved && document.getElementById(saved)) ? saved : 'overview');
+
+  // Mobile sidebar toggle
+  const toggle = document.getElementById('sidebarToggle');
+  const sidebar = document.getElementById('adminSidebar');
+  if (toggle && sidebar) {
+    toggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+    document.addEventListener('click', (e) => {
+      if (!sidebar.contains(e.target) && e.target !== toggle) sidebar.classList.remove('open');
+    });
+  }
+
+  // Search
   document.querySelectorAll('.admin-search-input').forEach(function(input) {
     input.addEventListener('input', function() {
       const panelId = input.dataset.panel;
-      const panel   = document.getElementById(panelId);
+      const panel = document.getElementById(panelId);
       if (!panel) return;
-      const q     = input.value.trim().toLowerCase();
-      const rows  = panel.querySelectorAll('tbody tr');
+      const q = input.value.trim().toLowerCase();
+      const rows = panel.querySelectorAll('tbody tr');
       let visible = 0;
       rows.forEach(function(row) {
         if (row.querySelector('[colspan]')) return;
-        const text = row.textContent.toLowerCase();
-        const hide = q.length > 0 && !text.includes(q);
+        const hide = q.length > 0 && !row.textContent.toLowerCase().includes(q);
         row.classList.toggle('search-hidden', hide);
         if (!hide) visible++;
       });
@@ -504,60 +727,18 @@
     });
   });
 
-  
-
-  // ── Stage chart ──────────────────────────────────────────────────────────
-  const stageCtx = document.getElementById('stageChart');
-  if (stageCtx && typeof Chart !== 'undefined') {
-    const stageData = {{ stage_summary | tojson }};
-    const colorMap = { normal: '#16a34a', mild: '#ca8a04', elevated: '#ea580c', moderate: '#ea580c', clinical: '#dc2626' };
-    const labels = stageData.map(d => d.stage);
-    const counts = stageData.map(d => d.count);
-    const colors = stageData.map(function(d) {
-      const k = d.stage.toLowerCase();
-      for (const key in colorMap) { if (k.includes(key)) return colorMap[key]; }
-      return '#9ca3af';
+  // Delete confirm
+  document.querySelectorAll('.confirm-delete').forEach(function(form) {
+    form.addEventListener('submit', function(e) {
+      const item = form.dataset.item || 'this item';
+      if (!confirm('Delete ' + item + '? This cannot be undone.')) e.preventDefault();
     });
-    new Chart(stageCtx, {
-      type: 'bar',
-      data: {
-        labels: labels,
-        datasets: [{
-          label: 'Students',
-          data: counts,
-          backgroundColor: colors.map(c => c + 'cc'),
-          borderColor: colors,
-          borderWidth: 2,
-          borderRadius: 8,
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: function(ctx) {
-                return ' ' + ctx.raw + ' students (' + stageData[ctx.dataIndex].pct + '%)';
-              }
-            }
-          }
-        },
-        scales: {
-          y: { beginAtZero: true, ticks: { precision: 0 } },
-          x: { grid: { display: false } }
-        }
-      }
-    });
-  }
+  });
 
-  // ── Copy-to-clipboard ────────────────────────────────────────────────────
+  // Copy buttons
   document.querySelectorAll('.copy-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
-      var text = btn.dataset.copy;
-      if (!text) return;
-      navigator.clipboard.writeText(text).then(function() {
+      navigator.clipboard.writeText(btn.dataset.copy).then(function() {
         btn.querySelector('.copy-label').style.display = 'none';
         btn.querySelector('.copied-label').style.display = 'inline';
         setTimeout(function() {
@@ -568,7 +749,266 @@
     });
   });
 
+  // ── Charts ──────────────────────────────────────────────────────────────
+  if (typeof Chart === 'undefined') return;
+
+  const stageData = {{ stage_summary | tojson }};
+  {% set ns = namespace(type_counts={}) %}
+  {% for r in results %}
+    {% if r.test_type in ns.type_counts %}
+      {% set _ = ns.type_counts.update({r.test_type: ns.type_counts[r.test_type] + 1}) %}
+    {% else %}
+      {% set _ = ns.type_counts.update({r.test_type: 1}) %}
+    {% endif %}
+  {% endfor %}
+  const typeCounts = {{ ns.type_counts | tojson }};
+  const colorMap = { normal:'#16a34a', mild:'#ca8a04', elevated:'#ea580c', moderate:'#ea580c', clinical:'#dc2626' };
+
+  function stageColor(label) {
+    const k = label.toLowerCase();
+    for (const key in colorMap) { if (k.includes(key)) return colorMap[key]; }
+    return '#9ca3af';
+  }
+
+  // Stage bar chart
+  const stageCtx = document.getElementById('stageChart');
+  if (stageCtx) {
+    new Chart(stageCtx, {
+      type: 'bar',
+      data: {
+        labels: stageData.map(d => d.stage),
+        datasets: [{
+          data: stageData.map(d => d.count),
+          backgroundColor: stageData.map(d => stageColor(d.stage) + 'cc'),
+          borderColor: stageData.map(d => stageColor(d.stage)),
+          borderWidth: 2,
+          borderRadius: 6,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + ctx.raw + ' students (' + stageData[ctx.dataIndex].pct + '%)' } } },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(0,0,0,0.04)' } }, x: { grid: { display: false } } }
+      }
+    });
+  }
+
+  // Assessment type donut
+  const typeCtx = document.getElementById('typeChart');
+  if (typeCtx) {
+    const typeLabels = Object.keys(typeCounts);
+    const typePalette = ['#1a3e2c','#2d6a4f','#40916c','#52b788','#74c69d','#95d5b2'];
+    new Chart(typeCtx, {
+      type: 'doughnut',
+      data: {
+        labels: typeLabels,
+        datasets: [{ data: typeLabels.map(l => typeCounts[l]), backgroundColor: typePalette, borderWidth: 2, borderColor: '#fff' }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 10, padding: 8 } } },
+        cutout: '60%'
+      }
+    });
+  }
+
+  // School subscription donut
+  const schoolCtx = document.getElementById('schoolChart');
+  if (schoolCtx) {
+    const active = {{ schools | selectattr('upload_enabled') | list | length }};
+    const total  = {{ total_schools }};
+    new Chart(schoolCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Active', 'Inactive'],
+        datasets: [{ data: [active, total - active], backgroundColor: ['#10b981', '#f87171'], borderWidth: 0 }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        cutout: '70%'
+      }
+    });
+  }
+
 })();
 </script>
+
+<!-- ══ Question Modal ══ -->
+<style>
+.q-modal-backdrop {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,.55);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.q-modal-backdrop.open { display: flex; }
+.q-modal {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 520px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.25);
+  overflow: hidden;
+}
+.q-modal-header {
+  background: var(--green-800);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.q-modal-header h3 { font-family: var(--font-display); font-size: 1rem; color: #fff; margin: 0; }
+.q-modal-close {
+  background: rgba(255,255,255,.1);
+  border: none;
+  color: #fff;
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.q-modal-close:hover { background: rgba(255,255,255,.2); }
+.q-modal-body { padding: 24px 20px; }
+.q-modal-field { margin-bottom: 18px; }
+.q-modal-field label { display: block; font-size: 0.78rem; font-weight: 700; color: var(--gray-600); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .06em; }
+.q-modal-field select,
+.q-modal-field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  color: var(--gray-800);
+  background: var(--white);
+  transition: border-color 0.15s;
+  font-family: var(--font-sans);
+}
+.q-modal-field select:focus,
+.q-modal-field textarea:focus { outline: none; border-color: var(--green-500); }
+.q-modal-field textarea { resize: vertical; min-height: 110px; line-height: 1.55; }
+.q-modal-error { font-size: 0.78rem; color: var(--red-600); margin-top: 5px; display: none; }
+.q-modal-footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--gray-100);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  background: var(--ivory);
+}
+</style>
+
+<div class="q-modal-backdrop" id="qModalBackdrop">
+  <div class="q-modal" role="dialog" aria-modal="true" aria-labelledby="qModalTitle">
+    <div class="q-modal-header">
+      <h3 id="qModalTitle">Add Question</h3>
+      <button class="q-modal-close" id="qModalClose" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form id="qModalForm" method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="q-modal-body">
+        <div class="q-modal-field">
+          <label for="qModalType">Assessment Type</label>
+          <select id="qModalType" name="test_type" required>
+            <option value="">Select assessment type</option>
+            {% for val, label in [
+              ('Separation Anxiety Disorder',  'Separation Anxiety Disorder'),
+              ('Social Phobia',                'Social / School Phobia'),
+              ('Generalised Anxiety Disorder', 'Generalised Anxiety Disorder'),
+              ('Panic Disorder',               'Panic Disorder'),
+              ('Obsessive Compulsive Disorder','Obsessive Compulsive Disorder'),
+              ('Major Depressive Disorder',    'Major Depressive Disorder'),
+            ] %}
+            <option value="{{ val }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+          <div class="q-modal-error" id="qTypeError">Please select an assessment type.</div>
+        </div>
+        <div class="q-modal-field">
+          <label for="qModalContent">Question</label>
+          <textarea id="qModalContent" name="question_content" required placeholder="Enter the question text…"></textarea>
+          <div class="q-modal-error" id="qContentError">Question must be at least 10 characters.</div>
+        </div>
+      </div>
+      <div class="q-modal-footer">
+        <button type="button" class="btn btn-ghost btn-sm" id="qModalCancelBtn">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-sm">Save Question</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+(function() {
+  var backdrop   = document.getElementById('qModalBackdrop');
+  var form       = document.getElementById('qModalForm');
+  var titleEl    = document.getElementById('qModalTitle');
+  var typeSelect = document.getElementById('qModalType');
+  var contentTA  = document.getElementById('qModalContent');
+  var typeErr    = document.getElementById('qTypeError');
+  var contentErr = document.getElementById('qContentError');
+  var closeBtn   = document.getElementById('qModalClose');
+  var cancelBtn  = document.getElementById('qModalCancelBtn');
+
+  var addUrl = '{{ url_for("admin.add_question") }}';
+
+  function openAdd() {
+    typeErr.style.display = 'none';
+    contentErr.style.display = 'none';
+    titleEl.textContent = 'Add Question';
+    form.action = addUrl;
+    typeSelect.value = '';
+    contentTA.value = '';
+    backdrop.classList.add('open');
+    setTimeout(function() { typeSelect.focus(); }, 50);
+  }
+
+  function openEdit(id, testType, content) {
+    typeErr.style.display = 'none';
+    contentErr.style.display = 'none';
+    titleEl.textContent = 'Edit Question';
+    form.action = '/admin/questions/' + id + '/edit';
+    typeSelect.value = testType || '';
+    contentTA.value = content || '';
+    backdrop.classList.add('open');
+    setTimeout(function() { contentTA.focus(); }, 50);
+  }
+
+  function closeModal() { backdrop.classList.remove('open'); }
+
+  // Add question buttons
+  var navAdd = document.getElementById('navAddQuestion');
+  var panelAdd = document.getElementById('panelAddQuestion');
+  if (navAdd) navAdd.addEventListener('click', openAdd);
+  if (panelAdd) panelAdd.addEventListener('click', openAdd);
+
+  // Edit buttons — event delegation on the questions panel
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest('.q-edit-btn');
+    if (!btn) return;
+    openEdit(btn.dataset.id, btn.dataset.type, btn.dataset.content);
+  });
+
+  closeBtn.addEventListener('click', closeModal);
+  cancelBtn.addEventListener('click', closeModal);
+  backdrop.addEventListener('click', function(e) { if (e.target === backdrop) closeModal(); });
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
+
+  form.addEventListener('submit', function(e) {
+    var valid = true;
+    if (!typeSelect.value) { typeErr.style.display = 'block'; valid = false; }
+    else { typeErr.style.display = 'none'; }
+    if (contentTA.value.trim().length < 10) { contentErr.style.display = 'block'; valid = false; }
+    else { contentErr.style.display = 'none'; }
+    if (!valid) e.preventDefault();
+  });
+})();
+</script>
+
 {% endblock %}
-  {% endblock %}

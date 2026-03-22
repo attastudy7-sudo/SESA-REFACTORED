@@ -146,6 +146,15 @@ def edit_question(question_id):
     return render_template('admin/question_form.html', form=form, title='Edit Question', question=question)
 
 
+@admin_bp.route('/questions/<int:question_id>/json')
+@login_required
+@super_admin_required
+def question_json(question_id):
+    from flask import jsonify
+    question = Question.query.get_or_404(question_id)
+    return jsonify({'id': question.id, 'test_type': question.test_type, 'question_content': question.question_content})
+
+
 @admin_bp.route('/questions/<int:question_id>/delete', methods=['POST'])
 @login_required
 @super_admin_required

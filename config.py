@@ -45,13 +45,14 @@ class Config:
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    # Use SQLite for local development
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
         'sqlite:///' + os.path.join(basedir, 'sesa.db')
-    # Or uncomment to use environment variable:
-    # SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
 
     SESSION_COOKIE_SECURE = False
+
+    # Bypass real Paystack API — any reference = instant success.
+    # Set to False when testing with real Paystack test cards.
+    PAYSTACK_TEST_MODE = True
 
 
 class ProductionConfig(Config):

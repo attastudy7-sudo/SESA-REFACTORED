@@ -2,33 +2,22 @@
 {% block title %}Application Under Review — SESA{% endblock %}
 
 {% block body %}
-<div class="container" style="max-width: 560px; padding: 48px 0; text-align: center;">
-
-  <div style="font-size: 3.5rem; margin-bottom: 20px;">
-    <i class="fa-solid fa-clock" style="color: var(--gold-500);"></i>
-  </div>
-
-  <h1 style="color: var(--green-800); margin-bottom: 12px;">Application Under Review</h1>
-
-  <p style="color: var(--gray-600); font-size: 0.95rem; line-height: 1.6; margin-bottom: 24px;">
-    Thank you for applying to join the SESA counsellor network. Your credentials are being reviewed by our team.
-    This typically takes <strong>1–2 business days</strong>.
-  </p>
-
-  <div class="card" style="padding: 20px 24px; text-align: left; margin-bottom: 24px;">
-    <h4 style="font-size: 0.9rem; color: var(--green-800); margin-bottom: 12px;">What happens next?</h4>
-    <ol style="font-size: 0.88rem; color: var(--gray-600); line-height: 1.8; padding-left: 20px; margin: 0;">
-      <li>Our team verifies your GPC/GACC number and Ghana Card details</li>
-      <li>Your account is activated once verification is complete</li>
-      <li>You will be able to log in and access your dashboard</li>
-      <li>Schools will be able to find you in the counsellor directory</li>
-    </ol>
-  </div>
+<div class="container" style="max-width: 560px; padding: 48px 16px; text-align: center;">
 
   {% if current_user.is_authenticated and current_user.counsellor_profile and current_user.counsellor_profile.is_rejected %}
-  <div style="background: #fef2f2; border: 1px solid #fca5a5; border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; text-align: left;">
-    <h4 style="font-size: 0.9rem; color: #b91c1c; margin-bottom: 6px;"><i class="fa-solid fa-circle-xmark"></i> Application Not Approved</h4>
-    <p style="font-size: 0.85rem; color: #7f1d1d; margin: 0;">
+
+  <div style="width:64px; height:64px; background:#fef2f2; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px;">
+    <i class="fa-solid fa-circle-xmark" style="font-size:1.8rem; color:#dc2626;"></i>
+  </div>
+  <h1 style="color: var(--green-800); margin-bottom: 12px;">Application Not Approved</h1>
+  <p style="color: var(--gray-600); font-size: 0.95rem; line-height: 1.6; margin-bottom: 24px;">
+    Unfortunately your application was not approved at this time.
+  </p>
+  <div style="background:#fef2f2; border:1px solid #fca5a5; border-radius:var(--radius-md); padding:16px 20px; margin-bottom:24px; text-align:left;">
+    <h4 style="font-size:0.9rem; color:#b91c1c; margin-bottom:6px; display:flex; align-items:center; gap:8px;">
+      <i class="fa-solid fa-circle-xmark"></i> Reason
+    </h4>
+    <p style="font-size:0.85rem; color:#7f1d1d; margin:0;">
       {% if current_user.counsellor_profile.rejection_reason %}
         {{ current_user.counsellor_profile.rejection_reason }}
       {% else %}
@@ -36,9 +25,45 @@
       {% endif %}
     </p>
   </div>
+  <a href="{{ url_for('counsellor_signup.counsellor_apply') }}" class="btn btn-primary" style="margin-bottom:12px;">
+    <i class="fa-solid fa-rotate"></i> Reapply
+  </a>
+
+  {% else %}
+
+  <div style="width:64px; height:64px; background:var(--gold-50, #fffbeb); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px;">
+    <i class="fa-solid fa-clock" style="font-size:1.8rem; color:var(--gold-500);"></i>
+  </div>
+  <h1 style="color: var(--green-800); margin-bottom: 12px;">Application Under Review</h1>
+  <p style="color: var(--gray-600); font-size: 0.95rem; line-height: 1.6; margin-bottom: 24px;">
+    Thank you for applying to join the SESA counsellor network. Your credentials are being reviewed by our team.
+    This typically takes <strong>1–2 business days</strong>.
+  </p>
+
+  <div class="card" style="text-align:left; margin-bottom: 24px; overflow:hidden;">
+    <div style="background:var(--green-800); padding:10px 16px;">
+      <h4 style="font-size:0.85rem; color:var(--gold-200); margin:0; font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">What happens next?</h4>
+    </div>
+    <div style="padding:0;">
+      {% for num, step in [
+        ('01', 'Our team verifies your GPC/GACC number and Ghana Card details'),
+        ('02', 'Your account is activated once verification is complete'),
+        ('03', 'You will be able to log in and access your dashboard'),
+        ('04', 'Schools will be able to find you in the counsellor directory')
+      ] %}
+      <div style="display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid var(--gray-100);">
+        <span style="width:28px; height:28px; background:var(--green-100, #d1fae5); color:var(--green-800); font-size:0.72rem; font-weight:800; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-family:var(--font-display);">{{ num }}</span>
+        <p style="font-size:0.88rem; color:var(--gray-600); margin:0;">{{ step }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
   {% endif %}
 
-  <a href="{{ url_for('main.landing') }}" class="btn btn-secondary">Return to Home</a>
+  <a href="{{ url_for('main.landing') }}" class="btn btn-secondary">
+    <i class="fa-solid fa-house"></i> Return to Home
+  </a>
 
 </div>
 {% endblock %}
