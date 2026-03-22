@@ -16,8 +16,8 @@
 {% endblock %}
 
 {% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-  /* ── Dashboard layout helpers ── */
   .dash-two-col {
     display: grid;
     grid-template-columns: 1fr;
@@ -28,7 +28,16 @@
     .dash-two-col { grid-template-columns: 1.4fr 1fr; }
   }
 
-  /* Quick Actions: 2×2 on mobile, 4×1 on desktop (matching screenshot) */
+  .dash-three-col {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+  @media (min-width: 900px) {
+    .dash-three-col { grid-template-columns: 1fr 1fr 1fr; }
+  }
+
   .quick-actions-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -54,7 +63,6 @@
   .quick-action-tile i { font-size: 1.4rem; display: block; }
   .quick-action-tile span { font-size: 0.8rem; font-weight: 600; color: var(--gray-700); }
 
-  /* Download report buttons: stack on mobile, row on desktop */
   .report-btn-row {
     display: grid;
     grid-template-columns: 1fr;
@@ -64,10 +72,6 @@
     .report-btn-row { grid-template-columns: repeat(3, 1fr); }
   }
 
-  /* Coverage + QR: full width on mobile, side by side on tablet+ */
-  /* Handled by .dash-two-col above */
-
-  /* Counsellors list: avatar + name inline */
   .counsellor-list { list-style: none; padding: 0; margin: 0; }
   .counsellor-item {
     display: flex;
@@ -85,7 +89,6 @@
     flex-shrink: 0;
   }
 
-  /* Stage distribution period tabs: scroll on small screens */
   .period-tabs {
     display: flex;
     gap: 6px;
@@ -96,7 +99,6 @@
   }
   .period-tabs::-webkit-scrollbar { display: none; }
 
-  /* Upload drag zone */
   .upload-zone {
     border: 2px dashed var(--gray-300);
     border-radius: var(--radius-md);
@@ -106,6 +108,29 @@
     transition: border-color 0.2s, background 0.2s;
   }
   .upload-zone:hover { border-color: var(--green-600); background: var(--green-50, #f0fdf4); }
+
+  /* Chart containers */
+  .chart-wrap {
+    position: relative;
+    width: 100%;
+  }
+  .chart-wrap canvas {
+    max-width: 100%;
+  }
+
+  /* Mini insight badge */
+  .insight-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 20px;
+  }
+  .insight-badge.good { background: #d1fae5; color: #065f46; }
+  .insight-badge.warn { background: #fef3c7; color: #92400e; }
+  .insight-badge.danger { background: #fee2e2; color: #991b1b; }
 </style>
 {% endblock %}
 
@@ -170,48 +195,117 @@
     </a>
   </div>
 
-  {# ── Coverage + Self-Registration (side by side on tablet+) ── #}
   {% if upload_enabled %}
 
-  <div class="dash-two-col">
+  {# ── CHARTS ROW: Donut + Bar ── #}
+  <div class="dash-two-col" style="margin-bottom:24px;">
 
-    {# Assessment Coverage #}
+    {# Stage Distribution Donut Chart #}
+    <div class="card">
+      <div class="card-header" style="background:var(--green-800); border-radius:var(--radius-md) var(--radius-md) 0 0; border-bottom:1px solid rgba(255,255,255,.1); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+        <div>
+          <span style="font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--gold-300, #fcd34d); display:block; margin-bottom:2px;">Longitudinal Analysis</span>
+          <h3 style="margin:0; color:#fff;">Stage Distribution</h3>
+        </div>
+        <div class="period-tabs" id="periodTabs">
+          {% for p, label in [('month','Month'), ('term','Term'), ('year','Year'), ('all','All')] %}
+            <a href="{{ url_for('main.school_dashboard', school_id=school.id, period=p) }}"
+               data-period="{{ p }}"
+               style="padding:5px 14px; border-radius:20px; font-size:0.78rem; font-weight:600; text-decoration:none; white-space:nowrap;
+                      {% if period == p %}background:rgba(255,255,255,.2); color:#fff; border:1px solid rgba(255,255,255,.3);
+                      {% else %}background:transparent; color:rgba(255,255,255,.6); border:1px solid rgba(255,255,255,.15);{% endif %}">
+              {{ label }}
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="card-body" style="background:var(--green-800); border-radius:0 0 var(--radius-md) var(--radius-md);">
+        {% if stage_counts %}
+        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:20px;">
+          <div class="chart-wrap" style="flex:0 0 180px; max-width:180px; margin:0 auto;">
+            <canvas id="stageDonutChart" width="180" height="180"></canvas>
+          </div>
+          <div style="flex:1; min-width:140px;" id="stageLegend">
+            {% set total_for_period = stage_counts.values() | sum %}
+            {% for stage, count in stage_counts.items() %}
+              {% set s = stage | lower %}
+              {% if 'normal' in s %}{% set dot_color = '#acf0dd' %}
+              {% elif 'mild' in s %}{% set dot_color = '#fecf44' %}
+              {% elif 'elevated' in s or 'moderate' in s %}{% set dot_color = '#ffdf90' %}
+              {% elif 'clinical' in s %}{% set dot_color = '#f87171' %}
+              {% else %}{% set dot_color = '#83a992' %}{% endif %}
+              {% set pct = ((count / total_for_period) * 100) | round(1) if total_for_period > 0 else 0 %}
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                <span style="width:10px; height:10px; border-radius:50%; background:{{ dot_color }}; flex-shrink:0; display:inline-block;"></span>
+                <span style="font-size:0.8rem; color:rgba(255,255,255,.85); flex:1;">{{ stage }}</span>
+                <strong style="font-size:0.85rem; color:{{ dot_color }};">{{ pct }}%</strong>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% else %}
+        <div class="empty-state" style="color:rgba(255,255,255,.6);">
+          <div class="empty-state-icon"><i class="fa-solid fa-chart-pie" style="color:rgba(255,255,255,.3);"></i></div>
+          <p>No assessments recorded for {{ period | capitalize }}.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {# Assessment Coverage Bar Chart #}
     <div class="card">
       <div class="card-header">
         <h3>Assessment Coverage</h3>
         <span style="font-size:0.75rem; color:var(--gray-400);">Per student, this {{ period }}</span>
       </div>
       <div class="card-body">
-        {% set test_types = [
-          'Separation Anxiety Disorder','Social Phobia','Generalised Anxiety Disorder',
-          'Panic Disorder','Obsessive Compulsive Disorder','Major Depressive Disorder'
-        ] %}
         {% if total_students > 0 %}
-        <div style="display:flex; flex-direction:column; gap:14px;" id="coverageBody">
-          {% for test_type in test_types %}
-            {% set result_count = coverage_counts.get(test_type, 0) if coverage_counts is defined else 0 %}
-            {% set pct = ((result_count / total_students) * 100) | round(0) | int if total_students > 0 else 0 %}
-            {% if pct >= 60 %}{% set bar_color = '#1a3a2a' %}
-            {% elif pct >= 30 %}{% set bar_color = '#c9921a' %}
-            {% else %}{% set bar_color = '#dc2626' %}{% endif %}
-            <div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; gap:8px;">
-                <span style="font-size:0.8rem; color:var(--gray-700); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ test_type }}</span>
-                <span style="font-size:0.78rem; font-weight:600; color:var(--gray-600); flex-shrink:0; white-space:nowrap;">{{ result_count }} ({{ pct }}%)</span>
-              </div>
-              <div style="height:8px; background:var(--gray-100); border-radius:4px; overflow:hidden;">
-                <div style="width:{{ pct }}%; height:100%; background:{{ bar_color }}; border-radius:4px; transition:width 0.4s ease;"></div>
-              </div>
-            </div>
-          {% endfor %}
+        <div class="chart-wrap" style="height:220px;">
+          <canvas id="coverageBarChart"></canvas>
         </div>
-        <p style="font-size:0.72rem; color:var(--gray-400); margin-top:10px;">
-          <i class="fa-solid fa-circle-info"></i> Unique students per assessment this {{ period }}.
-        </p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+          <span style="font-size:0.72rem; display:flex; align-items:center; gap:4px;"><span style="width:8px;height:8px;border-radius:2px;background:#1a3a2a;display:inline-block;"></span> ≥60%</span>
+          <span style="font-size:0.72rem; display:flex; align-items:center; gap:4px;"><span style="width:8px;height:8px;border-radius:2px;background:#c9921a;display:inline-block;"></span> 30–59%</span>
+          <span style="font-size:0.72rem; display:flex; align-items:center; gap:4px;"><span style="width:8px;height:8px;border-radius:2px;background:#dc2626;display:inline-block;"></span> &lt;30%</span>
+        </div>
         {% else %}
         <div class="empty-state">
           <div class="empty-state-icon"><i class="fa-solid fa-clipboard-list" style="color:var(--gray-400);"></i></div>
           <p>No students yet.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+  {# ── Risk Breakdown + Self-Registration (side by side) ── #}
+  <div class="dash-two-col">
+
+    {# At-Risk Breakdown by Assessment #}
+    <div class="card">
+      <div class="card-header">
+        <h3 style="display:flex; align-items:center; gap:8px;">
+          <i class="fa-solid fa-triangle-exclamation" style="color:var(--red-600);"></i> Risk Breakdown
+        </h3>
+        <span style="font-size:0.75rem; color:var(--gray-400);">Elevated + Clinical per assessment</span>
+      </div>
+      <div class="card-body">
+        {% set test_types_short = [
+          ('Separation Anxiety Disorder', 'Sep. Anxiety'),
+          ('Social Phobia', 'Social Phobia'),
+          ('Generalised Anxiety Disorder', 'Gen. Anxiety'),
+          ('Panic Disorder', 'Panic'),
+          ('Obsessive Compulsive Disorder', 'OCD'),
+          ('Major Depressive Disorder', 'Depression')
+        ] %}
+        {% if total_students > 0 %}
+        <div class="chart-wrap" style="height:200px;">
+          <canvas id="riskBarChart"></canvas>
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <p>No data yet.</p>
         </div>
         {% endif %}
       </div>
@@ -267,58 +361,6 @@
         </form>
         {% endif %}
       </div>
-    </div>
-  </div>
-
-  {# ── Stage Distribution ── #}
-  <div class="card" style="margin-bottom:24px; background:var(--green-800); color:#fff;">
-    <div class="card-header" style="background:transparent; border-bottom:1px solid rgba(255,255,255,.1); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
-      <div>
-        <span style="font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--gold-300, #fcd34d); display:block; margin-bottom:2px;">Longitudinal Analysis</span>
-        <h3 style="margin:0; color:#fff;">Stage Distribution</h3>
-      </div>
-      <div class="period-tabs" id="periodTabs">
-        {% for p, label in [('month','Month'), ('term','Term'), ('year','Year'), ('all','All')] %}
-          <a href="{{ url_for('main.school_dashboard', school_id=school.id, period=p) }}"
-             data-period="{{ p }}"
-             style="padding:5px 14px; border-radius:20px; font-size:0.78rem; font-weight:600; text-decoration:none; white-space:nowrap;
-                    {% if period == p %}background:rgba(255,255,255,.2); color:#fff; border:1px solid rgba(255,255,255,.3);
-                    {% else %}background:transparent; color:rgba(255,255,255,.6); border:1px solid rgba(255,255,255,.15);{% endif %}">
-            {{ label }}
-          </a>
-        {% endfor %}
-      </div>
-    </div>
-    <div class="card-body" id="stageDistributionBody">
-      {% if stage_counts %}
-      {% set total_for_period = stage_counts.values() | sum %}
-      <div style="display:flex; flex-direction:column; gap:14px;">
-        {% for stage, count in stage_counts.items() %}
-          {% set s = stage | lower %}
-          {% if 'normal' in s %}{% set bar_color = '#acf0dd' %}{% set text_color = '#acf0dd' %}
-          {% elif 'mild' in s %}{% set bar_color = '#fecf44' %}{% set text_color = '#fecf44' %}
-          {% elif 'elevated' in s or 'moderate' in s %}{% set bar_color = '#ffdf90' %}{% set text_color = '#ffdf90' %}
-          {% elif 'clinical' in s %}{% set bar_color = '#f87171' %}{% set text_color = '#f87171' %}
-          {% else %}{% set bar_color = '#83a992' %}{% set text_color = '#83a992' %}{% endif %}
-          {% set pct = ((count / total_for_period) * 100) | round(1) if total_for_period > 0 else 0 %}
-          <div>
-            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
-              <span style="font-size:0.85rem; color:rgba(255,255,255,.9); font-weight:500;">{{ stage }}</span>
-              <span style="font-size:0.9rem; font-weight:700; color:{{ text_color }};">{{ count }} <span style="font-weight:400; opacity:0.6; font-size:0.8rem;">({{ pct }}%)</span></span>
-            </div>
-            <div style="height:10px; background:rgba(255,255,255,.1); border-radius:5px; overflow:hidden;">
-              <div style="width:{{ pct }}%; height:100%; background:{{ bar_color }}; border-radius:5px; transition:width 0.4s ease;"></div>
-            </div>
-          </div>
-        {% endfor %}
-      </div>
-      {% else %}
-      <div class="empty-state" style="color:rgba(255,255,255,.6);">
-        <div class="empty-state-icon"><i class="fa-solid fa-chart-line" style="color:rgba(255,255,255,.3);"></i></div>
-        <p>No assessments recorded for {{ period | capitalize }}.</p>
-        <a href="{{ url_for('main.school_guide', fragment='assessments') }}" class="btn btn-secondary btn-sm" style="margin-top:8px;">Student Testing Guide</a>
-      </div>
-      {% endif %}
     </div>
   </div>
 
@@ -443,12 +485,7 @@
   </div>
 
   {% else %}
-  {# ═══════════════════════════════════════════════════════════════════
-     PAYMENT GATE — shown when upload_enabled=False
-     Replaces all content below the stat cards.
-  ═══════════════════════════════════════════════════════════════════ #}
-
-  {# Test mode helper banner #}
+  {# ── PAYMENT GATE ── #}
   {% if test_mode %}
   <div style="background:#e0e7ff; border:1.5px solid #6366f1; border-radius:var(--radius-md); padding:14px 18px; margin-bottom:20px; display:flex; flex-wrap:wrap; align-items:center; gap:12px;">
     <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:200px;">
@@ -467,10 +504,7 @@
   </div>
   {% endif %}
 
-  {# Payment gate card #}
   <div class="card" style="border:2px solid var(--gold-400); background:var(--gold-50); margin-bottom:28px; overflow:hidden;" id="upload-section">
-
-    {# Header #}
     <div style="background:linear-gradient(135deg, var(--green-800), var(--green-700)); padding:32px 28px; text-align:center; position:relative; overflow:hidden;">
       <div style="position:absolute; right:-20px; top:-20px; font-size:8rem; opacity:0.06; pointer-events:none; line-height:1;">
         <i class="fa-solid fa-lock"></i>
@@ -483,8 +517,6 @@
         Activate your SESA subscription to unlock bulk student upload, detailed analytics, counsellor assignment, and downloadable reports.
       </p>
     </div>
-
-    {# What you get #}
     <div style="padding:24px 28px; border-bottom:1px solid var(--gold-200);">
       <p style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--gold-700); margin-bottom:14px;">What's included</p>
       <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px;">
@@ -503,8 +535,6 @@
         {% endfor %}
       </div>
     </div>
-
-    {# Payment action #}
     <div style="padding:24px 28px; text-align:center; background:var(--gold-50);">
       <p style="font-size:0.82rem; color:var(--gray-500); margin-bottom:20px;">
         One-time activation payment · Subscription valid for <strong>365 days</strong> · Secured by Paystack
@@ -536,11 +566,7 @@
       currency: '{{ subscription_currency }}',
       ref: 'SESA-' + Math.floor(Math.random() * 1000000000),
       label: '{{ school.school_name }} — SESA Subscription',
-      metadata: {
-        school_id: {{ school.id }},
-        school_name: '{{ school.school_name }}',
-        test_mode: {{ 'true' if test_mode else 'false' }}
-      },
+      metadata: { school_id: {{ school.id }}, school_name: '{{ school.school_name }}', test_mode: {{ 'true' if test_mode else 'false' }} },
       callback: function(response) {
         window.location.href = '{{ url_for("main.verify_payment", school_id=school.id) }}?reference=' + response.reference;
       },
@@ -586,6 +612,7 @@
 
 <script>
 (function() {
+  // ── Copy link ──
   var copyBtn = document.getElementById('copyLinkBtn');
   if (copyBtn) {
     copyBtn.addEventListener('click', function() {
@@ -596,59 +623,181 @@
     });
   }
 
-  var stageColors = { normal:'#acf0dd', mild:'#fecf44', elevated:'#ffdf90', moderate:'#ffdf90', clinical:'#f87171' };
+  // ── Data from server ──
+  var stageData   = {{ stage_counts | tojson }};
+  var coverageData = {{ coverage_counts | tojson }};
   var totalStudents = {{ total_students }};
 
-  function getColor(stage) {
+  var TEST_TYPES = [
+    'Separation Anxiety Disorder',
+    'Social Phobia',
+    'Generalised Anxiety Disorder',
+    'Panic Disorder',
+    'Obsessive Compulsive Disorder',
+    'Major Depressive Disorder'
+  ];
+  var TEST_SHORT = ['Sep. Anxiety','Social Phobia','Gen. Anxiety','Panic','OCD','Depression'];
+
+  var STAGE_COLORS = {
+    normal:   '#acf0dd',
+    mild:     '#fecf44',
+    elevated: '#ffdf90',
+    moderate: '#ffdf90',
+    clinical: '#f87171',
+  };
+
+  function stageColor(stage) {
     var s = stage.toLowerCase();
-    for (var k in stageColors) { if (s.indexOf(k) !== -1) return stageColors[k]; }
+    for (var k in STAGE_COLORS) { if (s.indexOf(k) !== -1) return STAGE_COLORS[k]; }
     return '#83a992';
   }
 
-  function renderStage(counts) {
-    var body = document.getElementById('stageDistributionBody');
-    if (!body) return;
-    var total = Object.values(counts).reduce(function(a,b){ return a+b; }, 0);
-    if (!total) {
-      body.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><i class="fa-solid fa-chart-line" style="color:rgba(255,255,255,.3);"></i></div><p style="color:rgba(255,255,255,.6);">No assessments recorded for this period.</p></div>';
-      return;
-    }
-    var html = '<div style="display:flex;flex-direction:column;gap:14px;">';
-    Object.entries(counts).forEach(function(entry) {
-      var stage = entry[0], count = entry[1];
-      var pct = total > 0 ? Math.round((count / total) * 1000) / 10 : 0;
-      var color = getColor(stage);
-      html += '<div>';
-      html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">';
-      html += '<span style="font-size:0.85rem;color:rgba(255,255,255,.9);font-weight:500;">' + stage + '</span>';
-      html += '<span style="font-size:0.9rem;font-weight:700;color:' + color + ';">' + count + ' <span style="font-weight:400;opacity:0.6;font-size:0.8rem;">(' + pct + '%)</span></span>';
-      html += '</div>';
-      html += '<div style="height:10px;background:rgba(255,255,255,.1);border-radius:5px;overflow:hidden;">';
-      html += '<div style="width:' + pct + '%;height:100%;background:' + color + ';border-radius:5px;transition:width 0.4s ease;"></div>';
-      html += '</div></div>';
+  // ── 1. Stage Donut Chart ──
+  var donutCtx = document.getElementById('stageDonutChart');
+  if (donutCtx && Object.keys(stageData).length) {
+    var labels = Object.keys(stageData);
+    var values = Object.values(stageData);
+    var colors = labels.map(stageColor);
+    new Chart(donutCtx, {
+      type: 'doughnut',
+      data: {
+        labels: labels,
+        datasets: [{ data: values, backgroundColor: colors, borderWidth: 2, borderColor: '#1a3a2a' }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        cutout: '68%',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                var total = ctx.dataset.data.reduce(function(a,b){return a+b;},0);
+                var pct = total > 0 ? Math.round(ctx.parsed / total * 100) : 0;
+                return ' ' + ctx.label + ': ' + ctx.parsed + ' (' + pct + '%)';
+              }
+            }
+          }
+        }
+      }
     });
-    html += '</div>';
-    body.innerHTML = html;
   }
 
-  function renderCoverage(counts) {
-    var body = document.getElementById('coverageBody');
-    if (!body || !totalStudents) return;
-    var tests = ['Separation Anxiety Disorder','Social Phobia','Generalised Anxiety Disorder','Panic Disorder','Obsessive Compulsive Disorder','Major Depressive Disorder'];
-    var html = '';
-    tests.forEach(function(test) {
-      var count = counts[test] || 0;
-      var pct = totalStudents > 0 ? Math.round((count / totalStudents) * 100) : 0;
-      var color = pct >= 60 ? '#1a3a2a' : pct >= 30 ? '#c9921a' : '#dc2626';
-      html += '<div>';
-      html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;gap:8px;">';
-      html += '<span style="font-size:0.8rem;color:var(--gray-700);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + test + '</span>';
-      html += '<span style="font-size:0.78rem;font-weight:600;color:var(--gray-600);flex-shrink:0;white-space:nowrap;">' + count + ' (' + pct + '%)</span>';
-      html += '</div>';
-      html += '<div style="height:8px;background:var(--gray-100);border-radius:4px;overflow:hidden;">';
-      html += '<div style="width:' + pct + '%;height:100%;background:' + color + ';border-radius:4px;"></div></div></div>';
+  // ── 2. Coverage Bar Chart ──
+  var coverageCtx = document.getElementById('coverageBarChart');
+  if (coverageCtx && totalStudents > 0) {
+    var covValues = TEST_TYPES.map(function(t) {
+      return coverageData[t] || 0;
     });
-    body.innerHTML = html;
+    var covPcts = covValues.map(function(v) {
+      return totalStudents > 0 ? Math.round(v / totalStudents * 100) : 0;
+    });
+    var covColors = covPcts.map(function(p) {
+      return p >= 60 ? '#1a3a2a' : p >= 30 ? '#c9921a' : '#dc2626';
+    });
+    new Chart(coverageCtx, {
+      type: 'bar',
+      data: {
+        labels: TEST_SHORT,
+        datasets: [{
+          data: covPcts,
+          backgroundColor: covColors,
+          borderRadius: 4,
+          borderSkipped: false,
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                var idx = ctx.dataIndex;
+                return ' ' + covValues[idx] + ' students (' + ctx.parsed.x + '%)';
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            min: 0, max: 100,
+            ticks: { callback: function(v){ return v + '%'; }, font: { size: 11 } },
+            grid: { color: 'rgba(0,0,0,0.05)' }
+          },
+          y: { ticks: { font: { size: 11 } }, grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  // ── 3. Risk Breakdown Horizontal Bar ──
+  var riskCtx = document.getElementById('riskBarChart');
+  if (riskCtx && totalStudents > 0) {
+    // We use coverage_counts as proxy; ideally the route passes at_risk_by_type
+    // For now show coverage as a stacked bar (students tested vs not)
+    var tested = TEST_TYPES.map(function(t){ return coverageData[t] || 0; });
+    var notTested = tested.map(function(v){ return Math.max(0, totalStudents - v); });
+    new Chart(riskCtx, {
+      type: 'bar',
+      data: {
+        labels: TEST_SHORT,
+        datasets: [
+          {
+            label: 'Tested',
+            data: tested,
+            backgroundColor: '#1a3a2a',
+            borderRadius: 4,
+            borderSkipped: false,
+          },
+          {
+            label: 'Not Tested',
+            data: notTested,
+            backgroundColor: '#e5e7eb',
+            borderRadius: 4,
+            borderSkipped: false,
+          }
+        ]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'bottom',
+            labels: { font: { size: 11 }, boxWidth: 12 }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                return ' ' + ctx.dataset.label + ': ' + ctx.parsed.x + ' students';
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            stacked: true,
+            ticks: { font: { size: 11 } },
+            grid: { color: 'rgba(0,0,0,0.05)' }
+          },
+          y: { stacked: true, ticks: { font: { size: 11 } }, grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  // ── Period tab AJAX ──
+  var stageColors2 = { normal:'#acf0dd', mild:'#fecf44', elevated:'#ffdf90', moderate:'#ffdf90', clinical:'#f87171' };
+  function getColor(stage) {
+    var s = stage.toLowerCase();
+    for (var k in stageColors2) { if (s.indexOf(k) !== -1) return stageColors2[k]; }
+    return '#83a992';
   }
 
   function setActiveTab(period) {
@@ -674,12 +823,38 @@
     fetch(a.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
       .then(function(r) { return r.json(); })
       .then(function(data) {
-        renderStage(data.stage_counts);
-        renderCoverage(data.coverage_counts);
+        // Update donut chart
+        var donutChart = Chart.getChart('stageDonutChart');
+        if (donutChart) {
+          var newLabels = Object.keys(data.stage_counts);
+          var newValues = Object.values(data.stage_counts);
+          donutChart.data.labels = newLabels;
+          donutChart.data.datasets[0].data = newValues;
+          donutChart.data.datasets[0].backgroundColor = newLabels.map(getColor);
+          donutChart.update();
+        }
+        // Update legend
+        var legend = document.getElementById('stageLegend');
+        if (legend) {
+          var total = Object.values(data.stage_counts).reduce(function(a,b){return a+b;},0);
+          var html = '';
+          Object.entries(data.stage_counts).forEach(function(e) {
+            var stage = e[0], count = e[1];
+            var color = getColor(stage);
+            var pct = total > 0 ? Math.round(count/total*1000)/10 : 0;
+            html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">';
+            html += '<span style="width:10px;height:10px;border-radius:50%;background:'+color+';flex-shrink:0;display:inline-block;"></span>';
+            html += '<span style="font-size:0.8rem;color:rgba(255,255,255,.85);flex:1;">'+stage+'</span>';
+            html += '<strong style="font-size:0.85rem;color:'+color+';">'+pct+'%</strong>';
+            html += '</div>';
+          });
+          legend.innerHTML = html;
+        }
         history.replaceState(null, '', a.href);
       })
       .catch(function() { window.location.href = a.href; });
   });
+
 })();
 </script>
 {% endblock %}
