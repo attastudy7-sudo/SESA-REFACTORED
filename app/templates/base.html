@@ -324,7 +324,16 @@
     dismiss(true);
   });
 })();
+document.querySelectorAll('.flash-toast').forEach((el, i) => {
+  const btn = document.createElement('button');
+  btn.textContent = '×';
+  btn.style.cssText = 'background:none;border:none;color:rgba(250,250,243,.25);font-size:18px;cursor:pointer;padding:0;line-height:1;flex-shrink:0;';
+  btn.addEventListener('click', () => { el.style.opacity='0'; setTimeout(()=>el.remove(),400); });
+  el.appendChild(btn);
+  setTimeout(() => { el.style.transition='opacity 0.4s'; el.style.opacity='0'; setTimeout(()=>el.remove(),400); }, 4000 + i*300);
+});
 </script>
+
 {% block extra_scripts %}{% endblock %}
 
 {% if current_user.is_authenticated or session.get('school_id') %}

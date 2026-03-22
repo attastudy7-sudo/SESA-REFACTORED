@@ -1,0 +1,41 @@
+<nav class="pub-nav" id="pubNav">
+  <div class="pub-nav-inner">
+    <a href="{{ url_for('main.landing') }}" class="pub-brand">
+      <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="FOPA">
+      SESA
+    </a>
+    <ul class="pub-links">
+      <li><a href="{{ url_for('main.landing') }}" {% if request.endpoint == 'main.landing' %}class="nav-active"{% endif %}>Home</a></li>
+      <li><a href="{{ url_for('main.join_with_code') }}">Join with Code</a></li>
+      <li><a href="{{ url_for('auth.school_signup') }}">Register School</a></li>
+      <li><a href="{{ url_for('main.about') }}" {% if request.endpoint == 'main.about' %}class="nav-active"{% endif %}>About Us</a></li>
+      <li><a href="{{ url_for('main.assessment_details') }}" {% if request.endpoint == 'main.assessment_details' %}class="nav-active"{% endif %}>Assessment Details</a></li>
+      <li><a href="{{ url_for('main.contact') }}" {% if request.endpoint == 'main.contact' %}class="nav-active"{% endif %}>Contact</a></li>
+    </ul>
+    <a href="{{ url_for('auth.login') }}" class="btn-nav-in">Sign In</a>
+    <button class="pub-hamburger" id="pubHamburger" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="pub-drawer" id="pubDrawer">
+    <a href="{{ url_for('main.landing') }}" {% if request.endpoint == 'main.landing' %}class="d-active"{% endif %}>Home</a>
+    <a href="{{ url_for('main.join_with_code') }}">Join with Code</a>
+    <a href="{{ url_for('auth.school_signup') }}">Register School</a>
+    <a href="{{ url_for('main.about') }}" {% if request.endpoint == 'main.about' %}class="d-active"{% endif %}>About Us</a>
+    <a href="{{ url_for('main.assessment_details') }}" {% if request.endpoint == 'main.assessment_details' %}class="d-active"{% endif %}>Assessment Details</a>
+    <a href="{{ url_for('main.contact') }}" {% if request.endpoint == 'main.contact' %}class="d-active"{% endif %}>Contact</a>
+    <a href="{{ url_for('auth.login') }}" class="d-signin">Sign In →</a>
+  </div>
+</nav>
+<script>
+  (function(){
+    var nav = document.getElementById('pubNav');
+    var hb  = document.getElementById('pubHamburger');
+    var dr  = document.getElementById('pubDrawer');
+    window.addEventListener('scroll', function(){ nav.classList.toggle('scrolled', window.scrollY > 40); });
+if(document.body.dataset.hero === 'dark'){
+  nav.classList.add('transparent');
+}
+    hb.addEventListener('click', function(){ hb.classList.toggle('open'); dr.classList.toggle('open'); });
+  })();
+</script>

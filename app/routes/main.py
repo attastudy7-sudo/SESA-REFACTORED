@@ -27,6 +27,19 @@ def _get_school_from_session():
 def landing():
     return render_template('main/landing.html')
 
+@main_bp.route('/about')
+def about():
+    return render_template('main/about.html')
+
+
+@main_bp.route('/contact')
+def contact():
+    return render_template('main/contact.html')
+
+
+@main_bp.route('/assessment-details')
+def assessment_details():
+    return render_template('main/assessment_details.html')
 
 @main_bp.route('/home')
 @login_required

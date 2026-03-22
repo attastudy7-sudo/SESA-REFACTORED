@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Us – FOPA Diligent Consult | FOPA Dilligent Consult</title>
+  <meta name="description" content="At FOPA Diligent Consult, we go beyond academic rigour. We are architects of wellbeing, committed to the holistic growth of every student.">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <meta name="theme-color" content="#022818">
+  {% include 'main/_pub_styles.html' %}
+</head>
+<body>
+
+{% include 'main/_pub_nav.html' %}
+
+<!-- ═══ HERO ═══ -->
+<section class="page-hero grain">
+  <div class="page-hero-orb" style="width:600px;height:600px;top:-200px;right:-150px;"></div>
+  <div class="page-hero-inner">
+    <div class="anim-in">
+      <span class="s-eyebrow s-eyebrow--left">Institutional Trust</span>
+      <h1>Nurturing the <em>Ghanaian Child</em> with Excellence.</h1>
+      <p>At FOPA Diligent Consult, we go beyond academic rigour. We are architects of wellbeing, committed to the holistic growth of every student in alignment with national standards.</p>
+      <div style="display:flex;align-items:center;gap:16px;margin-top:32px;">
+        <div style="display:flex;">
+          {% for i in range(3) %}
+          <div style="width:44px;height:44px;border-radius:50%;background:var(--mg);border:2px solid rgba(250,250,243,.3);margin-left:{% if i > 0 %}-12px{% else %}0{% endif %};"></div>
+          {% endfor %}
+        </div>
+        <span style="font-size:.85rem;color:rgba(250,250,243,.6);font-style:italic;">Trusted by 500+ Educators</span>
+      </div>
+    </div>
+    <div class="page-hero-img anim-in-2">
+      <div class="page-hero-frame" style="border: 4px solid rgba(197,160,89,.2); position:relative;">
+        <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="FOPA Diligent Consult classroom" onerror="this.parentElement.style.background='var(--mg)'">
+        <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(2,40,24,.6) 0%, transparent 60%);"></div>
+        <div style="position:absolute;bottom:24px;left:24px;right:24px;">
+          <p style="font-family:'Playfair Display',serif;font-style:italic;color:var(--iv);font-size:.95rem;line-height:1.6;">"Education is the most powerful weapon which you can use to change the world."</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ OUR JOURNEY ═══ -->
+<section class="pub-section pub-section--mid">
+  <div class="s-wrap">
+    <div style="text-align:center;margin-bottom:48px;">
+      <h2 class="s-h2">Our Journey</h2>
+      <div class="s-rule"></div>
+    </div>
+    <div class="journey-grid">
+      <!-- Heritage card -->
+      <div class="journey-card journey-card--heritage">
+        <h3 style="font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--g);margin-bottom:12px;">Rooted in Heritage</h3>
+        <p style="color:rgba(250,250,243,.8);font-size:.9rem;line-height:1.75;max-width:520px;">Founded in the heart of Ghana, SESA emerged from a vision to harmonize traditional educational values with modern wellbeing assessments. We believe every student's story deserves to be heard and nurtured.</p>
+      </div>
+      <!-- Community card -->
+      <div class="journey-card journey-card--community">
+        <div style="width:56px;height:56px;background:rgba(197,160,89,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+          <i class="fa-solid fa-people-group" style="color:var(--g);font-size:1.4rem;"></i>
+        </div>
+        <h3 style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;color:var(--f);margin-bottom:8px;">Community Driven</h3>
+        <p style="font-size:.82rem;color:var(--mg);line-height:1.65;">Built by educators, for educators, ensuring our tools meet real-world classroom needs.</p>
+      </div>
+      <!-- Kente card -->
+      <div class="journey-card journey-card--kente">
+        <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="Cultural roots" onerror="this.style.display='none'">
+      </div>
+      <!-- Vision card -->
+      <div class="journey-card journey-card--vision">
+        <div style="flex-shrink:0;">
+          <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="Students learning" style="width:120px;height:120px;border-radius:12px;object-fit:cover;border:2px solid rgba(197,160,89,.15);" onerror="this.style.display='none'">
+        </div>
+        <div>
+          <h3 style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--f);margin-bottom:12px;">The SESA Vision</h3>
+          <p style="font-size:.875rem;color:var(--mg);line-height:1.7;">To create an academic ecosystem where the mental and emotional health of a student is treated with the same priority as their mathematical proficiency.</p>
+          <a href="{{ url_for('main.assessment_details') }}" style="display:inline-flex;align-items:center;gap:8px;color:var(--g);font-weight:700;font-size:.85rem;margin-top:16px;">Learn about our values <i class="fa-solid fa-arrow-right fa-xs"></i></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ POLICY ALIGNMENT ═══ -->
+<section class="pub-section">
+  <div class="s-wrap">
+    <div class="policy-grid">
+      <div>
+        <h2 class="s-h2 s-h2--left" style="margin-bottom:20px;">Policy Alignment &amp; Authority</h2>
+        <p style="font-family:'Playfair Display',serif;font-style:italic;color:var(--mg);font-size:.95rem;line-height:1.7;border-left:4px solid var(--g);padding-left:20px;margin-bottom:40px;">"Health and wellbeing are the bedrock upon which all academic success is built."</p>
+        <div style="display:flex;flex-direction:column;gap:28px;margin-bottom:36px;">
+          <div class="policy-item">
+            <div class="policy-icon policy-icon--forest"><i class="fa-solid fa-shield-halved"></i></div>
+            <div>
+              <h4>GES School Health Policy</h4>
+              <p>Our assessment frameworks are strictly aligned with the Ghana Education Service (GES) School Health Policy, ensuring compliance and safety at every touchpoint.</p>
+            </div>
+          </div>
+          <div class="policy-item">
+            <div class="policy-icon policy-icon--gold"><i class="fa-solid fa-gavel"></i></div>
+            <div>
+              <h4>Institutional Integrity</h4>
+              <p>We operate with transparent data protocols that respect the privacy of Ghanaian families and the autonomy of educational institutions.</p>
+            </div>
+          </div>
+        </div>
+        <div style="background:var(--sl);border-radius:14px;padding:24px 28px;display:flex;align-items:center;justify-content:space-between;border:1px solid rgba(197,160,89,.15);">
+          <div>
+            <p style="font-size:.68rem;text-transform:uppercase;letter-spacing:.14em;color:var(--g);font-weight:700;margin-bottom:4px;">Authenticated Partner</p>
+            <p style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--f);">Ministry of Education Standard</p>
+          </div>
+          <div style="display:flex;gap:12px;opacity:.4;">
+            <i class="fa-solid fa-shield-heart" style="font-size:2rem;color:var(--f);"></i>
+            <i class="fa-solid fa-landmark" style="font-size:2rem;color:var(--f);"></i>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div style="background:var(--sl);border-radius:20px;padding:32px;border:1px solid rgba(197,160,89,.15);">
+          <div style="border-radius:16px;overflow:hidden;border:4px solid var(--iv);box-shadow:0 24px 60px rgba(2,40,24,.15);aspect-ratio:4/3;background:var(--mg);margin-bottom:32px;">
+            <img src="{{ url_for('static', filename='images/SESA.png') }}" alt="Schools supported" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">
+          </div>
+          <div class="stats-row">
+            <div class="stat-item"><strong>98%</strong><span>Policy Accuracy</span></div>
+            <div class="stat-item"><strong>15k+</strong><span>Lives Impacted</span></div>
+            <div class="stat-item"><strong>100+</strong><span>Schools</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CURATOR'S INSET ═══ -->
+<section class="pub-section pub-section--dark grain">
+  <div class="s-wrap">
+    <div class="curator-inset">
+      <div class="curator-inset-img">
+        <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="Academic curator" onerror="this.style.display='none'">
+      </div>
+      <div class="curator-inset-quote">
+        <i class="fa-solid fa-quote-left"></i>
+        <blockquote>"At FOPA Dilligent Consult, we don't just assess; we advocate. Every metric we track is a promise made to the next generation of Ghanaian leaders."</blockquote>
+        <div class="curator-sig">
+          <div class="curator-avatar">KA</div>
+          <div>
+            <strong>Felix Oppusu Paapa Agyiri</strong>
+            <span>Doctor of Social Studies</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CTA ═══ -->
+<section class="pub-section" style="text-align:center;">
+  <div class="s-wrap">
+    <h2 class="s-h2">Begin the Assessment Journey</h2>
+    <p class="s-sub">Align your institution with the gold standard of student wellbeing. Join FOPA Diligent Consult today.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:32px;">
+      <a href="{{ url_for('auth.school_signup') }}" class="btn-forest">Start Your Application</a>
+      <a href="{{ url_for('main.assessment_details') }}" class="btn-outline-dark">Download Policy Brief</a>
+    </div>
+  </div>
+</section>
+
+{% include 'main/_pub_footer.html' %}
+
+</body>
+</html>

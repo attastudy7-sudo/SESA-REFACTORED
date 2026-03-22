@@ -4,13 +4,11 @@
 {% block full_page %}
 <div class="auth-page">
   <div class="auth-page-brand">
-    <div>
-      <div class="auth-page-brand-logo">
-        <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="FOPA Logo">
-        <span class="auth-page-brand-sesa">SESA</span>
-      </div>
-      <div class="auth-page-brand-quote">"Supporting student <em>emotional wellbeing</em> across Ghana's schools."</div>
+    <div class="auth-page-brand-logo">
+      <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="FOPA Logo">
+      <span class="auth-page-brand-sesa">SESA</span>
     </div>
+    <div class="auth-page-brand-quote">"Supporting student <em>emotional wellbeing</em> across Ghana's schools."</div>
     <div class="auth-page-brand-org">FOPA DILLIGENT CONSULT</div>
   </div>
 
@@ -149,8 +147,9 @@
   border: 2px solid var(--gray-200);
   transition: background 0.25s, color 0.25s, border-color 0.25s;
 }
-.reg-dot.active { background: var(--gold-500); color: #fff; border-color: var(--gold-500); }
-.reg-dot.done   { background: var(--green-700); color: #fff; border-color: var(--green-700); }
+.reg-dot.active { background: #C5A059; color: #022818; border-color: #C5A059; }
+.reg-dot.done   { background: #022818; color: #fff; border-color: #022818; }
+.reg-line.done  { background: #022818; }
 .reg-line { flex: 1; height: 2px; background: var(--gray-200); transition: background 0.25s; }
 .reg-line.done { background: var(--green-700); }
 .reg-step-labels { display: flex; justify-content: space-between; margin-top: 6px; padding: 0 4px; }

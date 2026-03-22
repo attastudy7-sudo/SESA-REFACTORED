@@ -3,376 +3,365 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Primary SEO -->
-  <title>SESA – Student Emotional Wellbeing Assessment for Ghana Schools | FOPA Dilligent Consult</title>
-  <meta name="description" content="SESA is Ghana's leading social-emotional screening tool for schools. Identify anxiety, depression and OCD in students early. GES-aligned, secure and easy to use.">
-  <meta name="keywords" content="student emotional wellbeing Ghana, school mental health assessment Ghana, social emotional learning Ghana, student anxiety screening, GES school health policy, SESA assessment, FOPA Dilligent Consult, student depression screening, school counsellor tool Ghana">
-  <meta name="author" content="FOPA Dilligent Consult">
+  <title>SESA – Student Emotional Wellbeing Assessment for Ghana Schools</title>
+  <meta name="description" content="SESA helps Ghana schools identify anxiety, depression and OCD in students early. GES-aligned, secure and easy to use.">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="{{ request.url_root.rstrip('/') }}{{ request.path }}">
-
-  <!-- Open Graph -->
   <meta property="og:type" content="website">
-  <meta property="og:site_name" content="SESA by FOPA Dilligent Consult">
   <meta property="og:title" content="SESA – Student Emotional Wellbeing Assessment for Ghana Schools">
-  <meta property="og:description" content="Help your school identify and support students with anxiety, depression and OCD early. GES-aligned, secure, and easy to deploy.">
-  <meta property="og:url" content="{{ request.url_root.rstrip('/') }}{{ request.path }}">
-  <meta property="og:image" content="{{ request.url_root.rstrip('/') }}{{ url_for('static', filename='images/SESA.png') }}">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:locale" content="en_GH">
-
-  <!-- Twitter / X Card -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="SESA – Student Emotional Wellbeing Assessment for Ghana Schools">
-  <meta name="twitter:description" content="Help your school identify and support students with anxiety, depression and OCD early. GES-aligned and secure.">
-  <meta name="twitter:image" content="{{ request.url_root.rstrip('/') }}{{ url_for('static', filename='images/SESA.png') }}">
-
-  <!-- Structured Data: Organisation -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "FOPA Dilligent Consult",
-    "url": "{{ request.url_root.rstrip('/') }}",
-    "logo": "{{ request.url_root.rstrip('/') }}{{ url_for('static', filename='images/Pofa.png') }}",
-    "description": "FOPA Dilligent Consult provides evidence-informed social-emotional screening tools for schools in Ghana.",
-    "address": { "@type": "PostalAddress", "addressCountry": "GH" },
-    "sameAs": []
-  }
-  </script>
-
-  <!-- Structured Data: WebSite -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "SESA – Social Emotional Students' Audit",
-    "url": "{{ request.url_root.rstrip('/') }}",
-    "description": "Ghana's school-based social-emotional wellbeing screening platform.",
-    "publisher": { "@type": "Organization", "name": "FOPA Dilligent Consult" }
-  }
-  </script>
-
-  <!-- Structured Data: SoftwareApplication -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "SESA",
-    "applicationCategory": "EducationalApplication",
-    "operatingSystem": "Web, Android, iOS",
-    "description": "SESA screens students for Separation Anxiety, Social Phobia, Generalised Anxiety, Panic Disorder, OCD, and Major Depressive Disorder. Used by schools across Ghana.",
-    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "GHS" },
-    "publisher": { "@type": "Organization", "name": "FOPA Dilligent Consult" }
-  }
-  </script>
-
+  <meta property="og:description" content="Help your school identify and support students early. GES-aligned and secure.">
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-  <meta name="theme-color" content="#1a3e2c">
+  <meta name="theme-color" content="#022818">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="SESA">
-
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/static/sw.js');
-    }
-  </script>
+  <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/static/sw.js');}</script>
+  {% include 'main/_pub_styles.html' %}
 </head>
+<body data-hero="dark">
 
-<body class="landing-page">
+{% include 'main/_pub_nav.html' %}
 
-  <!-- ===== NAV — UNTOUCHED ===== -->
-  <nav class="landing-nav" id="landingNav">
-    <a href="#" class="landing-nav-brand">
-      <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="FOPA Logo">
-      <span>SESA</span>
-    </a>
-    <div class="landing-nav-links">
-      <a href="{{ url_for('main.join_with_code') }}" class="btn btn-ghost btn-sm" style="color: rgba(255,255,255,.8); background: rgba(255,255,255,.1);">Join with Code</a>
-      <a href="{{ url_for('auth.school_signup') }}" class="btn btn-ghost btn-sm" style="color: rgba(255,255,255,.8); background: rgba(255,255,255,.1);">Register School</a>
-      <a href="{{ url_for('auth.login') }}" class="btn btn-gold btn-sm">Sign In</a>
-    </div>
-    <button id="hamburger" class="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="landingDrawer">
-      <span></span><span></span><span></span>
-    </button>
-  </nav>
+<!-- ═══ HERO ═══ -->
+<header class="hero-section grain">
+  <div class="hero-orb o1"></div>
+  <div class="hero-orb o2"></div>
+  <div class="hero-inner">
 
-  <nav id="landingDrawer" class="nav-dropdown" aria-hidden="true">
-    <div class="nav-dropdown-header">
-      <span class="nav-dropdown-title">Menu</span>
-      <button id="drawerClose" class="nav-dropdown-close" aria-label="Close menu">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-    </div>
-    <a href="{{ url_for('main.join_with_code') }}">Join with Code</a>
-    <a href="{{ url_for('auth.school_signup') }}">Register School</a>
-    <a href="{{ url_for('auth.login') }}" style="color: var(--gold-700); font-weight: 600;">Sign In</a>
-  </nav>
-
-  <!-- ===== HERO — UNTOUCHED ===== -->
-  <section class="hero-section">
-    <div class="hero-bg-circle c1"></div>
-    <div class="hero-bg-circle c2"></div>
-    <div class="hero-bg-circle c3"></div>
-    <div class="hero-content">
-      <div class="hero-eyebrow">FOPA DILLIGENT CONSULT · GHANA</div>
-      <h1 class="hero-title">
-        Supporting Student<br><em>Emotional Wellbeing</em>
-      </h1>
-      <p class="hero-subtitle">
-        The Social Emotional Students' Audit (SESA) helps Ghana schools identify, understand,
-        and support the mental and emotional health of their students — early and effectively.
-        GES School Health Policy aligned.
-      </p>
-      <div class="hero-actions">
-        <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-xl">Take the Assessment</a>
-        <a href="{{ url_for('auth.school_signup') }}" class="btn btn-outline btn-xl">Register My School</a>
+    <!-- ── LEFT: static text — never moves, never animates ── -->
+    <div class="anim-in">
+      <span class="hero-eyebrow">FOPA Dilligent Consult · Ghana</span>
+      <h1 class="hero-title">Supporting Student<br><em>Emotional Wellbeing</em></h1>
+      <p class="hero-subtitle">The Social Emotional Students' Audit (SESA) helps Ghana schools identify, understand, and support the mental and emotional health of their students — early and effectively. GES School Health Policy aligned.</p>
+      <div class="hero-btns">
+        <a href="{{ url_for('auth.login') }}" class="btn-gold">Take the Assessment</a>
+        <a href="{{ url_for('auth.school_signup') }}" class="btn-outline-light">Register My School</a>
       </div>
     </div>
-    <a href="#features" class="scroll-indicator" aria-label="Scroll down">
-      <i class="fa-solid fa-chevron-down"></i>
-    </a>
-  </section>
 
-  <!-- ===== INVISIBLE BARRIERS ===== -->
-  <section class="landing-section" id="why">
-    <div class="container">
-      <div class="section-label">Why It Matters</div>
-      <h2 class="section-title">The Invisible Barriers to Learning</h2>
-      <p class="section-subtitle">Traditional academic assessments often miss the emotional silent struggles that prevent students from reaching their full potential.</p>
-      <div class="feature-grid">
-        <div class="feature-item feature-item--card">
-          <div class="feature-icon"><i class="fa-solid fa-brain-circuit" style="color: var(--green-600);"></i></div>
-          <h3>Silent Anxiety</h3>
-          <p>Identifying students who struggle with persistent worry that impairs focus and academic performance.</p>
+    <!-- ── RIGHT: image column — only this part changes ── -->
+    <div class="hero-img-col anim-in-2">
+      <div class="hero-img-wrap">
+
+        <!-- Image frames — only one visible at a time, no layout shift -->
+        <div class="hero-img-frame" id="heroImgFrame">
+
+          <!-- SLIDE 1 — JHS image 1 -->
+          <img class="hero-img-panel active" id="img-1"
+               src="{{ url_for('static', filename='images/hero_jhs.jpg') }}"
+               alt="JHS students in Ghana"
+               onerror="this.style.display='none'">
+
+          <!-- SLIDE 2 — JHS image 2 -->
+          <img class="hero-img-panel" id="img-1b"
+               src="{{ url_for('static', filename='images/hero_jhs1.jpg') }}"
+               alt="JHS students in Ghana"
+               onerror="this.style.display='none'">
+
+          <!-- SLIDE 2 — SHS -->
+          <!-- REPLACE src with your SHS image: app/static/images/hero_shs.jpg -->
+          <img class="hero-img-panel" id="img-2"
+               src="{{ url_for('static', filename='images/hero_shs.jpg') }}"
+               alt="SHS students in Ghana"
+               onerror="this.style.display='none'">
+
+          <!-- SLIDE 3 — UNIVERSITY -->
+          <!-- REPLACE src with your University image: app/static/images/hero_uni.jpg -->
+          <img class="hero-img-panel" id="img-3"
+               src="{{ url_for('static', filename='images/hero_uni.jpg') }}"
+               alt="University students in Ghana"
+               onerror="this.style.display='none'">
+
+          <!-- Level badge — sits inside the image frame, bottom-left -->
+          
         </div>
-        <div class="feature-item feature-item--card">
-          <div class="feature-icon"><i class="fa-solid fa-face-sad-tear" style="color: var(--green-600);"></i></div>
-          <h3>Hidden Depression</h3>
-          <p>Early detection of depressive symptoms that affect social integration and attendance.</p>
+
+        <!-- Quote card — text swaps, card itself doesn't move -->
+        <div class="hero-quote-card">
+          <!-- REPLACE: edit each quote text below -->
+          <p id="slideQuote">
+            <!-- SLIDE 1 QUOTE — JHS -->
+            "Early support at the JHS level gives every child the foundation to grow — academically and emotionally."
+          </p>
         </div>
-        <div class="feature-item feature-item--card">
-          <div class="feature-icon"><i class="fa-solid fa-arrows-spin" style="color: var(--green-600);"></i></div>
-          <h3>Compulsive Patterns</h3>
-          <p>Supporting schools in identifying OCD tendencies and intrusive thought patterns disrupting classroom participation.</p>
+
+        <!-- Dots — sit directly under the image frame -->
+        <div class="img-dots">
+          <button class="img-dot active" onclick="goToSlide(1)" aria-label="JHS Learners"></button>
+          <button class="img-dot" onclick="goToSlide(2)" aria-label="JHS Learners 2"></button>
+          <button class="img-dot" onclick="goToSlide(3)" aria-label="SHS Learners"></button>
+          <button class="img-dot" onclick="goToSlide(4)" aria-label="University Learners"></button>
         </div>
+
       </div>
     </div>
-  </section>
 
-  <!-- ===== FEATURES ===== -->
-  <section class="features-section" id="features">
-    <div class="container">
-      <div class="section-label">What We Offer</div>
-      <h2 class="section-title">Comprehensive Social Emotional Screening</h2>
-      <p class="section-subtitle">Everything your school needs to identify, support, and track student wellbeing — in one secure platform.</p>
-      <div class="feature-grid">
-        <div class="feature-item">
-          <div class="feature-icon"><i class="fa-solid fa-brain" style="color: var(--green-600);"></i></div>
-          <h3>Six Validated Assessments</h3>
-          <p>Covering Separation Anxiety, Social Phobia, Generalised Anxiety, Panic Disorder, OCD, and Major Depressive Disorder.</p>
-        </div>
-        <div class="feature-item">
-          <div class="feature-icon"><i class="fa-solid fa-chart-bar" style="color: var(--green-600);"></i></div>
-          <h3>Staged Results</h3>
-          <p>Each assessment returns a clearly interpreted result — Normal, Mild, Elevated, or Clinical — with personalised guidance.</p>
-        </div>
-        <div class="feature-item">
-          <div class="feature-icon"><i class="fa-solid fa-school" style="color: var(--green-600);"></i></div>
-          <h3>School Dashboard</h3>
-          <p>Administrators access a dedicated dashboard to monitor student results, upload student lists, and track trends.</p>
-        </div>
-        <div class="feature-item">
-          <div class="feature-icon"><i class="fa-solid fa-lock" style="color: var(--green-600);"></i></div>
-          <h3>Private and Secure</h3>
-          <p>Student data is protected. Results are confidential and only accessible to authorised school personnel.</p>
-        </div>
-        <div class="feature-item">
-          <div class="feature-icon"><i class="fa-solid fa-triangle-exclamation" style="color: var(--green-600);"></i></div>
-          <h3>At-Risk Early Alerts</h3>
-          <p>SESA automatically flags students with Elevated or Clinical results so counsellors and administrators can intervene before issues escalate.</p>
-        </div>
-        <div class="feature-item">
-          <div class="feature-icon"><i class="fa-solid fa-user-group" style="color: var(--green-600);"></i></div>
-          <h3>Easy Student Onboarding</h3>
-          <p>Students join instantly using a school access code — no email required. Bulk upload via Excel is also supported for faster setup.</p>
-        </div>
+  </div>
+  <a href="#why" class="scroll-indicator" aria-label="Scroll down">
+  <i class="fa-solid fa-chevron-down"></i>
+</a>
+</header>
+
+<style>
+/* ── Image panels — stacked inside fixed-size frame, crossfade only ── */
+.hero-img-frame { position: relative; }
+.hero-img-panel {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; object-fit: cover;
+  opacity: 0;
+  transition: opacity .8s ease;
+}
+.hero-img-panel.active { opacity: 1; }
+
+
+
+/* Dots — vertical along left border of image frame */
+.img-dots {
+  display: flex; flex-direction: column; gap: 8px;
+  position: absolute; left: -20px; top: 50%; transform: translateY(-50%);
+}
+.img-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: rgba(250,250,243,.25); border: none; cursor: pointer;
+  transition: background .3s, transform .3s; padding: 0;
+}
+.img-dot.active { background: var(--g); transform: scale(1.35); }
+</style>
+
+<script>
+(function(){
+  var current = 1;
+  var total   = 4;
+  var timer;
+
+
+  /* REPLACE: keep these quotes in the same order as your slides */
+  var quotes = [
+    '"Early support at the JHS level gives every child the foundation to grow — academically and emotionally."',
+    '"Every child at the JHS level deserves to be seen, heard, and supported before challenges become barriers."',
+    '"The senior high years are defining. Identifying emotional struggles early means no student faces WASSCE alone."',
+    '"University is where potential is forged. Mental wellness isn\'t a luxury — it is the prerequisite for excellence."'
+  ];
+
+  function showSlide(n) {
+    current = ((n - 1 + total) % total) + 1;
+
+    /* swap images with crossfade — no layout change */
+    document.querySelectorAll('.hero-img-panel').forEach(function(img, i){
+      img.classList.toggle('active', i === current - 1);
+    });
+
+    /* swap dots */
+    document.querySelectorAll('.img-dot').forEach(function(d, i){
+      d.classList.toggle('active', i === current - 1);
+    });
+
+    
+
+    /* swap quote text */
+    document.getElementById('slideQuote').textContent = quotes[current - 1];
+  }
+
+  window.goToSlide = function(n){ clearInterval(timer); showSlide(n); startTimer(); };
+
+  function startTimer(){ timer = setInterval(function(){ showSlide(current + 1); }, 6000); }
+  startTimer();
+})();
+</script>
+
+<!-- ═══ GES STRIP ═══ -->
+<div class="ges-strip">
+  <div class="ges-strip-inner">
+    <div class="ges-left">
+      <div class="ges-icon"><i class="fa-solid fa-shield-halved"></i></div>
+      <div>
+        <h3>Fully GES Policy Aligned</h3>
+        <p>Validated under the National Education Framework for Ghana.</p>
       </div>
     </div>
-  </section>
-
-  <!-- ===== 6 DIMENSIONS ===== -->
-  <section class="landing-section landing-section--alt" id="assessments">
-    <div class="container">
-      <div class="section-label">The SESA Diagnostic Suite</div>
-      <h2 class="section-title">6 Dimensions of Emotional Safety</h2>
-      <p class="section-subtitle">Each instrument is validated and calibrated for the Ghanaian school context.</p>
-      <div class="assessment-grid">
-        <div class="assessment-item">
-          <h4>Generalised Anxiety</h4>
-          <p>Measuring physiological and cognitive symptoms of worry in academic settings.</p>
-          <span class="assessment-badge"><i class="fa-solid fa-circle-check"></i> Validated Instrument</span>
-        </div>
-        <div class="assessment-item">
-          <h4>Social Phobia</h4>
-          <p>Assessing student comfort in peer interactions and public speaking situations.</p>
-          <span class="assessment-badge"><i class="fa-solid fa-circle-check"></i> Validated Instrument</span>
-        </div>
-        <div class="assessment-item">
-          <h4>OCD Tendencies</h4>
-          <p>Identifying intrusive thoughts that disrupt classroom participation and daily routine.</p>
-          <span class="assessment-badge"><i class="fa-solid fa-circle-check"></i> Validated Instrument</span>
-        </div>
-        <div class="assessment-item">
-          <h4>Separation Anxiety</h4>
-          <p>Crucial for early childhood and primary school transitions.</p>
-          <span class="assessment-badge"><i class="fa-solid fa-circle-check"></i> Validated Instrument</span>
-        </div>
-        <div class="assessment-item">
-          <h4>Panic Disorder</h4>
-          <p>Detecting students susceptible to high-stress crisis moments in academic environments.</p>
-          <span class="assessment-badge"><i class="fa-solid fa-circle-check"></i> Validated Instrument</span>
-        </div>
-        <div class="assessment-item">
-          <h4>Depressive Symptoms</h4>
-          <p>Evaluating persistent mood shifts that impact long-term student growth and attendance.</p>
-          <span class="assessment-badge"><i class="fa-solid fa-circle-check"></i> Validated Instrument</span>
-        </div>
-      </div>
+    <div class="ges-logos">
+      <span class="ges-tag">Ghana Education Service</span>
+      <span class="ges-tag">Ministry of Education</span>
     </div>
-  </section>
+  </div>
+</div>
 
-  <!-- ===== GES BANNER ===== -->
-  <section class="ges-banner">
-    <div class="ges-banner-inner">
-      <div class="ges-badge">
-        <i class="fa-solid fa-award"></i> GES Aligned
+<!-- ═══ INVISIBLE BARRIERS ═══ -->
+<section class="pub-section" id="why">
+  <div class="s-wrap">
+    <span class="s-eyebrow">Why it matters</span>
+    <h2 class="s-h2">The Invisible Barriers to Learning</h2>
+    <p class="s-sub">Traditional academic assessments often miss the emotional silent struggles that prevent students from reaching their full potential.</p>
+    <div class="s-rule"></div>
+    <div class="barriers-grid">
+      <div class="barrier-card">
+        <div class="barrier-icon"><i class="fa-solid fa-brain"></i></div>
+        <h4>Silent Anxiety</h4>
+        <p>Identifying students who struggle with persistent worry that impairs focus and academic performance.</p>
+        <a href="{{ url_for('main.assessment_details') }}" class="barrier-link">Explore Details <i class="fa-solid fa-arrow-right fa-xs"></i></a>
       </div>
-      <h2>Every Student Deserves to Be Understood</h2>
-      <p>
-        Ghana's schools are full of students silently struggling. SESA gives your school
-        the tools to see what grades can't show — and act before it's too late.
-        Fully aligned with the GES School Health Policy.
-      </p>
-      <div class="ges-banner-cta">
-        <a href="{{ url_for('auth.school_signup') }}" class="btn btn-gold btn-lg">
-          <i class="fa-solid fa-school"></i> Register My School
-        </a>
-        <a href="{{ url_for('auth.login') }}" class="btn-outline-white">
-          <i class="fa-solid fa-user"></i> Student Sign In
-        </a>
+      <div class="barrier-card">
+        <div class="barrier-icon"><i class="fa-solid fa-face-sad-tear"></i></div>
+        <h4>Hidden Depression</h4>
+        <p>Early detection of depressive symptoms that affect social integration and classroom attendance.</p>
+        <a href="{{ url_for('main.assessment_details') }}" class="barrier-link">Explore Details <i class="fa-solid fa-arrow-right fa-xs"></i></a>
       </div>
-    </div>
-  </section>
-
-  <!-- ===== FOOTER ===== -->
-  <footer class="landing-footer-full">
-    <div class="container">
-      <div class="landing-footer-grid">
-        <div class="landing-footer-brand">
-          <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
-            <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="FOPA Logo" style="width:32px; height:32px; object-fit:contain;">
-            <span style="font-family:var(--font-display); font-weight:800; font-size:1.1rem; color:var(--gold-400, #fecf44);">FOPA Dilligent Consult</span>
-          </div>
-          <p>Empowering educational excellence through psychological insight and validated diagnostic frameworks for Ghana's schools.</p>
-          <p class="landing-footer-copy">© 2025 FOPA Dilligent Consult. All rights reserved.</p>
-          <p class="landing-footer-disclaimer">SESA is a screening tool only and does not constitute a clinical diagnosis.</p>
-        </div>
-
-        <div class="landing-footer-col">
-          <h4>Navigation</h4>
-          <a href="{{ url_for('auth.login') }}">Student Sign In</a>
-          <a href="{{ url_for('auth.school_signup') }}">Register School</a>
-          <a href="{{ url_for('main.join_with_code') }}">Join with Code</a>
-          <a href="#features">Features</a>
-          <a href="#assessments">Assessments</a>
-        </div>
-
-        <div class="landing-footer-col">
-          <h4>Contact</h4>
-          <p><i class="fa-solid fa-location-dot" style="width:14px; color:var(--gold-400, #fecf44);"></i> Accra, Ghana</p>
-          <p><i class="fa-solid fa-envelope" style="width:14px; color:var(--gold-400, #fecf44);"></i> info@fopaconsult.com</p>
-          <p style="margin-top:12px; font-size:0.78rem; opacity:0.5;">Training Teachers · Emotional Therapy for Students</p>
-        </div>
-      </div>
-    </div>
-  </footer>
-
-  <!-- ===== A2HS BANNER — UNTOUCHED ===== -->
-  <div id="a2hs-banner" class="a2hs-banner" style="display: none;" role="dialog" aria-label="Install SESA">
-    <div class="a2hs-sheet">
-      <div class="a2hs-handle"></div>
-      <button id="a2hs-dismiss" class="a2hs-btn-dismiss" aria-label="Dismiss">&#x2715;</button>
-      <div class="a2hs-row">
-        <div class="a2hs-icon">
-          <img src="{{ url_for('static', filename='images/Pofa_pwa.png') }}" alt="SESA">
-        </div>
-        <div class="a2hs-text">
-          <strong>Install SESA</strong>
-          <span>Add to your home screen for faster access and offline use</span>
-        </div>
-      </div>
-      <div class="a2hs-actions">
-        <button id="a2hs-install" class="a2hs-btn-install">Add to Home Screen</button>
-        <button id="a2hs-dismiss2" class="a2hs-btn-later">Not now</button>
+      <div class="barrier-card">
+        <div class="barrier-icon"><i class="fa-solid fa-arrows-spin"></i></div>
+        <h4>Compulsive Patterns</h4>
+        <p>Supporting schools in identifying OCD tendencies and intrusive thought patterns disrupting classroom participation.</p>
+        <a href="{{ url_for('main.assessment_details') }}" class="barrier-link">Explore Details <i class="fa-solid fa-arrow-right fa-xs"></i></a>
       </div>
     </div>
   </div>
+</section>
 
-  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<!-- ═══ COMPREHENSIVE SCREENING (dark) ═══ -->
+<section class="pub-section pub-section--dark grain" id="features">
+  <div class="s-wrap">
+    <div class="screening-grid">
+      <div class="screening-features">
+        <div class="screening-card">
+          <i class="fa-solid fa-chart-line"></i>
+          <h5>School Dashboard</h5>
+          <p>Real-time aggregate data for school leaders and child psychologists.</p>
+        </div>
+        <div class="screening-card">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <h5>At-Risk Alerts</h5>
+          <p>Instant notifications for high-severity emotional indicators requiring attention.</p>
+        </div>
+        <div class="screening-card">
+          <i class="fa-solid fa-lock"></i>
+          <h5>Validated Tools</h5>
+          <p>Instruments rigorously tested and calibrated for the Ghanaian school context.</p>
+        </div>
+        <div class="screening-card">
+          <i class="fa-solid fa-folder-open"></i>
+          <h5>Student Portfolios</h5>
+          <p>Secure long-term tracking of student well-being trends through their years.</p>
+        </div>
+      </div>
+      <div class="screening-copy">
+        <span class="s-eyebrow s-eyebrow--left">What We Offer</span>
+        <h2>Comprehensive Social Emotional Screening</h2>
+        <p>FOPA Diligent Consult transforms how educators perceive student behaviour. Our 6 validated assessments move beyond observation into data-driven psychological auditing, ensuring no student's struggle goes unnoticed.</p>
+        <div class="screening-checks">
+          <div class="screening-check"><div class="check-dot"><i class="fa-solid fa-check fa-xs"></i></div><span>6 Multi-Dimensional Validated Instruments</span></div>
+          <div class="screening-check"><div class="check-dot"><i class="fa-solid fa-check fa-xs"></i></div><span>Context-Specific Ghanaian Norms</span></div>
+          <div class="screening-check"><div class="check-dot"><i class="fa-solid fa-check fa-xs"></i></div><span>GDPR &amp; Ghana Data Protection Compliant</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
-  <script>
-  (function() {
-    var deferredPrompt = null;
-    var banner      = document.getElementById('a2hs-banner');
-    var installBtn  = document.getElementById('a2hs-install');
-    var dismissBtn  = document.getElementById('a2hs-dismiss');
-    var dismissBtn2 = document.getElementById('a2hs-dismiss2');
+<!-- ═══ 6 DIMENSIONS ═══ -->
+<section class="pub-section pub-section--alt" id="dimensions">
+  <div class="s-wrap">
+    <div class="dims-header">
+      <div>
+        <span class="s-eyebrow s-eyebrow--left">The Diagnostic Suite</span>
+        <h2 class="s-h2 s-h2--left" style="margin-bottom:12px;">6 Dimensions of Emotional Safety</h2>
+        <p class="s-sub s-sub--left" style="max-width:460px;">Our audit structure categorises emotional well-being into distinct analytical pathways, providing a holistic view of the school's climate.</p>
+      </div>
+      <div class="dims-seal"><i class="fa-solid fa-award"></i> Validated Instrument Seal</div>
+    </div>
+    <div class="dims-grid">
 
-    if (localStorage.getItem('a2hs-dismissed')) return;
-    if (window.matchMedia('(display-mode: standalone)').matches) return;
-    if (window.navigator.standalone) return;
+      <div class="dim-card">
+        <!-- REPLACE src: app/static/images/dim_resilience.png -->
+        <div class="dim-card-img">
+          <img src="{{ url_for('static', filename='images/dim_resilience.png') }}" alt="Cognitive Resilience" onerror="this.parentElement.style.background='var(--surface-low)'">
+        </div>
+        <div class="dim-card-body">
+          <div class="dim-num">01</div>
+          <h4>Cognitive Resilience</h4>
+          <p>Evaluating the ability to manage stress and bounce back from academic setbacks and life challenges.</p>
+        </div>
+      </div>
 
-    var isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    if (!isMobileDevice) return;
+      <div class="dim-card">
+        <!-- REPLACE src: app/static/images/dim_trust.png -->
+        <div class="dim-card-img">
+          <img src="{{ url_for('static', filename='images/dim_trust.png') }}" alt="Relational Trust" onerror="this.parentElement.style.background='var(--surface-low)'">
+        </div>
+        <div class="dim-card-body">
+          <div class="dim-num">02</div>
+          <h4>Relational Trust</h4>
+          <p>Measuring the quality of peer-to-peer and student-teacher connections within the school ecosystem.</p>
+        </div>
+      </div>
 
-    function showBanner() { if (banner) banner.style.display = 'block'; }
-    function hideBanner()  { if (banner) banner.style.display = 'none';  }
-    function dismiss(permanent) { hideBanner(); if (permanent) localStorage.setItem('a2hs-dismissed','true'); }
+      <div class="dim-card">
+        <!-- REPLACE src: app/static/images/dim_autonomy.png -->
+        <div class="dim-card-img">
+          <img src="{{ url_for('static', filename='images/dim_autonomy.png') }}" alt="Emotional Autonomy" onerror="this.parentElement.style.background='var(--surface-low)'">
+        </div>
+        <div class="dim-card-body">
+          <div class="dim-num">03</div>
+          <h4>Emotional Autonomy</h4>
+          <p>Assessing the student's capacity for independent emotional regulation and self-awareness.</p>
+        </div>
+      </div>
 
-    window.addEventListener('beforeinstallprompt', function(e) {
-      e.preventDefault(); deferredPrompt = e;
-      setTimeout(showBanner, 1500);
-    });
+      <div class="dim-card">
+        <!-- REPLACE src: app/static/images/dim_belonging.png -->
+        <div class="dim-card-img">
+          <img src="{{ url_for('static', filename='images/dim_belonging.png') }}" alt="Sense of Belonging" onerror="this.parentElement.style.background='var(--surface-low)'">
+        </div>
+        <div class="dim-card-body">
+          <div class="dim-num">04</div>
+          <h4>Sense of Belonging</h4>
+          <p>Understanding the student's perception of value and integration within the school culture.</p>
+        </div>
+      </div>
 
-    if (installBtn) {
-      installBtn.addEventListener('click', function() {
-        if (deferredPrompt) {
-          deferredPrompt.prompt();
-          deferredPrompt.userChoice.then(function(o) { deferredPrompt = null; dismiss(o.outcome === 'accepted'); });
-        } else {
-          hideBanner();
-          var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-          alert(isIOS
-            ? 'To install SESA on your iPhone:\n\n1. Tap the Share button\n2. Tap "Add to Home Screen"\n3. Tap "Add"'
-            : 'To install SESA:\n\n1. Tap the browser menu (\u22ee)\n2. Tap "Add to Home screen"\n3. Tap "Add"');
-          dismiss(false);
-        }
-      });
-    }
-    if (dismissBtn)  dismissBtn.addEventListener('click',  function() { dismiss(true); });
-    if (dismissBtn2) dismissBtn2.addEventListener('click', function() { dismiss(true); });
-    window.addEventListener('appinstalled', function() { deferredPrompt = null; dismiss(true); });
-  })();
-  </script>
+      <div class="dim-card">
+        <!-- REPLACE src: app/static/images/dim_safety.png -->
+        <div class="dim-card-img">
+          <img src="{{ url_for('static', filename='images/dim_safety.png') }}" alt="Behavioural Safety" onerror="this.parentElement.style.background='var(--surface-low)'">
+        </div>
+        <div class="dim-card-body">
+          <div class="dim-num">05</div>
+          <h4>Behavioural Safety</h4>
+          <p>Screening for environments free from bullying, social exclusion, and physical threats.</p>
+        </div>
+      </div>
+
+      <div class="dim-card">
+        <!-- REPLACE src: app/static/images/dim_future.png -->
+        <div class="dim-card-img">
+          <img src="{{ url_for('static', filename='images/dim_future.png') }}" alt="Future Orientation" onerror="this.parentElement.style.background='var(--surface-low)'">
+        </div>
+        <div class="dim-card-body">
+          <div class="dim-num">06</div>
+          <h4>Future Orientation</h4>
+          <p>Identifying long-term motivation, positive academic aspirations, and future goal setting.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══ BOTTOM CTA ═══ -->
+<section class="bottom-cta grain">
+  <div class="bottom-cta-orb"></div>
+  <div class="bottom-cta-badge"><i class="fa-solid fa-circle-check"></i> GES Aligned</div>
+  <h2>Every Student Deserves to Be Understood</h2>
+  <p>Ghana's schools are full of students silently struggling. SESA gives your school the tools to see what grades can't show — and act before it's too late.</p>
+  <div class="bottom-cta-btns">
+    <a href="{{ url_for('auth.school_signup') }}" class="btn-gold"><i class="fa-solid fa-school"></i> Register My School</a>
+    <a href="{{ url_for('auth.login') }}" class="btn-outline-light"><i class="fa-solid fa-user"></i> Student Sign In</a>
+  </div>
+</section>
+
+{% include 'main/_pub_footer.html' %}
 
 </body>
 </html>

@@ -1,0 +1,34 @@
+<footer class="pub-footer">
+  <div class="pub-footer-grid">
+    <div class="pub-footer-brand">
+      <span class="footer-brand-name">FOPA Diligent Consult</span>
+      <p>Dedicated to pioneering social-emotional intelligence within the Ghanaian educational landscape through rigorous data and empathetic, student-centred design.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Navigation</h4>
+      <a href="{{ url_for('auth.login') }}">Student Sign In</a>
+      <a href="{{ url_for('auth.school_signup') }}">Register School</a>
+      <a href="{{ url_for('main.join_with_code') }}">Join with Code</a>
+      <a href="{{ url_for('main.assessment_details') }}">Assessments</a>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <a href="{{ url_for('main.about') }}">About Us</a>
+      <a href="{{ url_for('main.contact') }}">Contact</a>
+      <p>Accra, Ghana</p>
+      <p>info@fopaconsult.com</p>
+    </div>
+    <div class="footer-col">
+      <h4>Newsletter</h4>
+      <p>Stay informed on emotional safety trends in Ghanaian schools.</p>
+      <div class="footer-newsletter">
+        <input type="email" placeholder="Your email" aria-label="Email address">
+        <button aria-label="Subscribe"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© {{ 2025 }} Social Emotional Students' Audit (SESA) Ghana. All rights reserved.</span>
+    <span>FOPA Dilligent Consult · Ghana</span>
+  </div>
+</footer>

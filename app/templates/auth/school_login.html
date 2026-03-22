@@ -4,13 +4,11 @@
 {% block full_page %}
 <div class="auth-page auth-page--school">
   <div class="auth-page-brand">
-    <div>
-      <div class="auth-page-brand-logo">
-        <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="FOPA Logo">
-        <span class="auth-page-brand-sesa">SESA</span>
-      </div>
-      <div class="auth-page-brand-quote">"Supporting student <em>emotional wellbeing</em> across Ghana's schools."</div>
+    <div class="auth-page-brand-logo">
+      <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="FOPA Logo">
+      <span class="auth-page-brand-sesa">SESA</span>
     </div>
+    <div class="auth-page-brand-quote">"Supporting student <em>emotional wellbeing</em> across Ghana's schools."</div>
     <div class="auth-page-brand-org">FOPA DILLIGENT CONSULT</div>
   </div>
   {% with messages = get_flashed_messages(with_categories=true) %}

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact – FOPA Diligent Consult | FOPA Dilligent Consult</title>
+  <meta name="description" content="Connect with our administrative curators. SESA is more than a platform — it is a partnership in academic excellence.">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <meta name="theme-color" content="#022818">
+  {% include 'main/_pub_styles.html' %}
+</head>
+<body data-hero="dark">
+
+{% include 'main/_pub_nav.html' %}
+
+<!-- ═══ HERO ═══ -->
+<section class="pub-section pub-section--dark grain" style="min-height:100vh;display:flex;align-items:center;padding-top:64px;padding-bottom:64px;box-sizing:border-box;">
+  <div class="s-wrap" style="width:100%;">
+    <div class="contact-hero-grid">
+      <div class="anim-in">
+        <span class="s-eyebrow s-eyebrow--left">Dialogue for Progress</span>
+        <h1 style="font-family:'Playfair Display',serif;font-size:clamp(2.4rem,5vw,3.8rem);font-weight:700;color:var(--iv);line-height:1.1;margin-bottom:20px;">Connect with our <em style="color:var(--g);font-style:italic;">Curators</em>.</h1>
+        <div style="width:80px;height:2px;background:linear-gradient(90deg,var(--g),transparent);margin-bottom:24px;"></div>
+        <p style="font-size:1rem;color:rgba(250,250,243,.75);line-height:1.75;max-width:460px;margin-bottom:32px;">SESA is more than a platform; it is a partnership in academic excellence. Our administrative curators are ready to help your institution bridge the gap between potential and performance.</p>
+        <div class="contact-quote-inset" style="background:rgba(250,250,243,.06);border-left-color:var(--g);">
+          <p style="color:rgba(250,250,243,.85);">"In the halls of our schools, we don't just teach lessons; we nurture the future architects of our nation."</p>
+          <div class="quote-attr">
+            <div class="q-icon"><i class="fa-solid fa-school"></i></div>
+            <span style="color:rgba(250,250,243,.5);">The SESA Academic Mandate</span>
+          </div>
+        </div>
+      </div>
+      <div class="anim-in-2">
+        <div class="contact-img-wrap">
+          <img src="{{ url_for('static', filename='images/SESA.png') }}" alt="Ghanaian students" onerror="this.parentElement.style.background='var(--mg)'">
+          <div class="contact-img-label">
+            <p>Digital Quietude</p>
+            <span>Focus · Clarity · Growth</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ INQUIRY FORM ═══ -->
+<section class="pub-section pub-section--dark grain">
+  <div class="s-wrap">
+    <div style="text-align:center;margin-bottom:48px;">
+      <h2 class="s-h2 s-h2--light">Administrative Inquiry</h2>
+      <p style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(197,160,89,.7);">For School Leaders &amp; Institutional Partners</p>
+    </div>
+    <div class="inquiry-form-wrap">
+      <form method="POST" action="#">
+        <div class="form-row">
+          <div class="form-field">
+            <label for="admin-name">Administrator Name</label>
+            <input type="text" id="admin-name" name="admin_name" placeholder="Dr. Kwame Mensah" required>
+          </div>
+          <div class="form-field">
+            <label for="institution">Educational Institution</label>
+            <input type="text" id="institution" name="institution" placeholder="Accra Elite Academy" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="email">Official Email</label>
+            <input type="email" id="email" name="email" placeholder="admin@school.edu.gh" required>
+          </div>
+          <div class="form-field">
+            <label for="inquiry-type">Nature of Inquiry</label>
+            <select id="inquiry-type" name="inquiry_type">
+              <option>Standardized Assessment Setup</option>
+              <option>Platform Integration</option>
+              <option>Strategic Partnership</option>
+              <option>Curatorial Support</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-field" style="margin-bottom:36px;">
+          <label for="context">Institutional Context</label>
+          <textarea id="context" name="context" placeholder="Please share your specific academic goals..." rows="4"></textarea>
+        </div>
+        <button type="submit" class="btn-forest" style="width:100%;justify-content:center;letter-spacing:.08em;text-transform:uppercase;font-size:.82rem;">
+          Submit Inquiry <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CONTACT DETAILS ═══ -->
+<section class="pub-section">
+  <div class="s-wrap">
+    <div class="contact-details-grid">
+      <div class="contact-info">
+        <div style="width:56px;height:56px;background:rgba(197,160,89,.1);border-radius:16px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+          <i class="fa-solid fa-location-dot" style="color:var(--g);font-size:1.4rem;"></i>
+        </div>
+        <h3>Curatorial Office</h3>
+        <div style="width:48px;height:2px;background:linear-gradient(90deg,var(--g),transparent);margin:12px 0 16px;"></div>
+        <address>FOPA Diligent Consult<br>No. 45 Heritage Plaza<br>Cantonments, Accra, Ghana</address>
+        <a href="tel:+233200000000"><i class="fa-solid fa-phone"></i> +233 20 000 0000</a>
+        <a href="mailto:curator@fopaconsult.com"><i class="fa-solid fa-envelope"></i> curator@fopaconsult.com</a>
+      </div>
+      <div>
+        <div class="trust-cards">
+          <div class="trust-card">
+            <div class="trust-card-icon"><i class="fa-solid fa-circle-check"></i></div>
+            <h4>Academic Integrity</h4>
+            <p>Our framework is built upon the highest standards of Ghanaian educational excellence, ensuring every assessment is fair, transparent, and rigorous.</p>
+          </div>
+          <div class="trust-card">
+            <div class="trust-card-icon"><i class="fa-solid fa-star"></i></div>
+            <h4>Scholarly Support</h4>
+            <p>Beyond technical help, our curators offer pedagogical insights to help school leaders interpret data for real-world student improvement.</p>
+          </div>
+          <div class="trust-banner">
+            <p>Supporting 500+ Institutions</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ INFRASTRUCTURE PARTNERS ═══ -->
+<section class="pub-section pub-section--alt" style="border-top:1px solid rgba(2,40,24,.08);">
+  <div class="s-wrap">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;">
+      <div>
+        <span class="s-eyebrow s-eyebrow--left">Technological Foundation</span>
+        <h2 class="s-h2 s-h2--left" style="font-style:italic;margin-bottom:16px;">Infrastructure Partners</h2>
+        <div class="s-rule s-rule--left"></div>
+        <p style="font-size:.95rem;color:var(--mg);line-height:1.8;">The SESA framework is powered by the architectural precision of <strong style="color:var(--f);">SAP Technologies</strong>. As our lead infrastructure partner, they have engineered the digital bedrock that ensures institutional stability, data integrity, and the seamless delivery of academic assessments across Ghana.</p>
+      </div>
+      <div>
+        <div style="background:var(--iv);border:1px solid rgba(2,40,24,.08);border-radius:12px;padding:28px;">
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
+            <div style="width:48px;height:48px;background:var(--f);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="fa-solid fa-microchip" style="color:var(--g);font-size:1.2rem;"></i>
+            </div>
+            <div>
+              <p style="font-weight:700;color:var(--f);font-size:.95rem;">SAP Technologies</p>
+              <p style="font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--g);">Systems Architecture</p>
+            </div>
+          </div>
+          <p style="font-size:.82rem;color:var(--mg);font-style:italic;line-height:1.65;">"Building the systems that empower the next generation of West African leaders through digital innovation."</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<style>
+  @media (max-width: 768px) {
+    .contact-hero-grid { grid-template-columns: 1fr !important; }
+    .contact-details-grid { grid-template-columns: 1fr !important; }
+    .contact-img-wrap { display: none; }
+    div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+    .trust-cards { grid-template-columns: 1fr !important; }
+    .form-row { grid-template-columns: 1fr !important; }
+  }
+</style>
+{% include 'main/_pub_footer.html' %}
+
+</body>
+</html>

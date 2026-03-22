@@ -4,13 +4,11 @@
 {% block full_page %}
 <div class="auth-page">
   <div class="auth-page-brand">
-    <div>
-      <div class="auth-page-brand-logo">
-        <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="FOPA Logo">
-        <span class="auth-page-brand-sesa">SESA</span>
-      </div>
-      <div class="auth-page-brand-quote">"Supporting student <em>emotional wellbeing</em> across Ghana's schools."</div>
+    <div class="auth-page-brand-logo">
+      <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="FOPA Logo">
+      <span class="auth-page-brand-sesa">SESA</span>
     </div>
+    <div class="auth-page-brand-quote">"Supporting student <em>emotional wellbeing</em> across Ghana's schools."</div>
     <div class="auth-page-brand-org">FOPA DILLIGENT CONSULT</div>
   </div>
   <div class="auth-card">
@@ -25,8 +23,8 @@
     </div>
 
       {% if error %}
-      <div style="background:#fef2f2; border-left: 3px solid #ef4444; padding: 12px 14px; border-radius: 6px; margin-bottom: 1rem; color: #b91c1c; font-size: 0.88rem;">
-        {{ error }}
+      <div class="flash-toast error" style="margin-bottom:1rem;">
+        <span>{{ error }}</span>
       </div>
       {% endif %}
 
@@ -66,7 +64,7 @@
         </div>
 
         <div class="form-group" style="margin-top: 12px;">
-          <div style="display: flex; align-items: flex-start; gap: 10px; background: var(--ivory); border-radius: 8px; padding: 12px 14px;">
+          <div style="display: flex; align-items: flex-start; gap: 10px; background: var(--surface-low); border-radius: 8px; padding: 12px 14px;">
             <input type="checkbox" name="parental_consent" id="parental_consent_join"
                    style="margin-top: 3px; flex-shrink: 0;" required>
             <label for="parental_consent_join" style="font-size: 0.83rem; color: var(--gray-700); cursor: pointer; line-height: 1.5;">
@@ -85,12 +83,10 @@
         {% endif %}
       </form>
 
-      <p style="text-align: center; margin-top: 1.25rem; font-size: 0.82rem; color: var(--gray-400);">
-        Already have an account? <a href="{{ url_for('auth.login') }}" style="color: var(--green-700);">Log in</a>
-      </p>
-      <p style="text-align: center; margin-top: 0.5rem; font-size: 0.82rem;">
-        <a href="{{ url_for('main.landing') }}" style="color: var(--gray-400);">← Back to home</a>
-      </p>
+      <div class="auth-footer-links" style="text-align:center;">
+        <p>Already have an account? <a href="{{ url_for('auth.login') }}">Log in</a></p>
+        <p><a href="{{ url_for('main.landing') }}" style="display:inline-block;color:var(--gray-500);border:2px solid var(--gray-300);padding:8px 24px;border-radius:6px;font-size:0.85rem;font-weight:600;transition:border-color .2s,color .2s;">← Back to home</a></p>
+      </div>
     </div>
 </div>
 {% endblock %}
