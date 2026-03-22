@@ -26,7 +26,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   {% block extra_head %}{% endblock %}
 </head>
-<body class="{% if current_user.is_authenticated or session.get('school_id') %}has-bottom-nav {% endif %}{% block body_class %}{% endblock %}">
+<body class="{% if (current_user.is_authenticated and not current_user.is_super_admin) or session.get('school_id') %}has-bottom-nav {% endif %}{% block body_class %}{% endblock %}">
 
 
 {% block full_page %}
@@ -46,6 +46,12 @@
 
       {% if not (current_user.is_authenticated or session.get('school_id')) %}
       <button id="hamburger" class="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobileDrawer">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      {% elif current_user.is_authenticated and current_user.is_super_admin %}
+      <button id="sidebarToggle" class="hamburger" aria-label="Open admin menu">
         <span></span>
         <span></span>
         <span></span>
@@ -162,7 +168,7 @@
 {% endif %}
 
 {% block bottom_tab_bar %}
-{% if current_user.is_authenticated or session.get('school_id') %}
+{% if (current_user.is_authenticated and not current_user.is_super_admin) or session.get('school_id') %}
 <nav class="bottom-tab-bar" aria-label="Main navigation">
 
   {% if session.get('school_id') %}
@@ -181,13 +187,7 @@
     <button class="tab-item" id="profileTabBtn" aria-label="Account">
       <i class="fa-solid fa-circle-user tab-icon"></i><span class="tab-label">Account</span>
     </button>
-  {% elif current_user.is_super_admin %}
-    <a href="{{ url_for('admin.dashboard') }}" class="tab-item {% if request.endpoint and request.endpoint.startswith('admin') %}active{% endif %}">
-      <i class="fa-solid fa-shield-halved tab-icon"></i><span class="tab-label">Admin</span>
-    </a>
-    <button class="tab-item" id="profileTabBtn" aria-label="Account">
-      <i class="fa-solid fa-circle-user tab-icon"></i><span class="tab-label">Account</span>
-    </button>
+  
 
   {% elif current_user.is_counsellor %}
     <a href="{{ url_for('counsellor.dashboard') }}" class="tab-item {% if request.endpoint and request.endpoint.startswith('counsellor') %}active{% endif %}">
@@ -336,7 +336,7 @@ document.querySelectorAll('.flash-toast').forEach((el, i) => {
 
 {% block extra_scripts %}{% endblock %}
 
-{% if current_user.is_authenticated or session.get('school_id') %}
+{% if (current_user.is_authenticated and not current_user.is_super_admin) or session.get('school_id') %}
 <style>
 .profile-sheet { position: fixed; inset: 0; z-index: 300; pointer-events: none; }
 .profile-sheet.open { pointer-events: auto; }

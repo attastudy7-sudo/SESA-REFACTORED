@@ -546,7 +546,7 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
 /* ─── Buttons ────────────────────────────────────────────── */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  padding: 10px 22px; border-radius: var(--radius-md);
+  padding: 14px 32px; border-radius: var(--radius-md);
   font-weight: 600; font-size: 0.9rem; cursor: pointer; border: none;
   transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
   line-height: 1; text-decoration: none; white-space: nowrap;
@@ -1807,6 +1807,7 @@ input:-webkit-autofill:active {
 @media (max-width:768px) {
   .navbar-links { display:none; }
   .landing-nav .hamburger { display:flex; }
+  .navbar .hamburger { display:flex; }
   .page-hero h1 { font-size:1.5rem; }
 }
 @media (max-width:480px) {

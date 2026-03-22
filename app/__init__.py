@@ -83,6 +83,7 @@ def _init_extensions(app: Flask) -> None:
     from app.models.account import Accounts
     from app.models.quiz_session import QuizSession  # noqa: F401
     from app.models.counsellor_profile import CounsellorProfile  # noqa: F401
+    from app.models.assessment_type import AssessmentType  # noqa: F401
 
     @login_manager.user_loader
     def load_user(user_id: str):

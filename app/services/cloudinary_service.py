@@ -38,3 +38,23 @@ def upload_counsellor_photo(file_storage, username: str) -> str | None:
     except Exception as e:
         logger.error('Cloudinary upload failed | user=%s error=%s', username, e)
         return None
+
+def upload_assessment_image(file_storage, assessment_name: str) -> str | None:
+    """Upload an assessment type image to Cloudinary."""
+    import re
+    slug = re.sub(r'[^a-z0-9]', '_', assessment_name.lower())
+    try:
+        result = cloudinary.uploader.upload(
+            file_storage,
+            folder='sesa/assessments',
+            public_id=f'assessment_{slug}',
+            overwrite=True,
+            transformation=[
+                {'width': 800, 'height': 320, 'crop': 'fill', 'gravity': 'auto'},
+                {'quality': 'auto', 'fetch_format': 'auto'},
+            ],
+        )
+        return result.get('secure_url')
+    except Exception as e:
+        logger.error('Cloudinary assessment image upload failed | name=%s error=%s', assessment_name, e)
+        return None

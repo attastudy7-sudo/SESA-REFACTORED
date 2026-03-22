@@ -57,30 +57,48 @@
       <p style="font-size: 0.85rem; color: var(--gray-500);">Each test covers a different aspect of social-emotional health.</p>
     </div>
 
-    {% set tests_meta = [
-      {'name': 'Separation Anxiety Disorder',   'title': 'Fear of Being Left Alone',                      'desc': 'Measures anxiety related to separation or fear of being left alone',          'count': tests_meta[0].count, 'image': 'images/separation-anxiety.png'},
-      {'name': 'Social Phobia',                 'title': 'Fear of Being Judged or Embarrassed in School', 'desc': 'Assesses fear of being judged or embarrassed in public',                     'count': tests_meta[1].count, 'image': 'images/socio-phobia.png'},
-      {'name': 'Generalised Anxiety Disorder',  'title': 'Constant Worrying About Many Things',           'desc': 'Evaluates constant worry about many things and various aspects of life',      'count': tests_meta[2].count, 'image': 'images/generalised-anxiety.png'},
-      {'name': 'Panic Disorder',                'title': 'Sudden Fear Attacks / Heart Racing Moments',    'desc': 'Measures experiences of sudden fear or heart racing moments',                 'count': tests_meta[3].count, 'image': 'images/panic disorder.png'},
-      {'name': 'Obsessive Compulsive Disorder', 'title': 'Uncontrollable Thoughts / Repeating Actions',  'desc': 'Assesses uncontrollable thoughts and repeating actions',                     'count': tests_meta[4].count, 'image': 'images/ocd.png'},
-      {'name': 'Major Depressive Disorder',     'title': 'Deep Sadness / Loss of Interest in Life',      'desc': 'Evaluates symptoms of deep sadness or loss of interest in life',             'count': tests_meta[5].count, 'image': 'images/major depressive disorder.png'},
-    ] %}
-
     <div class="test-grid">
       {% for test in tests_meta %}
       <a href="{{ url_for('test.display_questions', test_type=test.name) }}" class="test-card">
         <div class="test-card-image">
-          <img src="{{ url_for('static', filename=test.image) }}"
+          {% if test.get('image_url') %}
+          {% if test.image_url.startswith('/static/') %}
+          <img src="{{ test.image_url }}"
                alt="{{ test.name }}"
                loading="lazy"
                width="400"
                height="160">
+          {% else %}
+          <img src="{{ test.image_url }}"
+               alt="{{ test.name }}"
+               loading="lazy"
+               width="400"
+               height="160">
+          {% endif %}
+               alt="{{ test.name }}"
+               loading="lazy"
+               width="400"
+               height="160">
+          {% else %}
+          {% set color_map = {
+            'teal':   '#0e7490',
+            'blue':   '#1d4ed8',
+            'purple': '#7c3aed',
+            'orange': '#ea580c',
+            'red':    '#dc2626',
+            'indigo': '#4338ca',
+            'green':  '#15803d',
+          } %}
+          {% set bg = color_map.get(test.get('color', 'green'), '#15803d') %}
+          <div style="width:100%; height:160px; background:{{ bg }}; display:flex; align-items:center; justify-content:center;">
+            <span style="font-size:3rem; opacity:0.6;">{{ test.get('icon', '🧠') }}</span>
+          </div>
+          {% endif %}
         </div>
         <div class="test-card-content">
-          <h3>{{ test.title }}</h3>
-          <p>{{ test.desc }}</p>
+          <h3>{{ test.get('title') or test.get('display_name') or test.name }}</h3>
+          <p>{{ test.get('desc') or test.get('description') or '' }}</p>
           <div class="test-card-meta">
-            <span class="test-card-count">{{ test.count }} questions</span>
             <span class="test-card-arrow">→</span>
           </div>
         </div>

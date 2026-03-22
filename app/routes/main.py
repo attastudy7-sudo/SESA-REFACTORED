@@ -58,14 +58,20 @@ def home():
             func.count(Question.id).label('count')
         ).group_by(Question.test_type).all()
     }
+    # question_counts is still used above for the count badge — kept intentionally
 
+    from app.models.assessment_type import AssessmentType
     tests_meta = [
-        {'name': 'Separation Anxiety Disorder',   'key': 'sad',  'count': question_counts.get('Separation Anxiety Disorder',   0), 'icon': '🏠', 'color': 'teal'},
-        {'name': 'Social Phobia',                 'key': 'sp',   'count': question_counts.get('Social Phobia',                 0), 'icon': '👥', 'color': 'blue'},
-        {'name': 'Generalised Anxiety Disorder',  'key': 'gad',  'count': question_counts.get('Generalised Anxiety Disorder',  0), 'icon': '🌀', 'color': 'purple'},
-        {'name': 'Panic Disorder',                'key': 'pd',   'count': question_counts.get('Panic Disorder',                0), 'icon': '💨', 'color': 'orange'},
-        {'name': 'Obsessive Compulsive Disorder', 'key': 'ocd',  'count': question_counts.get('Obsessive Compulsive Disorder', 0), 'icon': '🔄', 'color': 'red'},
-        {'name': 'Major Depressive Disorder',     'key': 'mdd',  'count': question_counts.get('Major Depressive Disorder',    0), 'icon': '🌧', 'color': 'indigo'},
+        {
+            'name':  at.name,
+            'title': at.display_name,
+            'desc':  at.description or '',
+            'icon':  at.icon or '🧠',
+            'color': at.color or 'green',
+            'count': question_counts.get(at.name, 0),
+            'image_url': at.image_url,
+        }
+        for at in AssessmentType.query.filter_by(is_active=True).order_by(AssessmentType.order).all()
     ]
 
     # Cross-test average removed — clinically invalid (tests have different max scores).
@@ -655,8 +661,8 @@ def download_report(school_id):
 def join_with_code():
     """Student self-registration via 6-digit school access code."""
     from werkzeug.security import generate_password_hash
+    from datetime import datetime, timezone
     import re
-
     error = None
     school = None
     code = request.args.get('code', '').strip().upper()
@@ -699,6 +705,9 @@ def join_with_code():
                     password=generate_password_hash(password),
                     class_group=class_group,
                     school_id=school.id,
+                    consent_given=True,
+                    consent_given_at=datetime.now(timezone.utc),
+                    consent_version='v1.0',
                 )
                 try:
                     db.session.add(account)
@@ -713,6 +722,10 @@ def join_with_code():
                     return redirect(url_for('main.home'))
                 except Exception as e:
                     db.session.rollback()
+                    logger.error(
+                        'Join registration failed | school=%s ip=%s error=%s',
+                        school.school_name, request.remote_addr, str(e),
+                    )
                     error = 'An error occurred. Please try again.'
 
     return render_template('auth/join.html', school=school, code=code, error=error)

@@ -8,6 +8,7 @@ class Question(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     test_type = db.Column(db.String(100), nullable=False, index=True)
     question_content = db.Column(db.Text, nullable=False)
+    order = db.Column(db.Integer, default=0, nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     def __repr__(self):

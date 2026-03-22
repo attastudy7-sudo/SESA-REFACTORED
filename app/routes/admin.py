@@ -8,6 +8,7 @@ from app.models.account import Accounts
 from app.models.school import School
 from app.models.test_result import TestResult
 from app.models.question import Question
+from app.models.assessment_type import AssessmentType
 from app.forms import EditAccountForm, EditSchoolForm, QuestionForm
 from app.utils.decorators import super_admin_required
 from app.routes.qr import get_stage_summary
@@ -28,7 +29,8 @@ def dashboard():
         total_schools=School.query.count(),
         stage_summary=get_stage_summary(),
         schools=School.query.order_by(School.school_name).all(),
-        questions=Question.query.order_by(Question.test_type, Question.id).limit(500).all(),
+        questions=Question.query.order_by(Question.test_type, Question.order, Question.id).limit(500).all(),
+        assessment_types=AssessmentType.query.order_by(AssessmentType.order).all(),
     )
 
 
@@ -119,16 +121,21 @@ def toggle_upload(school_id):
 @login_required
 @super_admin_required
 def add_question():
-    form = QuestionForm()
-    if form.validate_on_submit():
-        db.session.add(Question(
-            test_type=form.test_type.data,
-            question_content=form.question_content.data.strip(),
-        ))
-        db.session.commit()
-        flash('Question added successfully.', 'success')
+    if request.method == 'POST':
+        test_type = request.form.get('test_type', '').strip()
+        content = request.form.get('question_content', '').strip()
+        if test_type and len(content) >= 10:
+            db.session.add(Question(
+                test_type=test_type,
+                question_content=content,
+                order=Question.query.filter_by(test_type=test_type).count(),
+            ))
+            db.session.commit()
+            flash('Question added successfully.', 'success')
+            return redirect(url_for('admin.dashboard') + '#question_database')
+        flash('Please fill in all fields correctly.', 'error')
         return redirect(url_for('admin.dashboard') + '#question_database')
-    return render_template('admin/question_form.html', form=form, title='Add Question')
+    return redirect(url_for('admin.dashboard') + '#question_database')
 
 
 @admin_bp.route('/questions/<int:question_id>/edit', methods=['GET', 'POST'])
@@ -165,6 +172,99 @@ def delete_question(question_id):
     flash('Question deleted successfully.', 'success')
     return redirect(url_for('admin.dashboard') + '#question_database')
 
+
+# ── Assessment type management ────────────────────────────────────────────────
+
+@admin_bp.route('/assessment-types/add', methods=['POST'])
+@login_required
+@super_admin_required
+def add_assessment_type():
+    import json
+    name           = request.form.get('name', '').strip()
+    display_name   = request.form.get('display_name', '').strip()
+    description    = request.form.get('description', '').strip()
+    icon           = request.form.get('icon', '🧠').strip()
+    color          = request.form.get('color', 'green').strip()
+    order          = int(request.form.get('order', 0))
+    scoring_ranges_raw = request.form.get('scoring_ranges', '[]').strip()
+
+    if not name or not display_name:
+        flash('Name and display name are required.', 'error')
+        return redirect(url_for('admin.dashboard') + '#assessment_types')
+    if AssessmentType.query.filter_by(name=name).first():
+        flash(f'Assessment type "{name}" already exists.', 'error')
+        return redirect(url_for('admin.dashboard') + '#assessment_types')
+    try:
+        scoring_ranges = json.loads(scoring_ranges_raw)
+    except (ValueError, TypeError):
+        flash('Invalid scoring ranges JSON.', 'error')
+        return redirect(url_for('admin.dashboard') + '#assessment_types')
+
+    image_url = None
+    image_file = request.files.get('image')
+    if image_file and image_file.filename:
+        from app.services.cloudinary_service import upload_assessment_image
+        image_url = upload_assessment_image(image_file, name)
+
+    db.session.add(AssessmentType(
+        name=name, display_name=display_name, description=description,
+        icon=icon, color=color, order=order, scoring_ranges=scoring_ranges,
+        image_url=image_url,
+    ))
+    db.session.commit()
+    flash(f'Assessment type "{display_name}" added.', 'success')
+    from urllib.parse import quote
+    return redirect(url_for('admin.dashboard') + f'?add_questions_for={quote(display_name)}#assessment_types')
+
+
+@admin_bp.route('/assessment-types/<int:type_id>/toggle', methods=['POST'])
+@login_required
+@super_admin_required
+def toggle_assessment_type(type_id):
+    at = AssessmentType.query.get_or_404(type_id)
+    at.is_active = not at.is_active
+    db.session.commit()
+    state = 'activated' if at.is_active else 'deactivated'
+    flash(f'"{at.display_name}" {state}.', 'success')
+    return redirect(url_for('admin.dashboard') + '#assessment_types')
+
+@admin_bp.route('/assessment-types/<int:type_id>/edit', methods=['POST'])
+@login_required
+@super_admin_required
+def edit_assessment_type(type_id):
+    import json
+    at = AssessmentType.query.get_or_404(type_id)
+    at.name           = request.form.get('name', '').strip()
+    at.display_name   = request.form.get('display_name', '').strip()
+    at.description    = request.form.get('description', '').strip() or None
+    at.icon           = request.form.get('icon', '').strip() or None
+    at.color          = request.form.get('color', 'green').strip()
+    at.order          = int(request.form.get('order', 0))
+    try:
+        at.scoring_ranges = json.loads(request.form.get('scoring_ranges', '[]'))
+    except (ValueError, TypeError):
+        flash('Invalid scoring ranges JSON.', 'error')
+        return redirect(url_for('admin.dashboard') + '#assessment_types')
+    image_file = request.files.get('image')
+    if image_file and image_file.filename:
+        from app.services.cloudinary_service import upload_assessment_image
+        new_url = upload_assessment_image(image_file, at.name)
+        if new_url:
+            at.image_url = new_url
+    db.session.commit()
+    flash(f'"{at.display_name}" updated successfully.', 'success')
+    return redirect(url_for('admin.dashboard') + '#assessment_types')
+
+@admin_bp.route('/assessment-types/<int:type_id>/delete', methods=['POST'])
+@login_required
+@super_admin_required
+def delete_assessment_type(type_id):
+    at = AssessmentType.query.get_or_404(type_id)
+    name = at.display_name
+    db.session.delete(at)
+    db.session.commit()
+    flash(f'Assessment type "{name}" deleted.', 'success')
+    return redirect(url_for('admin.dashboard') + '#assessment_types')
 # ── Counsellor verification ───────────────────────────────────────────────────
 
 @admin_bp.route('/counsellors')

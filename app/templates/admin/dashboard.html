@@ -231,16 +231,17 @@
 /* ── Sidebar toggle for mobile ── */
 .admin-sidebar-toggle {
   display: none;
-  background: var(--green-900, #022818);
+  background: rgba(255,255,255,0.08);
   color: var(--gold-400, #fecf44);
   border: none;
-  padding: 10px 16px;
+  padding: 8px 10px;
   font-size: 1rem;
   cursor: pointer;
-  width: 100%;
-  text-align: left;
+  width: auto;
+  border-radius: 8px;
   gap: 8px;
   align-items: center;
+  flex-shrink: 0;
 }
 @media (max-width: 768px) {
   .admin-sidebar { position: fixed; left: -220px; top: 0; transition: left 0.25s; height: 100vh; }
@@ -253,6 +254,15 @@
   .admin-stat-grid { grid-template-columns: repeat(2,1fr); gap: 10px; }
   .admin-stat-val { font-size: 1.4rem; }
 }
+
+/* Force tables inside admin to always render as proper tables, never card-list */
+.admin-shell .table { display:table !important; width:100% !important; }
+.admin-shell .table thead { display:table-header-group !important; }
+.admin-shell .table tbody { display:table-row-group !important; }
+.admin-shell .table tr { display:table-row !important; border:none !important; padding:0 !important; background:none !important; }
+.admin-shell .table td { display:table-cell !important; padding:11px 16px !important; }
+.admin-shell .table td::before { display:none !important; }
+.admin-shell .table th { display:table-cell !important; }
 </style>
 {% endblock %}
 
@@ -272,10 +282,6 @@
   {% if q.test_type not in test_q_counts %}{% set _ = test_q_counts.update({q.test_type: 0}) %}{% endif %}
   {% set _ = test_q_counts.update({q.test_type: test_q_counts[q.test_type] + 1}) %}
 {% endfor %}
-
-<button class="admin-sidebar-toggle" id="sidebarToggle">
-  <i class="fa-solid fa-bars"></i> &nbsp;Admin Menu
-</button>
 
 <div class="admin-shell">
 
@@ -319,6 +325,10 @@
       </a>
       <button class="admin-nav-item" id="navAddQuestion">
         <i class="fa-solid fa-plus"></i> Add Question
+      </button>
+      <button class="admin-nav-item" data-panel="assessment_types">
+        <i class="fa-solid fa-brain"></i> Assessment Types
+        <span class="nav-count">{{ assessment_types | length }}</span>
       </button>
     </nav>
 
@@ -661,6 +671,63 @@
         </div>
       </div>
 
+    <!-- ══ ASSESSMENT TYPES PANEL ══ -->
+      <div id="assessment_types" class="admin-panel">
+        <div class="admin-panel-card">
+          <div class="admin-panel-header">
+            <h3><i class="fa-solid fa-brain" style="margin-right:8px;"></i>Assessment Types</h3>
+            <button class="btn btn-gold btn-sm" id="btnAddAssessmentType">+ Add Type</button>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="table">
+              <thead>
+                <tr><th>Name</th><th>Display Name</th><th>Icon</th><th>Order</th><th>Status</th><th>Stages</th><th>Actions</th></tr>
+              </thead>
+              <tbody>
+                {% for at in assessment_types %}
+                <tr>
+                  <td style="font-weight:600; font-size:0.82rem;">{{ at.name }}</td>
+                  <td style="font-size:0.82rem;">{{ at.display_name }}</td>
+                  <td style="font-size:1.1rem;">{{ at.icon }}</td>
+                  <td style="font-size:0.82rem; color:var(--gray-500);">{{ at.order }}</td>
+                  <td>
+                    <form method="POST" action="{{ url_for('admin.toggle_assessment_type', type_id=at.id) }}" style="display:inline">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button type="submit" class="badge {% if at.is_active %}stage-normal{% else %}stage-clinical{% endif %}" style="border:none; cursor:pointer; padding:5px 12px;">
+                        {% if at.is_active %}<i class="fa-solid fa-check"></i> Active{% else %}<i class="fa-solid fa-lock"></i> Inactive{% endif %}
+                      </button>
+                    </form>
+                  </td>
+                  <td style="font-size:0.78rem; color:var(--gray-500);">{{ at.scoring_ranges | length }} stages</td>
+                  <td>
+                    <div style="display:flex; gap:4px;">
+                      <button class="btn btn-ghost btn-sm at-edit-btn"
+                              data-id="{{ at.id }}"
+                              data-name="{{ at.name | e }}"
+                              data-display="{{ at.display_name | e }}"
+                              data-description="{{ at.description or '' | e }}"
+                              data-icon="{{ at.icon or '' }}"
+                              data-color="{{ at.color or '' }}"
+                              data-order="{{ at.order }}"
+                              data-image="{{ at.image_url or '' }}"
+                              data-ranges="{{ at.scoring_ranges | tojson | e }}">Edit</button>
+                      <form method="POST" action="{{ url_for('admin.delete_assessment_type', type_id=at.id) }}" class="confirm-delete" data-item="{{ at.display_name }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7"><div class="empty-state"><p>No assessment types found.</p></div></td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </div>{# end admin-content #}
   </div>{# end admin-main #}
 </div>{# end admin-shell #}
@@ -678,6 +745,7 @@
     all_schools: 'Registered Schools',
     all_results: 'Assessment Results',
     question_database: 'Question Database',
+    assessment_types: 'Assessment Types',
   };
 
   function activatePanel(id) {
@@ -854,7 +922,12 @@
   max-width: 520px;
   box-shadow: 0 20px 60px rgba(0,0,0,.25);
   overflow: hidden;
+  max-height: 90vh; display: flex; flex-direction: column;
 }
+.q-modal form {
+  display: flex; flex-direction: column; flex: 1; min-height: 0;
+}
+.q-modal-body { padding: 24px 20px; overflow-y: auto; flex: 1; }
 .q-modal-header {
   background: var(--green-800);
   padding: 16px 20px;
@@ -917,15 +990,8 @@
           <label for="qModalType">Assessment Type</label>
           <select id="qModalType" name="test_type" required>
             <option value="">Select assessment type</option>
-            {% for val, label in [
-              ('Separation Anxiety Disorder',  'Separation Anxiety Disorder'),
-              ('Social Phobia',                'Social / School Phobia'),
-              ('Generalised Anxiety Disorder', 'Generalised Anxiety Disorder'),
-              ('Panic Disorder',               'Panic Disorder'),
-              ('Obsessive Compulsive Disorder','Obsessive Compulsive Disorder'),
-              ('Major Depressive Disorder',    'Major Depressive Disorder'),
-            ] %}
-            <option value="{{ val }}">{{ label }}</option>
+            {% for at in assessment_types %}
+            <option value="{{ at.name }}">{{ at.display_name }}</option>
             {% endfor %}
           </select>
           <div class="q-modal-error" id="qTypeError">Please select an assessment type.</div>
@@ -958,6 +1024,18 @@
 
   var addUrl = '{{ url_for("admin.add_question") }}';
 
+  window.openQuestionModal = function(preselect) {
+    typeErr.style.display = 'none';
+    contentErr.style.display = 'none';
+    titleEl.textContent = 'Add Question';
+    form.action = addUrl;
+    typeSelect.value = preselect || '';
+    contentTA.value = '';
+    backdrop.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(function() { typeSelect.focus(); }, 50);
+  };
+
   function openAdd() {
     typeErr.style.display = 'none';
     contentErr.style.display = 'none';
@@ -980,7 +1058,10 @@
     setTimeout(function() { contentTA.focus(); }, 50);
   }
 
-  function closeModal() { backdrop.classList.remove('open'); }
+  function closeModal() {
+    backdrop.classList.remove('open');
+    document.body.style.overflow = '';
+  }
 
   // Add question buttons
   var navAdd = document.getElementById('navAddQuestion');
@@ -1007,6 +1088,424 @@
     if (contentTA.value.trim().length < 10) { contentErr.style.display = 'block'; valid = false; }
     else { contentErr.style.display = 'none'; }
     if (!valid) e.preventDefault();
+  });
+})();
+// Auto-open question modal if redirected from new assessment type creation
+const urlParams = new URLSearchParams(window.location.search);
+  const addQuestionsFor = urlParams.get('add_questions_for');
+  if (addQuestionsFor && window.openQuestionModal) {
+    activatePanel('question_database');
+    setTimeout(() => {
+      window.openQuestionModal(addQuestionsFor);
+      history.replaceState(null, '', window.location.pathname + '#question_database');
+    }, 300);
+  }
+
+</script>
+
+<!-- ══ Assessment Type Modal ══ -->
+<style>
+.at-modal-backdrop {
+  display: none; position: fixed;
+  top:0; left:0; right:0; bottom:0;
+  background: rgba(0,0,0,.55);
+  z-index: 9999; align-items: flex-start; justify-content: center;
+  padding: 20px; overflow-y: auto;
+}
+.at-modal-backdrop.open { display: flex; }
+.at-modal {
+  background: var(--white); border-radius: var(--radius-lg);
+  width: 100%; max-width: 640px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.25); overflow: hidden;
+  height: 90vh; display: flex; flex-direction: column;
+}
+.at-modal form {
+  display: flex; flex-direction: column; flex: 1; min-height: 0;
+}
+.at-modal-body {
+  padding: 20px; overflow-y: auto; flex: 1;
+  -webkit-overflow-scrolling: touch;
+}
+.at-modal-header {
+  background: var(--green-800); padding: 16px 20px;
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+.at-modal-header h3 { font-family: var(--font-display); font-size: 1rem; color: #fff; margin: 0; }
+.at-modal-close {
+  background: rgba(255,255,255,.1); border: none; color: #fff;
+  width: 28px; height: 28px; border-radius: 6px; cursor: pointer;
+  font-size: 0.85rem; display: flex; align-items: center; justify-content: center;
+}
+.at-modal-close:hover { background: rgba(255,255,255,.2); }
+.at-modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+.at-field { margin-bottom: 16px; }
+.at-field label {
+  display: block; font-size: 0.78rem; font-weight: 700;
+  color: var(--gray-600); margin-bottom: 5px;
+  text-transform: uppercase; letter-spacing: .06em;
+}
+.at-field input, .at-field select, .at-field textarea {
+  width: 100%; padding: 9px 12px;
+  border: 1.5px solid var(--gray-200); border-radius: var(--radius-md);
+  font-size: 0.88rem; color: var(--gray-800); background: var(--white);
+  transition: border-color 0.15s; font-family: inherit; box-sizing: border-box;
+}
+.at-field input:focus, .at-field select:focus, .at-field textarea:focus {
+  outline: none; border-color: var(--green-500);
+}
+.at-field textarea { resize: vertical; min-height: 60px; }
+.at-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.at-modal-footer {
+  padding: 14px 20px; border-top: 1px solid var(--gray-100);
+  display: flex; justify-content: flex-end; gap: 10px; background: var(--ivory); flex-shrink: 0;
+}
+
+/* Scoring ranges builder */
+.ranges-section { margin-top: 4px; }
+.ranges-section-title {
+  font-size: 0.78rem; font-weight: 700; color: var(--gray-600);
+  text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px;
+}
+.range-row {
+  background: var(--white);
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.range-row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--green-800);
+}
+.range-row-header-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(255,255,255,.8);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.range-row-remove {
+  background: rgba(255,255,255,.1);
+  color: rgba(255,100,100,.8);
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 0.78rem;
+}
+.range-row-remove:hover { background: rgba(255,255,255,.2); }
+.range-row-body { padding: 12px; }
+.range-row-scores {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.range-score-field label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--gray-500);
+  display: block;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.range-score-field input {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 6px;
+  box-sizing: border-box;
+  text-align: center;
+}
+.range-score-field input:focus { outline: none; border-color: var(--green-500); }
+.range-message-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--gray-500);
+  display: block;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.range-row textarea {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 0.82rem;
+  min-height: 60px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 6px;
+  box-sizing: border-box;
+  font-family: inherit;
+  resize: vertical;
+  line-height: 1.5;
+}
+.range-row textarea:focus { outline: none; border-color: var(--green-500); }
+.range-row-stage select {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 6px;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+  font-family: inherit;
+}
+.range-row-stage select:focus { outline: none; border-color: var(--green-500); }
+@media (max-width: 480px) {
+  .range-row-scores { grid-template-columns: 1fr 1fr; }
+  .at-grid-2 { grid-template-columns: 1fr; }
+}
+.btn-add-range {
+  background: var(--green-50); color: var(--green-700);
+  border: 1.5px dashed var(--green-300); border-radius: var(--radius-md);
+  padding: 8px; width: 100%; font-size: 0.82rem; font-weight: 600;
+  cursor: pointer; font-family: inherit; margin-top: 4px;
+}
+.btn-add-range:hover { background: var(--green-100); }
+</style>
+
+<div class="at-modal-backdrop" id="atModalBackdrop">
+  <div class="at-modal" role="dialog" aria-modal="true">
+    <div class="at-modal-header">
+      <h3 id="atModalTitle">Add Assessment Type</h3>
+      <button class="at-modal-close" id="atModalClose"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form id="atModalForm" method="POST" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="at-modal-body">
+
+        <div class="at-grid-2">
+          <div class="at-field">
+            <label>Internal Name <span style="color:var(--red-600)">*</span></label>
+            <input type="text" name="name" id="atName" placeholder="e.g. Social Phobia" required>
+          </div>
+          <div class="at-field">
+            <label>Display Name <span style="color:var(--red-600)">*</span></label>
+            <input type="text" name="display_name" id="atDisplayName" placeholder="e.g. Social Phobia" required>
+          </div>
+        </div>
+
+        <div class="at-field">
+          <label>Description</label>
+          <textarea name="description" id="atDescription" placeholder="Brief description shown on the assessment card…"></textarea>
+        </div>
+
+        <div class="at-grid-2">
+          <div class="at-field">
+            <label>Icon (emoji)</label>
+            <input type="text" name="icon" id="atIcon" placeholder="e.g. 🧠" maxlength="4">
+          </div>
+          <div class="at-field">
+            <label>Color</label>
+            <select name="color" id="atColor">
+              <option value="green">Green</option>
+              <option value="teal">Teal</option>
+              <option value="blue">Blue</option>
+              <option value="purple">Purple</option>
+              <option value="orange">Orange</option>
+              <option value="red">Red</option>
+              <option value="indigo">Indigo</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="at-field">
+          <label>Order (position on home page)</label>
+          <input type="number" name="order" id="atOrder" value="0" min="0">
+        </div>
+
+        <div class="at-field">
+          <label>Card Image <span style="color:var(--gray-400); font-weight:400; text-transform:none; letter-spacing:0;">(optional — leave blank to use color theme)</span></label>
+          <input type="file" name="image" id="atImage" accept="image/*" style="padding:6px;">
+          <div id="atImagePreview" style="margin-top:8px; display:none;">
+            <img id="atImagePreviewImg" style="width:100%; height:120px; object-fit:cover; border-radius:8px; border:1.5px solid var(--gray-200);">
+          </div>
+          <div id="atCurrentImage" style="margin-top:8px; display:none;">
+            <p style="font-size:0.75rem; color:var(--gray-500); margin-bottom:4px;">Current image:</p>
+            <img id="atCurrentImageImg" style="width:100%; height:120px; object-fit:cover; border-radius:8px; border:1.5px solid var(--gray-200);">
+          </div>
+        </div>
+
+        <div class="ranges-section">
+          <div class="ranges-section-title">Scoring Ranges <span style="color:var(--red-600)">*</span></div>
+          <div id="rangesContainer"></div>
+          <button type="button" class="btn-add-range" id="btnAddRange">+ Add Stage</button>
+          <input type="hidden" name="scoring_ranges" id="atScoringRanges">
+        </div>
+
+      </div>
+      <div class="at-modal-footer">
+        <button type="button" class="btn btn-ghost btn-sm" id="atModalCancel">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-sm">Save Assessment Type</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+(function() {
+  const backdrop  = document.getElementById('atModalBackdrop');
+  const form      = document.getElementById('atModalForm');
+  const titleEl   = document.getElementById('atModalTitle');
+  const closeBtn  = document.getElementById('atModalClose');
+  const cancelBtn = document.getElementById('atModalCancel');
+  const container = document.getElementById('rangesContainer');
+  const addRangeBtn = document.getElementById('btnAddRange');
+  const hiddenRanges = document.getElementById('atScoringRanges');
+
+  const STAGE_NAMES = ['Normal Stage', 'Mild Stage', 'Elevated Stage', 'Clinical Stage'];
+
+  function buildRangeRow(data) {
+    data = data || {};
+    const stages = ['Normal Stage','Mild Stage','Elevated Stage','Clinical Stage'];
+    const stageColors = { 'Normal Stage': '#16a34a', 'Mild Stage': '#ca8a04', 'Elevated Stage': '#ea580c', 'Clinical Stage': '#dc2626' };
+    const selectedStage = data.stage || '';
+    const headerColor = stageColors[selectedStage] || 'var(--green-800)';
+    const row = document.createElement('div');
+    row.className = 'range-row';
+    row.innerHTML = `
+      <div class="range-row-header" style="background:${headerColor};">
+        <span class="range-row-header-label">${selectedStage || 'New Stage'}</span>
+        <button type="button" class="range-row-remove" title="Remove"><i class="fa-solid fa-trash"></i></button>
+      </div>
+      <div class="range-row-body">
+        <div class="range-row-stage">
+          <select class="range-stage">
+            <option value="">Select stage…</option>
+            ${stages.map(s => `<option value="${s}" ${data.stage === s ? 'selected' : ''}>${s}</option>`).join('')}
+          </select>
+        </div>
+        <div class="range-row-scores">
+          <div class="range-score-field">
+            <label>Min %</label>
+            <input type="number" class="range-min" placeholder="0" min="0" max="100" value="${data.min ?? ''}">
+          </div>
+          <div class="range-score-field">
+            <label>Max %</label>
+            <input type="number" class="range-max" placeholder="100" min="0" max="100" value="${data.max ?? ''}">
+          </div>
+        </div>
+        <label class="range-message-label">Result Message</label>
+        <textarea class="range-message" placeholder="Message shown to the student after completing this assessment…">${data.message || ''}</textarea>
+      </div>
+    `;
+    const stageSelect = row.querySelector('.range-stage');
+    const header = row.querySelector('.range-row-header');
+    const headerLabel = row.querySelector('.range-row-header-label');
+    stageSelect.addEventListener('change', () => {
+      const color = stageColors[stageSelect.value] || 'var(--green-800)';
+      header.style.background = color;
+      headerLabel.textContent = stageSelect.value || 'New Stage';
+    });
+    row.querySelector('.range-row-remove').addEventListener('click', () => row.remove());
+    return row;
+  }
+
+  function collectRanges() {
+    const rows = container.querySelectorAll('.range-row');
+    return Array.from(rows).map(row => ({
+      stage: row.querySelector('.range-stage').value.trim(),
+      min:   parseInt(row.querySelector('.range-min').value) || 0,
+      max:   parseInt(row.querySelector('.range-max').value) || 0,
+      message: row.querySelector('.range-message').value.trim(),
+    }));
+  }
+
+  function openAdd() {
+    titleEl.textContent = 'Add Assessment Type';
+    form.action = '{{ url_for("admin.add_assessment_type") }}';
+    form.reset();
+    container.innerHTML = '';
+    STAGE_NAMES.forEach(s => container.appendChild(buildRangeRow({ stage: s })));
+    backdrop.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function openEdit(btn) {
+    titleEl.textContent = 'Edit Assessment Type';
+    const id = btn.dataset.id;
+    form.action = `/admin/assessment-types/${id}/edit`;
+    document.getElementById('atName').value        = btn.dataset.name;
+    document.getElementById('atDisplayName').value = btn.dataset.display;
+    document.getElementById('atDescription').value = btn.dataset.description;
+    document.getElementById('atIcon').value         = btn.dataset.icon;
+    document.getElementById('atColor').value        = btn.dataset.color;
+    document.getElementById('atOrder').value        = btn.dataset.order;
+    const currentImageWrap = document.getElementById('atCurrentImage');
+    const currentImageImg  = document.getElementById('atCurrentImageImg');
+    document.getElementById('atImage').value = '';
+    document.getElementById('atImagePreview').style.display = 'none';
+    if (btn.dataset.image) {
+      currentImageImg.src = btn.dataset.image;
+      currentImageWrap.style.display = 'block';
+    } else {
+      currentImageWrap.style.display = 'none';
+    }
+    container.innerHTML = '';
+    let ranges = [];
+    try { ranges = JSON.parse(btn.dataset.ranges); } catch(_) {}
+    ranges.forEach(r => container.appendChild(buildRangeRow(r)));
+    backdrop.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    backdrop.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  addRangeBtn.addEventListener('click', () => container.appendChild(buildRangeRow()));
+
+  document.getElementById('btnAddAssessmentType').addEventListener('click', openAdd);
+
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.at-edit-btn');
+    if (btn) openEdit(btn);
+  });
+
+  form.addEventListener('submit', function(e) {
+    hiddenRanges.value = JSON.stringify(collectRanges());
+  });
+
+  closeBtn.addEventListener('click', closeModal);
+  cancelBtn.addEventListener('click', closeModal);
+  backdrop.addEventListener('click', e => { if (e.target === backdrop) closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+})();
+</script>
+
+<script>
+(function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const addQuestionsFor = urlParams.get('add_questions_for');
+  if (addQuestionsFor) {
+    setTimeout(() => {
+      if (typeof activatePanel === 'function') activatePanel('question_database');
+      if (typeof window.openQuestionModal === 'function') {
+        window.openQuestionModal(addQuestionsFor);
+        history.replaceState(null, '', window.location.pathname + '#question_database');
+      }
+    }, 400);
+  }
+
+  document.getElementById('atImage').addEventListener('change', function() {
+    const file = this.files[0];
+    const preview = document.getElementById('atImagePreview');
+    const previewImg = document.getElementById('atImagePreviewImg');
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = e => { previewImg.src = e.target.result; preview.style.display = 'block'; };
+      reader.readAsDataURL(file);
+    } else {
+      preview.style.display = 'none';
+    }
   });
 })();
 </script>

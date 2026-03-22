@@ -20,7 +20,7 @@ MHAP_HELPLINE = '0800 111 222'  # Ghana Mental Health Authority helpline
 @test_bp.route('/<path:test_type>', methods=['GET'])
 @login_required
 def display_questions(test_type):
-    questions = Question.query.filter_by(test_type=test_type).all()
+    questions = Question.query.filter_by(test_type=test_type).order_by(Question.order, Question.id).all()
     if not questions:
         flash(f'No questions found for "{test_type}".', 'error')
         return redirect(url_for('main.home'))
@@ -71,7 +71,7 @@ def display_questions(test_type):
 @login_required
 def next_question_api(test_type):
     """JSON API — handles next / back navigation during a test."""
-    questions = Question.query.filter_by(test_type=test_type).all()
+    questions = Question.query.filter_by(test_type=test_type).order_by(Question.order, Question.id).all()
     question_count = len(questions)
 
     if not question_count:
@@ -123,7 +123,7 @@ def next_question_api(test_type):
 
         # Save result to DB — score never travels through the URL
         max_score = question_count * 3
-        result_data = classify_score(test_type, total_score)
+        result_data = classify_score(test_type, total_score, max_score)
 
         result_obj = TestResult(
             test_type=test_type,
@@ -169,7 +169,7 @@ def show_results(result_id):
         id=result_id, user_id=current_user.id
     ).first_or_404()
 
-    result = classify_score(result_obj.test_type, result_obj.score)
+    result = classify_score(result_obj.test_type, result_obj.score, result_obj.max_score)
     next_test = get_next_test(result_obj.test_type)
 
     counsellor = None
