@@ -1,100 +1,158 @@
 {% extends 'base.html' %}
-{% block title %}Assessment Results — {{ school.school_name }}{% endblock %}
+{% block title %}Results — {{ school.school_name }}{% endblock %}
 
 {% block nav_links %}
   <li><a href="{{ url_for('main.school_dashboard', school_id=school.id) }}">Dashboard</a></li>
-  <li><a href="{{ url_for('main.school_analytics', school_id=school.id) }}">Analytics</a></li>
   <li><a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a></li>
 {% endblock %}
 
+{% block drawer_links %}
+  <a href="{{ url_for('main.school_dashboard', school_id=school.id) }}">Dashboard</a>
+  <a href="{{ url_for('main.school_students', school_id=school.id) }}">Students</a>
+  <a href="{{ url_for('main.school_results', school_id=school.id) }}">Results</a>
+  <a href="{{ url_for('main.school_results', school_id=school.id, tab='at_risk') }}"><i class="fa-solid fa-triangle-exclamation" style="color:var(--gold-500); margin-right:6px;"></i>At Risk</a>
+  <a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+.results-tab { padding:7px 20px; font-size:0.85rem; font-weight:600; text-decoration:none; background:var(--ivory); color:var(--green-800); border:1.5px solid var(--green-700); cursor:pointer; transition:background 0.15s, color 0.15s; }
+.results-tab:first-child { border-radius:var(--radius-sm) 0 0 var(--radius-sm); border-right:none; }
+.results-tab:last-child  { border-radius:0 var(--radius-sm) var(--radius-sm) 0; border-left:1.5px solid var(--green-700); }
+.results-tab.active      { background:var(--green-800); color:#fff; }
+.results-tab.active .tab-warn-icon { color:var(--gold-300); }
+.tab-warn-icon { color:var(--gold-500); margin-right:5px; }
+</style>
+{% endblock %}
+
 {% block body %}
-<div class="container" style="padding-bottom: 48px;">
+<div class="container" style="padding-bottom:80px;">
   <div class="page-context">
     <h1>Assessment Results</h1>
-    <p>{{ school.school_name }} · {{ total_results }} result{{ 's' if total_results != 1 }}</p>
+    <p>{{ school.school_name }}</p>
   </div>
 
-  <div class="section">
-    <div class="section-head">
-      <h2>All Results ({{ total_results }})</h2>
+  {# ── Controls row ── #}
+  <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; margin-bottom:24px;">
+    <div style="display:flex;">
+      <button class="results-tab {% if tab != 'at_risk' %}active{% endif %}" data-tab="results">
+        All Results{% if tab != 'at_risk' %} <span id="results-count">({{ total_results }})</span>{% else %} <span id="results-count"></span>{% endif %}
+      </button>
+      <button class="results-tab {% if tab == 'at_risk' %}active{% endif %}" data-tab="at_risk">
+        <i class="fa-solid fa-triangle-exclamation tab-warn-icon"></i>At Risk{% if tab == 'at_risk' and at_risk_pagination %} <span id="risk-count">({{ at_risk_pagination.total }})</span>{% else %} <span id="risk-count"></span>{% endif %}
+      </button>
     </div>
-    <div class="card">
-      <div class="table-wrapper">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Student</th>
-              <th>Assessment</th>
-              <th>Score</th>
-              <th>Stage</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for r in results_pagination.items %}
-            <tr>
-              <td data-label="Student">{{ r.account.full_name }}</td>
-              <td data-label="Assessment" style="font-size:0.85rem;">{{ r.test_type }}</td>
-              <td data-label="Score">{{ r.score }}{% if r.max_score %}/{{ r.max_score }}{% endif %}</td>
-              <td data-label="Stage">
-                {% set s = (r.stage or '') | lower %}
-                <span class="badge {% if 'normal' in s %}stage-normal{% elif 'mild' in s %}stage-mild{% elif 'elevated' in s %}stage-elevated{% elif 'clinical' in s %}stage-clinical{% else %}badge-gray{% endif %}">
-                  {{ r.stage or 'Unknown' }}
-                </span>
-              </td>
-              <td data-label="Date" style="color:var(--gray-500); font-size:0.82rem;">{{ r.taken_at.strftime('%d %b %Y') }}</td>
-            </tr>
-            {% else %}
-            <tr>
-              <td colspan="5" class="td-empty-state" style="padding:0; border:none;">
-                <div class="empty-state">
-                  <div class="empty-state-icon"><i class="fa-solid fa-clipboard-list" style="color:var(--gray-400);"></i></div>
-                  <p>No assessment results yet.</p>
-                </div>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
 
-      {% if results_pagination.pages > 1 %}
-      <div style="display:flex; justify-content:center; align-items:center; gap:8px; padding:16px; border-top:1px solid var(--gray-100);">
-        {% if results_pagination.has_prev %}
-          <a href="{{ url_for('main.school_results', school_id=school.id, results_page=results_pagination.prev_num) }}"
-             style="padding:6px 14px; border-radius:6px; background:var(--ivory); color:var(--green-800); text-decoration:none; font-size:0.85rem; font-weight:600;">← Prev</a>
-        {% endif %}
-        <span style="font-size:0.82rem; color:var(--gray-500);">Page {{ results_pagination.page }} of {{ results_pagination.pages }}</span>
-        {% if results_pagination.has_next %}
-          <a href="{{ url_for('main.school_results', school_id=school.id, results_page=results_pagination.next_num) }}"
-             style="padding:6px 14px; border-radius:6px; background:var(--ivory); color:var(--green-800); text-decoration:none; font-size:0.85rem; font-weight:600;">Next →</a>
-        {% endif %}
-      </div>
-      {% endif %}
+    {% if class_groups %}
+    <div style="display:flex; align-items:center; gap:8px;">
+      <label style="font-size:0.82rem; font-weight:600; color:var(--gray-500); white-space:nowrap;">Class</label>
+      <select id="classFilter"
+              style="appearance:none; background:var(--white); border:1.5px solid var(--gray-300); border-radius:var(--radius-sm); padding:6px 28px 6px 10px; font-size:0.82rem; font-weight:600; color:var(--green-800); cursor:pointer; background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%23727973' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\"); background-repeat:no-repeat; background-position:right 8px center;">
+        <option value="">All Classes</option>
+        {% for cg in class_groups %}
+        <option value="{{ cg }}" {% if selected_class == cg %}selected{% endif %}>{{ cg }}</option>
+        {% endfor %}
+      </select>
     </div>
+    {% endif %}
   </div>
+
+  {# ── Dynamic content area ── #}
+  <div id="results-area">
+    {% if tab != 'at_risk' %}
+    {% include 'main/_results_table.html' %}
+    {% else %}
+    {% include 'main/_at_risk_table.html' %}
+    {% endif %}
+  </div>
+
 </div>
+
+<script>
+(function() {
+  var currentTab = '{{ tab }}';
+  var currentClass = '{{ selected_class }}';
+  var schoolId = {{ school.id }};
+  var baseUrl = '/school/' + schoolId + '/results';
+
+  function buildUrl(tab, cls, page) {
+    var u = baseUrl + '?tab=' + tab;
+    if (cls) u += '&class_group=' + encodeURIComponent(cls);
+    if (page && page > 1) u += '&page=' + page;
+    return u;
+  }
+
+  function load(tab, cls, page, pushState) {
+    var url = buildUrl(tab, cls, page);
+    var fetchUrl = url + '&_fragment=1';
+    document.getElementById('results-area').style.opacity = '0.5';
+    fetch(fetchUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(function(r) { return r.text(); })
+      .then(function(html) {
+        document.getElementById('results-area').innerHTML = html;
+        document.getElementById('results-area').style.opacity = '1';
+        currentTab = tab;
+        currentClass = cls;
+        if (pushState) history.pushState({ tab: tab, cls: cls, page: page }, '', url);
+        bindPagination();
+      })
+      .catch(function() { window.location.href = url; });
+  }
+
+  function bindPagination() {
+    document.querySelectorAll('#results-area a[data-page]').forEach(function(a) {
+      a.addEventListener('click', function(e) {
+        e.preventDefault();
+        load(currentTab, currentClass, parseInt(this.dataset.page), true);
+      });
+    });
+  }
+
+  document.querySelectorAll('.results-tab').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var tab = this.dataset.tab;
+      if (tab === currentTab) return;
+      document.querySelectorAll('.results-tab').forEach(function(b) { b.classList.remove('active'); });
+      this.classList.add('active');
+      load(tab, currentClass, 1, true);
+    });
+  });
+
+  var filterEl = document.getElementById('classFilter');
+  if (filterEl) {
+    filterEl.addEventListener('change', function() {
+      load(currentTab, this.value, 1, true);
+    });
+  }
+
+  window.addEventListener('popstate', function(e) {
+    if (e.state) load(e.state.tab, e.state.cls, e.state.page, false);
+  });
+
+  bindPagination();
+})();
+</script>
 {% endblock %}
 
 {% block bottom_tab_bar %}
 {% set school_id = session.get('school_id') %}
 {% if school_id %}
 <nav class="bottom-tab-bar" aria-label="School admin navigation">
-  <a href="{{ url_for('main.school_dashboard', school_id=school_id) }}" class="tab-item">
+  <a href="{{ url_for('main.school_dashboard', school_id=school_id) }}"
+     class="tab-item {% if request.endpoint == 'main.school_dashboard' %}active{% endif %}">
     <i class="fa-solid fa-gauge tab-icon"></i><span class="tab-label">Dashboard</span>
   </a>
-  <a href="{{ url_for('main.school_students', school_id=school_id) }}" class="tab-item">
+  <a href="{{ url_for('main.school_students', school_id=school_id) }}"
+     class="tab-item {% if request.endpoint == 'main.school_students' %}active{% endif %}">
     <i class="fa-solid fa-users tab-icon"></i><span class="tab-label">Students</span>
   </a>
-  <a href="{{ url_for('main.school_results', school_id=school_id) }}" class="tab-item active">
+  <a href="{{ url_for('main.school_results', school_id=school_id) }}"
+     class="tab-item {% if request.endpoint == 'main.school_results' %}active{% endif %}">
     <i class="fa-solid fa-clipboard-list tab-icon"></i><span class="tab-label">Results</span>
-  </a>
-  <a href="{{ url_for('main.school_analytics', school_id=school_id) }}" class="tab-item">
-    <i class="fa-solid fa-chart-line tab-icon"></i><span class="tab-label">Analytics</span>
   </a>
   <a href="{{ url_for('auth.logout') }}" class="tab-item tab-logout">
     <span class="tab-icon">↩</span><span class="tab-label">Logout</span>
   </a>
 </nav>
 {% endif %}
-{% endblock %}  
+{% endblock %}

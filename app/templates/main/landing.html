@@ -38,8 +38,8 @@
       <h1 class="hero-title">Supporting Student<br><em>Emotional Wellbeing</em></h1>
       <p class="hero-subtitle">The Social Emotional Students' Audit (SESA) helps Ghana schools identify, understand, and support the mental and emotional health of their students — early and effectively. GES School Health Policy aligned.</p>
       <div class="hero-btns">
-        <a href="{{ url_for('auth.login') }}" class="btn-gold">Take the Assessment</a>
-        <a href="{{ url_for('auth.school_signup') }}" class="btn-outline-light">Register My School</a>
+<a href="{{ url_for('auth.school_signup') }}" class="btn-gold">Register My School</a>
+        <a href="{{ url_for('auth.login') }}" class="btn-outline-light">Take the Assessment</a>
       </div>
     </div>
 
@@ -358,6 +358,19 @@
   <div class="bottom-cta-btns">
     <a href="{{ url_for('auth.school_signup') }}" class="btn-gold"><i class="fa-solid fa-school"></i> Register My School</a>
     <a href="{{ url_for('auth.login') }}" class="btn-outline-light"><i class="fa-solid fa-user"></i> Student Sign In</a>
+  </div>
+</section>
+
+<section class="pub-section pub-section--alt">
+  <div class="s-wrap">
+    <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:24px; background:var(--iv); border-left:4px solid var(--gd); border-radius:0 12px 12px 0; padding:28px 32px; box-shadow:0 4px 20px rgba(2,40,24,.06);">
+      <div>
+        <span style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.12em; color:var(--gd); display:block; margin-bottom:6px;">New to SESA?</span>
+        <h3 style="font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:700; color:var(--f); margin-bottom:6px;">Start with the School Guide</h3>
+        <p style="font-size:0.875rem; color:var(--mg); line-height:1.65; max-width:480px; margin:0;">A step-by-step guide to registering your school, uploading students, and running your first assessments.</p>
+      </div>
+      <a href="{{ url_for('main.school_guide') }}" class="btn-outline-dark" style="flex-shrink:0; white-space:nowrap;">Read the School Guide →</a>
+    </div>
   </div>
 </section>
 

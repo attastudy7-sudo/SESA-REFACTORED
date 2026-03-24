@@ -4,14 +4,12 @@
 
 {% block nav_links %}
   <li><a href="{{ url_for('main.school_dashboard', school_id=school.id) }}">Dashboard</a></li>
-  <li><a href="{{ url_for('main.school_analytics', school_id=school.id) }}">Analytics</a></li>
   <li><a href="{{ url_for('main.students_at_risk', school_id=school.id) }}" class="active">At Risk</a></li>
   <li><a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a></li>
 {% endblock %}
 
 {% block drawer_links %}
   <a href="{{ url_for('main.school_dashboard', school_id=school.id) }}">Dashboard</a>
-  <a href="{{ url_for('main.school_analytics', school_id=school.id) }}">Analytics</a>
   <a href="{{ url_for('main.students_at_risk', school_id=school.id) }}" style="color:var(--gold-200); font-weight:600;"><i class="fa-solid fa-triangle-exclamation" style="color:var(--gold-400);"></i> Students at Risk</a>
   <a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a>
 {% endblock %}
@@ -157,10 +155,6 @@
   <a href="{{ url_for('main.school_dashboard', school_id=school_id) }}"
      class="tab-item {% if request.endpoint == 'main.school_dashboard' %}active{% endif %}">
     <i class="fa-solid fa-school tab-icon"></i><span class="tab-label">Dashboard</span>
-  </a>
-  <a href="{{ url_for('main.school_analytics', school_id=school_id) }}"
-     class="tab-item {% if request.endpoint == 'main.school_analytics' %}active{% endif %}">
-    <i class="fa-solid fa-chart-line tab-icon"></i><span class="tab-label">Analytics</span>
   </a>
   <a href="{{ url_for('main.students_at_risk', school_id=school_id) }}"
      class="tab-item active">

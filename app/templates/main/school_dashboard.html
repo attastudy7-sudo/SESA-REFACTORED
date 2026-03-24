@@ -3,15 +3,11 @@
 
 {% block nav_links %}
   <li><a href="{{ url_for('main.school_dashboard', school_id=school.id) }}">Dashboard</a></li>
-  <li><a href="{{ url_for('main.school_analytics', school_id=school.id) }}">Analytics</a></li>
-  <li><a href="{{ url_for('main.students_at_risk', school_id=school.id) }}" style="color:var(--gold-200); border:1px solid var(--gold-400); border-radius:var(--radius-sm); padding:5px 12px; font-weight:600; font-size:0.85rem;"><i class="fa-solid fa-triangle-exclamation"></i> At Risk</a></li>
   <li><a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a></li>
 {% endblock %}
 
 {% block drawer_links %}
   <a href="{{ url_for('main.school_dashboard', school_id=school.id) }}">Dashboard</a>
-  <a href="{{ url_for('main.school_analytics', school_id=school.id) }}">Analytics</a>
-  <a href="{{ url_for('main.students_at_risk', school_id=school.id) }}" style="color:var(--gold-200); font-weight:600;"><i class="fa-solid fa-triangle-exclamation" style="color:var(--gold-400);"></i> Students at Risk</a>
   <a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a>
 {% endblock %}
 
@@ -59,7 +55,9 @@
     text-decoration: none;
     transition: background 0.2s, transform 0.15s;
   }
-  .quick-action-tile:hover { background: var(--green-100, #d1fae5); transform: translateY(-2px); }
+  .quick-action-tile:hover { background: var(--green-100); transform: translateY(-2px); }
+  .quick-action-tile:hover i { color: var(--green-700) !important; }
+  .quick-action-tile:hover span { color: var(--green-800); }
   .quick-action-tile i { font-size: 1.4rem; display: block; }
   .quick-action-tile span { font-size: 0.8rem; font-weight: 600; color: var(--gray-700); }
 
@@ -148,21 +146,38 @@
     </div>
     <div style="flex:1; min-width:180px;">
       <strong style="color:#991b1b; font-size:0.95rem; display:block;">{{ at_risk_count }} At-Risk Student{{ 's' if at_risk_count != 1 }} Identified</strong>
-      <span style="color:#b91c1c; font-size:0.85rem;">Elevated or Clinical stage results recorded. Immediate review recommended.</span>
+      <span style="color:#991b1b; font-size:0.85rem;">Elevated or Clinical stage results recorded. Immediate review recommended.</span>
     </div>
-    <a href="{{ url_for('main.students_at_risk', school_id=school.id) }}"
+    <a href="{{ url_for('main.school_results', school_id=school.id, tab='at_risk') }}"
        style="width:100%; max-width:none; padding:10px 18px; background:var(--red-600); color:#fff; border-radius:var(--radius-sm); font-size:0.82rem; font-weight:700; text-decoration:none; text-align:center; display:block;">
       View Student List
     </a>
   </div>
   {% endif %}
 
+  {# ── Onboarding Banner (shown only when no students enrolled) ── #}
+  {% if total_students == 0 %}
+  <div id="guideBanner" style="background:var(--gold-50, #fdf8ef); border:1.5px solid var(--gold-400); border-radius:var(--radius-md); padding:16px 20px; margin-bottom:24px; margin-top:16px; display:flex; flex-wrap:wrap; align-items:center; gap:14px;">
+    <div style="width:44px; height:44px; background:var(--gold-100); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+      <i class="fa-solid fa-book-open" style="color:var(--gold-700); font-size:1rem;"></i>
+    </div>
+    <div style="flex:1; min-width:180px;">
+      <strong style="color:var(--green-900); font-size:0.95rem; display:block;">Getting started? Read the School Guide.</strong>
+      <span style="color:var(--gray-700); font-size:0.85rem;">Follow our step-by-step guide to upload your student list or share your access code.</span>
+    </div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+      <a href="{{ url_for('main.school_guide', school_id=school.id) }}" class="btn btn-gold btn-sm">Read the Guide →</a>
+      <button onclick="document.getElementById('guideBanner').style.display='none'" style="background:none; border:none; color:var(--gray-500); font-size:0.82rem; cursor:pointer; padding:8px;">Dismiss</button>
+    </div>
+  </div>
+  {% endif %}
+
   {# ── Dashboard Header ── #}
   <div style="display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:12px; margin-bottom:20px; padding-top:8px;">
     <div>
-      <span style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:var(--gold-600, #b45309);">Institutional Overview</span>
+      <span style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:var(--gold-700);">Institutional Overview</span>
       <h1 style="margin:4px 0 4px; font-family:var(--font-display); font-size:clamp(1.4rem,3vw,1.8rem);">{{ school.school_name }}</h1>
-      <p style="color:var(--gray-500); font-size:0.88rem; margin:0;">{{ total_students }} student{{ 's' if total_students != 1 }} enrolled</p>
+      <p style="color:var(--gray-700); font-size:0.88rem; margin:0;">{{ total_students }} student{{ 's' if total_students != 1 }} enrolled</p>
     </div>
     <a href="{{ url_for('main.download_report', school_id=school.id, period='monthly') }}"
        class="btn btn-gold btn-sm" style="flex-shrink:0;">
@@ -187,7 +202,7 @@
       <div class="stat-value">{{ stage_counts.values() | sum if stage_counts else 0 }}</div>
       <div class="stat-label">Tests ({{ period | capitalize }})</div>
     </div>
-    <a href="{{ url_for('main.students_at_risk', school_id=school.id) }}"
+    <a href="{{ url_for('main.school_results', school_id=school.id, tab='at_risk') }}"
        class="stat-card red" style="text-decoration:none; cursor:pointer; border-left:4px solid var(--red-600);">
       <div class="stat-icon"><i class="fa-solid fa-triangle-exclamation" style="color:var(--red-600);"></i></div>
       <div class="stat-value">{{ at_risk_count }}</div>
@@ -204,7 +219,7 @@
     <div class="card">
       <div class="card-header" style="background:var(--green-800); border-radius:var(--radius-md) var(--radius-md) 0 0; border-bottom:1px solid rgba(255,255,255,.1); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
         <div>
-          <span style="font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--gold-300, #fcd34d); display:block; margin-bottom:2px;">Longitudinal Analysis</span>
+          <span style="font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--gold-200); display:block; margin-bottom:2px;">Longitudinal Analysis</span>
           <h3 style="margin:0; color:#fff;">Stage Distribution</h3>
         </div>
         <div class="period-tabs" id="periodTabs">
@@ -213,13 +228,13 @@
                data-period="{{ p }}"
                style="padding:5px 14px; border-radius:20px; font-size:0.78rem; font-weight:600; text-decoration:none; white-space:nowrap;
                       {% if period == p %}background:rgba(255,255,255,.2); color:#fff; border:1px solid rgba(255,255,255,.3);
-                      {% else %}background:transparent; color:rgba(255,255,255,.6); border:1px solid rgba(255,255,255,.15);{% endif %}">
+                      {% else %}background:transparent; color:rgba(255,255,255,.82); border:1px solid rgba(255,255,255,.3);{% endif %}">
               {{ label }}
             </a>
           {% endfor %}
         </div>
       </div>
-      <div class="card-body" style="background:var(--green-800); border-radius:0 0 var(--radius-md) var(--radius-md);">
+      <div class="card-body" style="border-radius:0 0 var(--radius-md) var(--radius-md);">
         {% if stage_counts %}
         <div style="display:flex; flex-wrap:wrap; align-items:center; gap:20px;">
           <div class="chart-wrap" style="flex:0 0 180px; max-width:180px; margin:0 auto;">
@@ -237,15 +252,15 @@
               {% set pct = ((count / total_for_period) * 100) | round(1) if total_for_period > 0 else 0 %}
               <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
                 <span style="width:10px; height:10px; border-radius:50%; background:{{ dot_color }}; flex-shrink:0; display:inline-block;"></span>
-                <span style="font-size:0.8rem; color:rgba(255,255,255,.85); flex:1;">{{ stage }}</span>
-                <strong style="font-size:0.85rem; color:{{ dot_color }};">{{ pct }}%</strong>
+                <span style="font-size:0.8rem; color:var(--gray-700); flex:1;">{{ stage }}</span>
+                <strong style="font-size:0.85rem; color:var(--green-800);">{{ pct }}%</strong>
               </div>
             {% endfor %}
           </div>
         </div>
         {% else %}
-        <div class="empty-state" style="color:rgba(255,255,255,.6);">
-          <div class="empty-state-icon"><i class="fa-solid fa-chart-pie" style="color:rgba(255,255,255,.3);"></i></div>
+        <div class="empty-state">
+          <div class="empty-state-icon"><i class="fa-solid fa-chart-pie" style="color:var(--gray-300);"></i></div>
           <p>No assessments recorded for {{ period | capitalize }}.</p>
         </div>
         {% endif %}
@@ -264,9 +279,9 @@
           <canvas id="coverageBarChart"></canvas>
         </div>
         <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
-          <span style="font-size:0.72rem; display:flex; align-items:center; gap:4px;"><span style="width:8px;height:8px;border-radius:2px;background:#1a3a2a;display:inline-block;"></span> ≥60%</span>
-          <span style="font-size:0.72rem; display:flex; align-items:center; gap:4px;"><span style="width:8px;height:8px;border-radius:2px;background:#c9921a;display:inline-block;"></span> 30–59%</span>
-          <span style="font-size:0.72rem; display:flex; align-items:center; gap:4px;"><span style="width:8px;height:8px;border-radius:2px;background:#dc2626;display:inline-block;"></span> &lt;30%</span>
+          <span style="font-size:0.72rem; display:flex; align-items:center; gap:6px;"><span style="width:12px;height:12px;border-radius:3px;background:#1a3a2a;display:inline-block;border:1px solid rgba(0,0,0,.1);"></span> ≥60% Good</span>
+          <span style="font-size:0.72rem; display:flex; align-items:center; gap:6px;"><span style="width:12px;height:12px;border-radius:3px;background:#c9921a;display:inline-block;border:1px solid rgba(0,0,0,.1);"></span> 30–59% Moderate</span>
+          <span style="font-size:0.72rem; display:flex; align-items:center; gap:6px;"><span style="width:12px;height:12px;border-radius:3px;background:#dc2626;display:inline-block;border:1px solid rgba(0,0,0,.1);"></span> &lt;30% Low</span>
         </div>
         {% else %}
         <div class="empty-state">
@@ -286,9 +301,9 @@
     <div class="card">
       <div class="card-header">
         <h3 style="display:flex; align-items:center; gap:8px;">
-          <i class="fa-solid fa-triangle-exclamation" style="color:var(--red-600);"></i> Risk Breakdown
+          <i class="fa-solid fa-users" style="color:var(--green-600);"></i> Testing Coverage
         </h3>
-        <span style="font-size:0.75rem; color:var(--gray-400);">Elevated + Clinical per assessment</span>
+        <span style="font-size:0.75rem; color:var(--gray-400);">Students tested per assessment</span>
       </div>
       <div class="card-body">
         {% set test_types_short = [
@@ -379,9 +394,9 @@
         <i class="fa-solid fa-triangle-exclamation" style="color:var(--red-600);"></i>
         <span>At Risk</span>
       </a>
-      <a href="{{ url_for('main.school_analytics', school_id=school.id) }}" class="quick-action-tile">
-        <i class="fa-solid fa-chart-bar" style="color:var(--green-700);"></i>
-        <span>Analytics</span>
+      <a href="{{ url_for('main.school_guide', school_id=school.id) }}" class="quick-action-tile">
+        <i class="fa-solid fa-book-open" style="color:var(--gold-700);"></i>
+        <span>School Guide</span>
       </a>
     </div>
     <div style="border-top:1px solid var(--gray-100); padding-top:16px;">
@@ -466,7 +481,7 @@
       <p style="font-size:0.88rem; color:var(--gray-500); margin-bottom:16px; line-height:1.6;">
         Upload an Excel file (.xlsx or .xls). <strong>Required columns:</strong>
         <code>first_name</code>, <code>last_name</code>.
-        Optional: <code>student_id</code>, <code>class_group</code>, <code>gender</code>, <code>email</code>.
+        Optional: <code>student_id</code>, <code>class_group</code>, <code>level</code>, <code>gender</code>, <code>email</code>.
       </p>
       <form method="POST" action="{{ url_for('main.upload_students', school_id=school.id) }}" enctype="multipart/form-data">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -510,7 +525,7 @@
         <i class="fa-solid fa-lock"></i>
       </div>
       <div style="width:56px; height:56px; background:rgba(255,255,255,.15); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 14px;">
-        <i class="fa-solid fa-lock-open" style="color:var(--gold-300, #fcd34d); font-size:1.4rem;"></i>
+        <i class="fa-solid fa-lock-open" style="color:var(--gold-200); font-size:1.4rem;"></i>
       </div>
       <h2 style="font-family:var(--font-display); color:#fff; font-size:1.4rem; margin-bottom:8px;">Unlock Full Dashboard Access</h2>
       <p style="color:rgba(255,255,255,.75); font-size:0.9rem; max-width:460px; margin:0 auto; line-height:1.6;">
@@ -599,10 +614,6 @@
   <a href="{{ url_for('main.school_results', school_id=school_id) }}"
      class="tab-item {% if request.endpoint == 'main.school_results' %}active{% endif %}">
     <i class="fa-solid fa-clipboard-list tab-icon"></i><span class="tab-label">Results</span>
-  </a>
-  <a href="{{ url_for('main.school_analytics', school_id=school_id) }}"
-     class="tab-item {% if request.endpoint == 'main.school_analytics' %}active{% endif %}">
-    <i class="fa-solid fa-chart-line tab-icon"></i><span class="tab-label">Analytics</span>
   </a>
   <a href="{{ url_for('auth.logout') }}" class="tab-item tab-logout">
     <span class="tab-icon">↩</span><span class="tab-label">Logout</span>
@@ -823,6 +834,16 @@
     fetch(a.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
       .then(function(r) { return r.json(); })
       .then(function(data) {
+        // Update coverage chart
+        var covChart = Chart.getChart('coverageBarChart');
+        if (covChart && data.coverage_counts) {
+          var newCovValues = TEST_TYPES.map(function(t){ return data.coverage_counts[t] || 0; });
+          var newTotalStudents = totalStudents;
+          var newCovPcts = newCovValues.map(function(v){ return newTotalStudents > 0 ? Math.round(v / newTotalStudents * 100) : 0; });
+          covChart.data.datasets[0].data = newCovPcts;
+          covChart.data.datasets[0].backgroundColor = newCovPcts.map(function(p){ return p >= 60 ? '#1a3a2a' : p >= 30 ? '#c9921a' : '#dc2626'; });
+          covChart.update();
+        }
         // Update donut chart
         var donutChart = Chart.getChart('stageDonutChart');
         if (donutChart) {
@@ -833,6 +854,16 @@
           donutChart.data.datasets[0].backgroundColor = newLabels.map(getColor);
           donutChart.update();
         }
+        // Update stat card count
+        var statVal = document.querySelector('.stat-card .stat-label');
+        var allStatLabels = document.querySelectorAll('.stat-card .stat-label');
+        allStatLabels.forEach(function(el) {
+          if (el.textContent.indexOf('Tests') !== -1) {
+            var total = Object.values(data.stage_counts).reduce(function(a,b){return a+b;},0);
+            el.previousElementSibling.textContent = total;
+            el.textContent = 'Tests (' + period.charAt(0).toUpperCase() + period.slice(1) + ')';
+          }
+        });
         // Update legend
         var legend = document.getElementById('stageLegend');
         if (legend) {
@@ -844,12 +875,14 @@
             var pct = total > 0 ? Math.round(count/total*1000)/10 : 0;
             html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">';
             html += '<span style="width:10px;height:10px;border-radius:50%;background:'+color+';flex-shrink:0;display:inline-block;"></span>';
-            html += '<span style="font-size:0.8rem;color:rgba(255,255,255,.85);flex:1;">'+stage+'</span>';
-            html += '<strong style="font-size:0.85rem;color:'+color+';">'+pct+'%</strong>';
+            html += '<span style="font-size:0.8rem;color:var(--gray-700);flex:1;">'+stage+'</span>';
+            html += '<strong style="font-size:0.85rem;color:var(--green-800);">'+pct+'%</strong>';
             html += '</div>';
           });
           legend.innerHTML = html;
         }
+        var subtitle = document.querySelector('#coverageBarChart')?.closest('.card')?.querySelector('.card-header span');
+        if (subtitle) subtitle.textContent = 'Per student, this ' + period;
         history.replaceState(null, '', a.href);
       })
       .catch(function() { window.location.href = a.href; });

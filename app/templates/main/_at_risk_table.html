@@ -1,0 +1,81 @@
+{% if at_risk %}
+{% set clinical_count = at_risk | selectattr('0.stage', 'equalto', 'Clinical Stage') | list | length %}
+{% set elevated_count = at_risk | selectattr('0.stage', 'equalto', 'Elevated Stage') | list | length %}
+
+<div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:24px;">
+  <div style="background:#fef2f2; border:1px solid #fca5a5; border-radius:10px; padding:12px 20px; text-align:center; min-width:0; flex:1 1 120px;">
+    <div style="font-size:1.8rem; font-weight:800; color:#b91c1c;">{{ at_risk_pagination.total }}</div>
+    <div style="font-size:0.78rem; color:#7f1d1d; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Total Flagged</div>
+  </div>
+  <div style="background:#fef2f2; border:1px solid #fca5a5; border-radius:10px; padding:12px 20px; text-align:center; min-width:0; flex:1 1 120px;">
+    <div style="font-size:1.8rem; font-weight:800; color:#b91c1c;">{{ clinical_count }}</div>
+    <div style="font-size:0.78rem; color:#7f1d1d; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Clinical Stage</div>
+  </div>
+  <div style="background:#fffbeb; border:1px solid #fcd34d; border-radius:10px; padding:12px 20px; text-align:center; min-width:0; flex:1 1 120px;">
+    <div style="font-size:1.8rem; font-weight:800; color:#b45309;">{{ elevated_count }}</div>
+    <div style="font-size:0.78rem; color:#78350f; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Elevated Stage</div>
+  </div>
+</div>
+
+{% if clinical_count > 0 %}
+<div style="background:#fef2f2; border-left:4px solid #ef4444; padding:12px 16px; border-radius:8px; margin-bottom:24px; font-size:0.88rem; color:#7f1d1d;">
+  <strong>Action required:</strong> {{ clinical_count }} student{{ 's' if clinical_count != 1 }} at Clinical Stage should be referred to a counsellor immediately.
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="table-wrapper">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Class</th>
+          <th>Assessment</th>
+          <th>Stage</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for result, student in at_risk %}
+        <tr style="{% if result.stage == 'Clinical Stage' %}background:#fff5f5;{% endif %}">
+          <td data-label="Student">
+            <strong>{{ student.fname }} {{ student.lname }}</strong>
+            <br><small style="color:var(--gray-500);">@{{ student.username }}</small>
+          </td>
+          <td data-label="Class">{{ student.class_group or '—' }}</td>
+          <td data-label="Assessment" style="font-size:0.85rem;">{{ result.test_type }}</td>
+          <td data-label="Stage">
+            <span class="badge {% if result.stage == 'Clinical Stage' %}stage-clinical{% else %}stage-elevated{% endif %}">
+              {{ result.stage }}
+            </span>
+          </td>
+          <td data-label="Date" style="color:var(--gray-500); font-size:0.82rem; white-space:nowrap;">{{ result.taken_at.strftime('%d %b %Y') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if at_risk_pagination and at_risk_pagination.pages > 1 %}
+  <div style="display:flex; justify-content:center; align-items:center; gap:8px; padding:16px; border-top:1px solid var(--gray-100);">
+    {% if at_risk_pagination.has_prev %}
+      <a data-page="{{ at_risk_pagination.prev_num }}" href="#"
+         style="padding:6px 14px; border-radius:6px; background:var(--ivory); color:var(--green-800); text-decoration:none; font-size:0.85rem; font-weight:600;">← Prev</a>
+    {% endif %}
+    <span style="font-size:0.82rem; color:var(--gray-500);">Page {{ at_risk_pagination.page }} of {{ at_risk_pagination.pages }}</span>
+    {% if at_risk_pagination.has_next %}
+      <a data-page="{{ at_risk_pagination.next_num }}" href="#"
+         style="padding:6px 14px; border-radius:6px; background:var(--ivory); color:var(--green-800); text-decoration:none; font-size:0.85rem; font-weight:600;">Next →</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+{% else %}
+<div class="card" style="text-align:center; padding:3rem 2rem;">
+  <div class="empty-state">
+    <div class="empty-state-icon"><i class="fa-solid fa-circle-check" style="color:var(--green-500);"></i></div>
+    <h3 style="color:var(--green-800); margin-bottom:0.5rem;">No students at elevated risk</h3>
+    <p>No students are currently at Elevated or Clinical stage.</p>
+  </div>
+</div>
+{% endif %}

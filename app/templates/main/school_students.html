@@ -3,7 +3,6 @@
 
 {% block nav_links %}
   <li><a href="{{ url_for('main.school_dashboard', school_id=school.id) }}">Dashboard</a></li>
-  <li><a href="{{ url_for('main.school_analytics', school_id=school.id) }}">Analytics</a></li>
   <li><a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a></li>
 {% endblock %}
 
@@ -44,7 +43,7 @@
               <td data-label="Name"><strong>{{ acc.fname }} {{ acc.lname }}</strong><br><small style="color:var(--gray-500)">{{ acc.email or '—' }}</small></td>
               <td data-label="Username">@{{ acc.username }}</td>
               <td data-label="Class">{{ acc.class_group or '—' }}</td>
-              <td data-label="School">{{ acc.school_name if acc.school_name else '—' }}</td>
+              <td data-label="Level">{{ acc.level.upper() if acc.level else '—' }}</td>
               <td data-label="Tests">{{ acc.test_results.count() }}</td>
               <td data-label="Joined" style="color:var(--gray-500); font-size:0.82rem;">{{ acc.created_at.strftime('%d %b %Y') }}</td>
             </tr>
@@ -93,9 +92,6 @@
   </a>
   <a href="{{ url_for('main.school_results', school_id=school_id) }}" class="tab-item">
     <i class="fa-solid fa-clipboard-list tab-icon"></i><span class="tab-label">Results</span>
-  </a>
-  <a href="{{ url_for('main.school_analytics', school_id=school_id) }}" class="tab-item">
-    <i class="fa-solid fa-chart-line tab-icon"></i><span class="tab-label">Analytics</span>
   </a>
   <a href="{{ url_for('auth.logout') }}" class="tab-item tab-logout">
     <span class="tab-icon">↩</span><span class="tab-label">Logout</span>

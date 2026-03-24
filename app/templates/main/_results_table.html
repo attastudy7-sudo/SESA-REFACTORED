@@ -1,0 +1,53 @@
+{% if results_pagination and results_pagination.items %}
+<div class="card">
+  <div class="table-wrapper">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Assessment</th>
+          <th>Score</th>
+          <th>Stage</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in results_pagination.items %}
+        <tr>
+          <td data-label="Student">{{ r.account.full_name }}</td>
+          <td data-label="Assessment" style="font-size:0.85rem;">{{ r.test_type }}</td>
+          <td data-label="Score">{{ r.score }}{% if r.max_score %}/{{ r.max_score }}{% endif %}</td>
+          <td data-label="Stage">
+            {% set s = (r.stage or '') | lower %}
+            <span class="badge {% if 'normal' in s %}stage-normal{% elif 'mild' in s %}stage-mild{% elif 'elevated' in s %}stage-elevated{% elif 'clinical' in s %}stage-clinical{% else %}badge-gray{% endif %}">
+              {{ r.stage or 'Unknown' }}
+            </span>
+          </td>
+          <td data-label="Date" style="color:var(--gray-500); font-size:0.82rem;">{{ r.taken_at.strftime('%d %b %Y') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if results_pagination.pages > 1 %}
+  <div style="display:flex; justify-content:center; align-items:center; gap:8px; padding:16px; border-top:1px solid var(--gray-100);">
+    {% if results_pagination.has_prev %}
+      <a data-page="{{ results_pagination.prev_num }}" href="#"
+         style="padding:6px 14px; border-radius:6px; background:var(--ivory); color:var(--green-800); text-decoration:none; font-size:0.85rem; font-weight:600;">← Prev</a>
+    {% endif %}
+    <span style="font-size:0.82rem; color:var(--gray-500);">Page {{ results_pagination.page }} of {{ results_pagination.pages }}</span>
+    {% if results_pagination.has_next %}
+      <a data-page="{{ results_pagination.next_num }}" href="#"
+         style="padding:6px 14px; border-radius:6px; background:var(--ivory); color:var(--green-800); text-decoration:none; font-size:0.85rem; font-weight:600;">Next →</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% else %}
+<div class="card" style="text-align:center; padding:3rem 2rem;">
+  <div class="empty-state">
+    <div class="empty-state-icon"><i class="fa-solid fa-clipboard-list" style="color:var(--gray-400);"></i></div>
+    <p>No assessment results yet.</p>
+  </div>
+</div>
+{% endif %}

@@ -50,6 +50,7 @@ def edit_account(account_id):
         account.school_name = form.school_name.data if hasattr(form, 'school_name') else None
         account.birthdate = form.birthdate.data
         account.gender = form.gender.data
+        account.level = form.level.data or None
         account.is_admin = form.is_admin.data
         account.is_counsellor = form.is_counsellor.data
         account.phone = form.phone.data.strip() if form.phone.data else None

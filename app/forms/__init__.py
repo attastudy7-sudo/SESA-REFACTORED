@@ -19,6 +19,13 @@ GENDER_CHOICES = [
     ('other', 'Other'),
 ]
 
+LEVEL_CHOICES = [
+    ('', 'Select level'),
+    ('jhs', 'JHS (Junior High School)'),
+    ('shs', 'SHS (Senior High School)'),
+    ('university', 'University / Tertiary'),
+]
+
 TEST_TYPE_CHOICES = [
     ('', 'Select test type'),
     ('Separation Anxiety Disorder', 'Separation Anxiety Disorder'),
@@ -54,6 +61,7 @@ class SignupForm(FlaskForm):
     )
     birthdate = DateField('Birth Date', validators=[DataRequired()])
     gender = SelectField('Gender', choices=GENDER_CHOICES, validators=[DataRequired()])
+    level = SelectField('School Level', choices=LEVEL_CHOICES, validators=[Optional()])
     school_name = StringField('School Name', validators=[Optional()])
     submit = SubmitField('Create Account')
     parental_consent = BooleanField(
@@ -83,6 +91,7 @@ class EditAccountForm(FlaskForm):
     school_name = StringField('School Name', validators=[Optional()])
     birthdate = DateField('Birth Date', validators=[Optional()])
     gender = SelectField('Gender', choices=GENDER_CHOICES, validators=[Optional()])
+    level = SelectField('School Level', choices=LEVEL_CHOICES, validators=[Optional()])
     is_admin = BooleanField('Grant Admin Privileges')
     is_counsellor = BooleanField('Assign as School Counsellor')
     phone = StringField('Phone Number (for SMS alerts)', validators=[Optional(), Length(max=20)])

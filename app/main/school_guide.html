@@ -155,7 +155,7 @@
               ('last_name',   True,  'Student last name'),
               ('student_id',  False, 'Used as temp password'),
               ('class_group', False, 'e.g. Form 2A'),
-              ('level',       False, 'primaryschool / highschool'),
+              ('level',       False, 'jhs / shs / university'),
               ('gender',      False, 'male / female / other'),
               ('email',       False, 'Student email (optional)'),
             ] %}
@@ -261,7 +261,7 @@
           ('"Missing required columns" error',       'Your column headers don\'t match exactly. Ensure headers in row 4 are spelled <code class="bg-[#e9f0e9] px-1 rounded text-xs">first_name</code> and <code class="bg-[#e9f0e9] px-1 rounded text-xs">last_name</code> — all lowercase with underscores.'),
           ('"Invalid file type" error',              'Only <strong>.xlsx</strong> and <strong>.xls</strong> files are accepted. In Google Sheets: File → Download → Microsoft Excel (.xlsx).'),
           ('Some rows were skipped',                 'Rows are skipped when <code class="bg-[#e9f0e9] px-1 rounded text-xs">first_name</code> or <code class="bg-[#e9f0e9] px-1 rounded text-xs">last_name</code> is empty. Check your file for blank rows and re-upload those students.'),
-          ('Level or gender not saving correctly',   'These fields only accept exact values. Level: <code class="bg-[#e9f0e9] px-1 rounded text-xs">primaryschool</code>, <code class="bg-[#e9f0e9] px-1 rounded text-xs">highschool</code>. Gender: <code class="bg-[#e9f0e9] px-1 rounded text-xs">male</code>, <code class="bg-[#e9f0e9] px-1 rounded text-xs">female</code>, <code class="bg-[#e9f0e9] px-1 rounded text-xs">other</code>.'),
+          ('Level or gender not saving correctly',   'These fields only accept exact values. Level: <code class="bg-[#e9f0e9] px-1 rounded text-xs">jhs</code>, <code class="bg-[#e9f0e9] px-1 rounded text-xs">shs</code>, <code class="bg-[#e9f0e9] px-1 rounded text-xs">university</code>. Gender: <code class="bg-[#e9f0e9] px-1 rounded text-xs">male</code>, <code class="bg-[#e9f0e9] px-1 rounded text-xs">female</code>, <code class="bg-[#e9f0e9] px-1 rounded text-xs">other</code>.'),
           ('A student forgot their password',        'Their initial password is their <strong>Student ID</strong> from the upload file. If none was provided, their password is their <strong>username</strong>. Students can also reset from the login page.'),
           ('Students can\'t find the login page',    'Direct students to the SESA homepage and tell them to click <strong>Sign In</strong>. They log in with their username (not email) and their temporary password.'),
           ('Access code not working',                'Institution codes are case-sensitive and uppercase. If re-entering fails, contact your regional SESA coordinator for a reset.'),

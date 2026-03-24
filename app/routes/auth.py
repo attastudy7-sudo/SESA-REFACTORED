@@ -218,6 +218,7 @@ def signup():
             password=generate_password_hash(form.password.data),
             birthdate=form.birthdate.data,
             gender=form.gender.data,
+            level=form.level.data or None,
             school_name=None,
             consent_given=True,
             consent_given_at=datetime.now(timezone.utc),

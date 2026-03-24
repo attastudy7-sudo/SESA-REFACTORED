@@ -250,7 +250,7 @@ def upload_students(school_id):
     """
     Bulk upload students from Excel.
     Required columns: first_name, last_name
-    Optional: student_id, class_group, gender, email
+    Optional: student_id, class_group, level, gender, email
     Usernames and passwords are auto-generated.
     """
     import re as _re
@@ -289,7 +289,7 @@ def upload_students(school_id):
             flash(
                 f'Missing required columns: {", ".join(sorted(missing))}. '
                 f'Required: first_name, last_name. '
-                f'Optional: student_id, class_group, gender, email.',
+                f'Optional: student_id, class_group, level, gender, email.',
                 'error'
             )
             return redirect(url_for('main.school_dashboard', school_id=school_id))
@@ -360,6 +360,9 @@ def upload_students(school_id):
             gender_raw = str(row.get('gender', '')).strip().lower()
             gender = gender_raw if gender_raw in ('male', 'female', 'other') else None
 
+            level_raw = str(row.get('level', '')).strip().lower()
+            level = level_raw if level_raw in ('jhs', 'shs', 'university') else None
+
             db.session.add(Accounts(
                 fname=fname,
                 lname=lname,
@@ -368,6 +371,7 @@ def upload_students(school_id):
                 password=generate_password_hash(temp_password),
                 school_name=school.school_name,
                 gender=gender,
+                level=level,
                 class_group=class_group,
                 school_id=school.id,
             ))
@@ -432,6 +436,7 @@ def search_students(school_id):
         'username': s.username,
         'email': s.email,
         'class_group': s.class_group,
+        'level': s.level,
         'school_name': s.school_name,
     } for s in students])
 
@@ -580,48 +585,85 @@ def school_results(school_id):
         flash('Please log in as a school administrator.', 'warning')
         return redirect(url_for('auth.school_login'))
 
-    results_page = request.args.get('results_page', 1, type=int)
-    results_pagination = (
-        TestResult.query
-        .join(Accounts, Accounts.id == TestResult.user_id)
-        .filter(Accounts.school_id == school.id)
-        .order_by(TestResult.taken_at.desc())
-        .paginate(page=results_page, per_page=25, error_out=False)
-    )
-    total_results = (TestResult.query
-                     .join(Accounts, Accounts.id == TestResult.user_id)
-                     .filter(Accounts.school_id == school.id)
-                     .count())
+    tab = request.args.get('tab', 'results')
+    selected_class = request.args.get('class_group', '').strip()
+    page = request.args.get('page', 1, type=int)
 
-    return render_template(
-        'main/school_results.html',
+    all_class_groups = sorted([
+        row.class_group
+        for row in db.session.query(Accounts.class_group)
+        .filter(Accounts.school_id == school_id, Accounts.class_group.isnot(None))
+        .distinct().all()
+    ])
+
+    results_pagination = None
+    total_results = 0
+    at_risk = []
+    at_risk_pagination = None
+
+    if tab == 'at_risk':
+        latest_subq = (
+            db.session.query(
+                TestResult.user_id,
+                TestResult.test_type,
+                func.max(TestResult.taken_at).label('latest_at'),
+            )
+            .join(Accounts, Accounts.id == TestResult.user_id)
+            .filter(Accounts.school_id == school_id)
+            .group_by(TestResult.user_id, TestResult.test_type)
+            .subquery()
+        )
+        at_risk_q = (
+            db.session.query(TestResult, Accounts)
+            .join(Accounts, Accounts.id == TestResult.user_id)
+            .join(
+                latest_subq,
+                (latest_subq.c.user_id == TestResult.user_id) &
+                (latest_subq.c.test_type == TestResult.test_type) &
+                (latest_subq.c.latest_at == TestResult.taken_at),
+            )
+            .filter(
+                Accounts.school_id == school_id,
+                TestResult.stage.in_(['Elevated Stage', 'Clinical Stage']),
+            )
+        )
+        if selected_class:
+            at_risk_q = at_risk_q.filter(Accounts.class_group == selected_class)
+        at_risk_q = at_risk_q.order_by(
+            db.case((TestResult.stage == 'Clinical Stage', 0), else_=1),
+            TestResult.taken_at.desc(),
+        )
+        at_risk_pagination = at_risk_q.paginate(page=page, per_page=25, error_out=False)
+        at_risk = at_risk_pagination.items
+    else:
+        results_q = (
+            TestResult.query
+            .join(Accounts, Accounts.id == TestResult.user_id)
+            .filter(Accounts.school_id == school.id)
+        )
+        if selected_class:
+            results_q = results_q.filter(Accounts.class_group == selected_class)
+        results_q = results_q.order_by(TestResult.taken_at.desc())
+        total_results = results_q.count()
+        results_pagination = results_q.paginate(page=page, per_page=25, error_out=False)
+
+    ctx = dict(
         school=school,
+        tab=tab,
+        selected_class=selected_class,
+        class_groups=all_class_groups,
         results_pagination=results_pagination,
         total_results=total_results,
+        at_risk=at_risk,
+        at_risk_pagination=at_risk_pagination,
     )
 
+    if request.args.get('_fragment'):
+        tpl = 'main/_at_risk_table.html' if tab == 'at_risk' else 'main/_results_table.html'
+        return render_template(tpl, **ctx)
 
-@main_bp.route('/school/<int:school_id>/analytics')
-@school_login_required
-def school_analytics(school_id):
-    """School analytics page showing overall student performance."""
-    school = _get_school_from_session()
-    if not school or school.id != school_id:
-        flash('Please log in as a school administrator.', 'warning')
-        return redirect(url_for('auth.school_login'))
+    return render_template('main/school_results.html', **ctx)
 
-    from app.services.analytics_service import get_school_analytics
-
-    analytics = get_school_analytics(school.id)
-
-    return render_template(
-        'main/school_analytics.html',
-        school=school,
-        avg_score=analytics['avg_score'],
-        monthly_data=analytics['monthly_data'],
-        total_students=analytics['total_students'],
-        total_assessments=analytics['total_assessments'],
-    )
 
 @main_bp.route('/school/<int:school_id>/report/download')
 @school_login_required
@@ -683,6 +725,8 @@ def join_with_code():
             lname = request.form.get('lname', '').strip()
             password = request.form.get('password', '')
             class_group = request.form.get('class_group', '').strip() or None
+            level_raw = request.form.get('level', '').strip().lower()
+            level = level_raw if level_raw in ('jhs', 'shs', 'university') else None
 
             if not fname or not lname or not password:
                 error = 'Please fill in all required fields.'
@@ -704,6 +748,7 @@ def join_with_code():
                     email=None,  # self-registration via access code — email not required
                     password=generate_password_hash(password),
                     class_group=class_group,
+                    level=level,
                     school_id=school.id,
                     consent_given=True,
                     consent_given_at=datetime.now(timezone.utc),
@@ -759,78 +804,12 @@ def generate_access_code(school_id):
 @main_bp.route('/school/<int:school_id>/students-at-risk')
 @school_login_required
 def students_at_risk(school_id):
-    """Students at Elevated or Clinical stage (Group 3 — #1 feature for principals)."""
-    school = _get_school_from_session()
-    if not school or school.id != school_id:
-        flash('Please log in as a school administrator.', 'warning')
-        return redirect(url_for('auth.school_login'))
-
-    # Class-group filter (applied in SQL, not Python)
-    selected_class = request.args.get('class_group', '').strip()
-    page = request.args.get('page', 1, type=int)
-
-    # Subquery: latest taken_at per student per test type
-    latest_subq = (
-        db.session.query(
-            TestResult.user_id,
-            TestResult.test_type,
-            func.max(TestResult.taken_at).label('latest_at'),
-        )
-        .join(Accounts, Accounts.id == TestResult.user_id)
-        .filter(Accounts.school_id == school_id)
-        .group_by(TestResult.user_id, TestResult.test_type)
-        .subquery()
-    )
-
-    at_risk_q = (
-        db.session.query(TestResult, Accounts)
-        .join(Accounts, Accounts.id == TestResult.user_id)
-        .join(
-            latest_subq,
-            (latest_subq.c.user_id == TestResult.user_id) &
-            (latest_subq.c.test_type == TestResult.test_type) &
-            (latest_subq.c.latest_at == TestResult.taken_at),
-        )
-        .filter(
-            Accounts.school_id == school_id,
-            TestResult.stage.in_(['Elevated Stage', 'Clinical Stage']),
-        )
-    )
-
-    # Apply class-group filter at the SQL level
-    if selected_class:
-        at_risk_q = at_risk_q.filter(Accounts.class_group == selected_class)
-
-    at_risk_q = at_risk_q.order_by(
-        db.case((TestResult.stage == 'Clinical Stage', 0), else_=1),
-        TestResult.taken_at.desc(),
-    )
-
-    pagination = at_risk_q.paginate(page=page, per_page=25, error_out=False)
-
-    # All class groups for this school (for the filter dropdown)
-    all_class_groups = sorted([
-        row.class_group
-        for row in db.session.query(Accounts.class_group)
-        .filter(
-            Accounts.school_id == school_id,
-            Accounts.class_group.isnot(None),
-        )
-        .distinct()
-        .all()
-    ])
-
-    return render_template(
-        'main/students_at_risk.html',
-        school=school,
-        pagination=pagination,
-        at_risk=pagination.items,
-        class_groups=all_class_groups,
-        selected_class=selected_class,
-    )
-
+    class_group = request.args.get('class_group', '')
+    url = url_for('main.school_results', school_id=school_id, tab='at_risk')
+    if class_group:
+        url += f'&class_group={class_group}'
+    return redirect(url)
 @main_bp.route('/school/guide')
-@school_login_required
 def school_guide():
     return render_template('main/school_guide.html')
 

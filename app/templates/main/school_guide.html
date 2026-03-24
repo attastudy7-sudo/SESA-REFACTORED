@@ -7,13 +7,22 @@
   {# ── Navbar ── #}
   <nav class="navbar scrolled" id="mainNav">
     <div class="navbar-inner">
-      <a href="{{ url_for('main.school_dashboard', school_id=session.get('school_id', 0)) }}" class="navbar-brand">
+      {% if session.get('school_id') %}
+        <a href="{{ url_for('main.school_dashboard', school_id=session.get('school_id')) }}" class="navbar-brand">
+      {% else %}
+        <a href="{{ url_for('main.landing') }}" class="navbar-brand">
+      {% endif %}
         <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="SESA" class="navbar-logo">
         <span class="navbar-title">SESA</span>
       </a>
       <ul class="navbar-links">
-        <a href="{{ url_for('main.school_dashboard', school_id=session.get('school_id', 0)) }}" class="btn btn-sm btn-ghost">← Back to Dashboard</a>
-        <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-danger">Logout</a>
+        {% if session.get('school_id') %}
+          <a href="{{ url_for('main.school_dashboard', school_id=session.get('school_id')) }}" class="btn btn-sm btn-ghost">← Back to Dashboard</a>
+          <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-danger">Logout</a>
+        {% else %}
+          <a href="{{ url_for('main.landing') }}" class="btn btn-sm btn-ghost">← Back to Home</a>
+          <a href="{{ url_for('auth.school_login') }}" class="btn btn-sm btn-primary">School Login</a>
+        {% endif %}
       </ul>
     </div>
   </nav>
@@ -77,7 +86,7 @@
             <div class="guide-step-num">2</div>
             <div class="guide-step-body">
               <h3>Await activation</h3>
-              <p>After registration, your account will be reviewed by <strong>FOPA DILLIGENT CONSULT</strong>. Student upload access is enabled only after payment confirmation. You will be notified when your account is activated.</p>
+              <p>after registration, your account will be reviewed by <strong>FOPA DILIGENT CONSULT</strong>. Student upload access is enabled only after payment confirmation. You will be notified when your account is activated.</p>
             </div>
           </div>
           <div class="guide-step">
@@ -161,7 +170,7 @@
                 <td><code>level</code></td>
                 <td><span class="badge badge-gray">Optional</span></td>
                 <td>Must be exactly one of the accepted values</td>
-                <td>primaryschool · middleschool · highschool · university</td>
+                <td>jhs · shs · university</td>
               </tr>
               <tr>
                 <td><code>gender</code></td>
@@ -311,7 +320,7 @@
 
           <div class="guide-faq-item">
             <div class="guide-faq-q"><i class="fa-solid fa-chevron-right"></i> Level or gender not showing correctly</div>
-            <div class="guide-faq-a">These fields only accept exact values. For level: <code>primaryschool</code>, <code>middleschool</code>, <code>highschool</code>, or <code>university</code>. For gender: <code>male</code>, <code>female</code>, or <code>other</code>. Any other value will be ignored.</div>
+            <div class="guide-faq-a">These fields only accept exact values. For level: <code>jhs</code>, <code>shs</code>, or <code>university</code>. For gender: <code>male</code>, <code>female</code>, or <code>other</code>. Any other value will be ignored.</div>
           </div>
 
           <div class="guide-faq-item">
@@ -351,10 +360,17 @@
         <a href="{{ url_for('static', filename='downloads/SESA_Student_Upload_Template.xlsx') }}" class="btn btn-gold btn-lg" download>
           <i class="fa-solid fa-file-excel"></i> Download Template (.xlsx)
         </a>
-        <a href="{{ url_for('main.school_dashboard', school_id=session.get('school_id', 0)) }}"
+        {% if session.get('school_id') %}
+        <a href="{{ url_for('main.school_dashboard', school_id=session.get('school_id')) }}"
            class="btn btn-outline btn-lg" style="color:#fff; border-color:rgba(255,255,255,.4);">
           ← Back to Dashboard
         </a>
+        {% else %}
+        <a href="{{ url_for('main.landing') }}"
+           class="btn btn-outline btn-lg" style="color:#fff; border-color:rgba(255,255,255,.4);">
+          ← Back to Home
+        </a>
+        {% endif %}
       </div>
     </div>
 
@@ -373,10 +389,6 @@
       <a href="{{ url_for('main.school_results', school_id=school_id) }}"
          class="tab-item {% if request.endpoint == 'main.school_results' %}active{% endif %}">
         <i class="fa-solid fa-clipboard-list tab-icon"></i><span class="tab-label">Results</span>
-      </a>
-      <a href="{{ url_for('main.school_analytics', school_id=school_id) }}"
-         class="tab-item {% if request.endpoint == 'main.school_analytics' %}active{% endif %}">
-        <i class="fa-solid fa-chart-line tab-icon"></i><span class="tab-label">Analytics</span>
       </a>
       <a href="{{ url_for('auth.logout') }}" class="tab-item tab-logout">
         <span class="tab-icon">↩</span><span class="tab-label">Logout</span>
