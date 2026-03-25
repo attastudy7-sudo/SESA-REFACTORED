@@ -32,6 +32,14 @@
         <div class="quiz-test-name">Assessment Complete</div>
         <h2 style="font-family: var(--font-display); font-size: 1.4rem; margin: 4px 0 16px; color: #fff;">{{ test_type }}</h2>
 
+        {# ── Weekly progress — subtle ── #}
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px; opacity:0.7;">
+          <div style="flex:1; height:5px; background:rgba(255,255,255,0.12); border-radius:3px; overflow:hidden;">
+            <div style="height:100%; width:{{ ((completed_this_week / total_assessments) * 100) | round | int if total_assessments else 0 }}%; background:#fbbf24; border-radius:3px;"></div>
+          </div>
+          <span style="font-size:0.72rem; color:rgba(255,255,255,0.6); white-space:nowrap;">{{ completed_this_week }}/{{ total_assessments }} this week</span>
+        </div>
+
         <div class="result-score-ring" style="border-color: {{ stage_color }}20; background: {{ stage_color }}15;">
           <div class="result-score-num" style="color: #fff;" id="scoreCounter" data-target="{{ score }}">0</div>
           <div class="result-score-denom" style="color: rgba(255,255,255,.6);">/ {{ max_score }}</div>

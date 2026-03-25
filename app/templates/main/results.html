@@ -136,11 +136,10 @@
           <div class="results-hero-pill-label">Total taken</div>
         </div>
         <div class="results-hero-pill">
-          <div class="results-hero-pill-val results-hero-pill-val--stage"
-               style="color:{% if 'normal' in avg_score.stage|lower %}#acf0dd{% elif 'mild' in avg_score.stage|lower %}#fecf44{% elif 'elevated' in avg_score.stage|lower %}#ffb347{% else %}#f87171{% endif %};">
-            {{ avg_score.stage }}
+          <div class="results-hero-pill-val" style="font-size:0.95rem; color:#acf0dd;">
+            {{ completed_this_week }} of {{ total_assessments }}
           </div>
-          <div class="results-hero-pill-label">Overall stage</div>
+          <div class="results-hero-pill-label">Done this week</div>
         </div>
         <div class="results-hero-pill">
           <div class="results-hero-pill-val" style="font-size:0.9rem;">
@@ -149,6 +148,28 @@
           <div class="results-hero-pill-label">Last assessment</div>
         </div>
       </div>
+
+      {# ── Weekly progress ── #}
+      <div style="margin-top:16px; background:rgba(255,255,255,0.07); border-radius:10px; padding:12px 16px; max-width:560px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <span style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:rgba(255,255,255,0.6);">
+            <i class="fa-solid fa-calendar-week" style="margin-right:5px;"></i>This week's progress
+          </span>
+          <span style="font-size:0.7rem; color:rgba(255,255,255,0.4);">Resets in {{ days_until_reset }} day{{ 's' if days_until_reset != 1 else '' }}</span>
+        </div>
+        
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="flex:1; height:5px; background:rgba(255,255,255,0.12); border-radius:3px; overflow:hidden;">
+            <div style="height:100%; width:{{ ((completed_this_week / total_assessments) * 100) | round | int if total_assessments else 0 }}%; background:#fbbf24; border-radius:3px; transition:width 0.8s ease;"></div>
+          </div>
+          <span style="font-size:0.8rem; font-weight:700; color:#fbbf24; white-space:nowrap;">{{ completed_this_week }} / {{ total_assessments }}</span>
+        </div>
+        <div style="margin-top:5px; font-size:0.7rem; color:rgba(255,255,255,0.4);">
+          {% if completed_this_week >= total_assessments %}All assessments completed this week 🎉
+          {% else %}{{ total_assessments - completed_this_week }} remaining this week{% endif %}
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -271,9 +292,17 @@
     <div>
       <div class="card results-side-card" style="background:var(--green-800); color:#fff; overflow:hidden; position:relative; margin: 0 16px 16px;">
         <div class="card-body" style="position:relative; z-index:1;">
-          <span style="background:rgba(254,207,68,.2); color:var(--gold-300, #fcd34d); font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; padding:3px 10px; border-radius:20px; display:inline-block; margin-bottom:12px;">Overall Wellness</span>
-          <div style="font-family:var(--font-display); font-size:1.8rem; font-weight:800; color:var(--gold-300, #fcd34d); margin-bottom:8px;">{{ avg_score.stage }}</div>
-          <p style="font-size:0.85rem; color:rgba(255,255,255,.75); line-height:1.6; margin-bottom:16px;">{{ avg_score.message }}</p>
+          <span style="background:rgba(254,207,68,.2); color:var(--gold-300, #fcd34d); font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; padding:3px 10px; border-radius:20px; display:inline-block; margin-bottom:12px;">This Week</span>
+          <div style="font-family:var(--font-display); font-size:1.8rem; font-weight:800; color:var(--gold-300, #fcd34d); margin-bottom:8px;">{{ completed_this_week }} of {{ total_assessments }}</div>
+          <p style="font-size:0.85rem; color:rgba(255,255,255,.75); line-height:1.6; margin-bottom:16px;">
+            {% if available_count == 0 %}
+              No assessments available yet — check back after your cooldown.
+            {% elif completed_this_week >= available_count %}
+              All available assessments completed this week 🎉
+            {% else %}
+              {{ available_count - completed_this_week }} assessment{{ 's' if (available_count - completed_this_week) != 1 else '' }} available to take now.
+            {% endif %}
+          </p>
           <div style="border-top:1px solid rgba(255,255,255,.1); padding-top:14px;">
             <a href="{{ url_for('main.home') }}" class="btn btn-gold btn-sm">
               <i class="fa-solid fa-plus"></i> Take New Assessment

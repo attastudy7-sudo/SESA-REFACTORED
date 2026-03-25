@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - SESA{% endblock %}
+
+{% block body %}
+<div class="content-wrapper" style="max-width: 600px; margin: 40px auto; padding: 20px;">
+  <div style="background: var(--white); border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 30px;">
+    
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+      <h1 style="font-size: 1.5rem; color: var(--gray-900); font-family: var(--font-display);">Account Settings</h1>
+      <i class="fa-solid fa-gear" style="font-size: 1.25rem; color: var(--gray-400);"></i>
+    </div>
+
+    <div style="border-bottom: 1px solid var(--gray-200); padding-bottom: 24px; margin-bottom: 24px;">
+      <h2 style="font-size: 1.1rem; color: var(--gray-800); margin-bottom: 8px;">Your Data & Privacy</h2>
+      <p style="font-size: 0.9rem; color: var(--gray-600); margin-bottom: 16px; line-height: 1.5;">
+        Under the Ghana Data Protection Act, 2012 (Act 843), you have the right to access the personal data we hold about you and the right to withdraw your consent by permanently deleting your account.
+      </p>
+
+      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <!-- Export Data -->
+        <a href="{{ url_for('main.export_data') }}" class="btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem;">
+          <i class="fa-solid fa-download"></i> Export My Data
+        </a>
+        
+        <!-- Delete Account Modal Trigger -->
+        <button type="button" class="btn-danger" onclick="document.getElementById('deleteAccountModal').style.display='flex'" style="background: var(--red-600); color: white; border: none; display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; transition: background 0.2s;">
+          <i class="fa-solid fa-trash"></i> Delete Account
+        </button>
+      </div>
+    </div>
+    
+    <div style="color: var(--gray-500); font-size: 0.85rem; line-height: 1.4;">
+      By maintaining an account with SESA, you agree to our <a href="{{ url_for('main.privacy') }}" style="color: var(--green-600); text-decoration: underline;">Privacy Policy</a>.
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div id="deleteAccountModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
+  <div style="background: white; border-radius: 12px; max-width: 400px; width: 100%; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+    <h3 style="font-size: 1.25rem; color: var(--gray-900); margin-bottom: 12px;">Delete Account?</h3>
+    <p style="font-size: 0.95rem; color: var(--gray-600); line-height: 1.5; margin-bottom: 24px;">
+      This action is <strong>permanent</strong> and cannot be undone. All your test results and personal information will be completely erased from our systems.
+    </p>
+    <div style="display: flex; gap: 12px; justify-content: flex-end;">
+      <button type="button" onclick="document.getElementById('deleteAccountModal').style.display='none'" style="background: var(--gray-100); color: var(--gray-700); border: none; padding: 10px 16px; border-radius: 6px; font-weight: 500; cursor: pointer;">Cancel</button>
+      <form action="{{ url_for('main.delete_account') }}" method="POST" style="margin: 0;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" style="background: var(--red-600); color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: 500; cursor: pointer;">Delete Permanently</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

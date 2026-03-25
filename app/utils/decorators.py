@@ -2,6 +2,9 @@ import logging
 from functools import wraps
 from flask import redirect, url_for, flash, session, abort, request
 from flask_login import current_user
+from app.models.school import School
+from app.models.account import Accounts
+
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +17,24 @@ def school_login_required(f):
         if not school_id:
             flash('Please log in as a school administrator.', 'warning')
             return redirect(url_for('auth.school_login'))
+        return f(*args, **kwargs)
+    return decorated
+
+
+def subscription_required(f):
+    """Block access to paywalled features if the school's subscription is not active."""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if current_user.is_authenticated and current_user.is_super_admin:
+            return f(*args, **kwargs)
+        school_id = session.get('school_id')
+        if not school_id:
+            flash('Please log in as a school administrator.', 'warning')
+            return redirect(url_for('auth.school_login'))
+        school = School.query.get(school_id)
+        if not school or not school.subscription_active:
+            flash('This feature requires an active subscription. Please complete your payment to continue.', 'warning')
+            return redirect(url_for('main.school_dashboard', school_id=school_id))
         return f(*args, **kwargs)
     return decorated
 

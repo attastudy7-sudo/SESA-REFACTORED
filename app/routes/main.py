@@ -2,7 +2,7 @@ from app.services.payment_service import verify_paystack_payment
 from app.services.test_service import calculate_average_score, get_monthly_averages, get_school_monthly_averages
 from datetime import datetime, timezone
 import logging
-from flask import Blueprint, render_template, redirect, url_for, flash, session, request, jsonify, current_app
+from flask import Blueprint, render_template, redirect, url_for, flash, session, request, jsonify, current_app, abort
 from flask_login import login_required, current_user
 from sqlalchemy import or_, func
 from app.extensions import db, csrf, limiter
@@ -11,7 +11,7 @@ from app.models.school import School
 from app.models.test_result import TestResult
 from app.models.question import Question
 from flask import send_file
-from app.utils.decorators import school_login_required
+from app.utils.decorators import school_login_required, subscription_required
 
 main_bp = Blueprint('main', __name__)
 logger = logging.getLogger(__name__)
@@ -142,28 +142,70 @@ def home():
 @main_bp.route('/results')
 @login_required
 def results():
+    from datetime import datetime, timedelta, timezone
+    from app.models.assessment_type import AssessmentType
     user = current_user
     all_results = user.test_results.order_by(TestResult.taken_at.desc()).all()
-    
-    # Calculate average score
+
     avg_data = calculate_average_score(all_results)
     monthly_data = get_monthly_averages(all_results)
-    
+
+    now = datetime.now(timezone.utc)
+    week_start = (now - timedelta(days=now.weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
+    days_until_reset = 7 - now.weekday()
+
+    COOLDOWN_DAYS = 7
+    all_active = AssessmentType.query.filter_by(is_active=True).order_by(AssessmentType.order).all()
+    latest_by_type = {}
+    for r in all_results:
+        if r.test_type not in latest_by_type:
+            latest_by_type[r.test_type] = r
+
+    completed_this_week_types = set(
+        r.test_type for r in all_results
+        if r.taken_at and (r.taken_at.replace(tzinfo=timezone.utc) if r.taken_at.tzinfo is None else r.taken_at) >= week_start
+    )
+
+    weekly_assessments = []
+    available_count = 0
+    for at in all_active:
+        latest = latest_by_type.get(at.name)
+        is_ready = True
+        if latest and latest.taken_at:
+            taken_at = latest.taken_at
+            if taken_at.tzinfo is None:
+                taken_at = taken_at.replace(tzinfo=timezone.utc)
+            days_ago = (now - taken_at).days
+            is_ready = days_ago >= COOLDOWN_DAYS
+        if is_ready:
+            available_count += 1
+        done_this_week = at.name in completed_this_week_types
+        weekly_assessments.append({
+            'name': at.name,
+            'title': at.display_name,
+            'done_this_week': done_this_week,
+            'is_ready': is_ready,
+        })
+
     return render_template(
         'main/results.html',
         user=user,
         results=all_results,
         avg_score=avg_data,
         monthly_data=monthly_data,
+        weekly_assessments=weekly_assessments,
+        completed_this_week=len(completed_this_week_types),
+        total_assessments=len(all_active),
+        available_count=available_count,
+        days_until_reset=days_until_reset,
     )
-
 
 @main_bp.route('/school/<int:school_id>')
 def school_dashboard(school_id):
     school = _get_school_from_session()
-    # Allow super-admin OR the school itself
     if current_user.is_authenticated and current_user.is_super_admin:
-        school = School.query.get_or_404(school_id)
+        from flask import abort
+        abort(403)
     elif school and school.id == school_id:
         pass  # already loaded
     else:
@@ -281,6 +323,7 @@ def school_dashboard(school_id):
 
 @main_bp.route('/school/<int:school_id>/claim-codes/print')
 @school_login_required
+@subscription_required
 def print_claim_codes(school_id):
     school = _get_school_from_session()
     is_admin = current_user.is_authenticated and current_user.is_super_admin
@@ -301,6 +344,7 @@ def print_claim_codes(school_id):
 
 @main_bp.route('/school/<int:school_id>/upload-students', methods=['POST'])
 @school_login_required
+@subscription_required
 def upload_students(school_id):
     """
     Bulk upload students from Excel.
@@ -400,9 +444,10 @@ def upload_students(school_id):
                 duplicates += 1
                 continue
 
-            all_names = f"{fname} {lname}".split()
-            initials = ''.join(n[0].lower() for n in all_names[:-1])
-            base_uname = _re.sub(r'[^a-z0-9]', '', initials + all_names[-1].lower())[:48]
+            # Standardized: fname.lname.schoolcode (school_code defined on line 340)
+            u_fname_initial = _re.sub(r'[^a-z]', '', fname.lower())[0] if fname else ''
+            u_lname = _re.sub(r'[^a-z0-9]', '', lname.lower())
+            base_uname = f"{u_fname_initial}{u_lname}"[:48]
             username = base_uname
             suffix = 1
             while username in existing_usernames:
@@ -489,6 +534,7 @@ def upload_students(school_id):
 
 @main_bp.route('/school/<int:school_id>/search-students')
 @school_login_required
+@subscription_required
 @limiter.limit("60 per minute")
 def search_students(school_id):
     """AJAX student search for school dashboard."""
@@ -631,10 +677,11 @@ def test_activate_upload(school_id):
 
 @main_bp.route('/school/<int:school_id>/students')
 @school_login_required
+@subscription_required
 def school_students(school_id):
     school = _get_school_from_session()
     if current_user.is_authenticated and current_user.is_super_admin:
-        school = School.query.get_or_404(school_id)
+        abort(403)
     elif school and school.id == school_id:
         pass
     else:
@@ -658,10 +705,11 @@ def school_students(school_id):
 
 @main_bp.route('/school/<int:school_id>/results')
 @school_login_required
+@subscription_required
 def school_results(school_id):
     school = _get_school_from_session()
     if current_user.is_authenticated and current_user.is_super_admin:
-        school = School.query.get_or_404(school_id)
+        abort(403)
     elif school and school.id == school_id:
         pass
     else:
@@ -750,8 +798,11 @@ def school_results(school_id):
 
 @main_bp.route('/school/<int:school_id>/report/download')
 @school_login_required
+@subscription_required
 def download_report(school_id):
     """Generate and download a PDF performance report for the school."""
+    if current_user.is_authenticated and current_user.is_super_admin:
+        abort(403)
     school = _get_school_from_session()
     if not school or school.id != school_id:
         flash('Please log in as a school administrator.', 'warning')
@@ -816,8 +867,11 @@ def join_with_code():
             elif len(password) < 6:
                 error = 'Password must be at least 6 characters.'
             else:
+                # Standardized: fname.lname.schoolcode
                 school_code = re.sub(r'[^a-z0-9]', '', school.school_name.lower())[:6] or 'sch'
-                base_uname = re.sub(r'[^a-z0-9.]', '', f"{fname.lower()}.{lname.lower()}.{school_code}")[:48]
+                u_fname = re.sub(r'[^a-z0-9]', '', fname.lower())
+                u_lname = re.sub(r'[^a-z0-9]', '', lname.lower())
+                base_uname = f"{u_fname}.{u_lname}.{school_code}"[:48]
                 username = base_uname
                 suffix = 1
                 while Accounts.query.filter_by(username=username).first():
@@ -910,6 +964,7 @@ def claim_account():
 
 @main_bp.route('/school/<int:school_id>/generate-access-code', methods=['POST'])
 @school_login_required
+@subscription_required
 def generate_access_code(school_id):
     """Generate a new 6-digit access code for the school."""
     import secrets
@@ -993,3 +1048,99 @@ def sitemap_xml():
         )
     xml_parts.append('</urlset>')
     return Response("\n".join(xml_parts), mimetype="application/xml")
+
+
+# ── Act 843 Compliance Routes ────────────────────────────────────────────────
+
+@main_bp.route('/settings')
+@login_required
+def settings():
+    return render_template('main/settings.html')
+
+
+@main_bp.route('/settings/export-data')
+@login_required
+def export_data():
+    import json
+    from flask import Response
+    from app.models.audit_log import audit
+    
+    user = current_user
+    results = user.test_results.all()
+    
+    data = {
+        'profile': {
+            'username': user.username,
+            'first_name': user.fname,
+            'last_name': user.lname,
+            'email': user.email,
+            'school': user.school_name,
+            'gender': user.gender,
+            'class_group': user.class_group,
+            'level': user.level,
+            'created_at': user.created_at.isoformat() if user.created_at else None,
+            'consent_given': user.consent_given,
+            'consent_given_at': user.consent_given_at.isoformat() if user.consent_given_at else None,
+        },
+        'test_results': []
+    }
+    
+    if user.is_counsellor and user.counsellor_profile:
+        cp = user.counsellor_profile
+        data['counsellor_profile'] = {
+            'gpc_number': cp.gpc_number,
+            'gacc_number': cp.gacc_number,
+            'ghana_card_number': cp.ghana_card_number,
+            'specialisations': cp.specialisations,
+            'bio': cp.bio,
+            'years_experience': cp.years_experience,
+            'verification_status': cp.verification_status,
+        }
+        
+    for r in results:
+        data['test_results'].append({
+            'test_type': r.test_type,
+            'score': r.score,
+            'max_score': r.max_score,
+            'stage': r.stage,
+            'feedback': r.feedback,
+            'taken_at': r.taken_at.isoformat() if r.taken_at else None
+        })
+        
+    audit('DATA_EXPORTED', actor_id=user.id, school_id=user.school_id, ip_address=request.remote_addr, detail='User exported personal data (Act 843)')
+    db.session.commit()
+    
+    return Response(
+        json.dumps(data, indent=2),
+        mimetype='application/json',
+        headers={'Content-Disposition': f'attachment;filename=sesa_data_export_{user.username}.json'}
+    )
+
+
+@main_bp.route('/settings/delete-account', methods=['POST'])
+@login_required
+def delete_account():
+    from flask_login import logout_user
+    from app.models.audit_log import audit
+    
+    user = current_user
+    # Explicit audit before deletion (actor_id gets SET NULL on cascade but we record the event)
+    audit('ACCOUNT_SELF_DELETED', actor_id=user.id, school_id=user.school_id, ip_address=request.remote_addr, detail='User permanently deleted account (Act 843 Consent Withdrawal)')
+    db.session.commit()
+    
+    db.session.delete(user)
+    db.session.commit()
+    logout_user()
+    session.clear()
+    flash('Your account and all associated data have been permanently deleted in accordance with the Data Protection Act.', 'success')
+    return redirect(url_for('main.landing'))
+
+
+@main_bp.route('/privacy')
+def privacy():
+    return render_template('main/privacy.html')
+
+
+@main_bp.route('/terms')
+def terms():
+    return render_template('main/terms.html')

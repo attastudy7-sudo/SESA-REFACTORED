@@ -123,6 +123,9 @@ def next_question_api(test_type):
 
         # Save result to DB — score never travels through the URL
         max_score = question_count * 3
+        if max_score == 0:
+            logger.error('max_score is 0 for test_type=%s — aborting result save', test_type)
+            return jsonify({'error': 'Assessment configuration error. Please contact support.'}), 500
         result_data = classify_score(test_type, total_score, max_score)
 
         result_obj = TestResult(
@@ -143,7 +146,7 @@ def next_question_api(test_type):
             school_id=current_user.school_id,
             target_id=result_obj.id,
             ip_address=request.remote_addr,
-            detail=f'test={test_type} stage={result_data["stage"]} score={total_score}',
+            detail=f'Completed {test_type} assessment',
         )
         db.session.commit()
 
@@ -171,6 +174,22 @@ def show_results(result_id):
 
     result = classify_score(result_obj.test_type, result_obj.score, result_obj.max_score)
     next_test = get_next_test(result_obj.test_type)
+
+    from datetime import datetime, timedelta, timezone
+    from app.models.assessment_type import AssessmentType
+    now = datetime.now(timezone.utc)
+    week_start = now - timedelta(days=now.weekday())  # Monday
+    week_start = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
+    total_assessments = AssessmentType.query.filter_by(is_active=True).count()
+    completed_this_week = (TestResult.query
+        .filter(
+            TestResult.user_id == current_user.id,
+            TestResult.taken_at >= week_start,
+        )
+        .with_entities(TestResult.test_type)
+        .distinct()
+        .count())
+    days_until_reset = 7 - now.weekday()  # days until Monday
 
     counsellor = None
     if current_user.school_id:
@@ -200,6 +219,9 @@ def show_results(result_id):
         form=form,
         counsellor=counsellor,
         mhap_helpline=MHAP_HELPLINE,
+        completed_this_week=completed_this_week,
+        total_assessments=total_assessments,
+        days_until_reset=days_until_reset,
     )
 
 

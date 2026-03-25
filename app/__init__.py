@@ -242,3 +242,24 @@ def _register_cli(app: Flask) -> None:
         except Exception as e:
             click.echo(f'Error: {e}')
 
+    @app.cli.command('purge-inactive-users')
+    @with_appcontext
+    def purge_inactive_users():
+        """Purge Accounts exceeding 5-year retention per Act 843."""
+        from datetime import datetime, timezone, timedelta
+        from app.models.account import Accounts
+        from app.models.audit_log import audit
+        limit_date = datetime.now(timezone.utc) - timedelta(days=5 * 365)
+        inactive = Accounts.query.filter(
+            db.or_(
+                db.and_(Accounts.last_login != None, Accounts.last_login < limit_date),
+                db.and_(Accounts.last_login == None, Accounts.created_at < limit_date)
+            )
+        ).all()
+        count = len(inactive)
+        for acc in inactive:
+            db.session.delete(acc)
+        audit('DATA_RETENTION_PURGE', detail=f'Purged {count} inactive users per Act 843.')
+        db.session.commit()
+        click.echo(f'Purged {count} inactive users.')
+

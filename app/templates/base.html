@@ -227,6 +227,10 @@
       </div>
     </div>
     <div class="profile-sheet-divider"></div>
+    <a href="{{ url_for('main.settings') }}" class="profile-sheet-action">
+      <i class="fa-solid fa-gear"></i>
+      Settings
+    </a>
     <a href="{{ url_for('auth.logout') }}" class="profile-sheet-action profile-sheet-action--danger">
       <i class="fa-solid fa-right-from-bracket"></i>
       Sign out

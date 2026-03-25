@@ -120,9 +120,21 @@
             <span class="reg-confirm-value" id="conf_phone">&mdash;</span>
           </div>
         </div>
+        <div class="form-group" style="margin-top: 16px;">
+          <div style="display: flex; align-items: flex-start; gap: 10px; background: var(--ivory); border-radius: 8px; padding: 12px 14px; border: 1px solid var(--gray-200);">
+            {{ form.data_processing_consent(id="data_consent_check", style="margin-top: 3px; flex-shrink: 0;") }}
+            <label for="data_consent_check" style="font-size: 0.83rem; color: var(--gray-700); cursor: pointer; line-height: 1.5;">
+              I confirm I am authorised to register this school and agree to the collection and processing of school and student data by FOPA Diligent Consult in accordance with the Ghana Data Protection Act, 2012 (Act 843) and the
+              <a href="{{ url_for('main.privacy') }}" target="_blank" style="color: var(--green-700); font-weight: 600;">Privacy Policy</a>.
+            </label>
+          </div>
+          {% for e in form.data_processing_consent.errors %}
+            <div class="form-error" style="margin-top: 6px;">{{ e }}</div>
+          {% endfor %}
+        </div>
         <div class="reg-nav">
           <button type="button" class="btn btn-secondary" onclick="goTo(3)">&larr; Back</button>
-          <button type="submit" class="btn btn-gold btn-lg" style="flex:1;">Register School &#10003;</button>
+          <button type="submit" class="btn btn-gold btn-lg" id="submitBtn" style="flex:1;" disabled>Register School &#10003;</button>
         </div>
       </div>
 
@@ -343,6 +355,22 @@
     el.addEventListener('click', function() { el.style.opacity='0'; setTimeout(function(){el.remove();},400); });
     setTimeout(function(){ el.style.transition='opacity 0.4s'; el.style.opacity='0'; setTimeout(function(){el.remove();},400); }, 4000+i*300);
   });
+
+  /* ── Consent checkbox toggles submit button ── */
+  var consentCheck = document.getElementById('data_consent_check');
+  var submitBtn    = document.getElementById('submitBtn');
+  if (consentCheck && submitBtn) {
+    consentCheck.addEventListener('change', function() {
+      submitBtn.disabled = !this.checked;
+      submitBtn.style.opacity = this.checked ? '1' : '0.5';
+      submitBtn.style.cursor  = this.checked ? 'pointer' : 'not-allowed';
+    });
+    /* Restore state if validation failed and page re-rendered with step4 */
+    {% if form.data_processing_consent.data %}
+    submitBtn.disabled = false;
+    submitBtn.style.opacity = '1';
+    {% endif %}
+  }
   
 })();
 </script>

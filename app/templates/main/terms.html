@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terms of Service – SESA by FOPA Diligent Consult</title>
+  <meta name="description" content="SESA Terms of Service — the rules and conditions governing use of the SESA platform.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="{{ request.url_root.rstrip('/') }}{{ request.path }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+  <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/static/sw.js');}</script>
+  {% include 'main/_pub_styles.html' %}
+  <style>
+    .policy-hero {
+      background: var(--f);
+      padding: 120px 32px 72px;
+      position: relative; overflow: hidden;
+    }
+    .policy-hero-inner {
+      max-width: 860px; margin: 0 auto; position: relative; z-index: 2;
+      text-align: center;
+    }
+    .policy-hero-orb {
+      position: absolute; border-radius: 50%;
+      background: var(--g); opacity: .04; pointer-events: none;
+    }
+    .policy-hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.2rem, 5vw, 3.6rem);
+      font-weight: 700; color: var(--iv); line-height: 1.1;
+      margin-bottom: 16px;
+    }
+    .policy-hero h1 em { color: var(--g); font-style: italic; }
+    .policy-hero-sub {
+      font-size: 1rem; color: rgba(250,250,243,.72);
+      line-height: 1.75; max-width: 560px; margin: 0 auto 24px;
+    }
+    .policy-hero-date {
+      display: inline-block; font-size: .72rem; font-weight: 700;
+      letter-spacing: .14em; text-transform: uppercase;
+      color: var(--g); margin-bottom: 12px;
+    }
+    .policy-hero-nav {
+      display: flex; gap: 12px; justify-content: center; margin-top: 32px; flex-wrap: wrap;
+    }
+    .policy-hero-nav a {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 22px; border-radius: 6px;
+      font-weight: 700; font-size: .9rem;
+      transition: background .2s, transform .15s;
+    }
+    .policy-hero-nav a.back-btn {
+      background: rgba(250,250,243,.08);
+      border: 1px solid rgba(250,250,243,.15);
+      color: var(--iv);
+    }
+    .policy-hero-nav a.back-btn:hover {
+      background: rgba(250,250,243,.14);
+      transform: translateX(-3px);
+    }
+    .policy-hero-nav a.signin-btn {
+      background: var(--g); color: var(--f);
+    }
+    .policy-hero-nav a.signin-btn:hover {
+      background: var(--gd); color: #fff; transform: translateY(-2px);
+    }
+    .policy-rule { width: 60px; height: 3px; background: var(--g); border-radius: 2px; margin: 36px auto 0; }
+
+    .policy-body {
+      max-width: 860px; margin: 0 auto;
+      padding: 72px 32px 96px;
+    }
+    @media (max-width: 600px) { .policy-body { padding: 48px 20px 72px; } }
+
+    .policy-section { margin-bottom: 64px; }
+    .policy-section:last-child { margin-bottom: 0; }
+
+    .section-num {
+      font-family: 'Playfair Display', serif;
+      font-size: .75rem; font-weight: 700; color: var(--g);
+      text-transform: uppercase; letter-spacing: .18em;
+      margin-bottom: 10px; display: block;
+    }
+    .policy-section h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      font-weight: 700; color: var(--f);
+      margin-bottom: 20px; line-height: 1.25;
+    }
+    .policy-section p, .policy-section li {
+      font-size: .95rem; color: #426652;
+      line-height: 1.85;
+    }
+    .policy-section ul {
+      margin: 16px 0 0 20px; display: flex;
+      flex-direction: column; gap: 10px;
+    }
+    .policy-section li { padding-left: 6px; }
+    .policy-section li strong { color: var(--f); }
+    .policy-section p + p { margin-top: 14px; }
+    .policy-section--alt {
+      background: var(--sl);
+      border-left: 4px solid var(--g);
+      border-radius: 0 12px 12px 0;
+      padding: 36px 40px;
+    }
+    @media (max-width: 600px) { .policy-section--alt { padding: 28px 24px; } }
+    .policy-divider { height: 1px; background: rgba(2,40,24,.08); margin: 0 0 64px; }
+
+    .policy-cta {
+      background: var(--f); border-radius: 16px; padding: 48px;
+      text-align: center; position: relative; overflow: hidden;
+    }
+    .policy-cta h3 {
+      font-family: 'Playfair Display', serif; font-size: 1.6rem;
+      color: var(--iv); font-weight: 700; margin-bottom: 12px;
+    }
+    .policy-cta p { color: rgba(250,250,243,.72); font-size: .95rem; margin-bottom: 28px; }
+    .policy-cta-orb {
+      position: absolute; border-radius: 50%;
+      background: var(--g); opacity: .04; pointer-events: none;
+      width: 400px; height: 400px; top: -150px; right: -100px;
+    }
+  </style>
+</head>
+<body>
+
+{% include 'main/_pub_nav.html' %}
+
+<!-- ═══ PAGE HERO ═══ -->
+<section class="policy-hero">
+  <div class="policy-hero-orb" style="width:600px;height:600px;top:-200px;right:-200px;"></div>
+  <div class="policy-hero-orb" style="width:400px;height:400px;bottom:-180px;left:-120px;"></div>
+  <div class="policy-hero-inner">
+    <span class="policy-hero-date">Effective Date: March 2026</span>
+    <h1>Terms of <em>Service</em></h1>
+    <p class="policy-hero-sub">By accessing or using the SESA platform, you agree to be bound by these Terms of Service. Please read them carefully before using the platform.</p>
+    <div class="policy-rule"></div>
+    <div class="policy-hero-nav">
+      <a onclick="history.back(); return false;" href="{{ url_for('main.landing') }}" class="back-btn">
+        <i class="fa-solid fa-arrow-left"></i> Go Back
+      </a>
+      <a href="{{ url_for('auth.login') }}" class="signin-btn">
+        Sign In <i class="fa-solid fa-arrow-right"></i>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TERMS CONTENT ═══ -->
+<section style="background: var(--iv);">
+  <div class="policy-body">
+
+    <div class="policy-section">
+      <span class="section-num">01 — Acceptance</span>
+      <h2>Agreeing to These Terms</h2>
+      <p>By registering for an account or using the Social Emotional Students' Audit (SESA) platform operated by FOPA Diligent Consult ("we", "our", or "us"), you confirm that you have read, understood, and agree to these Terms of Service and our <a href="{{ url_for('main.privacy') }}" style="color: var(--gd); font-weight: 700;">Privacy Policy</a>.</p>
+      <p>If you are under 18 years of age, you confirm that you are using this platform with the knowledge and consent of a parent or guardian, in accordance with our parental consent policy.</p>
+    </div>
+
+    <div class="policy-divider"></div>
+
+    <div class="policy-section policy-section--alt">
+      <span class="section-num">02 — Eligibility &amp; Accounts</span>
+      <h2>Who Can Use SESA</h2>
+      <p>Access to SESA is available to:</p>
+      <ul>
+        <li><strong>Students</strong> enrolled at a participating Ghanaian school who have been issued a valid access code by their school administrator.</li>
+        <li><strong>School Administrators</strong> representing a registered educational institution in Ghana.</li>
+        <li><strong>Verified Counsellors</strong> who have been approved through our professional certification review process.</li>
+      </ul>
+      <p>You are responsible for maintaining the confidentiality of your account credentials. You must not share your login details with any other person.</p>
+    </div>
+
+    <div class="policy-divider" style="margin-top: 64px;"></div>
+
+    <div class="policy-section">
+      <span class="section-num">03 — Acceptable Use</span>
+      <h2>Platform Rules</h2>
+      <p>When using SESA, you agree to:</p>
+      <ul>
+        <li>Provide accurate, truthful information during account registration and throughout your use of the platform.</li>
+        <li>Complete assessments honestly, as results are used to determine appropriate levels of student support.</li>
+        <li>Respect the privacy and confidentiality of other users on the platform.</li>
+        <li>Not attempt to reverse-engineer, scrape, or disrupt the platform's services or infrastructure.</li>
+        <li>Not use the platform for any unlawful purpose or in violation of any applicable Ghanaian law or regulation.</li>
+      </ul>
+    </div>
+
+    <div class="policy-divider"></div>
+
+    <div class="policy-section">
+      <span class="section-num">04 — Health Data &amp; Clinical Feedback</span>
+      <h2>Understanding Assessment Results</h2>
+      <p>SESA's assessments are validated screening tools designed to identify students who may benefit from additional emotional support. They are <strong>not</strong> a substitute for professional clinical diagnosis.</p>
+      <p>Assessment scores and AI-generated feedback are shared only with the individual student and, where a student is identified as elevated or clinical risk, with authorised school administrators and verified counsellors. We do not share your health data with any third parties outside this structure.</p>
+    </div>
+
+    <div class="policy-divider"></div>
+
+    <div class="policy-section policy-section--alt">
+      <span class="section-num">05 — Intellectual Property</span>
+      <h2>Ownership of Content</h2>
+      <p>All content, assessment instruments, scoring models, and software comprising the SESA platform are the intellectual property of FOPA Diligent Consult and are protected under applicable Ghanaian and international copyright laws.</p>
+      <p>You are granted a limited, non-transferable licence to use the platform solely for its intended educational and screening purposes. You may not reproduce, redistribute, or create derivative works from any part of the platform.</p>
+    </div>
+
+    <div class="policy-divider" style="margin-top: 64px;"></div>
+
+    <div class="policy-section">
+      <span class="section-num">06 — Termination</span>
+      <h2>Account Suspension &amp; Deletion</h2>
+      <p>We reserve the right to suspend or permanently terminate any account found to be in violation of these Terms, or at the request of a school administrator in relation to a student account.</p>
+      <p>You may delete your own account at any time via your <strong>Account Settings</strong>. Upon deletion, all your personal data will be permanently removed in accordance with our <a href="{{ url_for('main.privacy') }}" style="color: var(--gd); font-weight: 700;">Privacy Policy</a>.</p>
+    </div>
+
+    <div class="policy-divider"></div>
+
+    <div class="policy-section">
+      <span class="section-num">07 — Changes To These Terms</span>
+      <h2>Updates &amp; Amendments</h2>
+      <p>We may update these Terms of Service from time to time to reflect changes to our platform, legal obligations, or best practices. We will notify registered users of any material changes. Your continued use of the platform after any such changes constitutes your acceptance of the new Terms.</p>
+    </div>
+
+    <div class="policy-divider"></div>
+
+    <div class="policy-section">
+      <div class="policy-cta">
+        <div class="policy-cta-orb"></div>
+        <h3>Questions About These Terms?</h3>
+        <p>If you have any questions about our Terms of Service or Privacy Policy, please reach out to us directly.</p>
+        <a href="{{ url_for('main.contact') }}" class="btn-gold" style="position: relative; z-index: 2;">
+          <i class="fa-solid fa-envelope"></i> Contact FOPA Diligent Consult
+        </a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+{% include 'main/_pub_footer.html' %}
+
+</body>
+</html>

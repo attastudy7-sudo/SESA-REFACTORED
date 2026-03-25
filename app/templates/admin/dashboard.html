@@ -550,23 +550,20 @@
                   </td>
                   <td>
                     {% if s.access_code %}
-                    <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                      <code style="font-size:0.85rem; font-weight:800; letter-spacing:.05em; color:var(--green-800); background:var(--gray-100); padding:3px 8px; border-radius:6px; border:1px solid var(--gray-200);">{{ s.access_code }}</code>
-                      <button class="copy-btn btn btn-ghost btn-sm" data-copy="{{ request.host_url }}join?code={{ s.access_code }}" style="font-size:0.75rem; padding:4px 8px; color:var(--gray-500);" title="Copy Link">
-                        <i class="fa-solid fa-copy"></i>
-                        <span class="copy-label" style="display:none;"></span><span class="copied-label" style="display:none; color:var(--green-500);"><i class="fa-solid fa-check"></i></span>
-                      </button>
+                    <div style="display:flex; flex-direction:column; align-items:flex-start; gap:3px;">
+                      <code class="copy-btn" data-copy="{{ request.host_url }}join?code={{ s.access_code }}" title="Click to copy link" style="font-size:0.85rem; font-weight:800; letter-spacing:.05em; color:var(--green-800); background:var(--gray-100); padding:3px 8px; border-radius:6px; border:1px solid var(--gray-200); cursor:pointer; user-select:none; transition:background 0.2s, color 0.2s;">{{ s.access_code }}</code>
+                      <span class="copied-label" style="display:none; color:var(--green-500); font-size:0.72rem; font-weight:600; padding-left:2px;"><i class="fa-solid fa-check"></i> Copied!</span>
                     </div>
                     {% else %}
                       <span style="font-size:0.7rem; font-weight:600; background:#f3f4f6; color:#4b5563; border:1px solid #e5e7eb; border-radius:20px; padding:3px 10px;">
-                        Not Generated
+                        N/A
                       </span>
                     {% endif %}
                   </td>
                   <td style="font-size:0.78rem; color:var(--gray-400);">{{ s.created_at.strftime('%d %b %Y') }}</td>
                   <td>
                     <div style="display:flex; gap:4px; flex-wrap:wrap;">
-                      <a href="{{ url_for('main.school_dashboard', school_id=s.id) }}" class="btn btn-ghost btn-sm">View</a>
+                      
                       <a href="{{ url_for('admin.edit_school', school_id=s.id) }}" class="btn btn-ghost btn-sm">Edit</a>
                       <form method="POST" action="{{ url_for('admin.delete_school', school_id=s.id) }}" class="confirm-delete" data-item="{{ s.school_name }}">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -801,11 +798,24 @@
   document.querySelectorAll('.copy-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
       navigator.clipboard.writeText(btn.dataset.copy).then(function() {
-        btn.querySelector('.copy-label').style.display = 'none';
-        btn.querySelector('.copied-label').style.display = 'inline';
+        var label = btn.querySelector('.copied-label');
+        if (label) label.style.display = 'inline';
+        btn.style.background = 'var(--green-100, #dcfce7)';
+        btn.style.color = 'var(--green-700, #15803d)';
+        btn.style.borderColor = 'var(--green-300, #86efac)';
+
+        // Toast notice
+        var toast = document.createElement('div');
+        toast.textContent = 'Link copied!';
+        toast.style.cssText = 'position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--green-800); color:#fff; padding:10px 20px; border-radius:8px; font-size:0.85rem; font-weight:600; z-index:9999; box-shadow:0 4px 12px rgba(0,0,0,0.2); pointer-events:none;';
+        document.body.appendChild(toast);
+
         setTimeout(function() {
-          btn.querySelector('.copy-label').style.display = 'inline';
-          btn.querySelector('.copied-label').style.display = 'none';
+          if (label) label.style.display = 'none';
+          btn.style.background = '';
+          btn.style.color = '';
+          btn.style.borderColor = '';
+          toast.remove();
         }, 2000);
       });
     });

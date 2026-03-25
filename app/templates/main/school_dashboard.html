@@ -159,6 +159,28 @@
     .admin-stat-val { font-size: 1.35rem; }
     .admin-stat-label { font-size: 0.65rem; line-height: 1.2; }
   }
+
+  /* ── Setup Stepper ── */
+  .setup-stepper {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0; margin-top: 20px; margin-bottom: 20px; padding: 14px 16px;
+    background: var(--white); border-radius: var(--radius-md);
+    border: 1px solid var(--gray-100); box-shadow: var(--shadow-sm);
+  }
+  .setup-step { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 64px; }
+  .setup-step-dot {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.72rem; font-weight: 700;
+    border: 2px solid var(--gray-200); background: var(--white); color: var(--gray-400);
+  }
+  .setup-step.done .setup-step-dot  { background: var(--green-700); color: #fff; border-color: var(--green-700); }
+  .setup-step.active .setup-step-dot { background: var(--gold-500); color: var(--green-900); border-color: var(--gold-500); box-shadow: 0 0 0 3px rgba(197,160,89,.2); }
+  .setup-step-label { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--gray-400); }
+  .setup-step.done .setup-step-label  { color: var(--green-700); }
+  .setup-step.active .setup-step-label { color: var(--gold-700); }
+  .setup-connector { flex: 1; height: 2px; background: var(--gray-200); max-width: 56px; margin-bottom: 14px; }
+  .setup-connector.done { background: var(--green-600); }
 </style>
 {% endblock %}
 
@@ -202,6 +224,25 @@
   </div>
   {% endif %}
 
+    {% if not upload_enabled %}
+  <div class="setup-stepper">
+    <div class="setup-step done">
+      <div class="setup-step-dot"><i class="fa-solid fa-check" style="font-size:0.7rem;"></i></div>
+      <span class="setup-step-label">Registered</span>
+    </div>
+    <div class="setup-connector done"></div>
+    <div class="setup-step active">
+      <div class="setup-step-dot">2</div>
+      <span class="setup-step-label">Activate</span>
+    </div>
+    <div class="setup-connector"></div>
+    <div class="setup-step">
+      <div class="setup-step-dot">3</div>
+      <span class="setup-step-label">Go Live</span>
+    </div>
+  </div>
+  {% endif %}
+
   {# ── Dashboard Header ── #}
   <div style="display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:12px; margin-bottom:20px; padding-top:8px;">
     <div>
@@ -209,11 +250,14 @@
       <h1 style="margin:4px 0 4px; font-family:var(--font-display); font-size:clamp(1.4rem,3vw,1.8rem);">{{ school.school_name }}</h1>
       <p style="color:var(--gray-700); font-size:0.88rem; margin:0;">{{ total_students }} student{{ 's' if total_students != 1 }} enrolled</p>
     </div>
+    {% if upload_enabled %}
     <a href="{{ url_for('main.download_report', school_id=school.id, period='monthly') }}"
        class="btn btn-gold btn-sm" style="flex-shrink:0;">
       <i class="fa-solid fa-download"></i> Export Report
     </a>
+    {% endif %}
   </div>
+
 
   {# ── Stats Grid ── #}
   <div class="admin-stat-grid" style="margin-bottom:24px;">
@@ -680,22 +724,66 @@
   </div>
   {% endif %}
 
-  <div class="card" style="border:2px solid var(--gold-400); background:var(--gold-50); margin-bottom:28px; overflow:hidden;" id="upload-section">
-    <div style="background:linear-gradient(135deg, var(--green-800), var(--green-700)); padding:32px 28px; text-align:center; position:relative; overflow:hidden;">
-      <div style="position:absolute; right:-20px; top:-20px; font-size:8rem; opacity:0.06; pointer-events:none; line-height:1;">
-        <i class="fa-solid fa-lock"></i>
+  {# ── Self-Registration (available immediately) ── #}
+  <div class="card" style="margin-bottom:20px; border:1.5px solid var(--green-600);">
+    <div class="card-header" style="background:var(--green-800); display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+      <div>
+        <span style="font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--gold-300); display:block; margin-bottom:2px;">Available Now</span>
+        <h3 style="margin:0; color:#fff; font-size:1rem;">Share Your Access Code</h3>
       </div>
-      <div style="width:56px; height:56px; background:rgba(255,255,255,.15); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 14px;">
-        <i class="fa-solid fa-lock-open" style="color:var(--gold-200); font-size:1.4rem;"></i>
+      <span style="font-size:0.72rem; font-weight:700; background:#d1fae5; color:#065f46; border-radius:20px; padding:4px 12px; display:flex; align-items:center; gap:4px; flex-shrink:0;">
+        <i class="fa-solid fa-circle-check"></i> Active
+      </span>
+    </div>
+    <div class="card-body" style="display:flex; flex-direction:column; align-items:center; text-align:center;">
+      <p style="font-size:0.85rem; color:var(--gray-600); margin-bottom:16px; max-width:400px;">
+        Share this code or QR link with students now — they can register while you complete activation.
+      </p>
+      {% if school.access_code %}
+      <img src="{{ url_for('qr.school_qr_png', school_id=school.id) }}" alt="QR code for {{ school.school_name }}"
+           style="width:88px; height:88px; border:1.5px solid var(--green-700); border-radius:10px; object-fit:contain; margin-bottom:12px;" loading="lazy">
+      <div style="font-size:1.7rem; font-weight:800; letter-spacing:.18em; color:var(--green-800); margin-bottom:12px;">{{ school.access_code }}</div>
+      <div style="display:flex; align-items:center; gap:6px; background:var(--ivory); border-radius:8px; padding:7px 10px; width:100%; max-width:360px; margin-bottom:12px;">
+        <code style="font-size:0.68rem; color:var(--gray-600); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ request.host_url }}join?code={{ school.access_code }}</code>
+        <button id="copyLinkBtn" data-link="{{ request.host_url }}join?code={{ school.access_code }}"
+                style="flex-shrink:0; font-size:0.72rem; font-weight:600; padding:4px 10px; border-radius:4px; border:1px solid var(--gray-300); background:var(--white); color:var(--gray-700); cursor:pointer; display:flex; align-items:center; gap:4px; white-space:nowrap;">
+          <i class="fa-solid fa-copy"></i> <span id="copyLinkLabel">Copy</span>
+        </button>
       </div>
-      <h2 style="font-family:var(--font-display); color:#fff; font-size:1.4rem; margin-bottom:8px;">Unlock Full Dashboard Access</h2>
-      <p style="color:rgba(255,255,255,.75); font-size:0.9rem; max-width:460px; margin:0 auto; line-height:1.6;">
-        Activate your SESA subscription to unlock bulk student upload, detailed analytics, counsellor assignment, and downloadable reports.
+      <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center;">
+        <a href="{{ url_for('qr.school_qr_png', school_id=school.id, download=1) }}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-download"></i> Download QR</a>
+        <a href="{{ url_for('qr.school_qr_print', school_id=school.id) }}" target="_blank" class="btn btn-secondary btn-sm"><i class="fa-solid fa-print"></i> Print</a>
+        <form method="POST" action="{{ url_for('main.generate_access_code', school_id=school.id) }}" style="margin:0;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-ghost btn-sm" title="Regenerate code"><i class="fa-solid fa-rotate"></i></button>
+        </form>
+      </div>
+      {% else %}
+      <i class="fa-solid fa-qrcode" style="font-size:2rem; color:var(--gray-300); margin-bottom:12px; display:block;"></i>
+      <p style="font-size:0.85rem; color:var(--gray-500); margin-bottom:14px;">No access code yet. Generate one so students can register now.</p>
+      <form method="POST" action="{{ url_for('main.generate_access_code', school_id=school.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-secondary btn-sm"><i class="fa-solid fa-wand-magic-sparkles"></i> Generate Code</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Payment Gate ── #}
+  <div class="card" style="border:2px solid var(--gold-400); overflow:hidden;" id="upload-section">
+    <div style="background:linear-gradient(135deg, var(--green-800), var(--green-700)); padding:28px 24px; text-align:center; position:relative; overflow:hidden;">
+      <div style="position:absolute; right:-20px; top:-20px; font-size:7rem; opacity:0.05; pointer-events:none; line-height:1;"><i class="fa-solid fa-lock"></i></div>
+      <div style="width:52px; height:52px; background:rgba(255,255,255,.12); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 12px;">
+        <i class="fa-solid fa-lock-open" style="color:var(--gold-200); font-size:1.3rem;"></i>
+      </div>
+      <h2 style="font-family:var(--font-display); color:#fff; font-size:1.3rem; margin-bottom:6px;">Unlock Full Dashboard Access</h2>
+      <p style="color:rgba(255,255,255,.72); font-size:0.88rem; max-width:420px; margin:0 auto; line-height:1.6;">
+        One activation unlocks analytics, bulk uploads, counsellor tools, and PDF reports for 365 days.
       </p>
     </div>
-    <div style="padding:24px 28px; border-bottom:1px solid var(--gold-200);">
-      <p style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--gold-700); margin-bottom:14px;">What's included</p>
-      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px;">
+    <div style="padding:20px 24px; border-bottom:1px solid var(--gold-200); background:var(--gold-50);">
+      <p style="font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--gold-700); margin-bottom:12px; text-align:center;">What's included</p>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:8px;">
         {% for icon, label in [
           ('fa-file-excel',           'Bulk student upload (Excel)'),
           ('fa-chart-line',           'Stage distribution analytics'),
@@ -704,28 +792,37 @@
           ('fa-file-pdf',             'Downloadable PDF reports'),
           ('fa-qrcode',               'QR code & access code tools'),
         ] %}
-        <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:#fff; border-radius:var(--radius-md); border:1px solid var(--gold-200);">
-          <i class="fa-solid {{ icon }}" style="color:var(--green-600); font-size:0.95rem; width:16px; flex-shrink:0;"></i>
-          <span style="font-size:0.82rem; color:var(--gray-700); font-weight:500;">{{ label }}</span>
+        <div style="display:flex; align-items:center; gap:10px; padding:9px 12px; background:#fff; border-radius:var(--radius-md); border:1px solid var(--gold-200);">
+          <i class="fa-solid {{ icon }}" style="color:var(--green-600); font-size:0.9rem; width:16px; flex-shrink:0;"></i>
+          <span style="font-size:0.80rem; color:var(--gray-700);">{{ label }}</span>
         </div>
         {% endfor %}
       </div>
     </div>
-    <div style="padding:24px 28px; text-align:center; background:var(--gold-50);">
-      <p style="font-size:0.82rem; color:var(--gray-500); margin-bottom:20px;">
-        One-time activation payment · Subscription valid for <strong>365 days</strong> · Secured by Paystack
-      </p>
-      <button id="paystackBtn" class="btn btn-gold btn-lg" onclick="initiatePayment()" style="min-width:240px;">
-        <i class="fa-solid fa-credit-card"></i> Pay to Activate Subscription
+    <div style="padding:22px 24px; text-align:center;">
+      <p style="font-size:0.80rem; color:var(--gray-500); margin-bottom:16px;">365-day subscription &middot; One-time activation &middot; Secured by Paystack</p>
+      <button id="paystackBtn" class="btn btn-gold btn-lg" onclick="initiatePayment()" style="min-width:220px;">
+        <i class="fa-solid fa-credit-card"></i> Activate Subscription
       </button>
       {% if test_mode %}
-      <p style="margin-top:12px; font-size:0.78rem; color:#4338ca;">
-        <i class="fa-solid fa-flask"></i> Test mode — use card <strong>4084 0840 8408 4081</strong> · Exp: any future date · CVV: any
+      <p style="margin-top:10px; font-size:0.76rem; color:#4338ca;">
+        <i class="fa-solid fa-flask"></i> Test card: <strong>4084 0840 8408 4081</strong> &middot; any future expiry &middot; any CVV
       </p>
       {% endif %}
-      <p style="margin-top:10px; font-size:0.75rem; color:var(--gray-400);">
-        Having trouble? Contact <strong>FOPA DILLIGENT CONSULT</strong> for support.
-      </p>
+      <p style="margin-top:8px; font-size:0.74rem; color:var(--gray-400);">Need help? Contact <strong>FOPA DILLIGENT CONSULT</strong></p>
+    </div>
+    <div style="padding:14px 24px 20px; background:var(--ivory); border-top:1px solid var(--gray-100);">
+      <p style="font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--gray-500); margin-bottom:10px; text-align:center;">What happens next</p>
+      <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; text-align:center;">
+        {% for s_icon, s_label in [('fa-credit-card','Payment confirmed'),('fa-cloud-arrow-up','Upload students'),('fa-chart-line','Start screening')] %}
+        <div style="padding:10px 6px;">
+          <div style="width:34px; height:34px; border-radius:50%; background:var(--green-100); color:var(--green-700); display:flex; align-items:center; justify-content:center; margin:0 auto 8px; font-size:0.85rem;">
+            <i class="fa-solid {{ s_icon }}"></i>
+          </div>
+          <span style="font-size:0.72rem; color:var(--gray-600); line-height:1.3;">{{ s_label }}</span>
+        </div>
+        {% endfor %}
+      </div>
     </div>
   </div>
 

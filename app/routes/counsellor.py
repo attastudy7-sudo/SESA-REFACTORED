@@ -156,7 +156,7 @@ def mark_contacted(student_id):
         school_id=current_user.school_id,
         target_id=student_id,
         ip_address=request.remote_addr,
-        detail=f'Counsellor {current_user.full_name} marked {student.full_name} as contacted.',
+        detail='Counsellor marked student as contacted.',
     )
     db.session.commit()
 

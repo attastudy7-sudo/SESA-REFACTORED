@@ -4,6 +4,8 @@ To add a new assessment: insert a row into assessment_type. No code changes need
 """
 
 from collections import defaultdict
+import logging
+logger = logging.getLogger(__name__)
 
 
 ANSWER_SCORES = {"Never": 0, "Sometimes": 1, "Often": 2, "Always": 3}
@@ -21,11 +23,17 @@ def classify_score(test_type: str, score: int, max_score: int = None) -> dict:
     from app.models.question import Question
     assessment = AssessmentType.query.filter_by(name=test_type).first()
     if not assessment:
+        assessment = AssessmentType.query.filter(
+            AssessmentType.name.ilike(test_type.strip())
+        ).first()
+    if not assessment:
         return {"stage": "Unknown", "message": "No result available.", "score_range": "—", "color": "#555"}
     if max_score is None:
         q_count = Question.query.filter_by(test_type=test_type).count()
         max_score = q_count * 3
     pct = round((score / max_score) * 100) if max_score > 0 else 0
+    best_match = None
+    best_distance = float('inf')
     for r in assessment.scoring_ranges:
         if r["min"] <= pct <= r["max"]:
             return {
@@ -34,6 +42,19 @@ def classify_score(test_type: str, score: int, max_score: int = None) -> dict:
                 "score_range": f"{r['min']}% – {r['max']}%",
                 "color": STAGE_COLORS.get(r["stage"], "#555"),
             }
+        # Track nearest range as fallback for gap/boundary edge cases
+        distance = min(abs(pct - r["min"]), abs(pct - r["max"]))
+        if distance < best_distance:
+            best_distance = distance
+            best_match = r
+    if best_match:
+        logger.warning('classify_score: pct=%s fell outside all ranges for %s — using nearest range %s', pct, test_type, best_match)
+        return {
+            "stage": best_match["stage"],
+            "message": best_match["message"],
+            "score_range": f"{best_match['min']}% – {best_match['max']}%",
+            "color": STAGE_COLORS.get(best_match["stage"], "#555"),
+        }
     return {"stage": "Unknown", "message": "No result available.", "score_range": "—", "color": "#555"}
 
 
