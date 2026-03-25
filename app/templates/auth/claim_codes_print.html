@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claim Codes — {{ school.school_name }}</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f5f5f0;
+      padding: 24px;
+      color: #1a3a2a;
+    }
+
+    .page-header {
+      background: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .page-header-left { display: flex; align-items: center; gap: 16px; }
+
+    .school-icon {
+      width: 52px; height: 52px;
+      border-radius: 12px;
+      background: #1a3a2a;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; color: #fff;
+      flex-shrink: 0;
+    }
+
+    .school-name { font-size: 1.2rem; font-weight: 800; color: #1a3a2a; }
+    .page-subtitle { font-size: 0.82rem; color: #6b7280; margin-top: 3px; }
+
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 18px; border-radius: 9px;
+      font-size: 0.82rem; font-weight: 600;
+      text-decoration: none; border: none; cursor: pointer;
+      transition: opacity .15s;
+    }
+    .btn:hover { opacity: .85; }
+    .btn-primary { background: #1a3a2a; color: #fff; }
+    .btn-outline { background: #fff; color: #1a3a2a; border: 2px solid #1a3a2a; }
+
+    .claim-url-bar {
+      background: #fff;
+      border-radius: 10px;
+      padding: 12px 18px;
+      margin-bottom: 24px;
+      font-size: 0.82rem;
+      color: #6b7280;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .claim-url-bar strong { color: #1a3a2a; }
+    .claim-url-bar code {
+      background: #f0fdf4;
+      color: #166534;
+      padding: 2px 8px;
+      border-radius: 5px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    /* Grid of slip cards */
+    .slips-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 14px;
+    }
+
+    .slip {
+      background: #fff;
+      border-radius: 12px;
+      border: 1.5px solid #e5e7eb;
+      padding: 16px 18px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    .slip-school {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #9ca3af;
+      margin-bottom: 6px;
+    }
+
+    .slip-name {
+      font-size: 0.98rem;
+      font-weight: 800;
+      color: #1a3a2a;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .slip-meta {
+      font-size: 0.72rem;
+      color: #9ca3af;
+      margin-bottom: 12px;
+    }
+
+    .slip-divider {
+      border: none;
+      border-top: 1px dashed #e5e7eb;
+      margin-bottom: 12px;
+    }
+
+    .slip-code-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      margin-bottom: 4px;
+    }
+
+    .slip-code {
+      font-size: 1.6rem;
+      font-weight: 900;
+      letter-spacing: 0.18em;
+      color: #1a3a2a;
+      margin-bottom: 10px;
+    }
+
+    .slip-url {
+      font-size: 0.65rem;
+      color: #6b7280;
+      word-break: break-all;
+      line-height: 1.5;
+    }
+
+    .slip-url strong { color: #166534; }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 24px;
+      background: #fff;
+      border-radius: 16px;
+      color: #6b7280;
+    }
+    .empty-state i { font-size: 2.5rem; color: #d1d5db; margin-bottom: 16px; display: block; }
+    .empty-state p { font-size: 0.9rem; }
+
+    @media print {
+      body { background: #fff; padding: 0; }
+      .page-header { box-shadow: none; border: 1px solid #e5e7eb; border-radius: 0; margin-bottom: 16px; }
+      .btn-row { display: none !important; }
+      .claim-url-bar { box-shadow: none; border: 1px solid #e5e7eb; }
+      .slip { box-shadow: none; border: 1.5px solid #d1d5db; }
+      .slips-grid { gap: 10px; }
+    }
+
+    @media (max-width: 600px) {
+      .slips-grid { grid-template-columns: 1fr 1fr; }
+      .page-header { padding: 18px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="school-icon"><i class="fa-solid fa-school"></i></div>
+      <div>
+        <div class="school-name">{{ school.school_name }}</div>
+        <div class="page-subtitle">
+          Claim Codes &mdash;
+          {% if unclaimed %}
+            {{ unclaimed | length }} unclaimed account{{ 's' if unclaimed | length != 1 }}
+          {% else %}
+            All accounts activated
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="btn-row no-print">
+      <button class="btn btn-primary" onclick="window.print()">
+        <i class="fa-solid fa-print"></i> Print
+      </button>
+      <a class="btn btn-outline" href="{{ url_for('main.school_dashboard', school_id=school.id) }}">
+        <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+      </a>
+    </div>
+  </div>
+
+  <div class="claim-url-bar">
+    <strong>Instructions for students:</strong>
+    Visit <code>{{ claim_url }}</code>, enter your claim code below, and set your own password.
+  </div>
+
+  {% if unclaimed %}
+  <div class="slips-grid">
+    {% for student in unclaimed %}
+    <div class="slip">
+      <div class="slip-school">{{ school.school_name }}</div>
+      <div class="slip-name">{{ student.fname }} {{ student.lname }}</div>
+      <div class="slip-meta">
+        @{{ student.username }}
+        {% if student.class_group %} &middot; {{ student.class_group }}{% endif %}
+      </div>
+      <hr class="slip-divider">
+      <div class="slip-code-label">Your Claim Code</div>
+      <div class="slip-code">{{ student.claim_code_plain or '——' }}</div>
+      <div class="slip-url">Go to <strong>{{ claim_url }}</strong> and enter this code to activate your account.</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="fa-solid fa-circle-check"></i>
+    <p>All student accounts for <strong>{{ school.school_name }}</strong> have been activated.</p>
+  </div>
+  {% endif %}
+
+</body>
+</html>

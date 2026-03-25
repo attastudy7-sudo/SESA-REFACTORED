@@ -189,6 +189,15 @@ def _register_cli(app: Flask) -> None:
         db.create_all()
         click.echo('Database initialized.')
 
+    @app.cli.command('mark-claimed')
+    @with_appcontext
+    def mark_claimed():
+        """Mark all existing accounts as claimed (run once after migration)."""
+        from app.models.account import Accounts
+        updated = Accounts.query.filter(Accounts.is_claimed.is_(None)).update({'is_claimed': True})
+        db.session.commit()
+        click.echo(f'Marked {updated} existing accounts as claimed.')
+
     @app.cli.command('import-students')
     @click.argument('school_id')
     @click.argument('excel_path')

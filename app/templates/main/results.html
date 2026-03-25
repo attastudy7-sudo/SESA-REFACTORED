@@ -30,12 +30,20 @@
   .results-breakdown-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
   .results-breakdown-count { font-size: 0.72rem; font-weight: 700; color: var(--green-800); width: 16px; text-align: right; flex-shrink: 0; }
 
-  .results-group { margin: 0 16px 14px; }
-  .results-group-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-  .results-group-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .results-group-name { font-size: 0.78rem; font-weight: 600; color: var(--green-800); }
+  /* Accordion styles */
+  .accordion-group { margin: 0 16px 14px; background: var(--white); border-radius: var(--radius-lg); box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid var(--gray-200); }
+  .accordion-header { display: flex; align-items: center; justify-content: space-between; padding: 16px; cursor: pointer; list-style: none; user-select: none; }
+  .accordion-header:hover { background: var(--gray-50); border-radius: var(--radius-lg); }
+  details[open] .accordion-header { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+  .accordion-header::-webkit-details-marker { display: none; }
+  .accordion-icon { color: var(--gray-400); transition: transform 0.2s ease; font-size: 0.8rem; margin-left: 8px; }
+  details[open] .accordion-icon { transform: rotate(180deg); }
+  .accordion-body { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--gray-100); padding-top: 14px; }
+  .results-group-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .results-group-name { font-size: 0.88rem; font-weight: 700; color: var(--green-800); }
 
-  .results-row { background: var(--white); border-radius: 10px; padding: 11px 13px; display: flex; align-items: center; gap: 10px; margin-bottom: 5px; border-left: 3px solid transparent; }
+  .results-row { background: var(--gray-50); border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; border-left: 3px solid transparent; transition: background 0.15s; text-decoration: none; }
+  .results-row:hover { background: var(--gray-100); }
   .results-row-date { font-size: 0.68rem; color: var(--gray-400); flex-shrink: 0; width: 44px; }
   .results-row-score { font-size: 0.95rem; font-weight: 700; color: var(--green-800); flex-shrink: 0; }
   .results-row-max { font-size: 0.72rem; color: var(--gray-300); font-weight: 400; }
@@ -83,7 +91,7 @@
       align-items: start;
     }
 
-    .results-group { margin: 0 0 14px; }
+    .accordion-group { margin: 0 0 16px; }
     .results-cta { margin: 4px 0 20px; }
     .results-side-card { margin: 0; }
 
@@ -218,29 +226,37 @@
           {% elif 'clinical' in s %}{% set dot_mod = 'clinical' %}
           {% else %}{% set dot_mod = 'mild' %}{% endif %}
 
-          <div class="results-group">
-            <div class="results-group-header">
-              <div class="results-group-dot results-group-dot--{{ dot_mod }}"></div>
-              <div class="results-group-name">{{ r.test_type }}</div>
+          <details class="accordion-group">
+            <summary class="accordion-header">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div class="results-group-dot results-group-dot--{{ dot_mod }}"></div>
+                <div class="results-group-name">{{ r.test_type }}</div>
+              </div>
+              <div style="display:flex; align-items:center;">
+                <span class="badge stage-{{ dot_mod if dot_mod != 'unknown' else 'badge-gray' }}">{{ r.stage or r.details or 'Unknown' }}</span>
+                <i class="fa-solid fa-chevron-down accordion-icon"></i>
+              </div>
+            </summary>
+            <div class="accordion-body">
+              {% for attempt in results %}
+                {% if attempt.test_type == r.test_type %}
+                  {% set as = (attempt.stage or attempt.details or 'unknown') | lower %}
+                  {% if 'normal' in as %}{% set row_mod = 'normal' %}{% set badge_cls = 'stage-normal' %}
+                  {% elif 'mild' in as %}{% set row_mod = 'mild' %}{% set badge_cls = 'stage-mild' %}
+                  {% elif 'elevated' in as %}{% set row_mod = 'elevated' %}{% set badge_cls = 'stage-elevated' %}
+                  {% elif 'clinical' in as %}{% set row_mod = 'clinical' %}{% set badge_cls = 'stage-clinical' %}
+                  {% else %}{% set row_mod = 'mild' %}{% set badge_cls = 'badge-gray' %}{% endif %}
+                  <a href="{{ url_for('test.show_results', result_id=attempt.id) }}" class="results-row results-row--{{ row_mod }}">
+                    <div class="results-row-date">{{ attempt.taken_at.strftime('%d %b') }}</div>
+                    <div class="results-row-score">
+                      {{ attempt.score }}{% if attempt.max_score %}<span class="results-row-max"> / {{ attempt.max_score }}</span>{% endif %}
+                    </div>
+                    <span class="badge {{ badge_cls }} results-row-badge">{{ attempt.stage or attempt.details or 'Unknown' }}</span>
+                  </a>
+                {% endif %}
+              {% endfor %}
             </div>
-            {% for attempt in results %}
-              {% if attempt.test_type == r.test_type %}
-                {% set as = (attempt.stage or attempt.details or 'unknown') | lower %}
-                {% if 'normal' in as %}{% set row_mod = 'normal' %}{% set badge_cls = 'stage-normal' %}
-                {% elif 'mild' in as %}{% set row_mod = 'mild' %}{% set badge_cls = 'stage-mild' %}
-                {% elif 'elevated' in as %}{% set row_mod = 'elevated' %}{% set badge_cls = 'stage-elevated' %}
-                {% elif 'clinical' in as %}{% set row_mod = 'clinical' %}{% set badge_cls = 'stage-clinical' %}
-                {% else %}{% set row_mod = 'mild' %}{% set badge_cls = 'badge-gray' %}{% endif %}
-                <div class="results-row results-row--{{ row_mod }}">
-                  <div class="results-row-date">{{ attempt.taken_at.strftime('%d %b') }}</div>
-                  <div class="results-row-score">
-                    {{ attempt.score }}{% if attempt.max_score %}<span class="results-row-max"> / {{ attempt.max_score }}</span>{% endif %}
-                  </div>
-                  <span class="badge {{ badge_cls }} results-row-badge">{{ attempt.stage or attempt.details or 'Unknown' }}</span>
-                </div>
-              {% endif %}
-            {% endfor %}
-          </div>
+          </details>
         {% endif %}
       {% endfor %}
 

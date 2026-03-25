@@ -28,6 +28,10 @@ class Accounts(UserMixin, db.Model):
     class_group = db.Column(db.String(50), nullable=True)   # e.g. "Form 2A", "JHS 3B"
     level = db.Column(db.String(20), nullable=True)          # jhs | shs | university
 
+    claim_code_hash  = db.Column(db.String(256), nullable=True)
+    claim_code_plain = db.Column(db.String(20),  nullable=True)
+    is_claimed       = db.Column(db.Boolean, default=True, nullable=False, server_default='1')
+
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
     is_counsellor = db.Column(db.Boolean, default=False, server_default='0', nullable=False)
 

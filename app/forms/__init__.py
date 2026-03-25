@@ -148,8 +148,8 @@ class CounsellorSignupForm(FlaskForm):
     phone    = StringField('Phone Number', validators=[DataRequired(), Length(max=20)])
     password = PasswordField('Password', validators=[DataRequired(), Length(min=8)])
     photo = FileField('Profile Photo', validators=[
-    FileAllowed(['jpg', 'jpeg', 'png', 'webp'], 'Images only — jpg, png, or webp.')
-])
+        FileAllowed(['jpg', 'jpeg', 'png', 'webp'], 'Images only — jpg, png, or webp.')
+    ])
 
     # ── Professional details ──────────────────────────────────────────────────
     gpc_number        = StringField('GPC Registration Number',  validators=[Optional(), Length(max=50)])

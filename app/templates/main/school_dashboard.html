@@ -129,6 +129,36 @@
   .insight-badge.good { background: #d1fae5; color: #065f46; }
   .insight-badge.warn { background: #fef3c7; color: #92400e; }
   .insight-badge.danger { background: #fee2e2; color: #991b1b; }
+
+  /* Admin-style stat cards (matching admin dashboard) */
+  .admin-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  @media (min-width: 640px) { .admin-stat-grid { gap: 14px; } }
+  @media (min-width: 780px) { .admin-stat-grid { grid-template-columns: repeat(4, 1fr); } }
+
+  .admin-stat {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 16px 18px;
+    border-left: 4px solid var(--green-500);
+    box-shadow: var(--shadow-sm);
+  }
+  .admin-stat.gold { border-left-color: var(--gold-500); }
+  .admin-stat.teal { border-left-color: #0891b2; }
+  .admin-stat.red  { border-left-color: var(--red-600); }
+  .admin-stat-icon { font-size: 1rem; margin-bottom: 10px; }
+  .admin-stat-val  { font-family: var(--font-display); font-size: 1.8rem; font-weight: 700; color: var(--green-800); line-height: 1; margin-bottom: 3px; }
+  .admin-stat-label { font-size: 0.72rem; color: var(--gray-500); font-weight: 500; }
+  
+  /* Mobile-specific compact sizing */
+  @media (max-width: 400px) {
+    .admin-stat { padding: 12px 10px; border-radius: var(--radius-md); }
+    .admin-stat-val { font-size: 1.35rem; }
+    .admin-stat-label { font-size: 0.65rem; line-height: 1.2; }
+  }
 </style>
 {% endblock %}
 
@@ -186,29 +216,78 @@
   </div>
 
   {# ── Stats Grid ── #}
-  <div class="stat-grid" style="margin-bottom:24px;">
-    <div class="stat-card" style="border-left:4px solid var(--green-600);">
-      <div class="stat-icon"><i class="fa-solid fa-users" style="color:var(--green-500);"></i></div>
-      <div class="stat-value">{{ total_students }}</div>
-      <div class="stat-label">Total Students</div>
+  <div class="admin-stat-grid" style="margin-bottom:24px;">
+    <div class="admin-stat">
+      <div class="admin-stat-icon"><i class="fa-solid fa-users" style="color:var(--green-500);"></i></div>
+      <div class="admin-stat-val">{{ total_students }}</div>
+      <div class="admin-stat-label">Total Students</div>
     </div>
-    <div class="stat-card gold" style="border-left:4px solid var(--gold-500);">
-      <div class="stat-icon"><i class="fa-solid fa-clipboard-list" style="color:var(--gold-500);"></i></div>
-      <div class="stat-value">{{ total_results }}</div>
-      <div class="stat-label">Total Assessments</div>
+    <div class="admin-stat gold">
+      <div class="admin-stat-icon"><i class="fa-solid fa-clipboard-list" style="color:var(--gold-500);"></i></div>
+      <div class="admin-stat-val">{{ total_results }}</div>
+      <div class="admin-stat-label">Total Assessments</div>
     </div>
-    <div class="stat-card" style="border-left:4px solid var(--green-400);">
-      <div class="stat-icon"><i class="fa-solid fa-calendar-days" style="color:var(--green-500);"></i></div>
-      <div class="stat-value">{{ stage_counts.values() | sum if stage_counts else 0 }}</div>
-      <div class="stat-label">Tests ({{ period | capitalize }})</div>
+    <div class="admin-stat teal">
+      <div class="admin-stat-icon"><i class="fa-solid fa-calendar-days" style="color:#0891b2;"></i></div>
+      <div class="admin-stat-val">{{ stage_counts.values() | sum if stage_counts else 0 }}</div>
+      <div class="admin-stat-label">Tests ({{ period | capitalize }})</div>
     </div>
     <a href="{{ url_for('main.school_results', school_id=school.id, tab='at_risk') }}"
-       class="stat-card red" style="text-decoration:none; cursor:pointer; border-left:4px solid var(--red-600);">
-      <div class="stat-icon"><i class="fa-solid fa-triangle-exclamation" style="color:var(--red-600);"></i></div>
-      <div class="stat-value">{{ at_risk_count }}</div>
-      <div class="stat-label">Students at Risk</div>
+       class="admin-stat red" style="text-decoration:none; cursor:pointer;">
+      <div class="admin-stat-icon"><i class="fa-solid fa-triangle-exclamation" style="color:var(--red-600);"></i></div>
+      <div class="admin-stat-val">{{ at_risk_count }}</div>
+      <div class="admin-stat-label">Students at Risk</div>
     </a>
   </div>
+  {# ── Unclaimed Accounts ── #}
+  {% if unclaimed_students %}
+  <div class="admin-panel-card" style="margin-bottom:24px; border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); overflow:hidden;">
+    <div style="background:var(--green-800); padding:14px 18px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+      <div style="display:flex; align-items:center; flex-wrap:wrap; gap:10px;">
+        <h3 style="font-family:var(--font-display); font-size:0.95rem; font-weight:600; color:#fff; margin:0;">
+          <i class="fa-solid fa-user-clock" style="margin-right:8px; color:var(--gold-400, #fecf44);"></i>
+          Unclaimed Accounts
+          <span style="background:rgba(254,207,68,.2); color:var(--gold-400,#fecf44); border-radius:20px; padding:2px 10px; font-size:0.75rem; margin-left:8px;">{{ unclaimed_students | length }}</span>
+        </h3>
+        <span style="font-size:0.78rem; color:rgba(255,255,255,.5);">These students haven't activated their accounts yet</span>
+      </div>
+      <a href="{{ url_for('main.print_claim_codes', school_id=school.id) }}" target="_blank" class="btn btn-gold btn-sm" style="flex-shrink:0;">
+        <i class="fa-solid fa-print"></i> Print Slips
+      </a>
+    </div>
+    <div style="overflow-x:auto; max-height:320px; overflow-y:auto;">
+      <table class="table" style="margin:0;">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Username</th>
+            <th>Class</th>
+            <th>Claim Code</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for student in unclaimed_students %}
+          <tr>
+            <td style="font-weight:600; font-size:0.85rem;">{{ student.fname }} {{ student.lname }}</td>
+            <td style="color:var(--gray-500); font-size:0.82rem;">@{{ student.username }}</td>
+            <td style="font-size:0.82rem;">{{ student.class_group or '—' }}</td>
+            <td>
+              {% if student.claim_code_plain %}
+              <code style="font-size:0.9rem; font-weight:800; letter-spacing:0.12em; color:var(--green-800); background:var(--green-50); padding:3px 8px; border-radius:5px;">{{ student.claim_code_plain }}</code>
+              {% else %}
+              <span style="color:var(--gray-400); font-size:0.78rem;">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div style="padding:10px 16px; border-top:1px solid var(--gray-100); font-size:0.78rem; color:var(--gray-500);">
+      Students visit <strong>/claim</strong> and enter their code to activate their account.
+    </div>
+  </div>
+  {% endif %}
 
   {% if upload_enabled %}
 
@@ -380,38 +459,79 @@
   </div>
 
   {# ── Quick Actions + Reports ── #}
-  <div class="card" style="margin-bottom:24px; padding:20px;">
-    <div class="quick-actions-grid">
-      <a href="{{ url_for('main.school_students', school_id=school.id) }}" class="quick-action-tile">
-        <i class="fa-solid fa-users" style="color:var(--green-700);"></i>
-        <span>Students</span>
-      </a>
-      <a href="{{ url_for('main.school_results', school_id=school.id) }}" class="quick-action-tile">
-        <i class="fa-solid fa-clipboard-list" style="color:var(--green-700);"></i>
-        <span>Results</span>
-      </a>
-      <a href="{{ url_for('main.students_at_risk', school_id=school.id) }}" class="quick-action-tile">
-        <i class="fa-solid fa-triangle-exclamation" style="color:var(--red-600);"></i>
-        <span>At Risk</span>
-      </a>
-      <a href="{{ url_for('main.school_guide', school_id=school.id) }}" class="quick-action-tile">
-        <i class="fa-solid fa-book-open" style="color:var(--gold-700);"></i>
-        <span>School Guide</span>
-      </a>
-    </div>
-    <div style="border-top:1px solid var(--gray-100); padding-top:16px;">
-      <div style="font-size:0.72rem; font-weight:700; color:var(--gray-500); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
-        <i class="fa-solid fa-file-pdf" style="color:var(--red-600);"></i> Download Report
+  <div class="dash-two-col" style="margin-bottom:24px;">
+    
+    {# Quick Actions #}
+    <div class="card">
+      <div class="card-header" style="border-bottom:none; padding-bottom:8px;">
+        <h3 style="display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-bolt" style="color:var(--gold-500);"></i> Quick Actions</h3>
       </div>
-      <div class="report-btn-row">
-        {% for period_key, period_label in [('weekly','Weekly'),('monthly','Monthly'),('yearly','Yearly')] %}
-        <a href="{{ url_for('main.download_report', school_id=school.id, period=period_key) }}"
-           style="display:block; text-align:center; text-decoration:none; padding:10px 0; border-radius:var(--radius-sm); border:1.5px solid var(--green-600); color:var(--green-700); font-size:0.82rem; font-weight:600; background:var(--ivory);">
-          {{ period_label }}
-        </a>
-        {% endfor %}
+      <div class="card-body" style="padding-top:0;">
+        <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;">
+          <a href="{{ url_for('main.school_students', school_id=school.id) }}" style="display:flex; align-items:flex-start; gap:12px; padding:14px; background:var(--ivory); border-radius:var(--radius-md); border:1px solid var(--gray-100); text-decoration:none; transition:all 0.2s; box-shadow:var(--shadow-sm);" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='var(--green-400)';" onmouseout="this.style.transform='none'; this.style.borderColor='var(--gray-100)';">
+            <div style="width:38px; height:38px; border-radius:10px; background:var(--green-100); color:var(--green-700); display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0;">
+              <i class="fa-solid fa-users"></i>
+            </div>
+            <div>
+              <span style="display:block; font-weight:700; font-size:0.9rem; color:var(--green-900);">Students</span>
+              <span style="display:block; font-size:0.75rem; color:var(--gray-500); line-height:1.2; margin-top:2px;">Manage directory</span>
+            </div>
+          </a>
+          <a href="{{ url_for('main.school_results', school_id=school.id) }}" style="display:flex; align-items:flex-start; gap:12px; padding:14px; background:var(--ivory); border-radius:var(--radius-md); border:1px solid var(--gray-100); text-decoration:none; transition:all 0.2s; box-shadow:var(--shadow-sm);" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='var(--green-400)';" onmouseout="this.style.transform='none'; this.style.borderColor='var(--gray-100)';">
+            <div style="width:38px; height:38px; border-radius:10px; background:var(--green-100); color:var(--green-700); display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0;">
+              <i class="fa-solid fa-clipboard-list"></i>
+            </div>
+            <div>
+              <span style="display:block; font-weight:700; font-size:0.9rem; color:var(--green-900);">Results</span>
+              <span style="display:block; font-size:0.75rem; color:var(--gray-500); line-height:1.2; margin-top:2px;">Assessment scores</span>
+            </div>
+          </a>
+          <a href="{{ url_for('main.students_at_risk', school_id=school.id) }}" style="display:flex; align-items:flex-start; gap:12px; padding:14px; background:var(--ivory); border-radius:var(--radius-md); border:1px solid var(--gray-100); text-decoration:none; transition:all 0.2s; box-shadow:var(--shadow-sm);" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='var(--red-600)';" onmouseout="this.style.transform='none'; this.style.borderColor='var(--gray-100)';">
+            <div style="width:38px; height:38px; border-radius:10px; background:var(--red-100); color:var(--red-600); display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0;">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div>
+              <span style="display:block; font-weight:700; font-size:0.9rem; color:var(--green-900);">At Risk</span>
+              <span style="display:block; font-size:0.75rem; color:var(--gray-500); line-height:1.2; margin-top:2px;">Critical alerts</span>
+            </div>
+          </a>
+          <a href="{{ url_for('main.school_guide', school_id=school.id) }}" style="display:flex; align-items:flex-start; gap:12px; padding:14px; background:var(--ivory); border-radius:var(--radius-md); border:1px solid var(--gray-100); text-decoration:none; transition:all 0.2s; box-shadow:var(--shadow-sm);" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='var(--gold-500)';" onmouseout="this.style.transform='none'; this.style.borderColor='var(--gray-100)';">
+            <div style="width:38px; height:38px; border-radius:10px; background:var(--gold-100); color:var(--gold-700); display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0;">
+              <i class="fa-solid fa-book-open"></i>
+            </div>
+            <div>
+              <span style="display:block; font-weight:700; font-size:0.9rem; color:var(--green-900);">Guide</span>
+              <span style="display:block; font-size:0.75rem; color:var(--gray-500); line-height:1.2; margin-top:2px;">Admin manual</span>
+            </div>
+          </a>
+          
+          {# Upload Button (Triggers Modal) #}
+          <button onclick="var m = document.getElementById('uploadModal'); m.style.display='flex'; setTimeout(()=> { m.style.opacity='1'; m.querySelector('.modal-content-box').style.transform='scale(1)'; }, 10);" style="grid-column: 1 / -1; display:flex; align-items:center; justify-content:center; gap:10px; padding:14px; background:var(--green-800); color:#fff; border-radius:var(--radius-md); border:none; cursor:pointer; font-size:0.95rem; font-weight:700; transition:all 0.2s; box-shadow:var(--shadow-sm); margin-top:4px;" onmouseover="this.style.transform='translateY(-2px)'; this.style.background='var(--green-700)';" onmouseout="this.style.transform='none'; this.style.background='var(--green-800)';">
+            <i class="fa-solid fa-cloud-arrow-up" style="font-size:1.1rem; color:var(--gold-400);"></i> Bulk Upload Students
+          </button>
+        </div>
       </div>
     </div>
+
+    {# Reports #}
+    <div class="card">
+      <div class="card-header" style="border-bottom:none; padding-bottom:8px;">
+        <h3 style="display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-file-pdf" style="color:var(--red-600);"></i> Download Reports</h3>
+      </div>
+      <div class="card-body" style="padding-top:0; display:flex; flex-direction:column; align-items:stretch;">
+        <p style="font-size:0.85rem; color:var(--gray-500); margin-bottom:16px; line-height:1.5;">Export a comprehensive PDF report containing stage distributions, risk alerts, and assessment coverage.</p>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-top:auto;">
+          {% for period_key, period_label in [('weekly','Weekly Analytics Report'),('monthly','Monthly Analytics Report'),('yearly','Annual Academic Report')] %}
+          <a href="{{ url_for('main.download_report', school_id=school.id, period=period_key) }}"
+             style="display:flex; align-items:center; justify-content:space-between; padding:12px 18px; border-radius:var(--radius-md); border:1px solid var(--gray-200); background:var(--white); color:var(--green-800); font-size:0.85rem; font-weight:600; text-decoration:none; transition:all 0.2s;" onmouseover="this.style.background='var(--green-50)'; this.style.borderColor='var(--green-400)';" onmouseout="this.style.background='var(--white)'; this.style.borderColor='var(--gray-200)';">
+            <span style="display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-download" style="color:var(--gold-500);"></i> {{ period_label }}</span>
+            <i class="fa-solid fa-arrow-right" style="color:var(--gray-400); font-size:0.8rem;"></i>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
   </div>
 
   {# ── Counsellors ── #}
@@ -445,57 +565,98 @@
     </div>
   </div>
 
-  {# ── Student Upload (active subscription) ── #}
-  <div class="card" style="margin-bottom:28px;" id="upload-section">
-    <div class="card-header">
-      <h3 style="display:flex; align-items:center; gap:10px;">
-        Student Upload
-        <span style="margin-left:auto; font-size:0.72rem; font-weight:600; padding:3px 10px; border-radius:20px; background:#d1fae5; color:#065f46; border:1px solid #6ee7b7;">
-          <i class="fa-solid fa-circle-check"></i> Active
-        </span>
-      </h3>
-    </div>
-    <div class="card-body">
-      {% set days_left = school.subscription_days_remaining %}
-      {% set expiry_warning = days_left is not none and days_left <= 30 %}
-      <div style="display:flex; align-items:flex-start; gap:10px; margin-bottom:16px; padding:12px 14px;
-                  background:{% if expiry_warning %}#fffbeb{% else %}#ecfdf5{% endif %};
-                  border-radius:var(--radius-md); border-left:3px solid {% if expiry_warning %}#f59e0b{% else %}#10b981{% endif %};">
-        <span style="font-size:1.1rem; flex-shrink:0; margin-top:1px;">
-          {% if expiry_warning %}<i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b;"></i>
-          {% else %}<i class="fa-solid fa-circle-check" style="color:#10b981;"></i>{% endif %}
-        </span>
-        <div>
-          <p style="font-weight:600; color:{% if expiry_warning %}#92400e{% else %}#065f46{% endif %}; margin:0 0 2px;">
-            Subscription active{% if expiry_warning %} — expires soon{% endif %}
-          </p>
-          {% if school.payment_date %}
-          <p style="font-size:0.8rem; color:{% if expiry_warning %}#b45309{% else %}#047857{% endif %}; margin:0;">
-            Paid {{ school.payment_date.strftime('%d %b %Y') }} · Ref: {{ school.paystack_reference }}
-            {% if days_left is not none %} · {{ days_left }} day{{ 's' if days_left != 1 }} remaining{% endif %}
-            {% if test_mode %} <span style="background:#e0e7ff; color:#3730a3; padding:1px 6px; border-radius:4px; font-size:0.7rem; font-weight:700;">TEST</span>{% endif %}
-          </p>
-          {% endif %}
-        </div>
-      </div>
-      <p style="font-size:0.88rem; color:var(--gray-500); margin-bottom:16px; line-height:1.6;">
-        Upload an Excel file (.xlsx or .xls). <strong>Required columns:</strong>
-        <code>first_name</code>, <code>last_name</code>.
-        Optional: <code>student_id</code>, <code>class_group</code>, <code>level</code>, <code>gender</code>, <code>email</code>.
+  {# ── Active Subscription Banner ── #}
+  {% set days_left = school.subscription_days_remaining %}
+  {% set expiry_warning = days_left is not none and days_left <= 30 %}
+  <div style="display:flex; align-items:center; gap:12px; margin-bottom:28px; padding:14px 18px;
+              background:{% if expiry_warning %}#fffbeb{% else %}#ecfdf5{% endif %};
+              border-radius:var(--radius-md); border-left:4px solid {% if expiry_warning %}#f59e0b{% else %}#10b981{% endif %}; box-shadow:var(--shadow-sm);">
+    <span style="font-size:1.4rem; flex-shrink:0;">
+      {% if expiry_warning %}<i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b;"></i>
+      {% else %}<i class="fa-solid fa-circle-check" style="color:#10b981;"></i>{% endif %}
+    </span>
+    <div>
+      <h4 style="font-family:var(--font-display); font-size:1.05rem; font-weight:700; color:{% if expiry_warning %}#92400e{% else %}#065f46{% endif %}; margin:0 0 4px;">
+        SESA Subscription Active
+      </h4>
+      <p style="font-size:0.85rem; color:{% if expiry_warning %}#b45309{% else %}#047857{% endif %}; margin:0;">
+        {% if school.payment_date %}Paid {{ school.payment_date.strftime('%d %b %Y') }}{% endif %}
+        {% if days_left is not none %} · {{ days_left }} day{{ 's' if days_left != 1 }} remaining{% endif %}
+        {% if test_mode %} <span style="background:#e0e7ff; color:#3730a3; padding:2px 6px; border-radius:4px; font-size:0.65rem; font-weight:800; margin-left:6px;">TEST MODE</span>{% endif %}
       </p>
-      <form method="POST" action="{{ url_for('main.upload_students', school_id=school.id) }}" enctype="multipart/form-data">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
-          <div style="font-size:2rem; margin-bottom:8px;"><i class="fa-solid fa-paperclip" style="color:var(--green-500);"></i></div>
-          <p style="font-weight:600; color:var(--green-700); margin-bottom:4px;">Click to choose file or drag &amp; drop</p>
-          <p class="file-name" style="font-size:0.82rem; color:var(--gray-500);">No file chosen</p>
-          <input type="file" name="file" id="fileInput" accept=".xlsx,.xls" style="display:none"
-                 onchange="this.parentElement.querySelector('.file-name').textContent = this.files[0]?.name || 'No file chosen'">
+    </div>
+  </div>
+
+  {# ── Student Upload Modal ── #}
+  <div id="uploadModal" style="display:none; position:fixed; inset:0; background:rgba(2,40,24,0.6); z-index:9999; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(4px); opacity:0; transition:opacity 0.3s ease;" onclick="if(event.target === this) { this.style.opacity='0'; this.querySelector('.modal-content-box').style.transform='scale(0.95)'; setTimeout(()=>this.style.display='none', 300); }">
+    <div style="background:var(--ivory); border-radius:var(--radius-lg); width:100%; max-width:640px; box-shadow:var(--shadow-xl); overflow:hidden; transform:scale(0.95); transition:transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);" class="modal-content-box">
+      
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:20px 24px; border-bottom:1px solid var(--gray-200); background:var(--white);">
+        <h3 style="margin:0; font-family:var(--font-display); font-size:1.25rem; color:var(--green-900); display:flex; align-items:center; gap:10px;">
+          <i class="fa-solid fa-cloud-arrow-up" style="color:var(--green-600);"></i> Bulk Student Upload
+        </h3>
+        <button onclick="var m = document.getElementById('uploadModal'); m.style.opacity='0'; m.querySelector('.modal-content-box').style.transform='scale(0.95)'; setTimeout(()=>m.style.display='none', 300)" style="background:none; border:none; font-size:1.2rem; color:var(--gray-400); cursor:pointer; padding:6px; border-radius:50%; transition:all 0.2s;" onmouseover="this.style.background='var(--gray-100)'; this.style.color='var(--gray-700)';" onmouseout="this.style.background='none'; this.style.color='var(--gray-400)';"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div style="padding:24px; max-height:calc(100vh - 120px); overflow-y:auto;">
+        <div style="background:var(--gold-50); border-radius:var(--radius-md); padding:16px 20px; margin-bottom:20px; border:1px solid var(--gold-200); display:flex; gap:16px; align-items:flex-start;">
+          <div style="width:40px; height:40px; border-radius:50%; background:var(--white); box-shadow:var(--shadow-sm); color:var(--gold-600); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1.1rem;">
+            <i class="fa-solid fa-table-list"></i>
+          </div>
+          <div>
+            <h4 style="margin:0 0 6px; font-family:var(--font-display); font-size:1rem; color:var(--green-900);">Excel Formatting Guide</h4>
+            <p style="font-size:0.85rem; color:var(--gray-700); margin:0; line-height:1.6;">
+              Please ensure your file is an Excel template (.xlsx or .xls).<br>
+              <strong>Required:</strong> <code>first_name</code>, <code>last_name</code>.<br>
+              <strong>Optional:</strong> <code>student_id</code>, <code>class_group</code>, <code>level</code>, <code>gender</code>, <code>email</code>.
+            </p>
+          </div>
         </div>
-        <button type="submit" class="btn btn-primary" style="margin-top:14px;">
-          <i class="fa-solid fa-upload"></i> Upload Students
-        </button>
-      </form>
+        
+        <form method="POST" action="{{ url_for('main.upload_students', school_id=school.id) }}" enctype="multipart/form-data" style="margin:0;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="upload-zone" onclick="document.getElementById('fileInput').click()" style="padding:48px 20px; background:var(--white); border:2px dashed var(--green-300); border-radius:var(--radius-lg); transition:all 0.3s ease; position:relative; overflow:hidden; text-align:center; cursor:pointer;" onmouseover="this.style.background='var(--green-50)'; this.style.borderColor='var(--green-600)';" onmouseout="this.style.background='var(--white)'; this.style.borderColor='var(--green-300)';">
+            
+            <div style="width:64px; height:64px; border-radius:50%; background:var(--green-100); color:var(--green-700); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; transition:all 0.3s;" id="modalUploadIconWrapper">
+              <i class="fa-solid fa-cloud-arrow-up" style="font-size:1.8rem;" id="modalUploadIcon"></i>
+            </div>
+            
+            <p style="font-size:1.1rem; font-weight:700; color:var(--green-800); margin-bottom:4px;" id="modalUploadTitle">Click to browse your files</p>
+            <p class="file-name" style="font-size:0.9rem; color:var(--gray-500); margin:0;" id="modalUploadSub">Or drag and drop your Excel file here</p>
+            
+            <input type="file" name="file" id="fileInput" accept=".xlsx,.xls" style="display:none"
+                   onchange="
+                      var sub = document.getElementById('modalUploadSub');
+                      var title = document.getElementById('modalUploadTitle');
+                      var icon = document.getElementById('modalUploadIcon');
+                      var wrapper = document.getElementById('modalUploadIconWrapper');
+                      if(this.files[0]) {
+                        title.textContent = 'File Selected Successfully';
+                        sub.innerHTML = '<strong style=\'color:var(--green-800);\'>' + this.files[0].name + '</strong>';
+                        this.parentElement.style.borderColor = 'var(--green-600)';
+                        this.parentElement.style.background = 'var(--green-50)';
+                        icon.className = 'fa-solid fa-file-excel';
+                        wrapper.style.background = '#10b981';
+                        wrapper.style.color = '#fff';
+                        document.getElementById('uploadSubmitBtn').style.display = 'inline-flex';
+                      } else {
+                        title.textContent = 'Click to browse your files';
+                        sub.textContent = 'Or drag and drop your Excel file here';
+                        icon.className = 'fa-solid fa-cloud-arrow-up';
+                        wrapper.style.background = 'var(--green-100)';
+                        wrapper.style.color = 'var(--green-700)';
+                        document.getElementById('uploadSubmitBtn').style.display = 'none';
+                      }">
+          </div>
+          
+          <div style="display:flex; justify-content:flex-end; margin-top:20px;">
+            <button type="submit" id="uploadSubmitBtn" class="btn btn-primary btn-lg" style="display:none; padding:12px 30px; box-shadow:var(--shadow-md);">
+              <i class="fa-solid fa-arrow-up-from-bracket"></i> Upload &amp; Parse Data
+            </button>
+          </div>
+        </form>
+      </div>
+      
     </div>
   </div>
 

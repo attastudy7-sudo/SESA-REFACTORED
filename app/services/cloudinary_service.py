@@ -23,9 +23,14 @@ def upload_counsellor_photo(file_storage, username: str) -> str | None:
     Returns the secure URL or None on failure.
     file_storage: Werkzeug FileStorage object from the form.
     """
+    if not all([os.environ.get('CLOUDINARY_CLOUD_NAME'),
+                os.environ.get('CLOUDINARY_API_KEY'),
+                os.environ.get('CLOUDINARY_API_SECRET')]):
+        logger.error('Cloudinary env vars not set — cannot upload counsellor photo')
+        return None
     try:
         result = cloudinary.uploader.upload(
-            file_storage,
+            file_storage.stream,
             folder='sesa/counsellors',
             public_id=f'counsellor_{username}',
             overwrite=True,
@@ -42,10 +47,15 @@ def upload_counsellor_photo(file_storage, username: str) -> str | None:
 def upload_assessment_image(file_storage, assessment_name: str) -> str | None:
     """Upload an assessment type image to Cloudinary."""
     import re
+    if not all([os.environ.get('CLOUDINARY_CLOUD_NAME'),
+                os.environ.get('CLOUDINARY_API_KEY'),
+                os.environ.get('CLOUDINARY_API_SECRET')]):
+        logger.error('Cloudinary env vars not set — cannot upload assessment image')
+        return None
     slug = re.sub(r'[^a-z0-9]', '_', assessment_name.lower())
     try:
         result = cloudinary.uploader.upload(
-            file_storage,
+            file_storage.stream,
             folder='sesa/assessments',
             public_id=f'assessment_{slug}',
             overwrite=True,

@@ -206,6 +206,8 @@ def add_assessment_type():
     if image_file and image_file.filename:
         from app.services.cloudinary_service import upload_assessment_image
         image_url = upload_assessment_image(image_file, name)
+        if not image_url:
+            flash('Assessment saved but image upload failed. Check Cloudinary credentials.', 'warning')
 
     db.session.add(AssessmentType(
         name=name, display_name=display_name, description=description,
@@ -235,6 +237,7 @@ def toggle_assessment_type(type_id):
 def edit_assessment_type(type_id):
     import json
     at = AssessmentType.query.get_or_404(type_id)
+    old_name = at.name
     at.name           = request.form.get('name', '').strip()
     at.display_name   = request.form.get('display_name', '').strip()
     at.description    = request.form.get('description', '').strip() or None
@@ -249,9 +252,11 @@ def edit_assessment_type(type_id):
     image_file = request.files.get('image')
     if image_file and image_file.filename:
         from app.services.cloudinary_service import upload_assessment_image
-        new_url = upload_assessment_image(image_file, at.name)
+        new_url = upload_assessment_image(image_file, old_name)
         if new_url:
             at.image_url = new_url
+        else:
+            flash('Image upload failed. Existing image kept. Check Cloudinary credentials.', 'warning')
     db.session.commit()
     flash(f'"{at.display_name}" updated successfully.', 'success')
     return redirect(url_for('admin.dashboard') + '#assessment_types')

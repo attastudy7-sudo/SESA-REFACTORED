@@ -4,184 +4,294 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>QR Code — {{ school.school_name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    :root {
+      --brand: #1b4332;
+      --brand-light: #d8f3dc;
+      --gold: #fecf44;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-500: #6b7280;
+      --gray-800: #1f2937;
+    }
 
     body {
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      background: #f5f5f0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--gray-100);
+      color: var(--gray-800);
       min-height: 100vh;
-      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 20px 40px;
     }
 
-    .qr-card {
-      background: #fff;
-      border-radius: 20px;
-      padding: 48px 40px;
-      max-width: 420px;
+    /* ── Action Bar (Hidden on Print) ── */
+    .action-bar {
       width: 100%;
+      max-width: 800px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 24px 0;
+    }
+    
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 0.85rem; font-weight: 600;
+      text-decoration: none; border: none; cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .btn-primary { background: var(--brand); color: #fff; }
+    .btn-outline { background: #fff; color: var(--brand); border: 2px solid var(--brand); }
+
+    /* ── Print Canvas ── */
+    .print-canvas {
+      background: #fff;
+      width: 100%;
+      max-width: 760px;
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+      padding: 60px 50px;
       text-align: center;
-      box-shadow: 0 4px 32px rgba(0,0,0,0.10);
+      position: relative;
+      overflow: hidden;
     }
 
+    .print-canvas::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 8px;
+      background: var(--gold);
+    }
+
+    /* ── School Branding ── */
     .school-icon {
-      width: 64px; height: 64px;
-      border-radius: 16px;
-      background: #1a3a2a;
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: var(--brand-light);
+      color: var(--brand);
       display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 20px;
-      font-size: 28px; color: #fff;
+      font-size: 32px;
+      margin: 0 auto 16px;
     }
-
+    
     .school-name {
-      font-size: 1.3rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.2rem;
       font-weight: 800;
-      color: #1a3a2a;
+      color: var(--brand);
       margin-bottom: 4px;
+      line-height: 1.2;
+    }
+    
+    .platform-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 50px;
     }
 
-    .subtitle {
-      font-size: 0.85rem;
-      color: #6b7280;
-      margin-bottom: 28px;
+    /* ── Content Grid ── */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 40px;
+      align-items: center;
+      text-align: center;
+    }
+    
+    @media (min-width: 600px) {
+      .content-grid {
+        grid-template-columns: auto 1fr;
+        text-align: left;
+        gap: 40px;
+      }
+    }
+
+    /* Left: QR */
+    .qr-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     .qr-frame {
-      border: 3px solid #1a3a2a;
-      border-radius: 16px;
-      padding: 16px;
-      display: inline-block;
-      margin-bottom: 28px;
+      background: #fff;
+      border: 3px solid var(--gray-100);
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 12px;
     }
 
     .qr-frame img {
+      width: 220px;
+      height: 220px;
       display: block;
-      width: 240px;
-      height: 240px;
     }
-
-    .access-code-label {
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      color: #9ca3af;
+    
+    .qr-caption {
+      font-size: 0.85rem;
+      color: var(--gray-500);
+      font-weight: 600;
+      letter-spacing: 0.05em;
       text-transform: uppercase;
-      margin-bottom: 6px;
     }
 
-    .access-code {
-      font-size: 2.4rem;
-      font-weight: 900;
-      letter-spacing: 0.22em;
-      color: #1a3a2a;
-      margin-bottom: 20px;
-    }
-
-    .divider {
-      border: none;
-      border-top: 1px solid #e5e7eb;
-      margin: 20px 0;
-    }
-
-    .instructions {
-      font-size: 0.82rem;
-      color: #6b7280;
-      line-height: 1.65;
-      margin-bottom: 24px;
-    }
-
-    .instructions strong { color: #1a3a2a; }
-
-    .url-box {
-      background: #f5f5f0;
-      border-radius: 8px;
-      padding: 10px 14px;
-      font-size: 0.72rem;
-      font-family: monospace;
-      color: #374151;
-      word-break: break-all;
-      margin-bottom: 28px;
-    }
-
-    .btn-row {
+    /* Right: Instructions */
+    .instructions-panel {
       display: flex;
-      gap: 10px;
-      justify-content: center;
-      flex-wrap: wrap;
+      flex-direction: column;
+      gap: 24px;
+      padding: 30px;
+      background: var(--gray-50);
+      border-radius: 20px;
+      border: 1px solid var(--gray-100);
     }
 
-    .btn {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 10px 20px;
-      border-radius: 10px;
-      font-size: 0.85rem; font-weight: 600;
-      text-decoration: none;
-      border: none; cursor: pointer;
-      transition: opacity .15s;
+    .instructions-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--gray-800);
     }
-    .btn:hover { opacity: .85; }
-    .btn-primary { background: #1a3a2a; color: #fff; }
-    .btn-outline  { background: #fff; color: #1a3a2a; border: 2px solid #1a3a2a; }
 
-    .powered-by {
-      margin-top: 28px;
-      font-size: 0.68rem;
-      color: #d1d5db;
+    .step {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .step-label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--gray-500);
       text-transform: uppercase;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.05em;
     }
 
+    .step-value {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--brand);
+      background: #fff;
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--gray-100);
+      word-break: break-all;
+    }
+    
+    .step-value.code {
+      font-size: 2.2rem;
+      letter-spacing: 0.2em;
+      text-align: center;
+      font-weight: 900;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      margin-top: 60px;
+      padding-top: 24px;
+      border-top: 2px dashed var(--gray-200);
+    }
+
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--brand);
+    }
+
+    .footer-brand img { width: 28px; height: 28px; border-radius: 6px; }
+
+    /* ── Print Styles ── */
     @media print {
-      body { background: #fff; padding: 0; }
-      .qr-card { box-shadow: none; border: none; padding: 0; max-width: 100%; }
-      .btn-row { display: none; }
+      body { background: #fff; padding: 0; display: block; }
+      .action-bar { display: none !important; }
+      .print-canvas { 
+        box-shadow: none !important; 
+        border-radius: 0 !important; 
+        max-width: 100% !important;
+        padding: 0 !important;
+      }
+      .print-canvas::before { display: none !important; }
+      .instructions-panel { background: #fff; border: 3px solid var(--gray-100); }
+      .footer { border-top-color: var(--gray-100); }
     }
   </style>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
-  <div class="qr-card">
 
+  <div class="action-bar">
+    <button class="btn btn-outline" onclick="window.print()">
+      <i class="fa-solid fa-print"></i> Print Flyer
+    </button>
+    <a class="btn btn-primary" href="{{ url_for('qr.school_qr_png', school_id=school.id, download=1) }}">
+      <i class="fa-solid fa-download"></i> Download PNG
+    </a>
+  </div>
+
+  <div class="print-canvas">
+    
     <div class="school-icon">
       <i class="fa-solid fa-school"></i>
     </div>
+    <h1 class="school-name">{{ school.school_name }}</h1>
+    <div class="platform-title">Social Emotional Student's Audit</div>
 
-    <div class="school-name">{{ school.school_name }}</div>
-    <div class="subtitle">Student Self-Registration</div>
+    <div class="content-grid">
+      <!-- QR Section -->
+      <div class="qr-wrapper">
+        <div class="qr-frame">
+          <img src="{{ qr_url }}" alt="QR Code for {{ school.school_name }}">
+        </div>
+        <div class="qr-caption">Scan with phone camera</div>
+      </div>
 
-    <div class="qr-frame">
-      <img src="{{ qr_url }}" alt="QR Code for {{ school.school_name }}">
+      <!-- Manual Entry Section -->
+      <div class="instructions-panel">
+        <div class="instructions-title">Student Registration</div>
+        
+        <div class="step">
+          <div class="step-label">1. Go to website</div>
+          <div class="step-value">{{ join_url }}</div>
+        </div>
+
+        {% if school.access_code %}
+        <div class="step">
+          <div class="step-label">2. Enter School Code</div>
+          <div class="step-value code">{{ school.access_code }}</div>
+        </div>
+        {% endif %}
+      </div>
     </div>
 
-    {% if school.access_code %}
-    <div class="access-code-label">Or enter access code</div>
-    <div class="access-code">{{ school.access_code }}</div>
-    {% endif %}
-
-    <hr class="divider">
-
-    <p class="instructions">
-      <strong>Students:</strong> scan the QR code above with your phone camera,
-      or visit the link below and enter your access code to register for SESA.
-      No email required.
-    </p>
-
-    <div class="url-box">{{ join_url }}</div>
-
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="window.print()">
-        <i class="fa-solid fa-print"></i> Print this page
-      </button>
-      <a class="btn btn-outline" href="{{ url_for('qr.school_qr_png', school_id=school.id, download=1) }}">
-        <i class="fa-solid fa-download"></i> Download PNG
-      </a>
+    <div class="footer">
+      <div class="footer-brand">
+        <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="SESA">
+        SESA Platform
+      </div>
     </div>
-
-    <div class="powered-by">Powered by SESA</div>
 
   </div>
+
 </body>
 </html>

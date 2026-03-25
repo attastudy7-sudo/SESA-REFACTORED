@@ -414,28 +414,21 @@
           </div>
 
           <!-- Schools: upload enabled vs not -->
-          <div class="admin-chart-card admin-chart-card--dark">
-            <div class="admin-chart-title"><i class="fa-solid fa-school"></i> School Subscriptions</div>
+          <div class="admin-chart-card">
+            <div class="admin-chart-title"><i class="fa-solid fa-school" style="color:#0891b2;"></i> School Subscriptions</div>
             {% set active_schools = schools | selectattr('upload_enabled') | list | length %}
             {% set inactive_schools = total_schools - active_schools %}
-            <div style="position:relative; height:140px;">
+            <div style="position:relative; height:200px;">
               <canvas id="schoolChart"></canvas>
             </div>
-            <div style="margin-top:14px; display:flex; flex-direction:column; gap:8px;">
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-size:0.75rem; color:rgba(255,255,255,.6); display:flex; align-items:center; gap:6px;"><span style="width:8px; height:8px; border-radius:50%; background:#10b981; display:inline-block;"></span>Active</span>
-                <span style="font-size:0.88rem; font-weight:700; color:#acf0dd;">{{ active_schools }}</span>
+            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;">
+              <div style="display:flex; align-items:center; gap:5px; font-size:0.72rem; font-weight:600; color:var(--gray-600);">
+                <div style="width:8px; height:8px; border-radius:50%; background:#10b981;"></div>
+                Active: {{ active_schools }} ({{ ((active_schools / total_schools) * 100) | round(0) | int if total_schools > 0 else 0 }}%)
               </div>
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-size:0.75rem; color:rgba(255,255,255,.6); display:flex; align-items:center; gap:6px;"><span style="width:8px; height:8px; border-radius:50%; background:#f87171; display:inline-block;"></span>Inactive</span>
-                <span style="font-size:0.88rem; font-weight:700; color:#f87171;">{{ inactive_schools }}</span>
-              </div>
-              <div style="height:1px; background:rgba(255,255,255,.08); margin:4px 0;"></div>
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-size:0.72rem; color:rgba(255,255,255,.4);">Activation rate</span>
-                <span style="font-size:0.82rem; font-weight:700; color:var(--gold-400, #fecf44);">
-                  {{ ((active_schools / total_schools) * 100) | round(0) | int if total_schools > 0 else 0 }}%
-                </span>
+              <div style="display:flex; align-items:center; gap:5px; font-size:0.72rem; font-weight:600; color:var(--gray-600);">
+                <div style="width:8px; height:8px; border-radius:50%; background:#f87171;"></div>
+                Inactive: {{ inactive_schools }}
               </div>
             </div>
           </div>
@@ -557,17 +550,18 @@
                   </td>
                   <td>
                     {% if s.access_code %}
-                    <div style="display:flex; align-items:flex-start; gap:10px; flex-wrap:wrap;">
-                      <img src="{{ url_for('qr.school_qr_png', school_id=s.id) }}" style="width:56px; height:56px; border:2px solid var(--green-700); border-radius:8px; object-fit:contain;" alt="QR" loading="lazy">
-                      <div style="display:flex; flex-direction:column; gap:3px;">
-                        <code style="font-size:0.85rem; font-weight:800; letter-spacing:.1em; color:var(--green-800);">{{ s.access_code }}</code>
-                        <button class="copy-btn" data-copy="{{ request.host_url }}join?code={{ s.access_code }}" style="display:inline-flex; align-items:center; gap:4px; font-size:0.72rem; font-weight:600; color:var(--green-700); background:transparent; border:none; cursor:pointer; padding:0;">
-                          <i class="fa-solid fa-copy"></i><span class="copy-label">Copy</span><span class="copied-label" style="display:none; color:var(--green-500);"><i class="fa-solid fa-check"></i> Done</span>
-                        </button>
-                        <a href="{{ url_for('qr.school_qr_print', school_id=s.id) }}" target="_blank" class="btn btn-ghost btn-sm" style="font-size:0.68rem; padding:2px 7px;"><i class="fa-solid fa-print"></i> Print</a>
-                      </div>
+                    <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                      <code style="font-size:0.85rem; font-weight:800; letter-spacing:.05em; color:var(--green-800); background:var(--gray-100); padding:3px 8px; border-radius:6px; border:1px solid var(--gray-200);">{{ s.access_code }}</code>
+                      <button class="copy-btn btn btn-ghost btn-sm" data-copy="{{ request.host_url }}join?code={{ s.access_code }}" style="font-size:0.75rem; padding:4px 8px; color:var(--gray-500);" title="Copy Link">
+                        <i class="fa-solid fa-copy"></i>
+                        <span class="copy-label" style="display:none;"></span><span class="copied-label" style="display:none; color:var(--green-500);"><i class="fa-solid fa-check"></i></span>
+                      </button>
                     </div>
-                    {% else %}<span style="color:var(--gray-400); font-size:0.78rem;">None</span>{% endif %}
+                    {% else %}
+                      <span style="font-size:0.7rem; font-weight:600; background:#f3f4f6; color:#4b5563; border:1px solid #e5e7eb; border-radius:20px; padding:3px 10px;">
+                        Not Generated
+                      </span>
+                    {% endif %}
                   </td>
                   <td style="font-size:0.78rem; color:var(--gray-400);">{{ s.created_at.strftime('%d %b %Y') }}</td>
                   <td>
@@ -865,12 +859,12 @@
   const typeCtx = document.getElementById('typeChart');
   if (typeCtx) {
     const typeLabels = Object.keys(typeCounts);
-    const typePalette = ['#1a3e2c','#2d6a4f','#40916c','#52b788','#74c69d','#95d5b2'];
+    const typePalette = ['#0ea5e9', '#f59e0b', '#8b5cf6', '#ef4444', '#14b8a6', '#f43f5e', '#3b82f6', '#10b981', '#ec4899', '#f97316'];
     new Chart(typeCtx, {
       type: 'doughnut',
       data: {
         labels: typeLabels,
-        datasets: [{ data: typeLabels.map(l => typeCounts[l]), backgroundColor: typePalette, borderWidth: 2, borderColor: '#fff' }]
+        datasets: [{ data: typeLabels.map(l => typeCounts[l]), backgroundColor: typePalette.slice(0, typeLabels.length), borderWidth: 2, borderColor: '#fff' }]
       },
       options: {
         responsive: true, maintainAspectRatio: false,

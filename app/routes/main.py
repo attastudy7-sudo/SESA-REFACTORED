@@ -60,9 +60,36 @@ def home():
     }
     # question_counts is still used above for the count badge — kept intentionally
 
+    from datetime import datetime, timedelta, timezone
+    now = datetime.now()
+
+    # Most recent result per test type — used for per-test stage summary and cooldowns
+    latest_by_type = {}
+    for r in results:
+        if r.test_type not in latest_by_type:
+            latest_by_type[r.test_type] = r
+
     from app.models.assessment_type import AssessmentType
-    tests_meta = [
-        {
+    tests_meta = []
+    COOLDOWN_DAYS = 7
+    for at in AssessmentType.query.filter_by(is_active=True).order_by(AssessmentType.order).all():
+        days_remaining = 0
+        is_ready = True
+        latest = latest_by_type.get(at.name)
+        
+        if latest and latest.taken_at:
+            taken_at = latest.taken_at
+            if taken_at.tzinfo is None:
+                taken_at = taken_at.replace(tzinfo=timezone.utc)
+            current_time = now.replace(tzinfo=timezone.utc) if now.tzinfo is None else now
+            days_ago = (current_time - taken_at).days
+            days_left = COOLDOWN_DAYS - days_ago
+            
+            if days_left > 0:
+                days_remaining = days_left
+                is_ready = False
+                
+        tests_meta.append({
             'name':  at.name,
             'title': at.display_name,
             'desc':  at.description or '',
@@ -70,30 +97,31 @@ def home():
             'color': at.color or 'green',
             'count': question_counts.get(at.name, 0),
             'image_url': at.image_url,
-        }
-        for at in AssessmentType.query.filter_by(is_active=True).order_by(AssessmentType.order).all()
-    ]
+            'days_remaining': days_remaining,
+            'is_ready': is_ready
+        })
 
     # Cross-test average removed — clinically invalid (tests have different max scores).
-    from datetime import datetime, timedelta, timezone
-    now = datetime.now()
-
     this_month_results = [
         r for r in results
         if r.taken_at and r.taken_at.month == now.month and r.taken_at.year == now.year
     ]
     tests_this_month = len(this_month_results)
 
-    # Most recent result per test type — used for per-test stage summary
-    latest_by_type = {}
-    for r in results:
-        if r.test_type not in latest_by_type:
-            latest_by_type[r.test_type] = r
-
     total_assessments_taken = total_tests   # passed to template as total count
     assessments_this_month  = tests_this_month
 
     recent_results = results[:3]  # 3 most recent for the home table
+
+    hour = now.hour
+    if hour < 12:
+        greeting = "Good morning"
+    elif hour < 17:
+        greeting = "Good afternoon"
+    else:
+        greeting = "Good evening"
+
+    new_username = session.pop('show_username_prompt', None)
 
     return render_template(
         'main/home.html',
@@ -106,6 +134,8 @@ def home():
         prev_avg=assessments_this_month,
         recent_results=recent_results,
         latest_by_type=latest_by_type,
+        greeting=greeting,
+        new_username=new_username,
     )
 
 
@@ -224,6 +254,11 @@ def school_dashboard(school_id):
             'period': period,
         })
 
+    unclaimed_students = (Accounts.query
+                          .filter_by(school_id=school.id, is_claimed=False)
+                          .order_by(Accounts.fname)
+                          .all())
+
     from app.services.payment_service import is_test_mode
     return render_template(
         'main/school_dashboard.html',
@@ -241,7 +276,27 @@ def school_dashboard(school_id):
         paystack_public_key=current_app.config.get('PAYSTACK_PUBLIC_KEY', ''),
         subscription_amount=current_app.config.get('SUBSCRIPTION_AMOUNT', 10000),
         subscription_currency=current_app.config.get('SUBSCRIPTION_CURRENCY', 'GHS'),
+        unclaimed_students=unclaimed_students,
     )
+
+@main_bp.route('/school/<int:school_id>/claim-codes/print')
+@school_login_required
+def print_claim_codes(school_id):
+    school = _get_school_from_session()
+    is_admin = current_user.is_authenticated and current_user.is_super_admin
+    if not is_admin and (not school or school.id != school_id):
+        flash('Not authorised.', 'error')
+        return redirect(url_for('auth.school_login'))
+    
+    if is_admin and not school:
+        school = School.query.get_or_404(school_id)
+        
+    unclaimed = Accounts.query.filter_by(school_id=school.id, is_claimed=False).order_by(Accounts.fname).all()
+    
+    base = current_app.config.get('APP_BASE_URL') or request.host_url.rstrip('/')
+    claim_url = f"{base}/claim"
+    
+    return render_template('auth/claim_codes_print.html', school=school, unclaimed=unclaimed, claim_url=claim_url)
 
 
 @main_bp.route('/school/<int:school_id>/upload-students', methods=['POST'])
@@ -254,38 +309,49 @@ def upload_students(school_id):
     Usernames and passwords are auto-generated.
     """
     import re as _re
+    import secrets
     import pandas as pd
+    from datetime import date as _date
     from werkzeug.security import generate_password_hash
 
     school = _get_school_from_session()
     if not school or school.id != school_id:
+        logger.warning('Bulk upload REJECTED | reason=not_authorised school_id=%s ip=%s', school_id, request.remote_addr)
         flash('Not authorised.', 'error')
         return redirect(url_for('auth.school_login'))
 
     if not school.upload_enabled:
+        logger.warning('Bulk upload REJECTED | reason=upload_disabled school=%s ip=%s', school.school_name, request.remote_addr)
         flash('Upload is not enabled. Please complete the subscription payment.', 'warning')
         return redirect(url_for('main.school_dashboard', school_id=school_id))
 
     file = request.files.get('file')
     if not file or file.filename == '':
+        logger.warning('Bulk upload REJECTED | reason=no_file school=%s ip=%s', school.school_name, request.remote_addr)
         flash('No file selected.', 'error')
         return redirect(url_for('main.school_dashboard', school_id=school_id))
 
     ext = file.filename.rsplit('.', 1)[-1].lower()
     if ext not in current_app.config.get('ALLOWED_UPLOAD_EXTENSIONS', {'xlsx', 'xls'}):
+        logger.warning('Bulk upload REJECTED | reason=invalid_ext ext=%s school=%s ip=%s', ext, school.school_name, request.remote_addr)
         flash('Invalid file type. Please upload an Excel file (.xlsx or .xls).', 'error')
         return redirect(url_for('main.school_dashboard', school_id=school_id))
 
     school_code = _re.sub(r'[^a-z0-9]', '', school.school_name.lower())[:6] or 'sch'
 
     try:
-        df = pd.read_excel(file)
-        df.columns = [c.strip().lower().replace(' ', '_') for c in df.columns]
+        df = pd.read_excel(file, header=3)
+        def _clean_col(c):
+            c = _re.sub(r'\s*\(.*?\)', '', str(c))   # strip (optional), (required) etc.
+            c = _re.sub(r'[^a-z0-9]+', '_', c.strip().lower())
+            return c.strip('_')
+        df.columns = [_clean_col(c) for c in df.columns]
 
         # ── Required columns check ───────────────────────────────────────────
         required = {'first_name', 'last_name'}
         missing = required - set(df.columns)
         if missing:
+            logger.warning('Bulk upload REJECTED | reason=missing_columns missing=%s found=%s school=%s', missing, list(df.columns), school.school_name)
             flash(
                 f'Missing required columns: {", ".join(sorted(missing))}. '
                 f'Required: first_name, last_name. '
@@ -334,7 +400,9 @@ def upload_students(school_id):
                 duplicates += 1
                 continue
 
-            base_uname = _re.sub(r'[^a-z0-9.]', '', f"{fname.lower()}.{lname.lower()}.{school_code}")[:48]
+            all_names = f"{fname} {lname}".split()
+            initials = ''.join(n[0].lower() for n in all_names[:-1])
+            base_uname = _re.sub(r'[^a-z0-9]', '', initials + all_names[-1].lower())[:48]
             username = base_uname
             suffix = 1
             while username in existing_usernames:
@@ -363,6 +431,17 @@ def upload_students(school_id):
             level_raw = str(row.get('level', '')).strip().lower()
             level = level_raw if level_raw in ('jhs', 'shs', 'university') else None
 
+            birthdate = None
+            birthdate_raw = str(row.get('birthdate', '')).strip()
+            if birthdate_raw and birthdate_raw != 'nan':
+                try:
+                    from datetime import date as _date
+                    birthdate = _date.fromisoformat(birthdate_raw[:10])
+                except ValueError:
+                    pass
+
+            claim_code = secrets.token_hex(3).upper()  # e.g. "A3F9B2"
+
             db.session.add(Accounts(
                 fname=fname,
                 lname=lname,
@@ -373,7 +452,11 @@ def upload_students(school_id):
                 gender=gender,
                 level=level,
                 class_group=class_group,
+                birthdate=birthdate,
                 school_id=school.id,
+                claim_code_plain=claim_code,
+                claim_code_hash=generate_password_hash(claim_code),
+                is_claimed=False,
             ))
             existing_names.add((fname.lower(), lname.lower()))
             created += 1
@@ -763,7 +846,8 @@ def join_with_code():
                     )
                     from flask_login import login_user
                     login_user(account)
-                    flash(f'Welcome to SESA, {fname}! Your username is @{username}.', 'success')
+                    session['show_username_prompt'] = username
+                    flash(f'Welcome to SESA, {fname}!', 'success')
                     return redirect(url_for('main.home'))
                 except Exception as e:
                     db.session.rollback()
@@ -774,6 +858,54 @@ def join_with_code():
                     error = 'An error occurred. Please try again.'
 
     return render_template('auth/join.html', school=school, code=code, error=error)
+
+
+@main_bp.route('/claim', methods=['GET', 'POST'])
+@limiter.limit("20 per hour")
+def claim_account():
+    """Student activates a pre-created account using their claim code."""
+    from werkzeug.security import check_password_hash, generate_password_hash
+    from flask_login import login_user
+
+    error = None
+
+    if request.method == 'POST':
+        claim_code = request.form.get('claim_code', '').strip().upper()
+        new_password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+
+        if not claim_code:
+            error = 'Please enter your claim code.'
+        elif len(new_password) < 6:
+            error = 'Password must be at least 6 characters.'
+        elif new_password != confirm_password:
+            error = 'Passwords do not match.'
+        else:
+            # Find all unclaimed accounts and check the hash
+            # (can't query by plain code since we only store the hash)
+            account = next(
+                (a for a in Accounts.query.filter_by(is_claimed=False).all()
+                 if a.claim_code_hash and check_password_hash(a.claim_code_hash, claim_code)),
+                None
+            )
+
+            if not account:
+                error = 'Invalid or already used claim code.'
+            else:
+                account.password = generate_password_hash(new_password)
+                account.is_claimed = True
+                account.claim_code_plain = None   # clear plain text after use
+                db.session.commit()
+                login_user(account)
+                logger.info(
+                    'Account claimed | username=%s school_id=%s ip=%s',
+                    account.username, account.school_id, request.remote_addr,
+                )
+                session['show_username_prompt'] = account.username
+                flash(f'Welcome to SESA, {account.fname}!', 'success')
+                return redirect(url_for('main.home'))
+
+    return render_template('auth/claim.html', error=error)
 
 
 @main_bp.route('/school/<int:school_id>/generate-access-code', methods=['POST'])

@@ -43,6 +43,14 @@ def login():
                 flash('Please use the Counsellor Login page to sign in.', 'error')
                 return render_template('auth/login.html', form=form)
 
+            if not user.is_claimed:
+                flash(
+                    'Your account hasn\'t been activated yet. '
+                    'Please use your claim code to set your password.',
+                    'warning'
+                )
+                return redirect(url_for('main.claim_account'))
+
             user.record_successful_login()
             login_user(user)
             session.permanent = True
@@ -201,42 +209,8 @@ def school_login():
 @auth_bp.route('/signup', methods=['GET', 'POST'])
 @limiter.limit("20 per hour")
 def signup():
-    form = SignupForm()
-    if form.validate_on_submit():
-        if Accounts.query.filter_by(email=form.email.data).first():
-            flash('An account with this email already exists.', 'error')
-            return render_template('auth/signup.html', form=form)
-        if Accounts.query.filter_by(username=form.username.data).first():
-            flash('This username is already taken.', 'error')
-            return render_template('auth/signup.html', form=form)
-
-        account = Accounts(
-            fname=form.fname.data.strip(),
-            lname=form.lname.data.strip(),
-            email=form.email.data.strip().lower(),
-            username=form.username.data.strip(),
-            password=generate_password_hash(form.password.data),
-            birthdate=form.birthdate.data,
-            gender=form.gender.data,
-            level=form.level.data or None,
-            school_name=None,
-            consent_given=True,
-            consent_given_at=datetime.now(timezone.utc),
-            consent_version='v1.0',
-        )
-        try:
-            db.session.add(account)
-            db.session.commit()
-            login_user(account)
-            session.permanent = True
-            logger.info('New account | username=%s ip=%s', account.username, request.remote_addr)
-            flash(f'Welcome to SESA, {account.fname}!', 'success')
-            return redirect(url_for('main.home'))
-        except Exception:
-            db.session.rollback()
-            flash('An error occurred while creating your account. Please try again.', 'error')
-
-    return render_template('auth/signup.html', form=form)
+    flash('Independent self-registration is currently disabled. Please contact your school administrator to join.', 'warning')
+    return redirect(url_for('auth.login'))
 
 
 @auth_bp.route('/school-signup', methods=['GET', 'POST'])
