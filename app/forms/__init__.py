@@ -81,7 +81,7 @@ class SchoolSignupForm(FlaskForm):
         validators=[DataRequired(), EqualTo('admin_password', message='Passwords must match.')]
     )
     data_processing_consent = BooleanField(
-        'I confirm I am authorised to register this school and agree to the collection and processing of school and student data by FOPA Diligent Consult in accordance with the Ghana Data Protection Act, 2012 (Act 843) and the Privacy Policy.',
+        'I confirm I am authorised to register this school and agree to the collection and processing of school and student data by FOPA Dilligent Consult in accordance with the Ghana Data Protection Act, 2012 (Act 843) and the Privacy Policy.',
         validators=[DataRequired(message='You must agree to the data processing terms to register.')]
     )
     submit = SubmitField('Register School')
