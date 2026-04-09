@@ -2,6 +2,47 @@
 {% block title %}{{ test_type }}{% endblock %}
 {% block extra_head %}<meta name="csrf-token" content="{{ csrf_token() }}">{% endblock %}
 {% block full_page %}
+<style>
+  .quiz-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-top: 20px;
+    border-top: 1px solid var(--gray-100);
+  }
+
+  .btn {
+    /* Prevents button from jumping size when text changes */
+    min-width: 100px; 
+    text-align: center;
+  }
+
+  #answerHint {
+    font-size: 0.75rem;
+    text-align: center;
+    line-height: 1.2;
+    flex: 1;
+    color: var(--gray-400);
+  }
+
+  @media (max-width: 480px) {
+    /* Hide hint entirely on mobile */
+    #answerHint {
+      display: none !important; 
+    }
+    
+    .quiz-nav {
+      justify-content: space-between;
+    }
+
+    .btn {
+      flex: 1; /* Both buttons fill space equally */
+      min-width: 0; /* Allow flex to take over */
+      padding: 12px 16px;
+    }
+  }
+</style>
 <div style="background: var(--ivory); min-height: 100vh;">
 
 <div class="quiz-layout" style="min-height: 100vh; background: linear-gradient(160deg, var(--green-800) 0%, var(--green-700) 30%, var(--ivory) 30%);">
@@ -44,17 +85,16 @@
       </div>
 
       <div class="quiz-nav">
-        <button type="button" id="backBtn" class="btn btn-ghost" style="visibility: hidden;" onclick="sendAnswer('back')">
-          ← Back
-        </button>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span style="font-size: 0.8rem; color: var(--gray-400); font-style: italic;" id="answerHint">Select an answer to continue</span>
-        </div>
-        <button type="button" id="nextBtn" class="btn btn-primary" onclick="sendAnswer('next')" disabled>
-          Next →
-        </button>
-      </div>
-
+  <button type="button" id="backBtn" class="btn btn-ghost" style="visibility: hidden;" onclick="sendAnswer('back')">
+    &larr; Back
+  </button>
+  
+  <span id="answerHint">Select an answer to continue</span>
+  
+  <button type="button" id="nextBtn" class="btn btn-primary" onclick="sendAnswer('next')" disabled>
+    Next &rarr;
+  </button>
+</div>
       <div class="quiz-footer-note">
         This assessment is for informational purposes only and is not a clinical diagnostic tool.<br>
         Please consult a healthcare professional for a complete evaluation.
@@ -68,6 +108,9 @@ const TEST_TYPE = {{ test_type | tojson }};
 const TOTAL = {{ question_count }};
 let currentQ = {{ curr_question }};
 
+// Helper to check if we are on mobile
+const isMobile = () => window.innerWidth <= 480;
+
 function selectOption(label) {
   document.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected'));
   label.classList.add('selected');
@@ -79,15 +122,19 @@ function selectOption(label) {
 async function sendAnswer(action) {
   const selected = document.querySelector('input[name="answer"]:checked');
   const answer = selected ? selected.value : null;
+  const nextBtn = document.getElementById('nextBtn');
+  const hint = document.getElementById('answerHint');
 
+  // 1. Fixed Hint Logic: Only show on desktop
   if (action === 'next' && !answer) {
-    document.getElementById('answerHint').style.display = 'inline';
+    if (!isMobile()) hint.style.display = 'block';
     return;
   }
 
-  // Loading state
-  document.getElementById('nextBtn').disabled = true;
-  document.getElementById('nextBtn').innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="font-size:0.85rem;"></i>';
+  // 2. Stable Loading State: Use textContent to prevent layout shifts
+  nextBtn.disabled = true;
+  nextBtn.style.opacity = '0.7';
+  nextBtn.textContent = 'Loading...'; 
 
   try {
     const res = await fetch(`/test/api/${encodeURIComponent(TEST_TYPE)}/next`, {
@@ -127,14 +174,20 @@ async function sendAnswer(action) {
       container.appendChild(label);
     });
 
-    document.getElementById('nextBtn').disabled = true;
-    document.getElementById('nextBtn').innerHTML = 'Next &rarr;';
-    document.getElementById('answerHint').style.display = 'inline';
+    // 3. Reset Button and Hint
+    nextBtn.disabled = true;
+    nextBtn.style.opacity = '1';
+    nextBtn.innerHTML = 'Next &rarr;'; // Restore arrow
+    
+    // Only show hint on desktop for the new question
+    hint.style.display = isMobile() ? 'none' : 'block';
+    
     currentQ = data.question_number;
   } catch (err) {
     console.error(err);
-    document.getElementById('nextBtn').disabled = false;
-    document.getElementById('nextBtn').innerHTML = 'Next &rarr;';
+    nextBtn.disabled = false;
+    nextBtn.style.opacity = '1';
+    nextBtn.innerHTML = 'Next &rarr;';
   }
 }
 

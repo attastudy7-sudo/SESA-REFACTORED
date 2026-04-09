@@ -1,322 +1,303 @@
-{% extends 'base.html' %}
-{% block title %}Home{% endblock %}
+  {% extends 'base.html' %}
+  {% block title %}Home{% endblock %}
 
-{% block nav_links %}
-  <li><a href="{{ url_for('main.home') }}" class="active">Home</a></li>
-  <li><a href="{{ url_for('main.results') }}">Results</a></li>
-  {% if current_user.is_super_admin %}
-    <li><a href="{{ url_for('admin.dashboard') }}">Admin</a></li>
-  {% endif %}
-  <li><a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a></li>
-{% endblock %}
+  {% block nav_links %}
+    <li><a href="{{ url_for('main.home') }}" class="active">Home</a></li>
+    <li><a href="{{ url_for('main.results') }}">Results</a></li>
+    {% if current_user.is_super_admin %}
+      <li><a href="{{ url_for('admin.dashboard') }}">Admin</a></li>
+    {% endif %}
+    <li><a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a></li>
+  {% endblock %}
 
-  {% block drawer_links %}
-  <a href="{{ url_for('main.home') }}">Home</a>
-  <a href="{{ url_for('main.results') }}">Results</a>
-  {% if current_user.is_super_admin %}
-    <a href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a>
-  {% endif %}
-  <a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a>
-{% endblock %}
+    {% block drawer_links %}
+    <a href="{{ url_for('main.home') }}">Home</a>
+    <a href="{{ url_for('main.results') }}">Results</a>
+    {% if current_user.is_super_admin %}
+      <a href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a>
+    {% endif %}
+    <a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a>
+  {% endblock %}
 
-{% block body %}
-<div class="container" style="padding-bottom: 48px;">
+  {% block body %}
+  <div class="container" style="padding-bottom: 48px;">
+
+    {# ── Username Prompt (first login only) ── #}
+    {% if new_username %}
+    <div style="background:#fefce8; border:2px solid #fbbf24; border-radius:12px; padding:18px 22px; margin-top:16px; margin-bottom:0; display:flex; align-items:flex-start; gap:14px;">
+      <i class="fa-solid fa-circle-exclamation" style="color:#d97706; font-size:1.4rem; margin-top:2px; flex-shrink:0;"></i>
+      <div>
+        <p style="font-weight:800; color:#92400e; font-size:1rem; margin-bottom:4px;">Write down your username!</p>
+        <p style="color:#78350f; font-size:0.9rem; margin-bottom:10px;">You'll need this every time you log in. Keep it somewhere safe.</p>
+        <div style="background:#fff; border:2px solid #fbbf24; border-radius:8px; padding:10px 16px; display:inline-block;">
+          <span style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#9ca3af;">Your Username</span>
+          <div style="font-size:1.4rem; font-weight:900; color:#1a3a2a; letter-spacing:0.04em;">{{ new_username }}</div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
   <style>
-    .empathy-hero {
-      background: var(--green-800);
-      border-radius: var(--radius-lg);
-      margin-bottom: 32px;
-      margin-top: 16px;
-      color: white;
-      position: relative;
-      overflow: hidden;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      min-height: 190px;
+    /* Clean, App-like Header Styles */
+    .app-header {
+      padding: 4px; /* Reduced top/bottom padding */
+      margin-bottom: 8px;
+      text-align: center;
     }
-    .empathy-hero-arc {
-      position: absolute;
-      bottom: -60px; right: -60px;
-      width: 260px; height: 260px;
-      border-radius: 50%;
-      border: 40px solid rgba(197,160,89,0.12);
-      pointer-events: none;
-    }
-    .empathy-hero-arc2 {
-      position: absolute;
-      top: -80px; right: 80px;
-      width: 180px; height: 180px;
-      border-radius: 50%;
-      border: 25px solid rgba(197,160,89,0.07);
-      pointer-events: none;
-    }
-    .empathy-hero-stripe {
-      position: absolute;
-      top: 0; left: 0;
-      width: 5px; height: 100%;
-      background: linear-gradient(to bottom, var(--gold-500), var(--gold-400));
-      border-radius: var(--radius-lg) 0 0 var(--radius-lg);
-    }
-    .empathy-hero-content {
-      position: relative;
-      z-index: 2;
-      padding: 30px 24px 30px 34px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 8px;
-    }
-    .empathy-eyebrow {
-      font-size: 0.68rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
-      color: var(--gold-400);
-      display: flex;
+
+    .status-badge {
+      display: inline-flex;
       align-items: center;
-      gap: 8px;
-    }
-    .empathy-eyebrow::before {
-      content: '';
-      display: inline-block;
-      width: 18px; height: 1.5px;
-      background: var(--gold-400);
-      border-radius: 2px;
-    }
-    .empathy-greeting {
-      font-family: var(--font-display);
-      font-size: 2rem;
-      font-weight: 700;
-      line-height: 1.15;
-      color: var(--white);
-      margin: 0;
-    }
-    .empathy-greeting em {
-      font-style: italic;
-      color: var(--gold-400);
-    }
-    .empathy-message {
-      font-size: 0.92rem;
-      line-height: 1.65;
-      color: rgba(255,255,255,0.75);
-      margin: 0;
-      max-width: 420px;
-    }
-    .empathy-hero-visual {
-      position: relative;
-      z-index: 2;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 28px 32px 28px 12px;
       gap: 6px;
-    }
-    .empathy-leaf-ring {
-      width: 72px; height: 72px;
-      border-radius: 50%;
-      background: rgba(197,160,89,0.1);
-      border: 1.5px solid rgba(197,160,89,0.2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .empathy-leaf-ring svg {
-      width: 34px; height: 34px;
-    }
-    .empathy-tagline {
-      font-size: 0.62rem;
-      color: rgba(255,255,255,0.35);
-      font-weight: 600;
+      background: rgba(16, 185, 129, 0.1); /* Soft emerald tint */
+      color: #059669;
+      padding: 5px 12px;
+      border-radius: 100px;
+      font-size: 0.7rem;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.12em;
-      white-space: nowrap;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      background-color: #10b981;
+      border-radius: 50%;
+    }
+
+    .app-greeting {
+      font-size: 1.5rem; /* Reduced from 1.85rem */
+      font-weight: 800;
+      color: #111827; /* Near black for readability */
+      line-height: 1.2;
+      margin: 0;
+      letter-spacing: -0.03em;
+    }
+
+    .app-greeting span {
+      color: #059669; /* Primary action color */
+      display: inline; /* Forces name onto the same line as the greeting */  }
+
+    .app-description {
+      font-size: 0.85rem; /* Reduced from 0.95rem */
+      color: #6b7280;
+      line-height: 1.5;
+      max-width: 450px;
+      margin: 10px auto 0 auto; /* Added 'auto' to left/right margins to center the box itself */
+    }
+
+    @media (min-width: 600px) {
+      .app-greeting {
+        font-size: 1.85rem; /* Returns to larger size on desktop */
+      }
+
+      .app-greeting span {
+        display: inline;
+        margin-left: 6px;
+      }
+      .app-header {
+        padding: 40px 0 20px 0;
+        text-align: left; /* Resets alignment to left for larger screens */
+      }
+      .app-description {
+        margin-left: 0; /* Resets description position to the left */
+      }
     }
     @media (max-width: 600px) {
-      .empathy-hero {
-        grid-template-columns: 1fr;
-      }
-      .empathy-hero-visual { display: none; }
-      .empathy-hero-content { padding: 26px 24px 26px 30px; }
-      .empathy-greeting { font-size: 1.6rem; }
-    }
+  #mainNav.navbar { 
+    position: sticky;
+    top: 0;
+    z-index: 2000;
+    background-color: #1a3e2c; /* Matches your theme color */
+    transition: transform 0.3s ease-in-out;
+    width: 100%;
+  }
+
+  /* Moves the nav off-screen when scrolling down */
+  .nav-hidden {
+    transform: translateY(-100%);
+  }
+}
   </style>
 
-  {# ── Username Prompt (first login only) ── #}
-  {% if new_username %}
-  <div style="background:#fefce8; border:2px solid #fbbf24; border-radius:12px; padding:18px 22px; margin-top:16px; margin-bottom:0; display:flex; align-items:flex-start; gap:14px;">
-    <i class="fa-solid fa-circle-exclamation" style="color:#d97706; font-size:1.4rem; margin-top:2px; flex-shrink:0;"></i>
-    <div>
-      <p style="font-weight:800; color:#92400e; font-size:1rem; margin-bottom:4px;">Write down your username!</p>
-      <p style="color:#78350f; font-size:0.9rem; margin-bottom:10px;">You'll need this every time you log in. Keep it somewhere safe.</p>
-      <div style="background:#fff; border:2px solid #fbbf24; border-radius:8px; padding:10px 16px; display:inline-block;">
-        <span style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#9ca3af;">Your Username</span>
-        <div style="font-size:1.4rem; font-weight:900; color:#1a3a2a; letter-spacing:0.04em;">{{ new_username }}</div>
+  {# ── Modern App Greeting ── #}
+  <header class="app-header">
+    <h1 class="app-greeting">
+      {{ greeting }}, <span>{{ user.fname }}!</span>
+    </h1>
+
+    <p class="app-description">
+      How are you feeling today? <b>Ready for your self-check?</b>
+    </p>
+  </header>
+    {# ── Assessments ── #}
+    <div class="section" id="assessments">
+      <div class="section-head">
+        <h2>Choose an Assessment</h2>
+        <p style="font-size: 0.85rem; color: var(--gray-500);">Each test covers a different aspect of social-emotional health.</p>
       </div>
-    </div>
-  </div>
-  {% endif %}
 
-  {# ── Empathy Hero Banner ── #}
-  <div class="empathy-hero">
-    <div class="empathy-hero-arc"></div>
-    <div class="empathy-hero-arc2"></div>
-    <div class="empathy-hero-stripe"></div>
-
-    <div class="empathy-hero-content">
-      <span class="empathy-eyebrow">Daily Check-in</span>
-      <h1 class="empathy-greeting">{{ greeting }},<br><em>{{ user.fname }}!</em></h1>
-      <p class="empathy-message">Taking time to check in with yourself is a wonderful step. How are you feeling today?</p>
-    </div>
-
-    <div class="empathy-hero-visual">
-      <div class="empathy-leaf-ring">
-        <svg viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M17 4C17 4 6 10 6 20C6 26.627 11 30 17 30C23 30 28 26.627 28 20C28 10 17 4 17 4Z" fill="#c5a059" opacity="0.25"/>
-          <path d="M17 8C17 8 9 13 9 21C9 25.418 12.5 28 17 28C21.5 28 25 25.418 25 21C25 13 17 8 17 8Z" fill="#c5a059" opacity="0.55"/>
-          <line x1="17" y1="28" x2="17" y2="14" stroke="#c5a059" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-      </div>
-      <span class="empathy-tagline">Be well</span>
-    </div>
-  </div>
-
-  {# ── Assessments ── #}
-  <div class="section" id="assessments">
-    <div class="section-head">
-      <h2>Choose an Assessment</h2>
-      <p style="font-size: 0.85rem; color: var(--gray-500);">Each test covers a different aspect of social-emotional health.</p>
-    </div>
-
-    <div class="test-grid">
-      <style>
-      .test-card.locked {
-        opacity: 0.8;
-        filter: grayscale(25%);
-        cursor: not-allowed;
-      }
-      .pulse-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 0.65rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        color: var(--green-800);
-        background: var(--green-50);
-        padding: 4px 8px;
-        border-radius: 12px;
-      }
-      .pulse-dot {
-        width: 6px;
-        height: 6px;
-        background-color: var(--green-500);
-        border-radius: 50%;
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-        animation: pulseReady 1.5s infinite;
-      }
-      @keyframes pulseReady {
-        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-        70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-      }
-      .lock-indicator {
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: var(--gray-600);
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        background: var(--gray-100);
-        padding: 4px 10px;
-        border-radius: 12px;
-        white-space: nowrap;
-      }
-      </style>
-    
-      {% for test in tests_meta %}
-      <a href="{% if test.is_ready %}{{ url_for('test.display_questions', test_type=test.name) }}{% else %}javascript:void(0);{% endif %}" 
-         class="test-card {% if not test.is_ready %}locked{% endif %}"
-         {% if not test.is_ready %}onclick="alert('This assessment will be exactly 7 days after your previous attempt. Please wait {{ test.days_remaining }} more day(s).');"{% endif %}>
-        <div class="test-card-image">
-          {% if test.get('image_url') %}
-          <img src="{{ test.image_url }}"
-               alt="{{ test.name }}"
-               loading="lazy"
-               width="400"
-               height="160">
-          {% else %}
-          {% set color_map = {
-            'teal':   '#0e7490',
-            'blue':   '#1d4ed8',
-            'purple': '#7c3aed',
-            'orange': '#ea580c',
-            'red':    '#dc2626',
-            'indigo': '#4338ca',
-            'green':  '#15803d',
-          } %}
-          {% set bg = color_map.get(test.get('color', 'green'), '#15803d') %}
-          <div style="width:100%; height:160px; background:{{ bg }}; display:flex; align-items:center; justify-content:center;">
-            <span style="font-size:3rem; opacity:0.6;">{{ test.get('icon', '🧠') }}</span>
-          </div>
-          {% endif %}
-        </div>
-        <div class="test-card-content">
-          <h3>{{ test.get('title') or test.get('display_name') or test.name }}</h3>
-          <p>{{ test.get('desc') or test.get('description') or '' }}</p>
-          <div class="test-card-meta" style="display: flex; justify-content: space-between; align-items: center;">
-            {% if test.is_ready %}
-              <span class="pulse-badge"><span class="pulse-dot"></span> Take Now</span>
-              <span class="test-card-arrow">→</span>
+      <div class="test-grid">
+        <style>
+        .test-card.locked {
+          opacity: 0.8;
+          filter: grayscale(25%);
+          cursor: not-allowed;
+        }
+        .pulse-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 0.65rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          color: var(--green-800);
+          background: var(--green-50);
+          padding: 4px 8px;
+          border-radius: 12px;
+        }
+        .pulse-dot {
+          width: 6px;
+          height: 6px;
+          background-color: var(--green-500);
+          border-radius: 50%;
+          box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+          animation: pulseReady 1.5s infinite;
+        }
+        @keyframes pulseReady {
+          0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+          70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+          100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        .lock-indicator {
+          font-size: 0.75rem;
+          font-weight: 600;
+          color: var(--gray-600);
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: var(--gray-100);
+          padding: 4px 10px;
+          border-radius: 12px;
+          white-space: nowrap;
+        }
+        </style>
+      
+        {% for test in tests_meta %}
+        <a href="{% if test.is_ready %}{{ url_for('test.display_questions', test_type=test.name) }}{% else %}javascript:void(0);{% endif %}" 
+          class="test-card {% if not test.is_ready %}locked{% endif %}"
+          {% if not test.is_ready %}onclick="alert('This assessment will be exactly 7 days after your previous attempt. Please wait {{ test.days_remaining }} more day(s).');"{% endif %}>
+          <div class="test-card-image">
+            {% if test.get('image_url') %}
+            <img src="{{ test.image_url }}"
+                alt="{{ test.name }}"
+                loading="lazy"
+                width="400"
+                height="160">
             {% else %}
-              <span class="lock-indicator"><i class="fa-solid fa-lock" style="font-size:0.7rem;opacity:0.6;"></i> Available in {{ test.days_remaining }} day(s)</span>
+            {% set color_map = {
+              'teal':   '#0e7490',
+              'blue':   '#1d4ed8',
+              'purple': '#7c3aed',
+              'orange': '#ea580c',
+              'red':    '#dc2626',
+              'indigo': '#4338ca',
+              'green':  '#15803d',
+            } %}
+            {% set bg = color_map.get(test.get('color', 'green'), '#15803d') %}
+            <div style="width:100%; height:160px; background:{{ bg }}; display:flex; align-items:center; justify-content:center;">
+              <span style="font-size:3rem; opacity:0.6;">{{ test.get('icon', '🧠') }}</span>
+            </div>
             {% endif %}
           </div>
-        </div>
-      </a>
-      {% endfor %}
-    </div>
-  </div>
-
-  {# ── Recent Results ── #}
-  {% if recent_results %}
-  <div class="section">
-    <div class="section-head">
-      <h2>Recent Results</h2>
-      <a href="{{ url_for('main.results') }}" style="font-size:0.82rem; color:var(--gold-600, #b45309); font-weight:600;">View all →</a>
-    </div>
-
-    <div class="recent-results-scroll">
-      {% for r in recent_results %}
-        {% set s = (r.stage or r.details or 'unknown') | lower %}
-        {% if 'normal' in s %}{% set bar_mod = 'normal' %}{% set badge_class = 'stage-normal' %}
-        {% elif 'mild' in s %}{% set bar_mod = 'mild' %}{% set badge_class = 'stage-mild' %}
-        {% elif 'elevated' in s %}{% set bar_mod = 'elevated' %}{% set badge_class = 'stage-elevated' %}
-        {% elif 'clinical' in s %}{% set bar_mod = 'clinical' %}{% set badge_class = 'stage-clinical' %}
-        {% else %}{% set bar_mod = 'mild' %}{% set badge_class = 'badge-gray' %}{% endif %}
-
-        <div class="recent-result-card">
-          <div class="recent-result-bar recent-result-bar--{{ bar_mod }}"></div>
-          <div class="recent-result-title">{{ r.test_type }}</div>
-          <div class="recent-result-score">
-            {{ r.score }}{% if r.max_score %}<span> / {{ r.max_score }}</span>{% endif %}
+          <div class="test-card-content">
+            <h3>{{ test.get('title') or test.get('display_name') or test.name }}</h3>
+            <p>{{ test.get('desc') or test.get('description') or '' }}</p>
+            <div class="test-card-meta" style="display: flex; justify-content: space-between; align-items: center;">
+              {% if test.is_ready %}
+                <span class="pulse-badge"><span class="pulse-dot"></span> Take Now</span>
+                <span class="test-card-arrow">→</span>
+              {% else %}
+                <span class="lock-indicator"><i class="fa-solid fa-lock" style="font-size:0.7rem;opacity:0.6;"></i> Available in {{ test.days_remaining }} day(s)</span>
+              {% endif %}
+            </div>
           </div>
-          <div class="recent-result-bottom">
-            <span class="badge {{ badge_class }}">{{ r.stage or r.details or 'Unknown' }}</span>
-            <span class="recent-result-date">{{ r.taken_at.strftime('%d %b') }}</span>
-          </div>
-        </div>
-      {% endfor %}
-
-      <a href="{{ url_for('main.results') }}" class="recent-result-more">
-        <i class="fa-solid fa-chart-bar" style="font-size:1.1rem; opacity:0.4;"></i>
-        <span>View all<br>results</span>
-      </a>
+        </a>
+        {% endfor %}
+      </div>
     </div>
-    <p class="recent-results-hint">← swipe for more</p>
+
+    {# ── Recent Results ── #}
+    {% if recent_results %}
+    <div class="section">
+      <div class="section-head">
+        <h2>Recent Results</h2>
+        <a href="{{ url_for('main.results') }}" style="font-size:0.82rem; color:var(--gold-600, #b45309); font-weight:600;">View all →</a>
+      </div>
+
+      <div class="recent-results-scroll">
+        {% for r in recent_results %}
+          {% set s = (r.stage or r.details or 'unknown') | lower %}
+          {% if 'normal' in s %}{% set bar_mod = 'normal' %}{% set badge_class = 'stage-normal' %}
+          {% elif 'mild' in s %}{% set bar_mod = 'mild' %}{% set badge_class = 'stage-mild' %}
+          {% elif 'elevated' in s %}{% set bar_mod = 'elevated' %}{% set badge_class = 'stage-elevated' %}
+          {% elif 'clinical' in s %}{% set bar_mod = 'clinical' %}{% set badge_class = 'stage-clinical' %}
+          {% else %}{% set bar_mod = 'mild' %}{% set badge_class = 'badge-gray' %}{% endif %}
+
+          <div class="recent-result-card">
+            <div class="recent-result-bar recent-result-bar--{{ bar_mod }}"></div>
+            <div class="recent-result-title">{{ r.test_type }}</div>
+            <div class="recent-result-score">
+              {{ r.score }}{% if r.max_score %}<span> / {{ r.max_score }}</span>{% endif %}
+            </div>
+            <div class="recent-result-bottom">
+              <span class="badge {{ badge_class }}">{{ r.stage or r.details or 'Unknown' }}</span>
+              <span class="recent-result-date">{{ r.taken_at.strftime('%d %b') }}</span>
+            </div>
+          </div>
+        {% endfor %}
+
+        <a href="{{ url_for('main.results') }}" class="recent-result-more">
+          <i class="fa-solid fa-chart-bar" style="font-size:1.1rem; opacity:0.4;"></i>
+          <span>View all<br>results</span>
+        </a>
+      </div>
+      <p class="recent-results-hint">← swipe for more</p>
+    </div>
+    {% endif %}
+
   </div>
-  {% endif %}
+<script>
+  (function() {
+    let lastScrollY = window.scrollY;
+    const siteNav = document.getElementById('mainNav'); 
 
-</div>
+    if (siteNav) {
+      window.addEventListener('scroll', () => {
+        const currentScrollY = window.scrollY;
 
-{% endblock %}
+        // Only run on mobile
+        if (window.innerWidth <= 600) {
+          
+          // DIRECTION: Up (current < last)
+          if (currentScrollY < lastScrollY) {
+            siteNav.classList.remove('nav-hidden');
+          } 
+          // DIRECTION: Down (current > last)
+          else if (currentScrollY > lastScrollY && currentScrollY > 70) {
+            siteNav.classList.add('nav-hidden');
+          }
+          
+        } else {
+          // Always show on desktop
+          siteNav.classList.remove('nav-hidden');
+        }
+        
+        lastScrollY = currentScrollY;
+      }, { passive: true });
+    }
+  })();
+</script>
+  {% endblock %}
