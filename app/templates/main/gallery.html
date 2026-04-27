@@ -1,0 +1,235 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gallery – SESA by FOPA Dilligent Consult</title>
+  <meta name="description" content="Browse our collection of images and videos from SESA events and activities.">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main/gallery.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <meta name="theme-color" content="#022818">
+
+  <!-- Ensure public navigation styles are loaded last -->
+  {% include 'main/_pub_styles.html' %}
+</head>
+<body class="gallery-page" data-hero="dark">
+
+{% include 'main/_pub_nav.html' %}
+
+
+<section class="pub-section">
+  <div class="s-wrap">
+    <div class="gallery-container">
+      <h1 class="gallery-title">Gallery</h1>
+      <p class="gallery-desc">Browse our collection of images and videos from SESA events and activities.</p>
+
+      <div class="gallery-grid">
+        {% set captions = [
+          'Students collaborating on a group assignment',
+          'Active classroom discussion during SESA session',
+          'Hands-on learning with educational materials',
+          'School assembly for SESA program launch',
+          'Interactive quiz session in progress',
+          'Counsellor guiding students through assessment',
+          'Students using SESA digital resources',
+          'Teamwork and peer learning in action',
+          'Celebrating academic achievements',
+          'Engaged learners exploring new concepts',
+          'SESA workshop for teachers and staff',
+          'Motivational talk by guest speaker',
+          'Students preparing for national exams',
+          'Outdoor learning activity',
+          'School leadership addressing students',
+          'Classroom technology demonstration',
+          'Student feedback session',
+          'Award ceremony for top performers',
+          'Group study session',
+          'SESA onboarding for new schools'
+        ] %}
+        {% for file in gallery_files %}
+          <div class="gallery-item">
+            {% if file.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')) %}
+              <span class="gallery-skeleton"></span>
+              <img src="{{ url_for('static', filename='gallery/' + file) }}" alt="Gallery Image" data-index="{{ loop.index0 }}" data-caption="{{ captions[loop.index0 % captions|length] }}">
+            {% elif file.lower().endswith(('.mp4', '.webm', '.ogg')) %}
+              <video controls style="display:none;">
+                <source src="{{ url_for('static', filename='gallery/' + file) }}">
+                Your browser does not support the video tag.
+              </video>
+              <span class="gallery-skeleton"></span>
+            {% endif %}
+          </div>
+        {% else %}
+          <p style="grid-column: 1/-1; text-align: center; color: var(--gray-500);">No gallery items found.</p>
+        {% endfor %}
+      </div>
+      <!-- Overlay Image Player -->
+      <div id="imageOverlay" class="image-overlay" style="display:none;" tabindex="-1" aria-modal="true" role="dialog">
+        <div class="image-overlay-bg"></div>
+        <button class="image-overlay-close" aria-label="Close" tabindex="0">&times;</button>
+        <button class="image-overlay-nav image-overlay-prev" aria-label="Previous image" tabindex="0">&#10094;</button>
+        <figure class="image-overlay-figure">
+          <img id="overlayImage" class="image-overlay-img" src="" alt="Gallery Image">
+          <figcaption id="overlayCaption" class="image-overlay-caption"></figcaption>
+        </figure>
+        <button class="image-overlay-nav image-overlay-next" aria-label="Next image" tabindex="0">&#10095;</button>
+        <div id="overlayError" class="image-overlay-error" style="display:none;">Image failed to load.</div>
+      </div>
+      <!-- Overlay Image Player -->
+      <div id="imageOverlay" class="image-overlay" style="display:none;">
+        <div class="image-overlay-bg"></div>
+        <button class="image-overlay-close" aria-label="Close">&times;</button>
+        <button class="image-overlay-nav image-overlay-prev" aria-label="Previous image">&#10094;</button>
+        <img id="overlayImage" class="image-overlay-img" src="" alt="Gallery Image">
+        <button class="image-overlay-nav image-overlay-next" aria-label="Next image">&#10095;</button>
+      </div>
+    </div>
+  </div>
+</section>
+</script>
+<script>
+// Gallery improvements: accessibility, mobile overlay, captions, error fallback, transitions, preloading
+document.addEventListener('DOMContentLoaded', function() {
+  // Skeleton logic
+  document.querySelectorAll('.gallery-item').forEach(function(item) {
+    const img = item.querySelector('img');
+    const video = item.querySelector('video');
+    const skeleton = item.querySelector('.gallery-skeleton');
+    if (img) {
+      img.addEventListener('load', function() {
+        if (skeleton) skeleton.style.display = 'none';
+      });
+      img.addEventListener('error', function() {
+        if (skeleton) skeleton.style.display = 'none';
+      });
+      if (img.complete) {
+        if (img.naturalWidth !== 0) {
+          if (skeleton) skeleton.style.display = 'none';
+        } else {
+          if (skeleton) skeleton.style.display = 'none';
+        }
+      }
+    }
+    if (video) {
+      video.addEventListener('loadeddata', function() {
+        video.style.display = '';
+        if (skeleton) skeleton.style.display = 'none';
+      });
+    }
+  });
+
+  // Overlay image player logic
+  const galleryImages = Array.from(document.querySelectorAll('.gallery-item img'));
+  const overlay = document.getElementById('imageOverlay');
+  const overlayImg = document.getElementById('overlayImage');
+  const overlayCaption = document.getElementById('overlayCaption');
+  const overlayError = document.getElementById('overlayError');
+  const closeBtn = document.querySelector('.image-overlay-close');
+  const prevBtn = document.querySelector('.image-overlay-prev');
+  const nextBtn = document.querySelector('.image-overlay-next');
+  let currentIndex = 0;
+
+  function showOverlay(index) {
+    if (index < 0 || index >= galleryImages.length) return;
+    currentIndex = index;
+    overlayImg.style.opacity = 0;
+    overlayError.style.display = 'none';
+    overlayImg.src = galleryImages[index].src;
+    overlayCaption.textContent = galleryImages[index].dataset.caption || '';
+    overlay.style.display = 'flex';
+    overlay.focus();
+    document.body.style.overflow = 'hidden';
+    // Preload next/prev images
+    preloadImage((index + 1) % galleryImages.length);
+    preloadImage((index - 1 + galleryImages.length) % galleryImages.length);
+  }
+  function hideOverlay() {
+    overlay.style.display = 'none';
+    overlayImg.src = '';
+    overlayCaption.textContent = '';
+    overlayError.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+  function showPrev() {
+    let idx = (currentIndex - 1 + galleryImages.length) % galleryImages.length;
+    showOverlay(idx);
+  }
+  function showNext() {
+    let idx = (currentIndex + 1) % galleryImages.length;
+    showOverlay(idx);
+  }
+  function preloadImage(idx) {
+    const img = new window.Image();
+    img.src = galleryImages[idx].src;
+  }
+
+  galleryImages.forEach(function(img, idx) {
+    img.addEventListener('click', function(e) {
+      // Desktop: overlay, Mobile: modal
+      if (window.innerWidth >= 900) {
+        showOverlay(idx);
+      } else {
+        // Mobile modal fallback
+        showMobileModal(img.src, img.dataset.caption || '');
+      }
+    });
+    img.setAttribute('tabindex', '0');
+    img.setAttribute('role', 'button');
+    img.setAttribute('aria-label', 'View image: ' + (img.dataset.caption || 'Gallery Image'));
+    img.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        if (window.innerWidth >= 900) {
+          showOverlay(idx);
+        } else {
+          showMobileModal(img.src, img.dataset.caption || '');
+        }
+      }
+    });
+  });
+  closeBtn.addEventListener('click', hideOverlay);
+  prevBtn.addEventListener('click', showPrev);
+  nextBtn.addEventListener('click', showNext);
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay || e.target.classList.contains('image-overlay-bg')) hideOverlay();
+  });
+  overlayImg.addEventListener('load', function() {
+    overlayImg.style.opacity = 1;
+    overlayError.style.display = 'none';
+  });
+  overlayImg.addEventListener('error', function() {
+    overlayImg.style.opacity = 0;
+    overlayError.style.display = 'block';
+  });
+  document.addEventListener('keydown', function(e) {
+    if (overlay.style.display === 'flex') {
+      if (e.key === 'Escape') hideOverlay();
+      if (e.key === 'ArrowLeft') showPrev();
+      if (e.key === 'ArrowRight') showNext();
+      // Trap focus
+      if (e.key === 'Tab') {
+        const focusable = [closeBtn, prevBtn, nextBtn];
+        let idx = focusable.indexOf(document.activeElement);
+        if (e.shiftKey) {
+          idx = (idx - 1 + focusable.length) % focusable.length;
+        } else {
+          idx = (idx + 1) % focusable.length;
+        }
+        focusable[idx].focus();
+        e.preventDefault();
+      }
+    }
+  });
+
+  // Mobile modal fallback
+  function showMobileModal(src, caption) {
+    // Simple alert fallback for demonstration
+    alert(caption || 'Gallery Image');
+  }
+});
+</script>
+</script>
+</body>
+</html>

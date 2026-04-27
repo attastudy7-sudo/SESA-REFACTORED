@@ -1,0 +1,34 @@
+/* Extracted from errors/offline.html */
+.offline-container {
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+.offline-inner {
+  text-align: center;
+  max-width: 420px;
+}
+.offline-emoji {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+.offline-title {
+  font-family: var(--font-display);
+  color: var(--green-800);
+  margin-bottom: 0.5rem;
+}
+.offline-desc {
+  color: var(--gray-500);
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+.offline-btn {
+  margin-bottom: 0.75rem;
+  width: 100%;
+}
+.offline-hint {
+  font-size: 0.82rem;
+  color: var(--gray-400);
+}

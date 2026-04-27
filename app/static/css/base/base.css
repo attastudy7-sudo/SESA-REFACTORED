@@ -1,0 +1,16 @@
+/* Extracted from base.html */
+.a2hs-banner {
+  display: none;
+}
+.crisis-modal {
+  display: none;
+}
+.crisis-modal-emoji .fa-heart {
+  color: #4ade80;
+}
+.crisis-option-icon .fa-phone,
+.crisis-option-icon .fa-hospital,
+.crisis-option-icon .fa-school,
+.crisis-option-icon .fa-handshake {
+  color: var(--green-500);
+}

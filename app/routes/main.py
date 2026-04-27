@@ -32,6 +32,22 @@ def about():
     return render_template('main/about.html')
 
 
+import os
+
+@main_bp.route('/gallery')
+def gallery():
+    # Path to the gallery folder
+    gallery_folder = os.path.join(current_app.static_folder, 'gallery')
+    files = []
+    if os.path.exists(gallery_folder):
+        files = [f for f in os.listdir(gallery_folder) if not f.startswith('.')]
+    images = [f for f in files if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp'))]
+    videos = [f for f in files if f.lower().endswith(('.mp4', '.webm', '.ogg'))]
+    # Combine and preserve order (images first, then videos)
+    gallery_files = images + videos
+    return render_template('main/gallery.html', gallery_files=gallery_files)
+
+
 @main_bp.route('/contact')
 def contact():
     return render_template('main/contact.html')

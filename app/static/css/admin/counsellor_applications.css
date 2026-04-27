@@ -1,0 +1,54 @@
+/* Extracted from admin/counsellor_applications.html */
+
+.page-context {
+  margin-bottom: 24px;
+}
+.card {
+  padding: 20px;
+  text-align: center;
+  color: var(--gray-500);
+  font-size: 0.88rem;
+  margin-bottom: 24px;
+}
+.table-wrapper {
+  margin-bottom: 24px;
+}
+.admin-nav-item.logout {
+  color: rgba(255,100,100,.7);
+}
+
+img.pofa {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  object-fit: contain;
+}
+
+.fa-clock {
+  color: var(--gold-500);
+}
+.fa-circle-check {
+  color: var(--green-500);
+}
+.fa-circle-xmark {
+  color: var(--red-400);
+}
+
+.lock-indicator {
+  font-size: 0.7rem;
+  opacity: 0.6;
+}
+
+.bold {
+  font-weight: 600;
+}
+.gray {
+  color: var(--gray-500);
+}
+.gray-600 {
+  color: var(--gray-600);
+}
+
+.td-small {
+  font-size: 0.82rem;
+}

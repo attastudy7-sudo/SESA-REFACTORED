@@ -2,7 +2,7 @@
 {% block title %}Counsellor Applications — Admin{% endblock %}
 
 {% block extra_head %}
-<style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin/counsellor_applications.css') }}">
 /* ── Reuse admin shell styles ── */
 .admin-sidebar {
   width: 220px;
@@ -298,7 +298,7 @@
 <!-- ── Sidebar ── -->
 <aside class="admin-sidebar" id="adminSidebar">
   <div class="admin-sidebar-brand">
-    <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="SESA" style="width:28px; height:28px; border-radius:6px; object-fit:contain;">
+    <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="SESA" class="pofa">
     <div>
       <span>SESA</span>
       <small>Super Admin</small>
@@ -330,7 +330,7 @@
   </nav>
 
   <div class="admin-sidebar-footer">
-    <a href="{{ url_for('auth.logout') }}" class="admin-nav-item" style="color:rgba(255,100,100,.7);">
+    <a href="{{ url_for('auth.logout') }}" class="admin-nav-item logout">
       <i class="fa-solid fa-right-from-bracket"></i> Logout
     </a>
   </div>
@@ -339,7 +339,7 @@
 <!-- ── Main content ── -->
 <div class="admin-page-main">
 
-  <div class="page-context" style="margin-bottom: 24px;">
+  <div class="page-context">
     <a href="{{ url_for('admin.dashboard') }}" class="back-link">← Back to Admin</a>
     <h1>Counsellor Applications</h1>
     <p>{{ pending|length }} pending · {{ verified|length }} verified · {{ rejected|length }} rejected</p>
@@ -347,7 +347,7 @@
 
   {# ── Pending ── #}
   <div class="section-heading">
-    <i class="fa-solid fa-clock" style="color: var(--gold-500);"></i>
+    <i class="fa-solid fa-clock"></i>
     Pending Review ({{ pending|length }})
   </div>
 
@@ -411,19 +411,19 @@
     </div>
     {% endfor %}
   {% else %}
-  <div class="card" style="padding: 20px; text-align: center; color: var(--gray-500); font-size: 0.88rem; margin-bottom: 24px;">
+  <div class="card">
     No pending applications.
   </div>
   {% endif %}
 
   {# ── Verified ── #}
   <div class="section-heading">
-    <i class="fa-solid fa-circle-check" style="color: var(--green-500);"></i>
+    <i class="fa-solid fa-circle-check"></i>
     Verified ({{ verified|length }})
   </div>
 
   {% if verified %}
-  <div class="table-wrapper" style="margin-bottom: 24px;">
+  <div class="table-wrapper">
     <table class="table">
       <thead>
         <tr>
@@ -436,14 +436,14 @@
       <tbody>
         {% for profile, account in verified %}
         <tr>
-          <td style="font-weight:600;">{{ account.full_name }}</td>
-          <td style="color:var(--gray-500);">@{{ account.username }}</td>
-          <td style="font-size:0.82rem;">
+          <td class="bold">{{ account.full_name }}</td>
+          <td class="gray">@{{ account.username }}</td>
+          <td class="td-small">
             {% if profile.gpc_number %}GPC: {{ profile.gpc_number }}{% endif %}
             {% if profile.gacc_number %} GACC: {{ profile.gacc_number }}{% endif %}
             {% if not profile.gpc_number and not profile.gacc_number %}—{% endif %}
           </td>
-          <td style="font-size:0.82rem; color:var(--gray-500);">
+          <td class="td-small gray">
             {{ profile.verified_at.strftime('%d %b %Y') if profile.verified_at else '—' }}
           </td>
         </tr>
@@ -452,7 +452,7 @@
     </table>
   </div>
   {% else %}
-  <div class="card" style="padding: 20px; text-align: center; color: var(--gray-500); font-size: 0.88rem; margin-bottom: 24px;">
+  <div class="card">
     No verified counsellors yet.
   </div>
   {% endif %}
@@ -460,7 +460,7 @@
   {# ── Rejected ── #}
   {% if rejected %}
   <div class="section-heading">
-    <i class="fa-solid fa-circle-xmark" style="color: var(--red-400);"></i>
+    <i class="fa-solid fa-circle-xmark"></i>
     Rejected ({{ rejected|length }})
   </div>
   <div class="table-wrapper">
@@ -476,10 +476,10 @@
       <tbody>
         {% for profile, account in rejected %}
         <tr>
-          <td style="font-weight:600;">{{ account.full_name }}</td>
-          <td style="color:var(--gray-500);">@{{ account.username }}</td>
-          <td style="font-size:0.82rem; color:var(--gray-600);">{{ profile.rejection_reason or '—' }}</td>
-          <td style="font-size:0.82rem; color:var(--gray-500);">{{ profile.submitted_at.strftime('%d %b %Y') }}</td>
+          <td class="bold">{{ account.full_name }}</td>
+          <td class="gray">@{{ account.username }}</td>
+          <td class="td-small gray-600">{{ profile.rejection_reason or '—' }}</td>
+          <td class="td-small gray">{{ profile.submitted_at.strftime('%d %b %Y') }}</td>
         </tr>
         {% endfor %}
       </tbody>

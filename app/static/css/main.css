@@ -1,3 +1,22 @@
+/* Skeleton Loader for Gallery Images */
+.gallery-skeleton {
+  width: 100%;
+  aspect-ratio: 1/1;
+  background: linear-gradient(90deg, #ececec 25%, #f5f5f5 37%, #ececec 63%);
+  background-size: 400% 100%;
+  animation: skeleton-loading 1.2s ease-in-out infinite;
+  border-radius: 12px;
+  display: block;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
 /* ============================================================
    SESA Design System — Refined Organic Professional
    Fonts: Fraunces (display) + DM Sans (body)
@@ -1354,7 +1373,7 @@ input:-webkit-autofill:active {
 
 .hero-title { font-family:var(--font-display); font-size:clamp(2rem,5vw,3.6rem); font-weight:700; line-height:1.1; margin-bottom:20px; color:#fff; }
 .hero-title em { color:var(--gold-400); font-style:italic; }
-.hero-subtitle { font-size:1.05rem; color:rgba(255,255,255,.80); margin-bottom:36px; max-width:540px; margin-left:auto; margin-right:auto; }
+.hero-subtitle { font-size:1.05rem; color:rgba(255,255,255,.80); margin-bottom:36px; max-width:540px; margin-right:auto; }
 .hero-actions { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
 .hero-actions .btn-primary       { background:var(--gold-500); color:var(--green-900); font-size:1rem; font-weight:700; }
 .hero-actions .btn-primary:hover { background:var(--gold-700); color:#fff; }

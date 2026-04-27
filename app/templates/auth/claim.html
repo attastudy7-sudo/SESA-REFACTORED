@@ -24,7 +24,7 @@
     </div>
 
     {% if error %}
-    <div class="flash-toast error" style="margin-bottom:1rem;">
+    <div class="flash-toast error">
       <span>{{ error }}</span>
     </div>
     {% endif %}
@@ -33,13 +33,13 @@
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
       <div class="form-group">
-        <label class="form-label">Claim Code <span style="color:#ef4444">*</span></label>
+        <label class="form-label">Claim Code <span class="claim-label-required">*</span></label>
         <input type="text" name="claim_code" class="form-control"
                placeholder="e.g. A3F9B2"
                maxlength="6"
-               style="text-transform: uppercase; letter-spacing: 0.15em; font-size: 1.1rem; font-weight: 700;"
+               class="claim-code"
                autocomplete="off" required>
-        <p style="margin-top: 6px; font-size: 0.82rem; color: var(--gray-500);">
+        <p class="claim-hint">
           Your school administrator printed this on your registration slip.
         </p>
       </div>
@@ -58,15 +58,15 @@
                minlength="6" required>
       </div>
 
-      <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+      <button type="submit" class="btn btn-primary claim-btn">
         Activate My Account
       </button>
     </form>
 
-    <div class="auth-footer-links" style="text-align:center;">
+    <div class="auth-footer-links">
       <p>Already activated? <a href="{{ url_for('auth.login') }}">Log in</a></p>
       <p><a href="{{ url_for('main.landing') }}"
-            style="display:inline-block;color:var(--gray-500);border:2px solid var(--gray-300);padding:8px 24px;border-radius:6px;font-size:0.85rem;font-weight:600;transition:border-color .2s,color .2s;">← Back to home</a></p>
+            class="auth-back-link">← Back to home</a></p>
     </div>
   </div>
 </div>

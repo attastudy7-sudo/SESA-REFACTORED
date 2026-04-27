@@ -10,6 +10,7 @@
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/base/base.css') }}">
   <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
   <meta name="theme-color" content="#1a3e2c">
   <meta name="mobile-web-app-capable" content="yes">
@@ -94,7 +95,7 @@
 
 {% endblock %}
 
-<div id="a2hs-banner" class="a2hs-banner" style="display: none;" role="dialog" aria-label="Install SESA">
+<div id="a2hs-banner" class="a2hs-banner" role="dialog" aria-label="Install SESA">
   <div class="a2hs-sheet">
     <div class="a2hs-handle"></div>
     <button id="a2hs-dismiss" class="a2hs-btn-dismiss" aria-label="Dismiss">&#x2715;</button>
@@ -122,38 +123,38 @@
   <span class="crisis-btn-label">Need Help?</span>
 </div>
 
-<div id="crisisModal" class="crisis-modal" role="dialog" aria-modal="true" aria-labelledby="crisisModalTitle" style="display:none;">
+<div id="crisisModal" class="crisis-modal" role="dialog" aria-modal="true" aria-labelledby="crisisModalTitle">
   <div class="crisis-modal-box">
     <button class="crisis-modal-close" id="crisisModalClose" aria-label="Close">&#x2715;</button>
     <div class="crisis-modal-header">
-      <span class="crisis-modal-emoji"><i class="fa-solid fa-heart" style="color: #4ade80;"></i></span>
+      <span class="crisis-modal-emoji"><i class="fa-solid fa-heart"></i></span>
       <h2 id="crisisModalTitle" class="crisis-modal-title">You're not alone</h2>
       <p class="crisis-modal-sub">It's okay to ask for help. Here's who you can reach right now.</p>
     </div>
     <div class="crisis-modal-options">
       <a class="crisis-option crisis-option--primary" href="tel:0800111222">
-        <span class="crisis-option-icon"><i class="fa-solid fa-phone" style="color: var(--green-500);"></i></span>
+        <span class="crisis-option-icon"><i class="fa-solid fa-phone"></i></span>
         <div>
           <strong>Ghana Mental Health Helpline</strong>
           <span>0800 111 222 — Free &amp; confidential</span>
         </div>
       </a>
       <a class="crisis-option" href="tel:0302666666">
-        <span class="crisis-option-icon"><i class="fa-solid fa-hospital" style="color: var(--green-500);"></i></span>
+        <span class="crisis-option-icon"><i class="fa-solid fa-hospital"></i></span>
         <div>
           <strong>Accra Psychiatric Hospital</strong>
           <span>030 266 6666</span>
         </div>
       </a>
       <div class="crisis-option crisis-option--soft">
-        <span class="crisis-option-icon"><i class="fa-solid fa-school" style="color: var(--green-500);"></i></span>
+        <span class="crisis-option-icon"><i class="fa-solid fa-school"></i></span>
         <div>
           <strong>Talk to your school counsellor</strong>
           <span>Find them at the counsellor's office or ask a teacher.</span>
         </div>
       </div>
       <div class="crisis-option crisis-option--soft">
-        <span class="crisis-option-icon"><i class="fa-solid fa-handshake" style="color: var(--green-500);"></i></span>
+        <span class="crisis-option-icon"><i class="fa-solid fa-handshake"></i></span>
         <div>
           <strong>Tell a trusted adult</strong>
           <span>A parent, teacher, or any adult you trust can help you right now.</span>
@@ -271,51 +272,7 @@
 
   function dismiss(permanent) {
     hideBanner();
-    if (permanent) {
-      localStorage.setItem('a2hs-dismissed', 'true');
-    }
-  }
-
-  // Chrome/Edge Android: capture the native prompt
-  window.addEventListener('beforeinstallprompt', function(e) {
-    e.preventDefault();
-    deferredPrompt = e;
-    // Small delay so the page has settled before the banner appears
-    setTimeout(showBanner, 1500);
-  });
-
-  // Install button clicked
-  if (installBtn) {
-    installBtn.addEventListener('click', function() {
-      if (deferredPrompt) {
-        // Trigger native Chrome install dialog
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then(function(outcome) {
-          deferredPrompt = null;
-          // Whether accepted or dismissed, don't show again this session
-          dismiss(outcome === 'accepted');
-        });
-      } else {
-        // iOS Safari / browsers without beforeinstallprompt — show manual steps
-        hideBanner();
-        var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-        if (isIOS) {
-          alert('To install SESA on your iPhone:\n\n1. Tap the Share button (box with arrow)\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add"');
-        } else {
-          alert('To install SESA:\n\n1. Tap the browser menu (three dots ⋮)\n2. Tap "Add to Home screen" or "Install app"\n3. Tap "Add"');
-        }
-        dismiss(false);
-      }
-    });
-  }
-
-  // ✕ button — permanent dismiss
-  if (dismissBtn) {
-    dismissBtn.addEventListener('click', function() { dismiss(true); });
-  }
-
-  // "Not now" button — also permanent dismiss (they can re-add via browser menu)
-  if (dismissBtn2) {
+    <!-- Profile sheet styles moved to CSS file if needed -->
     dismissBtn2.addEventListener('click', function() { dismiss(true); });
   }
 

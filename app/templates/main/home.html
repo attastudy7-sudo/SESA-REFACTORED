@@ -20,107 +20,24 @@
   {% endblock %}
 
   {% block body %}
-  <div class="container" style="padding-bottom: 48px;">
+  <div class="container pb-48">
 
     {# ── Username Prompt (first login only) ── #}
     {% if new_username %}
-    <div style="background:#fefce8; border:2px solid #fbbf24; border-radius:12px; padding:18px 22px; margin-top:16px; margin-bottom:0; display:flex; align-items:flex-start; gap:14px;">
-      <i class="fa-solid fa-circle-exclamation" style="color:#d97706; font-size:1.4rem; margin-top:2px; flex-shrink:0;"></i>
+    <div class="username-prompt">
+      <i class="fa-solid fa-circle-exclamation username-icon"></i>
       <div>
-        <p style="font-weight:800; color:#92400e; font-size:1rem; margin-bottom:4px;">Write down your username!</p>
-        <p style="color:#78350f; font-size:0.9rem; margin-bottom:10px;">You'll need this every time you log in. Keep it somewhere safe.</p>
-        <div style="background:#fff; border:2px solid #fbbf24; border-radius:8px; padding:10px 16px; display:inline-block;">
-          <span style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#9ca3af;">Your Username</span>
-          <div style="font-size:1.4rem; font-weight:900; color:#1a3a2a; letter-spacing:0.04em;">{{ new_username }}</div>
+        <p class="username-title">Write down your username!</p>
+        <p class="username-desc">You'll need this every time you log in. Keep it somewhere safe.</p>
+        <div class="username-box">
+          <span class="username-label">Your Username</span>
+          <div class="username-value">{{ new_username }}</div>
         </div>
       </div>
     </div>
     {% endif %}
 
-  <style>
-    /* Clean, App-like Header Styles */
-    .app-header {
-      padding: 4px; /* Reduced top/bottom padding */
-      margin-bottom: 8px;
-      text-align: center;
-    }
-
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(16, 185, 129, 0.1); /* Soft emerald tint */
-      color: #059669;
-      padding: 5px 12px;
-      border-radius: 100px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 12px;
-    }
-
-    .status-dot {
-      width: 6px;
-      height: 6px;
-      background-color: #10b981;
-      border-radius: 50%;
-    }
-
-    .app-greeting {
-      font-size: 1.5rem; /* Reduced from 1.85rem */
-      font-weight: 800;
-      color: #111827; /* Near black for readability */
-      line-height: 1.2;
-      margin: 0;
-      letter-spacing: -0.03em;
-    }
-
-    .app-greeting span {
-      color: #059669; /* Primary action color */
-      display: inline; /* Forces name onto the same line as the greeting */  }
-
-    .app-description {
-      font-size: 0.85rem; /* Reduced from 0.95rem */
-      color: #6b7280;
-      line-height: 1.5;
-      max-width: 450px;
-      margin: 10px auto 0 auto; /* Added 'auto' to left/right margins to center the box itself */
-    }
-
-    @media (min-width: 600px) {
-      .app-greeting {
-        font-size: 1.85rem; /* Returns to larger size on desktop */
-      }
-
-      .app-greeting span {
-        display: inline;
-        margin-left: 6px;
-      }
-      .app-header {
-        padding: 40px 0 20px 0;
-        text-align: left; /* Resets alignment to left for larger screens */
-      }
-      .app-description {
-        margin-left: 0; /* Resets description position to the left */
-      }
-    }
-    @media (max-width: 600px) {
-  #mainNav.navbar { 
-    position: sticky;
-    top: 0;
-    z-index: 2000;
-    background-color: #1a3e2c; /* Matches your theme color */
-    transition: transform 0.3s ease-in-out;
-    width: 100%;
-  }
-
-  /* Moves the nav off-screen when scrolling down */
-  .nav-hidden {
-    transform: translateY(-100%);
-  }
-}
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main/home.css') }}">
 
   {# ── Modern App Greeting ── #}
   <header class="app-header">
@@ -136,54 +53,11 @@
     <div class="section" id="assessments">
       <div class="section-head">
         <h2>Choose an Assessment</h2>
-        <p style="font-size: 0.85rem; color: var(--gray-500);">Each test covers a different aspect of social-emotional health.</p>
+        <p class="section-desc">Each test covers a different aspect of social-emotional health.</p>
       </div>
 
       <div class="test-grid">
-        <style>
-        .test-card.locked {
-          opacity: 0.8;
-          filter: grayscale(25%);
-          cursor: not-allowed;
-        }
-        .pulse-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          font-size: 0.65rem;
-          font-weight: 700;
-          text-transform: uppercase;
-          color: var(--green-800);
-          background: var(--green-50);
-          padding: 4px 8px;
-          border-radius: 12px;
-        }
-        .pulse-dot {
-          width: 6px;
-          height: 6px;
-          background-color: var(--green-500);
-          border-radius: 50%;
-          box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-          animation: pulseReady 1.5s infinite;
-        }
-        @keyframes pulseReady {
-          0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-          70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-          100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-        }
-        .lock-indicator {
-          font-size: 0.75rem;
-          font-weight: 600;
-          color: var(--gray-600);
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          background: var(--gray-100);
-          padding: 4px 10px;
-          border-radius: 12px;
-          white-space: nowrap;
-        }
-        </style>
+        <!-- Styles moved to home.css -->
       
         {% for test in tests_meta %}
         <a href="{% if test.is_ready %}{{ url_for('test.display_questions', test_type=test.name) }}{% else %}javascript:void(0);{% endif %}" 
@@ -207,20 +81,20 @@
               'green':  '#15803d',
             } %}
             {% set bg = color_map.get(test.get('color', 'green'), '#15803d') %}
-            <div style="width:100%; height:160px; background:{{ bg }}; display:flex; align-items:center; justify-content:center;">
-              <span style="font-size:3rem; opacity:0.6;">{{ test.get('icon', '🧠') }}</span>
+            <div class="test-card-image-placeholder" style="background:{{ bg }};">
+              <span class="test-card-image-icon">{{ test.get('icon', '🧠') }}</span>
             </div>
             {% endif %}
           </div>
           <div class="test-card-content">
             <h3>{{ test.get('title') or test.get('display_name') or test.name }}</h3>
             <p>{{ test.get('desc') or test.get('description') or '' }}</p>
-            <div class="test-card-meta" style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="test-card-meta">
               {% if test.is_ready %}
                 <span class="pulse-badge"><span class="pulse-dot"></span> Take Now</span>
                 <span class="test-card-arrow">→</span>
               {% else %}
-                <span class="lock-indicator"><i class="fa-solid fa-lock" style="font-size:0.7rem;opacity:0.6;"></i> Available in {{ test.days_remaining }} day(s)</span>
+                <span class="lock-indicator"><i class="fa-solid fa-lock lock-icon"></i> Available in {{ test.days_remaining }} day(s)</span>
               {% endif %}
             </div>
           </div>
@@ -234,7 +108,7 @@
     <div class="section">
       <div class="section-head">
         <h2>Recent Results</h2>
-        <a href="{{ url_for('main.results') }}" style="font-size:0.82rem; color:var(--gold-600, #b45309); font-weight:600;">View all →</a>
+        <a href="{{ url_for('main.results') }}" class="results-link">View all →</a>
       </div>
 
       <div class="recent-results-scroll">
@@ -260,7 +134,7 @@
         {% endfor %}
 
         <a href="{{ url_for('main.results') }}" class="recent-result-more">
-          <i class="fa-solid fa-chart-bar" style="font-size:1.1rem; opacity:0.4;"></i>
+          <i class="fa-solid fa-chart-bar results-icon"></i>
           <span>View all<br>results</span>
         </a>
       </div>

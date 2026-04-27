@@ -1,0 +1,35 @@
+/* Extracted from auth/claim.html */
+.flash-toast.error {
+  margin-bottom: 1rem;
+}
+.claim-label-required {
+  color: #ef4444;
+}
+.claim-code {
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.claim-hint {
+  margin-top: 6px;
+  font-size: 0.82rem;
+  color: var(--gray-500);
+}
+.claim-btn {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+.auth-footer-links {
+  text-align: center;
+}
+.auth-back-link {
+  display: inline-block;
+  color: var(--gray-500);
+  border: 2px solid var(--gray-300);
+  padding: 8px 24px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: border-color .2s, color .2s;
+}
