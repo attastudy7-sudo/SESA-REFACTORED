@@ -116,7 +116,7 @@
 </div>
 
 <!-- ── Crisis Help Button (always visible for logged-in students) ── -->
-{% if current_user.is_authenticated and not current_user.is_super_admin %}
+{% if current_user.is_authenticated and not current_user.is_super_admin and not is_assessment %}
 <div id="crisisBtn" class="crisis-btn" role="button" tabindex="0"
      aria-label="I need help now" title="I need help now">
   <i class="fa-solid fa-heart-pulse crisis-btn-icon"></i>

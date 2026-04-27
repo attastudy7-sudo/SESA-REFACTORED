@@ -63,6 +63,7 @@ def display_questions(test_type):
         question_count=question_count,
         test_type=test_type,
         progress=progress,
+        is_assessment=True,
     )
 
 
