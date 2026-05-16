@@ -1,0 +1,83 @@
+{
+  "schema_version": "1.0",
+  "document_type": "notes",
+  "generated_at": "2026-04-11T11:44:44.454266+00:00",
+  "title": "Intro to Mathematical Proof Strategies I (CSM 165)",
+  "course": "Discrete Mathematics",
+  "level": "Intermediate",
+  "metadata": {
+    "estimated_read_time": "10 minutes",
+    "focus_areas": "",
+    "prerequisites": ""
+  },
+  "sections": [
+    {
+      "section_number": 1,
+      "section_title": "Key Point 1",
+      "section_type": "concepts",
+      "content": [
+        {
+          "block_type": "paragraph",
+          "text": "CSM 165: Discrete Mathematics Intro to Mathematical Proof Strategies I Kwame Atta Gyamfi (PhD) Dept.ofMathematics KNUST February 16, 2026 Summary of topics 1 Statements of Mathematical Results 2 Trivial and Vacuous Proofs 3 Direct Proofs 4"
+        },
+        {
+          "block_type": "definition",
+          "label": "Core Idea",
+          "text": "This section captures the main concept from the uploaded material."
+        },
+        {
+          "block_type": "note",
+          "text": "Revise this section and connect it to the rest of the material."
+        }
+      ]
+    },
+    {
+      "section_number": 2,
+      "section_title": "Key Point 2",
+      "section_type": "concepts",
+      "content": [
+        {
+          "block_type": "paragraph",
+          "text": "Example 1 (Axiom of Euclid) For every line \u2113 and point P not on \u2113, there is a unique line containing containing P that is parallel to \u2113."
+        },
+        {
+          "block_type": "definition",
+          "label": "Core Idea",
+          "text": "This section captures the main concept from the uploaded material."
+        },
+        {
+          "block_type": "note",
+          "text": "Revise this section and connect it to the rest of the material."
+        }
+      ]
+    },
+    {
+      "section_number": 3,
+      "section_title": "Key Point 3",
+      "section_type": "concepts",
+      "content": [
+        {
+          "block_type": "paragraph",
+          "text": "Mathematical statements: Theorem A true mathematical statement whose truth can be verified."
+        },
+        {
+          "block_type": "definition",
+          "label": "Core Idea",
+          "text": "This section captures the main concept from the uploaded material."
+        },
+        {
+          "block_type": "note",
+          "text": "Revise this section and connect it to the rest of the material."
+        }
+      ]
+    }
+  ],
+  "summary": [
+    "Review the section content and reinforce the core idea for retention.",
+    "Review the section content and reinforce the core idea for retention.",
+    "Review the section content and reinforce the core idea for retention.",
+    "Review the section content and reinforce the core idea for retention.",
+    "Review the section content and reinforce the core idea for retention."
+  ],
+  "document_hash": "1e150b87e70473030f7373c2e521b0149db8272f310201c650a28877f5b2b4f1"
+}

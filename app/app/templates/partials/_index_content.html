@@ -1,0 +1,343 @@
+<div class="sh-page">
+  <!-- NAV -->
+  <nav class="sh-nav">
+    <div style="display: flex; align-items: center; gap: 8px;">
+        <button class="sh-mobile-hamburger" onclick="toggleMobileNav()" aria-label="Toggle Menu">
+            <i class="fas fa-bars"></i>
+        </button>
+        <a href="/" class="nav-logo" aria-label="knowly home">
+          <img src="/static/images/knowly.png" alt="knowly">
+          <span class="nav-logo-name">knowly</span>
+        </a>
+    </div>
+    <div class="sh-nav-actions">
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('main.dashboard') }}" class="sh-btn-ghost">Dashboard</a>
+        <a href="{{ url_for('posts.create') }}" class="sh-btn-primary">Create Pack</a>
+      {% else %}
+        <a href="#" onclick="openAuthModal('login')" class="sh-btn-ghost">Sign in</a>
+        <a href="#" onclick="openAuthModal('signup')" class="sh-btn-primary">Get started</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="sh-main">
+    {% if current_user.is_authenticated %}
+      <h1 class="sh-headline">
+          <div class="sh-welcome">Welcome back, {{ current_user.nickname.split()[0] if current_user.nickname else current_user.username }}</div>
+          <div class="sh-continue">continue <em>{{ continue_title }}</em>?</div>
+      </h1>
+    {% else %}
+      <h1 class="sh-headline">What are you <em>studying</em> today?</h1>
+    {% endif %}
+
+    <!-- SEARCH -->
+    <div class="sh-search-wrapper">
+      <div class="sh-search-toggle" id="searchToggle">
+        <button class="sh-toggle-btn active" data-type="videos" onclick="setSearchType('videos')">Videos</button>
+        <button class="sh-toggle-btn" data-type="packs" onclick="setSearchType('packs')">Study Packs</button>
+      </div>
+      <div class="sh-search-bar-outer" id="searchOuter">
+        <div class="sh-search-bar">
+          <i class="fas fa-search sh-search-icon"></i>
+          <input
+            class="sh-search-input"
+            type="text"
+            id="searchInput"
+            placeholder="Try 'Calculus 1' or 'Organic Chemistry'…"
+            autocomplete="off"
+          />
+          <div class="sh-search-actions" id="searchActions">
+            <button class="sh-search-action-btn" id="micBtn" title="Voice Search" onclick="toggleVoiceSearch()">
+              <i class="fas fa-microphone"></i>
+            </button>
+            <button class="sh-search-action-btn" id="imgBtn" title="Image Search" onclick="handleImageClick()">
+              <i class="fas fa-image"></i>
+            </button>
+            <div class="sh-search-divider"></div>
+          </div>
+          <button class="sh-search-btn" id="searchBtn" onclick="handleSearch()">
+            <i class="fas fa-arrow-right"></i>
+            <span>Search</span>
+          </button>
+        </div>
+      </div>
+
+      <a href="{{ url_for('posts.create') }}" class="sh-upload-link">
+        <i class="fas fa-paperclip"></i>
+        or upload your notes
+      </a>
+    </div>
+
+    <!-- TOPIC PILLS -->
+    <div class="sh-pills-section">
+      <p class="sh-pills-label">Popular topics</p>
+      <div class="sh-pills-row">
+        <span class="sh-pill" onclick="fillSearch('Calculus 1')">Calculus 1</span>
+        <span class="sh-pill" onclick="fillSearch('Organic Chemistry')">Organic Chemistry</span>
+        <span class="sh-pill" onclick="fillSearch('Data Structures')">Data Structures</span>
+        <span class="sh-pill" onclick="fillSearch('Cell Biology')">Cell Biology</span>
+        <span class="sh-pill" onclick="fillSearch('Thermodynamics')">Thermodynamics</span>
+        <span class="sh-pill" onclick="fillSearch('Macroeconomics')">Macroeconomics</span>
+        <span class="sh-pill" onclick="fillSearch('Linear Algebra')">Linear Algebra</span>
+        <span class="sh-pill" onclick="fillSearch('Human Anatomy')">Human Anatomy</span>
+      </div>
+    </div>
+
+    {% if not current_user.is_authenticated %}
+    <p class="sh-guest-nudge">
+      <a href="#" onclick="openAuthModal('signup')">Sign up</a> to save your Study Packs and track your progress &nbsp;·&nbsp; <a href="{{ url_for('main.landing') }}">How it works →</a>
+    </p>
+    {% endif %}
+  </div>
+
+  <!-- RESUME BANNER -->
+  {% if current_user.is_authenticated %}
+    {% set first_active = active_packs[0] if active_packs else none %}
+    {% if first_active %}
+    <div class="sh-resume-banner" id="resumeBanner">
+        <div class="sh-resume-inner">
+          <div class="sh-resume-icon">
+            {% if first_active.content_type == 'notes' %}
+              <i class="fas fa-file-alt"></i>
+            {% elif first_active.content_type == 'quiz' %}
+              <i class="fas fa-tasks"></i>
+            {% else %}
+              <i class="fas fa-book-open"></i>
+            {% endif %}
+          </div>
+          <div class="sh-resume-info">
+            <div class="sh-resume-label">Continue where you left off</div>
+            <div class="sh-resume-title">{{ first_active.title|strip_course_code }} — {{ (first_active.subject.name if first_active.subject else 'General')|strip_course_code }}</div>
+            <div class="sh-resume-pct-row">
+              <div class="sh-resume-bar-track" style="flex:1">
+                <div class="sh-resume-bar-fill" style="width: {{ first_active.completion_pct or 0 }}%"></div>
+              </div>
+              <span class="sh-resume-pct">{{ first_active.completion_pct or 0 }}%</span>
+            </div>
+          </div>
+          <a href="{{ url_for('posts.view', post_id=first_active.id) }}" class="sh-btn-resume">
+            Resume <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="processImageSearch(this)">
+
+  <script>
+    // ── VOICE SEARCH (Web Speech API) ──
+    (function() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
+        let isListening = false;
+
+        if (SpeechRecognition) {
+          recognition = new SpeechRecognition();
+          recognition.lang = 'en-US';
+          recognition.interimResults = false;
+
+          recognition.onstart = () => {
+            isListening = true;
+            const micBtn = document.getElementById('micBtn');
+            const searchInput = document.getElementById('searchInput');
+            if (micBtn) micBtn.classList.add('active');
+            if (searchInput) searchInput.placeholder = "Listening...";
+          };
+
+          recognition.onend = () => {
+            isListening = false;
+            const micBtn = document.getElementById('micBtn');
+            const searchInput = document.getElementById('searchInput');
+            if (micBtn) micBtn.classList.remove('active');
+            if (searchInput) searchInput.placeholder = "Try 'Calculus 1' or 'Organic Chemistry'…";
+          };
+
+          recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.value = transcript;
+                handleSearch();
+            }
+          };
+
+          recognition.onerror = (event) => {
+            console.error("Speech Recognition Error:", event.error);
+            isListening = false;
+            const micBtn = document.getElementById('micBtn');
+            if (micBtn) micBtn.classList.remove('active');
+            if (event.error === 'not-allowed') {
+              alert("Microphone access denied. Please allow permissions to use voice search.");
+            }
+          };
+        }
+
+        window.toggleVoiceSearch = function() {
+          if (!recognition) return;
+          if (isListening) {
+            recognition.stop();
+          } else {
+            recognition.start();
+          }
+        }
+    })();
+
+    // ── IMAGE SEARCH ──
+    const IS_AUTH = {{ 'true' if current_user.is_authenticated else 'false' }};
+
+    window.handleImageClick = function() {
+      if (!IS_AUTH) {
+        openAuthModal('signup');
+        return;
+      }
+      const inp = document.getElementById('imageInput');
+      if (inp) inp.click();
+    }
+
+    window.processImageSearch = async function(input) {
+      if (!input.files || !input.files[0]) return;
+      
+      const file = input.files[0];
+      const imgBtn = document.getElementById('imgBtn');
+      const searchInput = document.getElementById('searchInput');
+      if (!imgBtn || !searchInput) return;
+
+      // Loading State
+      imgBtn.disabled = true;
+      imgBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+      const originalValue = searchInput.value;
+      searchInput.value = "";
+      searchInput.placeholder = "Analyzing image...";
+
+      const formData = new FormData();
+      formData.append('image', file);
+
+      try {
+        const response = await fetch('/api/search-by-image', {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+          }
+        });
+
+        const data = await response.json();
+        if (data.keywords) {
+          searchInput.value = data.keywords;
+          handleSearch();
+        } else {
+          alert(data.error || "Could not analyze image.");
+          searchInput.value = originalValue;
+        }
+      } catch (err) {
+        console.error("Image search failed:", err);
+        alert("Server error during image analysis.");
+        searchInput.value = originalValue;
+      } finally {
+        imgBtn.disabled = false;
+        imgBtn.innerHTML = '<i class="fas fa-image"></i>';
+        searchInput.placeholder = "Try 'Calculus 1' or 'Organic Chemistry'…";
+        input.value = ""; // Reset file input
+      }
+    }
+
+    window.fillSearch = function(topic) {
+      const input = document.getElementById('searchInput');
+      if (input) {
+          input.value = topic;
+          input.focus();
+      }
+    }
+
+    let currentSearchType = 'videos';
+
+    window.setSearchType = function(type) {
+      if (currentSearchType === type) return;
+      currentSearchType = type;
+      document.querySelectorAll('.sh-toggle-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.type === type);
+      });
+      // Update placeholder based on type
+      const input = document.getElementById('searchInput');
+      if (input) {
+          if (type === 'packs') {
+            input.placeholder = "Search for study packs, notes, or quizes...";
+          } else {
+            input.placeholder = "Try 'Calculus 1' or 'Organic Chemistry'…";
+          }
+
+          // If there's already a query, trigger search immediately for the new type
+          const query = input.value.trim();
+          if (query) {
+            handleSearch();
+          }
+      }
+    }
+
+    window.handleSearch = function() {
+      const inputEl = document.getElementById('searchInput');
+      if (!inputEl) return;
+      const query = inputEl.value.trim();
+      if (!query) return;
+
+      const outer = document.getElementById('searchOuter');
+      const btn = document.getElementById('searchBtn');
+      const input = document.getElementById('searchInput');
+      if (!outer || !btn || !input) return;
+
+      // Lock the UI
+      btn.disabled = true;
+      input.disabled = true;
+      btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+
+      // Inject the accelerating animation override
+      outer.classList.add('searching');
+      if (typeof window.rampWindWithOrb === 'function') window.rampWindWithOrb();
+
+      // Escalate speed in steps so it feels like it's building
+      const steps = [
+        { duration: '2s',    delay: 0    },
+        { duration: '1s',    delay: 500  },
+        { duration: '0.4s',  delay: 1000 },
+        { duration: '0.15s', delay: 1500 },
+        { duration: '0.06s', delay: 2000 },
+      ];
+
+      steps.forEach(({ duration, delay }) => {
+        setTimeout(() => {
+          outer.style.setProperty('--orb-duration', duration);
+        }, delay);
+      });
+
+      // Navigate after the climax
+      setTimeout(() => {
+        if (currentSearchType === 'packs') {
+          Turbo.visit("/search?q=" + encodeURIComponent(query));
+        } else {
+          Turbo.visit("{{ url_for('main.library_all_videos') }}?q=" + encodeURIComponent(query));
+        }
+      }, 2800);
+    }
+
+    (function() {
+        const input = document.getElementById('searchInput');
+        const outer = document.getElementById('searchOuter');
+        if (input && outer) {
+          input.addEventListener('focus', () => {
+            outer.classList.add('focused');
+          });
+
+          input.addEventListener('blur', () => {
+            outer.classList.remove('focused');
+          });
+
+          input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') handleSearch();
+          });
+        }
+    })();
+  </script>
+</div>

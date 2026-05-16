@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "document_type": "cheatsheet",
+  "generated_at": "2026-04-09T23:13:16.333889+00:00",
+  "title": "Algorithm Analysis and Data Structures Fundamentals",
+  "course": "Data Structures",
+  "level": "Intermediate",
+  "metadata": {
+    "purpose": "Quick revision",
+    "exam_context": "",
+    "topics": []
+  },
+  "sections": [
+    {
+      "section_title": "Binary Search",
+      "section_type": "definitions",
+      "entries": [
+        {
+          "label": "Definition",
+          "content": "Requires sorted input."
+        },
+        {
+          "label": "Application",
+          "content": "Apply this concept using a simple practice example."
+        }
+      ]
+    },
+    {
+      "section_title": "Merge Sort",
+      "section_type": "definitions",
+      "entries": [
+        {
+          "label": "Definition",
+          "content": "Stable and O(n log n)."
+        },
+        {
+          "label": "Application",
+          "content": "Apply this concept using a simple practice example."
+        }
+      ]
+    }
+  ],
+  "document_hash": "2ec2b9fbdd54463c3fb5e5a5ee726828391f80b456c28be99d1d52f091c023bf"
+}

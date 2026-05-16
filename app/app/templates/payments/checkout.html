@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block navbar %}{% endblock %}
+
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/payments/checkout.css') }}">{%  endblock %}
+
+{% block content %}
+<div class="checkout-page">
+    <div class="checkout-topbar">
+        <a href="{{ url_for('main.index') }}" class="topbar-back" data-knowly-back="1" data-back-fallback="{{ url_for('main.index') }}">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back to Home</span>
+        </a>
+        <div class="topbar-brand">
+            <span style="background:linear-gradient(135deg,#2563eb 0%,#06b6d4 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:900;letter-spacing:-.03em;">knowly</span>
+        </div>
+        <div class="topbar-secure">
+            <i class="fas fa-lock"></i>
+            <span>Secure Checkout</span>
+        </div>
+    </div>
+
+    <div class="checkout-container">
+        <div class="checkout-card">
+
+            {% if document %}
+            <!-- DOCUMENT PURCHASE FLOW -->
+            ...existing code...
+            {% else %}
+            <!-- Empty state for no document/items to checkout -->
+            <div class="ms-empty">
+  <p class="ms-empty-text">Nothing to show here. <a href="{{ url_for('main.index') }}" class="ms-empty-link">Go home</a></p>
+</div>
+              <div class="panel-empty-icon"><i class="fas fa-file-alt"></i></div>
+              <div class="panel-empty-content">
+                <div class="panel-empty-title">No document to checkout</div>
+                <div class="panel-empty-desc">There is no document or item available for purchase at this time.</div>
+              </div>
+            </div>
+            {% endif %}
+
+            {% else %}
+            <!-- PLAN / SUBSCRIPTION FLOW -->
+
+            <div class="checkout-header plan-header">
+                <div class="checkout-icon">
+                    <i class="fas fa-crown"></i>
+                </div>
+                <h1>{{ plan_name or 'Unlimited Access' }}</h1>
+                <p>Unlock unlimited quizzes and premium features</p>
+            </div>
+
+            <div class="document-summary-block">
+                <div class="document-summary-left">
+                    <div class="document-name">{{ plan_name or 'Monthly Unlimited Plan' }}</div>
+                    <div class="document-duration">
+                        <i class="fas fa-calendar-alt"></i>
+                        30-day access — renew anytime
+                    </div>
+                </div>
+                <div class="document-price-col">
+                    <div class="document-price">GHS {{ "%.2f"|format(amount) }}</div>
+                </div>
+            </div>
+
+            <div class="benefits">
+                <h3><i class="fas fa-check-circle"></i> What you'll get</h3>
+                <ul>
+                    <li><i class="fas fa-check"></i> Unlimited quiz attempts for 30 days</li>
+                    <li><i class="fas fa-check"></i> Full answer explanations</li>
+                    <li><i class="fas fa-check"></i> Leaderboard access</li>
+                    <li><i class="fas fa-check"></i> Priority grading</li>
+                    <li><i class="fas fa-check"></i> Access starts immediately</li>
+                </ul>
+            </div>
+
+            <div class="order-summary">
+                <div class="summary-row">
+                    <span>{{ plan_name or 'Monthly Unlimited Plan' }}</span>
+                    <span>GHS {{ "%.2f"|format(amount) }}</span>
+                </div>
+                <div class="summary-row summary-total">
+                    <span>Total today</span>
+                    <span>GHS {{ "%.2f"|format(amount) }}</span>
+                </div>
+            </div>
+
+            <div class="pay-section">
+                <button id="pay-btn" class="btn-pay"
+                        data-public-key="{{ paystack_public_key }}"
+                        data-email="{{ current_user.email }}"
+                        data-amount="{{ amount_pesewas }}"
+                        data-plan-key="{{ plan_key or '' }}"
+                        data-plan-name="{{ plan_name or 'Monthly Unlimited' }}"
+                        data-verify-url="{{ verify_url }}">
+                    <i class="fas fa-lock"></i>
+                    Pay GHS {{ "%.2f"|format(amount) }} Securely
+                </button>
+
+                {% if fallback_url %}
+                <form action="{{ fallback_url }}" method="post">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn-fallback">
+                        Or pay via Paystack redirect <i class="fas fa-arrow-right"></i>
+                    </button>
+                </form>
+                {% endif %}
+
+                <p class="secure-note">
+                    <i class="fas fa-shield-alt"></i>
+                    Payments processed securely by Paystack. Your card details are never stored.
+                </p>
+            </div>
+
+            {% if next_url %}
+            <a href="{{ next_url }}" class="back-to-post">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+            {% endif %}
+
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<script>
+document.getElementById('pay-btn').addEventListener('click', function() {
+    const btn       = this;
+    const key       = btn.getAttribute('data-public-key');
+    const email     = btn.getAttribute('data-email');
+    const amount    = parseInt(btn.getAttribute('data-amount'));
+    const verifyUrl = btn.getAttribute('data-verify-url');
+
+    const documentId   = btn.getAttribute('data-document-id');
+    const documentName = btn.getAttribute('data-document-name');
+    const planKey  = btn.getAttribute('data-plan-key');
+    const planName = btn.getAttribute('data-plan-name');
+
+    if (!key || !key.startsWith('pk_')) {
+        alert('Payment configuration error. Please use the redirect button below.');
+        return;
+    }
+
+    const isDocPurchase = !!documentId;
+    const label = isDocPurchase ? documentName : (planName || 'Subscription');
+    const ref   = isDocPurchase
+        ? 'edushare_doc_' + documentId + '_' + Math.floor(Math.random() * 1e9)
+        : 'edushare_plan_' + (planKey || 'sub') + '_' + Math.floor(Math.random() * 1e9);
+
+    btn.disabled = true;
+    btn.dataset.originalHtml = btn.innerHTML;
+    btn.classList.add('btn-loading-state');
+    btn.disabled = true;
+
+    const handler = PaystackPop.setup({
+        key,
+        email,
+        amount,
+        currency: 'GHS',
+        ref,
+        label,
+        callback: function(response) {
+            window.location.href = verifyUrl + '?reference=' + response.reference;
+        },
+        onClose: function() {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-lock"></i> Pay Securely';
+        }
+    });
+
+    handler.openIframe();
+});
+</script>
+
+{% endblock %}

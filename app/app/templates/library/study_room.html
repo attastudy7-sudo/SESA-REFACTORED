@@ -1,0 +1,1158 @@
+{% extends "base.html" %}
+{% set show_desktop_side_nav = False %}
+
+{% block title %}{{ video.title if video else 'Watch Videos' }} — Study Room{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/library/study_room.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/library/celebration.css') }}">
+{% endblock %}
+
+{% block content %}
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
+<div class="room-wrap">
+
+
+    <!-- TOP BAR -->
+    <div class="room-topbar">
+        <button class="room-tb-btn room-tb-btn--left" onclick="toggleSyllabus()" title="Toggle Syllabus">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <a href="{{ url_for('main.index') }}" class="room-logo">
+            <div class="logo-icon-wrap">
+                <i class="fas fa-chalkboard-user"></i>
+            </div>
+            <span class="logo-text">Study Room</span>
+        </a>
+
+        <a href="{{ url_for('main.dashboard') }}" class="room-tb-btn room-tb-btn--right" title="Exit Study Room">
+            <i class="fas fa-times"></i>
+        </a>
+    </div>
+
+    <div class="room-layout">
+
+        <!-- LEFT SIDEBAR -->
+        <aside class="pane-syllabus" id="syllabusPane">
+            <div class="sb-head">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                    <div style="min-width:0;">
+                        <div class="sb-prog-label">{{ (programme.name if programme else 'Videos')|strip_course_code }}
+                        </div>
+                        <div class="sb-subject-name">{{ display_subject|strip_course_code }}</div>
+                    </div>
+                    <div style="display:flex;gap:4px;align-items:center;">
+                        <button class="sb-head-btn" onclick="toggleSyllabus()" title="Collapse syllabus" id="sylHeaderBtn">
+                            <i class="fa-solid fa-chevron-left" id="sylHeaderIcon"
+                                style="transition: transform 0.2s; display: inline-block;"></i>
+                        </button>
+                        <button class="close-syllabus-btn" onclick="toggleSyllabus()">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+                {% set progress_list = pack_video_objects if pack_video_objects else curriculum_videos %}
+                {% set total = progress_list|length %}
+                {% set done_count = progress_list|selectattr('id','in',completed_video_ids)|list|length %}
+                {% set pct = ((done_count / total) * 100)|round|int if total > 0 else 0 %}
+                <div class="sb-progress-track">
+                    <div class="sb-progress-fill" style="width:{{ pct }}%"></div>
+                </div>
+                <div class="sb-progress-count">{{ done_count }} of {{ total }} completed</div>
+            </div>
+
+            <div class="sb-scroll">
+                <div class="sb-section">In this subject</div>
+
+                {% set found_active = namespace(value=false) %}
+                {% if syllabus_items %}
+                {% for item in syllabus_items %}
+                {% if item.type == 'video' %}
+                {% set cv = item.video %}
+                {% set is_active = (cv.id == video.id) %}
+                {% set is_done = (cv.id in completed_video_ids) %}
+
+                {% if is_active %}
+                <div class="sb-item sb-active" data-pack-order="{{ item.order_index }}">
+                    <div class="sb-dot sb-dot-play"><i class="fas fa-play"></i></div>
+                    <div class="sb-body">
+                        <div class="sb-name">{{ cv.title|truncate(52) }}</div>
+                        <div class="sb-meta">Watching now</div>
+                    </div>
+                    {% if current_user.is_authenticated and not is_done %}<span class="sb-xp">{{ cv.xp_reward }} <i
+                            class="fa-solid fa-star"></i></span>{% endif %}
+                </div>
+                {% set found_active.value = true %}
+                {% else %}
+                <a href="{{ url_for('main.video_player', video_id=cv.id) }}"
+                    class="sb-item{% if is_done %} sb-done{% endif %}">
+                    <div
+                        class="sb-dot {% if is_done %}sb-dot-done{% elif found_active.value %}sb-dot-lock{% else %}sb-dot-lock{% endif %}" title="{% if is_done %}Lesson completed{% else %}Complete previous lesson to unlock{% endif %}">
+                        <i
+                            class="fas {% if is_done %}fa-check{% elif found_active.value %}fa-clock{% else %}fa-lock{% endif %}"></i>
+                    </div>
+                    <div class="sb-body">
+                        <div class="sb-name">{{ cv.title|truncate(52) }}</div>
+                        <div class="sb-meta">
+                            {% if is_done %}Completed
+                            {% elif found_active.value %}Up next
+                            {% else %}Locked{% endif %}
+                        </div>
+                    </div>
+                    {% if current_user.is_authenticated and not is_done %}<span class="sb-xp">{{ cv.xp_reward }} <i
+                            class="fa-solid fa-star"></i></span>{% endif %}
+                </a>
+                {% endif %}
+
+                {% elif item.type == 'checkpoint' %}
+                {% set cp_type = item.checkpoint_type %}
+                {% set cp_status = item.resource_status %}
+                {% set is_done = (cp_status == 'done') %}
+                {% set is_generating = (cp_status == 'generating') %}
+
+                {% set cp_labels = {
+                'flashcards': 'Flashcards',
+                'micro_quiz': 'Micro Quiz',
+                'notes': 'Complete Notes',
+                'cheatsheet': 'Cheat Sheet',
+                'boss_quiz': 'Final Boss Quiz'
+                } %}
+                {% set cp_icons = {
+                'flashcards': 'fa-clone',
+                'micro_quiz': 'fa-circle-question',
+                'notes': 'fa-file-lines',
+                'cheatsheet': 'fa-star',
+                'boss_quiz': 'fa-trophy'
+                } %}
+                {% set cp_metas = {
+                'flashcards': 'Practice deck',
+                'micro_quiz': '5 questions',
+                'notes': 'Full topic notes',
+                'cheatsheet': 'Formula reference',
+                'boss_quiz': '30 questions'
+                } %}
+
+                {% set is_pack_level = cp_type in ('notes', 'cheatsheet', 'boss_quiz') %}
+                {% set is_premium_only = cp_type in ('micro_quiz', 'notes', 'cheatsheet', 'boss_quiz') %}
+                {% set can_access = current_user.is_authenticated and (current_user.is_premium or cp_type ==
+                'flashcards') %}
+
+                <a href="#"
+                    class="sb-checkpoint{% if is_done %} cp-done{% elif is_generating %} cp-generating{% elif not can_access %} cp-locked{% endif %}"
+                    data-cp-type="{{ cp_type }}" data-cp-status="{{ cp_status }}" data-pack-id="{{ pack_id or '' }}"
+                    data-resource-id="{{ item.resource_id or '' }}" onclick="handleCheckpointClick(event, this)">
+                    <div class="sb-cp-icon sb-cp-icon--{{ cp_type }}">
+                        <i class="fas {{ cp_icons.get(cp_type, 'fa-star') }}"></i>
+                    </div>
+                    <div class="sb-cp-body">
+                        <div class="sb-cp-name">{{ cp_labels.get(cp_type, cp_type) }}</div>
+                        <div class="sb-cp-meta">
+                            {% if is_done and item.resource_meta %}
+                            {{ item.resource_meta }}
+                            {% else %}
+                            {{ cp_metas.get(cp_type, '') }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if is_done %}
+                    <span class="sb-cp-badge sb-cp-badge--done">Done</span>
+                    {% elif is_generating %}
+                    <span class="sb-cp-badge">...</span>
+                    {% elif is_premium_only and not current_user.is_premium %}
+                    <span class="sb-cp-badge sb-cp-badge--premium">Pro</span>
+                    {% endif %}
+                </a>
+                {% endif %}
+                {% endfor %}
+                {% else %}
+                {# Fallback: no pack context, render plain video list as before #}
+                {% set found_active2 = namespace(value=false) %}
+                {% for cv in curriculum_videos %}
+                {% set is_active = (cv.id == video.id) %}
+                {% set is_done = (cv.id in completed_video_ids) %}
+                {% if is_active %}
+                <div class="sb-item sb-active" data-pack-order="{{ item.order_index }}">
+                    <div class="sb-dot sb-dot-play"><i class="fas fa-play"></i></div>
+                    <div class="sb-body">
+                        <div class="sb-name">{{ cv.title|truncate(52) }}</div>
+                        <div class="sb-meta">Watching now</div>
+                    </div>
+                    {% if current_user.is_authenticated and not is_done %}<span class="sb-xp">{{ cv.xp_reward }} <i
+                            class="fa-solid fa-star"></i></span>{% endif %}
+                </div>
+                {% set found_active2.value = true %}
+                {% else %}
+                <a href="{{ url_for('main.video_player', video_id=cv.id) }}"
+                    class="sb-item{% if is_done %} sb-done{% endif %}">
+                    <div
+                        class="sb-dot {% if is_done %}sb-dot-done{% elif found_active2.value %}sb-dot-lock{% else %}sb-dot-lock{% endif %}">
+                        <i
+                            class="fas {% if is_done %}fa-check{% elif found_active2.value %}fa-clock{% else %}fa-lock{% endif %}"></i>
+                    </div>
+                    <div class="sb-body">
+                        <div class="sb-name">{{ cv.title|truncate(52) }}</div>
+                        <div class="sb-meta">
+                            {% if is_done %}Completed
+                            {% elif found_active2.value %}Up next
+                            {% else %}Locked{% endif %}
+                        </div>
+                    </div>
+                    {% if current_user.is_authenticated and not is_done %}<span class="sb-xp">{{ cv.xp_reward }} <i
+                            class="fa-solid fa-star"></i></span>{% endif %}
+                </a>
+                {% endif %}
+                {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="sb-foot" style="display:flex;gap:6px;">
+                <a href="{{ url_for('main.library_subject_videos', slug=subject.slug) }}" style="flex:1;"
+                    class="sb-all-videos-link">
+                    <i class="fas fa-list" style="font-size:0.72rem"></i> <span>All Videos</span>
+                </a>
+                <button onclick="window._srToggleSyl && window._srToggleSyl()" title="Collapse syllabus"
+                    class="sb-foot-toggle-btn" style="width:34px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+                           border-radius:7px;border:1px solid var(--sr-border);background:transparent;
+                           color:var(--sr-muted);cursor:pointer;transition:all 0.15s;"
+                    onmouseover="this.style.background='var(--sr-hover)';this.style.color='var(--sr-ink)'"
+                    onmouseout="this.style.background='transparent';this.style.color='var(--sr-muted)'">
+                    <i class="fa-solid fa-chevron-left" id="sylFooterIcon"
+                        style="font-size:0.72rem; transition: transform 0.2s; display: inline-block;"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- CENTER PANE -->
+        <main class="pane-main">
+            <div class="main-scroll">
+
+                <!-- Video -->
+                <div class="video-wrap" style="position:relative;">
+                    <!-- Shield: shown during drag to block iframe from stealing mouse events -->
+                    <div class="iframe-drag-shield" id="iframeDragShield"></div>
+                    {% if video.embed_url and 'youtube.com/embed/' in video.embed_url %}
+                    <iframe id="mainVideoIframe"
+                        src="{{ video.embed_url }}?enablejsapi=1&autoplay=1&origin={{ request.host_url[: -1]|urlencode if request.host_url.endswith('/') else request.host_url|urlencode }}"
+                        style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
+                    </iframe>
+                    {% else %}
+                    <div class="video-placeholder">
+                        <i class="fa-solid fa-video-slash"></i>
+                        <span style="font-size:0.9rem;">Video not available</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="content-inner">
+
+                    <h1 class="vid-title" id="vidTitle">{{ video.title }}</h1>
+
+                    <!-- Toolbar -->
+                    <div class="vid-toolbar">
+                        <div class="conf-area">
+                            <div class="conf-labels"><span>Still learning</span><span>Got it</span></div>
+                            <input type="range" min="0" max="100" value="50" class="confidence-slider">
+                        </div>
+                        {% if completed %}
+                        <div class="aura-badge earned">
+                            <i class="fa-solid fa-circle-check"></i> +{{ video.xp_reward }} Aura earned
+                        </div>
+                        {% else %}
+                        <div class="aura-badge" id="auraStatus">
+                            <i class="fa-solid fa-clock"></i> Aura on completion
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Channel -->
+                    <div class="channel-row">
+                        <div class="ch-avatar">{{ (video.channel_name or 'U')[0]|upper }}</div>
+                        <div>
+                            <div class="ch-name">
+                                {{ video.channel_name or 'Unknown Creator' }}
+                                <i class="fa-solid fa-circle-check"
+                                    style="color:var(--sr-green); font-size:0.72rem;"></i>
+                            </div>
+                            <div class="ch-sub">Academic Content Provider</div>
+                        </div>
+                        <div class="ch-actions-group">
+                            <div class="ch-support-label">Support on YouTube</div>
+                            <div class="ch-actions-row">
+                                <div class="ch-actions" style="margin:0; padding:0; border:none; gap:10px;">
+                                    <a href="https://youtube.com/watch?v={{ video.youtube_id }}" target="_blank"
+                                        class="ch-action-link" title="Like on YouTube">
+                                        <i class="fa-regular fa-thumbs-up"></i>
+                                    </a>
+                                    <a href="https://youtube.com/watch?v={{ video.youtube_id }}" target="_blank"
+                                        class="ch-action-link" title="Dislike on YouTube">
+                                        <i class="fa-regular fa-thumbs-down"></i>
+                                    </a>
+                                </div>
+                                <a href="{% if video.channel_id %}https://youtube.com/channel/{{ video.channel_id }}?sub_confirmation=1{% else %}https://www.youtube.com/results?search_query={{ video.channel_name|urlencode }}{% endif %}"
+                                    target="_blank" class="ch-subscribe" style="margin:0; gap:6px;">
+                                    Subscribe <i class="fa-solid fa-up-right-from-square"
+                                        style="font-size:0.6rem; opacity:0.8;"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Resource Tabs -->
+                    <div class="guest-lock resource-wrap">
+                        {% if not current_user.is_authenticated %}
+                        <div class="guest-overlay" style="border-radius:9px;">
+                            <div class="guest-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                            <div class="guest-title">Notes, flashcards &amp; cheatsheets</div>
+                            <div class="guest-sub">Create a free account to access study resources</div>
+                            <button class="guest-btn" onclick="openAuthModal('register')">Join free</button>
+                        </div>
+                        {% endif %}
+
+                        <div class="tab-bar">
+                            <button class="tab-btn on" onclick="switchTab(this,'tab-notes')"><i
+                                    class="fa-solid fa-file-lines"></i> Notes</button>
+                            <button class="tab-btn" onclick="switchTab(this,'tab-flashcards')"><i
+                                    class="fa-solid fa-layer-group"></i> Flashcards</button>
+                            <button class="tab-btn" onclick="switchTab(this,'tab-cheatsheet')"><i
+                                    class="fa-solid fa-list-check"></i> Cheatsheet</button>
+                        </div>
+
+                        <div id="tab-notes" class="tab-pane on">
+                            <div class="res-card">
+                                {% set pr_data = active_pack_resources.get('notes') %}
+                                {% set pr_notes = pr_data.obj if pr_data else None %}
+                                {% if pr_notes and pr_notes.generation_status == 'done' %}
+                                <div>
+                                    <div class="res-title">{{ pr_data.meta or 'Topic notes ready' }}</div>
+                                    <div class="res-sub">Structured study guide generated for this pack</div>
+                                </div>
+                                <a href="/library/pack/{{ pack_id }}/resource/{{ pr_notes.id }}" class="res-btn">View
+                                    notes <i class="fa-solid fa-arrow-right" style="font-size:0.7rem"></i></a>
+                                {% elif topic_resources.notes %}
+                                <div>
+                                    <div class="res-title">Community notes ready</div>
+                                    <div class="res-sub">Detailed concepts and examples for this lesson</div>
+                                </div>
+                                <a href="{{ url_for('posts.view', post_id=topic_resources.notes.id) }}"
+                                    class="res-btn">View notes <i class="fa-solid fa-arrow-right"
+                                        style="font-size:0.7rem"></i></a>
+                                {% else %}
+                                {% if resource_status.get('quota_exceeded') %}
+                                <div style="flex:1">
+                                    <div class="res-title">AI generation locked</div>
+                                    <div class="res-sub">You have no free generation attempts left today. Upgrade for
+                                        unlimited study packs!</div>
+                                </div>
+                                <a href="{{ url_for('payments.plan_checkout') }}" class="res-btn"
+                                    style="background:var(--accent); color:white">Upgrade</a>
+                                {% else %}
+                                <div>
+                                    <div class="res-title">No notes yet</div>
+                                    <div class="res-sub">Generate an AI study bundle with notes and cards</div>
+                                </div>
+                                <a href="{{ url_for('posts.create', type='bundle', from_video=video.id) }}"
+                                    class="res-btn">Generate <i class="fa-solid fa-wand-sparkles"
+                                        style="font-size:0.7rem"></i></a>
+                                {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div id="tab-flashcards" class="tab-pane">
+                            <div class="res-card">
+                                {% set pr_data = active_pack_resources.get('flashcards') %}
+                                {% set pr_flash = pr_data.obj if pr_data else None %}
+                                {% if pr_flash and pr_flash.generation_status == 'done' %}
+                                <div>
+                                    <div class="res-title">{{ pr_data.meta or 'Flashcards available' }}</div>
+                                    <div class="res-sub">Spaced repetition cards generated for this video</div>
+                                </div>
+                                <a href="/library/pack/{{ pack_id }}/resource/{{ pr_flash.id }}" class="res-btn">Open
+                                    deck</a>
+                                {% elif topic_resources.flashcard %}
+                                <div>
+                                    <div class="res-title">Flashcards available</div>
+                                    <div class="res-sub">Master this topic with active recall</div>
+                                </div>
+                                <a href="{{ url_for('posts.view', post_id=topic_resources.flashcard.id) }}"
+                                    class="res-btn">Open deck</a>
+                                {% else %}
+                                {% if resource_status.get('quota_exceeded') %}
+                                <div style="flex:1">
+                                    <div class="res-title">Flashcards locked</div>
+                                    <div class="res-sub">No free attempts left. Upgrade to unlock AI-generated cards for
+                                        this pack.</div>
+                                </div>
+                                <a href="{{ url_for('payments.plan_checkout') }}" class="res-btn"
+                                    style="background:var(--accent); color:white">Upgrade</a>
+                                {% else %}
+                                <div>
+                                    <div class="res-title">No flashcards yet</div>
+                                    <div class="res-sub">Lock in the information with spaced repetition</div>
+                                </div>
+                                <a href="{{ url_for('posts.create', type='flashcard', from_video=video.id) }}"
+                                    class="res-btn">Add flashcards</a>
+                                {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div id="tab-cheatsheet" class="tab-pane">
+                            <div class="res-card">
+                                {% set pr_data = active_pack_resources.get('cheatsheet') %}
+                                {% set pr_cheat = pr_data.obj if pr_data else None %}
+                                {% if pr_cheat and pr_cheat.generation_status == 'done' %}
+                                <div>
+                                    <div class="res-title">{{ pr_data.meta or 'Your cheatsheet' }}</div>
+                                    <div class="res-sub">High-density summary generated for this pack</div>
+                                </div>
+                                <a href="/library/pack/{{ pack_id }}/resource/{{ pr_cheat.id }}" class="res-btn">Open
+                                    cheatsheet</a>
+                                {% elif topic_resources.cheatsheet %}
+                                <div>
+                                    <div class="res-title">Your cheatsheet</div>
+                                    <div class="res-sub">Quick reference for formulas and key terms</div>
+                                </div>
+                                <a href="{{ url_for('posts.view', post_id=topic_resources.cheatsheet.id) }}"
+                                    class="res-btn">Open cheatsheet</a>
+                                {% else %}
+                                <div>
+                                    <div class="res-title">No cheatsheet yet</div>
+                                    <div class="res-sub">Summarize the lesson into a high-density reference</div>
+                                </div>
+                                <a href="{{ url_for('posts.create', type='cheatsheet', from_video=video.id) }}"
+                                    class="res-btn">Add cheatsheet</a>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                    </div><!-- /resource-wrap -->
+                </div><!-- /content-inner -->
+            </div><!-- /main-scroll -->
+        </main>
+
+        <!-- RIGHT PANE: AI TUTOR -->
+        <aside class="pane-ai" id="aiPane">
+            <div class="ai-head">
+                <div class="ai-title">
+                    <i class="fa-solid fa-robot"></i>
+                    <span class="ai-title-text">Personal Tutor</span>
+                </div>
+                <div style="display:flex;gap:4px;align-items:center;">
+                    <button class="ai-toggle" onclick="window._srToggleAi && window._srToggleAi()"
+                        title="Collapse AI tutor">
+                        <i class="fa-solid fa-chevron-right" id="aiHeaderIcon"
+                            style="transition: transform 0.2s; display: inline-block;"></i>
+                    </button>
+                    <button class="close-ai-btn" onclick="toggleAiChat()"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            </div>
+
+            <div class="ai-body">
+                {% if not current_user.is_authenticated %}
+                <div class="guest-overlay" style="border-radius:0;">
+                    <div class="guest-icon"><i class="fa-solid fa-robot"></i></div>
+                    <div class="guest-title">AI Tutor</div>
+                    <div class="guest-sub">Sign in to chat with your personal tutor</div>
+                    <button class="guest-btn" onclick="openAuthModal('login')">Sign in free</button>
+                </div>
+                {% endif %}
+                <div class="chat-history" id="chatHistory">
+                    <div class="chat-bubble chat-ai">Hi{% if current_user.is_authenticated %} {{
+                        current_user.nickname.split()[0] if current_user.nickname else current_user.username }}{%
+                        endif %}! I'm your study assistant. Ask me anything about <strong>{{ video.title|truncate(50)
+                            }}</strong>.</div>
+                </div>
+                <div class="chat-input-area">
+                    <div class="chat-input-row">
+                        <input type="text" id="chatInput" placeholder="Ask anything about this video…" maxlength="500">
+                        <button class="chat-send" id="chatSendBtn" onclick="sendChat()"><i
+                                class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Mobile backdrop: tap to close open sidebar -->
+        <div class="room-backdrop" id="roomBackdrop" onclick="closeAllPanels()"></div>
+
+        <!-- Resize handles: position:absolute, repositioned by JS -->
+        <div class="resize-handle" id="handleLeft"></div>
+        <div class="resize-handle" id="handleRight"></div>
+
+
+
+    </div><!-- /room-layout -->
+</div><!-- /room-wrap -->
+
+<!-- ── CELEBRATION OVERLAY ── -->
+<div class="celebration-overlay" id="celebrationOverlay">
+    <div class="cel-content">
+        <div class="cel-icon-wrap">
+            <div class="aura-pulse"></div>
+            <i class="fa-solid fa-crown cel-main-icon"></i>
+        </div>
+        <h2 class="cel-title">Lesson Complete!</h2>
+        <p class="cel-sub">You're making incredible progress today.</p>
+
+        <div class="cel-stats">
+            <div class="cel-stat-card">
+                <div class="cel-stat-val" id="celXpVal">+0</div>
+                <div class="cel-stat-label">Aura Earned</div>
+            </div>
+            <div class="cel-stat-card streak">
+                <div class="cel-stat-val" id="celStreakVal">0</div>
+                <div class="cel-stat-label">Day Streak</div>
+                <div id="celPbLabel" style="display:none; font-size:0.55rem; color:#ef4444; font-weight:800; margin-top:-2px;">PERSONAL BEST!</div>
+            </div>
+        </div>
+
+        <div class="cel-next-card" id="celNextCard" style="display:none;">
+            <span class="cel-next-tag">Up Next</span>
+            <div class="cel-next-title" id="celNextTitle">...</div>
+        </div>
+
+        <div class="cel-actions">
+            <button class="cel-btn-primary" id="celNextBtn" onclick="closeCelebration(true)">Continue Learning</button>
+            <button class="cel-btn-secondary" onclick="closeCelebration(false)">Back to lesson</button>
+        </div>
+    </div>
+</div>
+
+<button class="fab-ai" onclick="toggleAiChat()"><i class="fa-solid fa-robot"></i></button>
+<button class="fab-ai-desktop" id="fabAiDesktop" onclick="snapAiOpen()"><i class="fa-solid fa-robot"></i></button>
+
+<script>
+    function toggleSyllabus() {
+        const syl = document.getElementById('syllabusPane');
+        const backdrop = document.getElementById('roomBackdrop');
+        const isMobile = window.innerWidth <= 1024;
+        if (isMobile) {
+            const open = syl.classList.toggle('show');
+            document.body.classList.toggle('syllabus-open', open);
+            // Close AI if open on mobile
+            document.getElementById('aiPane').classList.remove('show');
+            document.body.classList.remove('ai-open');
+            backdrop.classList.toggle('show', open);
+        } else {
+            // Desktop: toggle rail state via resize system
+            if (typeof window._srToggleSyl === 'function') window._srToggleSyl();
+        }
+    }
+function toggleAiChat() {
+        const ai = document.getElementById('aiPane');
+        const backdrop = document.getElementById('roomBackdrop');
+        const fab = document.querySelector('.fab-ai');
+        const isMobile = window.innerWidth <= 860;
+
+        if (isMobile) {
+            const open = ai.classList.toggle('show');
+            document.body.classList.toggle('ai-open', open);
+            document.getElementById('syllabusPane').classList.remove('show');
+            document.body.classList.remove('syllabus-open');
+            backdrop.classList.toggle('show', open);
+            // Hide FAB when AI pane opens, show FAB when AI pane closes
+            if (fab) {
+                fab.style.display = open ? 'none' : 'flex';
+            }
+        } else {
+            // Desktop: Force routing to the specialized resize system
+            if (window._srToggleAi) {
+                window._srToggleAi();
+            }
+        }
+    }
+
+    function toggleAiCollapse() {
+        // Route through resize system so inline widths stay in sync
+        if (typeof window._srCollapseAi === 'function') window._srCollapseAi();
+    }
+    function closeAllPanels() {
+        document.getElementById('syllabusPane').classList.remove('show');
+        document.getElementById('aiPane').classList.remove('show');
+        document.getElementById('roomBackdrop').classList.remove('show');
+        document.body.classList.remove('syllabus-open');
+        document.body.classList.remove('ai-open');
+    }
+
+    function switchTab(btn, id) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('on'));
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('on'));
+        btn.classList.add('on');
+        document.getElementById(id).classList.add('on');
+    }
+
+    // ── RESIZABLE PANES ──────────────────────────────────────────────────────────
+    // Run immediately for direct loads, and again on turbo:load for SPA navigation.
+    // Without the immediate call, window._srToggleSyl/Ai are undefined when buttons
+    // are first clicked on a non-Turbo page load.
+    function initPaneResize() {
+        const SYL_MIN = 60, SYL_MAX = 360, SYL_DEFAULT = 260;
+        const AI_MIN = 220, AI_MAX = 480, AI_DEFAULT = 320;
+        const SNAP_THRESHOLD = 50; // px from an edge to snap
+        const KEY = 'sr_pane_w2';
+
+        const layout = document.querySelector('.room-layout');
+        const syl = document.getElementById('syllabusPane');
+        const ai = document.getElementById('aiPane');
+        const fabDt = document.getElementById('fabAiDesktop');
+        const hL = document.getElementById('handleLeft');
+        const hR = document.getElementById('handleRight');
+
+        if (!layout || !syl || !ai || !hL || !hR) return;
+
+        // Guard: re-running re-reads state + re-applies widths, but doesn't re-bind drag.
+        // This allows turbo:load to re-sync the UI without doubling up listeners.
+        const alreadyBound = layout._srInitDone;
+        layout._srInitDone = true;
+
+        // ── State ──
+        let sylW = SYL_DEFAULT, aiW = AI_DEFAULT, aiHidden = false;
+
+        try {
+            const s = JSON.parse(localStorage.getItem(KEY) || '{}');
+            if (s.l && s.l >= SYL_MIN && s.l <= SYL_MAX) sylW = s.l;
+            if (s.r && s.r >= AI_MIN && s.r <= AI_MAX) aiW = s.r;
+            if (typeof s.aiHidden === 'boolean') aiHidden = s.aiHidden;
+        } catch (e) { }
+
+        // ── Reposition absolute handles to sit on the pane border ──
+        function repositionHandles() {
+            // handleLeft sits at the right edge of the syllabus pane
+            hL.style.left = sylW + 'px';
+            hL.style.right = 'auto';
+
+            // handleRight sits at the left edge of the AI pane
+            // (measured from the right side of the layout)
+            hR.style.right = (aiHidden ? 0 : aiW) + 'px';
+            hR.style.left = 'auto';
+        }
+
+        // ── Apply widths + classes to panes ──
+        let applyWidths = function (animate) {
+            if (animate) {
+                syl.style.transition = 'width 0.25s cubic-bezier(0.16,1,0.3,1)';
+                ai.style.transition = 'width 0.25s cubic-bezier(0.16,1,0.3,1)';
+                setTimeout(() => {
+                    syl.style.transition = '';
+                    ai.style.transition = '';
+                }, 260);
+            }
+
+            // Syllabus
+            syl.style.width = sylW + 'px';
+            syl.style.flex = 'none';
+            const isSylRail = sylW <= SYL_MIN + 30;
+            syl.classList.toggle('rail', isSylRail);
+
+            // Update syllabus icons
+            const iconF = document.getElementById('sylFooterIcon');
+            const iconH = document.getElementById('sylHeaderIcon');
+            const syRot = isSylRail ? 'rotate(180deg)' : 'rotate(0deg)';
+            if (iconF) iconF.style.transform = syRot;
+            if (iconH) iconH.style.transform = syRot;
+
+            // AI pane
+            if (aiHidden) {
+                ai.style.width = '0px';
+                ai.style.flex = 'none';
+                ai.classList.add('fab-mode');
+                ai.classList.remove('collapsed');
+                if (fabDt) fabDt.classList.add('visible');
+            } else {
+                ai.style.width = aiW + 'px';
+                ai.style.flex = 'none';
+                ai.classList.remove('fab-mode');
+                ai.classList.remove('collapsed');
+                if (fabDt) fabDt.classList.remove('visible');
+            }
+
+            // Update AI icons
+            const iconAiH = document.getElementById('aiHeaderIcon');
+            if (iconAiH) {
+                // If hidden, point left to indicate "expand"; if visible, point right to "collapse"
+                iconAiH.style.transform = aiHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+            }
+
+            repositionHandles();
+        };
+
+        function save() {
+            try { localStorage.setItem(KEY, JSON.stringify({ l: sylW, r: aiW, aiHidden })); } catch (e) { }
+        }
+
+        // Expose for toggle buttons
+        window.snapAiOpen = function () {
+            aiHidden = false; aiW = AI_DEFAULT;
+            applyWidths(true); save();
+        };
+
+        window._srToggleSyl = function () {
+            sylW = (sylW <= SYL_MIN + 30) ? SYL_DEFAULT : SYL_MIN;
+            applyWidths(true);
+            save();
+        };
+
+        window._srToggleAi = function () {
+            aiHidden = !aiHidden;
+            applyWidths(true);
+            save();
+        };
+
+        // Alias: toggleAiCollapse() in the HTML calls _srCollapseAi,
+        // which routes through the same toggle so inline widths stay in sync.
+        window._srCollapseAi = window._srToggleAi;
+
+        // ── Generic drag maker ──
+        function makeDraggable(handle, side) {
+            let startX, startW, dragging = false;
+
+            // Pointer events work for both mouse and touch on modern browsers
+            handle.addEventListener('pointerdown', e => {
+                // Only left-click or single touch
+                if (e.button !== undefined && e.button !== 0) return;
+
+                // If the user clicked a toggle pill (handled by stopPropagation), we shouldn't be here
+                e.preventDefault();
+                handle.setPointerCapture(e.pointerId); // keeps events even over iframe
+
+                startX = e.clientX;
+                startW = (side === 'left') ? syl.offsetWidth : ai.offsetWidth;
+                dragging = true;
+
+                handle.classList.add('dragging');
+                document.body.classList.add('is-resizing');
+            });
+
+            handle.addEventListener('pointermove', e => {
+                if (!dragging) return;
+                e.preventDefault();
+                const delta = e.clientX - startX;
+
+                if (side === 'left') {
+                    // Moving right handle of syllabus → expand/shrink syllabus
+                    const raw = Math.max(SYL_MIN, Math.min(SYL_MAX, startW + delta));
+                    syl.style.width = raw + 'px';
+                    const isRail = raw <= SYL_MIN + 30;
+                    syl.classList.toggle('rail', isRail);
+
+                    // Live update icons during drag
+                    const iconF = document.getElementById('sylFooterIcon');
+                    const iconH = document.getElementById('sylHeaderIcon');
+                    const syRot = isRail ? 'rotate(180deg)' : 'rotate(0deg)';
+                    if (iconF) iconF.style.transform = syRot;
+                    if (iconH) iconH.style.transform = syRot;
+
+                    hL.style.left = raw + 'px';
+                } else {
+                    // Moving left handle of AI pane → delta is negative when moving left
+                    const raw = Math.max(0, Math.min(AI_MAX, startW - delta));
+                    const isHid = raw < SNAP_THRESHOLD;
+                    if (isHid) {
+                        ai.style.width = '0px';
+                        ai.classList.add('fab-mode');
+                        if (fabDt) fabDt.classList.add('visible');
+                    } else {
+                        ai.style.width = raw + 'px';
+                        ai.classList.remove('fab-mode');
+                        if (fabDt) fabDt.classList.remove('visible');
+                    }
+
+                    // Live update icons during drag
+                    const iconR = document.getElementById('toggleIconRight');
+                    if (iconR) iconR.style.transform = isHid ? 'rotate(180deg)' : 'rotate(0deg)';
+                    const iconAiH = document.getElementById('aiHeaderIcon');
+                    if (iconAiH) iconAiH.style.transform = isHid ? 'rotate(180deg)' : 'rotate(0deg)';
+
+                    hR.style.right = (isHid ? 0 : raw) + 'px';
+                }
+            });
+
+            function endDrag(e) {
+                if (!dragging) return;
+                dragging = false;
+
+                handle.classList.remove('dragging');
+                document.body.classList.remove('is-resizing');
+
+                // Commit to state with snapping
+                const delta = e.clientX - startX;
+                if (side === 'left') {
+                    const raw = startW + delta;
+                    if (raw > SYL_MAX - SNAP_THRESHOLD) sylW = SYL_MAX;
+                    else if (raw < SYL_MIN + SNAP_THRESHOLD) sylW = SYL_MIN;
+                    else sylW = raw;
+                } else {
+                    const raw = startW - delta;
+                    if (raw < SNAP_THRESHOLD) aiHidden = true;
+                    else if (raw > AI_MAX - SNAP_THRESHOLD) { aiHidden = false; aiW = AI_MAX; }
+                    else { aiHidden = false; aiW = Math.max(AI_MIN, raw); }
+                }
+
+                applyWidths(true);
+                save();
+            }
+
+            handle.addEventListener('pointerup', endDrag);
+            handle.addEventListener('pointercancel', endDrag);
+
+            // Double-click resets to default
+            handle.addEventListener('dblclick', () => {
+                if (side === 'left') { sylW = SYL_DEFAULT; }
+                else { aiHidden = false; aiW = AI_DEFAULT; }
+                applyWidths(true); save();
+            });
+        }
+
+        if (!alreadyBound) {
+            makeDraggable(hL, 'left');
+            makeDraggable(hR, 'right');
+        }
+
+        // Initial render (runs every time to re-apply state from localStorage)
+        applyWidths(false);
+    }
+
+    // Run immediately for current page load, then re-init on every Turbo navigation
+    initPaneResize();
+    document.addEventListener('turbo:load', initPaneResize);
+
+    // ── CONFIDENCE SLIDER ────────────────────────────────────────────────────────
+    (function () {
+        const slider = document.querySelector('.confidence-slider');
+        if (!slider) return;
+        const VIDEO_ID = {{ video.id or 0 }};
+        const CSRF = document.querySelector('meta[name="csrf-token"]')?.content || '';
+        let t;
+        slider.addEventListener('input', () => {
+            clearTimeout(t);
+            t = setTimeout(() => {
+                fetch(`/library/video/${VIDEO_ID}/confidence`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+                    body: JSON.stringify({ score: parseInt(slider.value) })
+                });
+            }, 800);
+        });
+}) ();
+
+    // ── VIDEO GUARDIAN (AUTO-PROGRESS & GUEST TRACKING) ──────────────────────────
+    (function () {
+        const VIDEO_ID = {{ video.id or 0 }};
+        const XP = {{ video.xp_reward or 0 }};
+        const NEXT_URL = {{ next_url | tojson }};
+        const HAS_ASSESSMENT = {{ 'true' if has_assessment else 'false' }};
+        const HAS_FLASHCARDS = {{ 'true' if topic_resources.flashcard else 'false' }};
+        const HAS_QUIZ = {{ 'true' if topic_resources.quiz else 'false' }};
+        const IS_GUEST = {{ 'false' if current_user.is_authenticated else 'true' }};
+        const PACK_ID = {{ pack_id | tojson }};
+        const IS_PREMIUM = {{ 'true' if current_user.is_authenticated and current_user.is_premium else 'false' }};
+
+        function handleCheckpointClick(e, el) {
+            e.preventDefault();
+            const cpType = el.dataset.cpType;
+            const cpStatus = el.dataset.cpStatus;
+            const packId = el.dataset.packId;
+            const resourceId = el.dataset.resourceId;
+
+            // Premium gate
+            const premiumTypes = ['micro_quiz', 'notes', 'cheatsheet', 'boss_quiz'];
+            if (premiumTypes.includes(cpType) && !IS_PREMIUM) {
+                // Show upgrade prompt — reuse whatever upgrade modal exists in base.html
+                if (typeof openUpgradeModal === 'function') openUpgradeModal();
+                else alert('Upgrade to Pro to unlock this resource.');
+                return;
+            }
+
+            // Guest gate
+            if (IS_GUEST) {
+                if (typeof openAuthModal === 'function') openAuthModal('register');
+                return;
+            }
+
+            // Generating — show a brief toast
+            if (cpStatus === 'generating') {
+                showToast('Still generating — check back in a moment.');
+                return;
+            }
+
+            // Pending — resource hasn't started yet
+            if (cpStatus === 'pending' || !resourceId) {
+                showToast('This resource will be ready after you watch the preceding videos.');
+                return;
+            }
+
+            // Done — navigate to the resource viewer
+            window.location.href = `/library/pack/${packId}/resource/${resourceId}`;
+        }
+
+        function showToast(msg) {
+            const t = document.createElement('div');
+            t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--sr-ink);color:#fff;padding:10px 18px;border-radius:8px;font-size:0.82rem;font-weight:600;z-index:9999;white-space:nowrap;animation:slideUp 0.3s ease;';
+            t.textContent = msg;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 3500);
+        }
+        const IS_DONE = {{ 'true' if completed else 'false' }};
+
+        let claimed = false;
+        let nudgeFired = false;
+
+        // Get CSRF safely to prevent script crash
+        const getCSRF = () => document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+        function claimAura(reason = 'ended') {
+            if (claimed || (IS_DONE && !IS_GUEST)) return;
+            claimed = true;
+            console.log(`[Guardian] Claiming... Reason: ${reason}`);
+
+            const body = { pack_id: PACK_ID };
+            fetch(`/library/video/${VIDEO_ID}/complete`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCSRF(), 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            }).then(r => r.json()).then(d => {
+                if (d.status === 'ok') {
+                    // Update the simple badge if it exists
+                    const badge = document.getElementById('auraStatus');
+                    if (badge) {
+                        badge.classList.add('earned');
+                        badge.innerHTML = '<i class="fa-solid fa-circle-check"></i> ' + (IS_GUEST ? 'Lesson completed!' : '+' + d.xp + ' Aura earned!');
+                    }
+
+                    // Show full celebration screen for authenticated users
+                    if (!IS_GUEST) {
+                        showCelebration(d);
+                    }
+                }
+
+                // Notify pack of video completion to trigger next checkpoint generation
+                if (PACK_ID && !IS_GUEST) {
+                    const activeItem = document.querySelector('.sb-item.sb-active');
+const currentOrderIndex = activeItem ? parseInt(activeItem.dataset.packOrder || '0', 10) : 0;
+                    fetch(`/library/pack/${PACK_ID}/video-complete`, {
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': getCSRF(), 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ video_id: VIDEO_ID, order_index: currentOrderIndex })
+                    }).then(r => r.json()).then(statusData => {
+                        // Refresh checkpoint statuses in the syllabus pane
+                        if (statusData.resource_statuses) {
+                            document.querySelectorAll('.sb-checkpoint').forEach(el => {
+                                const key = `${el.dataset.cpType}:${el.dataset.packId || 'pack'}`;
+                                const newStatus = statusData.resource_statuses[key];
+                                if (newStatus) {
+                                    el.dataset.cpStatus = newStatus;
+                                    if (newStatus === 'done') el.classList.add('cp-done');
+                                    if (newStatus === 'generating') el.classList.add('cp-generating');
+                                }
+                            });
+                        }
+                    }).catch(() => { });
+                }
+                if (HAS_FLASHCARDS && !IS_GUEST) {
+                    // If there are flashcards, stay on page and auto-switch to them
+                    setTimeout(() => {
+                        const flashTabBtn = document.querySelector('.tab-btn[onclick*="tab-flashcards"]');
+                        if (flashTabBtn) {
+                            switchTab(flashTabBtn, 'tab-flashcards');
+                            const resourceWrap = document.querySelector('.resource-wrap');
+                            if (resourceWrap) {
+                                resourceWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }
+                            if (typeof showToast === 'function') showToast('Switching to Flashcards...');
+                        }
+                    }, 2000);
+                } else if ((IS_GUEST || !HAS_ASSESSMENT) && NEXT_URL) {
+                    setTimeout(() => { if (NEXT_URL) window.location.href = NEXT_URL; }, 3000);
+                }
+            }).catch(err => {
+                console.error('[Guardian] Fetch Error:', err);
+                claimed = false;
+            });
+        }
+
+        function showCelebration(data) {
+            const overlay = document.getElementById('celebrationOverlay');
+            if (!overlay) return;
+
+            document.getElementById('celXpVal').textContent = '+' + (data.xp || 0);
+            document.getElementById('celStreakVal').textContent = data.current_streak || 1;
+
+            if (data.current_streak > 0 && data.current_streak === data.longest_streak) {
+                document.getElementById('celPbLabel').style.display = 'block';
+            }
+
+            if (data.next_video_id) {
+                const card = document.getElementById('celNextCard');
+                card.style.display = 'block';
+                document.getElementById('celNextTitle').textContent = data.next_video_title;
+                window._nextVideoUrl = `/library/video/${data.next_video_id}`;
+            }
+
+            overlay.classList.add('show');
+        }
+
+        window.closeCelebration = function(goNext) {
+            const overlay = document.getElementById('celebrationOverlay');
+            if (overlay) overlay.classList.remove('show');
+            if (goNext && window._nextVideoUrl) {
+                window.location.href = window._nextVideoUrl;
+            } else if (HAS_FLASHCARDS && !IS_GUEST) {
+                // Original logic: auto-switch to flashcards
+                const flashTabBtn = document.querySelector('.tab-btn[onclick*="tab-flashcards"]');
+                if (flashTabBtn) {
+                    switchTab(flashTabBtn, 'tab-flashcards');
+                }
+            }
+        };
+
+        // Auto-dismiss on navigation
+        document.addEventListener('turbo:before-visit', () => {
+            const overlay = document.getElementById('celebrationOverlay');
+            if (overlay) overlay.classList.remove('show');
+        });
+
+        function fireNudge() {
+            if (nudgeFired || !IS_GUEST) return;
+            nudgeFired = true;
+            const div = document.createElement('div');
+            div.style.cssText = 'position:fixed;bottom:76px;left:50%;transform:translateX(-50%);background:var(--sr-ink);color:white;padding:12px 20px;border-radius:10px;font-size:0.82rem;font-weight:600;display:flex;align-items:center;gap:12px;z-index:999;box-shadow:0 8px 24px rgba(0,0,0,0.2);white-space:nowrap;animation:slideUp 0.4s ease;';
+            div.innerHTML = '<i class="fa-solid fa-graduation-cap" style="color:var(--sr-gold);font-size:1rem;"></i><span>Get notes & a quiz for this video</span><button onclick="openAuthModal(\'register\')" style="background:var(--sr-blue);color:white;border:none;padding:6px 14px;border-radius:6px;font-size:0.78rem;font-weight:700;cursor:pointer;">Join free</button><button onclick="this.parentElement.remove()" style="background:none;border:none;color:rgba(255,255,255,0.5);cursor:pointer;font-size:0.9rem;padding:0 4px;">✕</button>';
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 12000);
+        }
+
+        // Unified Message Listener
+        window.addEventListener('message', e => {
+            let d;
+            try {
+                d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+                if (!d || !d.event) return;
+
+                if ((d.event === 'onStateChange' && d.info === 0) ||
+                    (d.event === 'infoDelivery' && d.info?.playerState === 0)) {
+                    claimAura('player_finished');
+                    fireNudge();
+                }
+
+                if (d.event === 'infoDelivery' && d.info?.currentTime && d.info?.duration) {
+                    const prog = d.info.currentTime / d.info.duration;
+                    if (prog >= 0.98) {
+                        const b = document.getElementById('auraStatus');
+                        if (b && !claimed && !IS_DONE) {
+                            b.style.cursor = 'pointer';
+                            b.onclick = () => claimAura('manual_finish');
+                            b.innerHTML = '<i class="fa-solid fa-star"></i> Finish Lesson';
+                        }
+                        if (prog >= 0.999) claimAura('end_reached');
+                    }
+                }
+            } catch (err) { }
+        });
+
+        // Heartbeat: Wake up the player every 3 seconds
+        setInterval(() => {
+            const frame = document.getElementById('mainVideoIframe');
+            if (frame?.contentWindow) {
+                frame.contentWindow.postMessage(JSON.stringify({ event: 'listening' }), '*');
+                frame.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'getPlayerState' }), '*');
+            }
+        }, 3000);
+
+        // Safety Fallbacks
+        setTimeout(fireNudge, 4 * 60 * 1000);
+        const dur = {{ video.duration or 0 }};
+        const sTime = dur > 0 ? dur : 600;
+        setTimeout(() => claimAura('safety_timer'), sTime * 0.95 * 1000);
+}) ();
+
+    // ── PASTE VIDEO LOADER ────────────────────────────────────────────────────────
+    function loadPastedVideo() {
+        const input = document.getElementById('pasteUrlInput');
+        const btn = document.getElementById('pasteLoadBtn');
+        const err = document.getElementById('pasteError');
+        const url = input.value.trim();
+        err.style.display = 'none';
+        input.classList.remove('err');
+        if (!url) return;
+        btn.disabled = true; btn.textContent = 'Checking…';
+
+        fetch('/library/video/validate-url', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url })
+        }).then(r => r.json()).then(data => {
+            btn.disabled = false; btn.textContent = 'Load';
+            if (!data.valid) {
+                input.classList.add('err');
+                err.style.display = 'inline';
+                err.textContent = data.error === 'non_academic'
+                    ? `"${data.title || 'This video'}" doesn't look academic`
+                    : (data.error || 'Invalid URL');
+                return;
+            }
+            if (data.in_db && data.video_id) { window.location.href = `/library/video/${data.video_id}`; return; }
+            const iframe = document.getElementById('mainVideoIframe');
+            if (iframe) iframe.src = `https://www.youtube.com/embed/${data.youtube_id}?enablejsapi=1&autoplay=1`;
+            const t = document.getElementById('vidTitle');
+            if (t) t.textContent = data.title;
+            input.value = '';
+        }).catch(() => {
+            btn.disabled = false; btn.textContent = 'Load';
+            err.style.display = 'inline'; err.textContent = 'Network error, try again.';
+        });
+    }
+    document.getElementById('pasteUrlInput')?.addEventListener('keydown', e => { if (e.key === 'Enter') loadPastedVideo(); });
+
+    // ── AI CHAT ───────────────────────────────────────────────────────────────────
+    (function () {
+        const VIDEO_ID = {{ video.id or 0 }};
+        const CSRF = document.querySelector('meta[name="csrf-token"]')?.content || '';
+        let history = [];
+
+        window.sendChat = async function () {
+            const input = document.getElementById('chatInput');
+            const btn = document.getElementById('chatSendBtn');
+            const q = input.value.trim();
+            if (!q) return;
+            addBubble(q, 'user'); input.value = ''; btn.disabled = true;
+            const tid = 'typing-' + Date.now();
+            addBubble('…', 'ai', tid);
+            try {
+                const res = await fetch(`/library/video/${VIDEO_ID}/ask`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+                    body: JSON.stringify({ question: q, history })
+                });
+                const d = await res.json();
+                document.getElementById(tid)?.remove();
+                const ans = d.answer || d.error || 'No response.';
+                addBubble(ans, 'ai');
+                history.push({ role: 'user', content: q }, { role: 'assistant', content: ans });
+                if (history.length > 12) history = history.slice(-12);
+            } catch (e) {
+                document.getElementById(tid)?.remove();
+                addBubble('Connection error. Please try again.', 'ai');
+            }
+            btn.disabled = false;
+        };
+
+        function addBubble(text, role, id) {
+            const h = document.getElementById('chatHistory');
+            if (!h) return;
+            const d = document.createElement('div');
+            d.className = 'chat-bubble ' + (role === 'user' ? 'chat-user' : 'chat-ai');
+            if (id) d.id = id;
+            d.textContent = text;
+            h.appendChild(d); h.scrollTop = h.scrollHeight;
+        }
+
+        document.getElementById('chatInput')?.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+        });
+}) ();
+</script>
+{% endblock %}

@@ -1,0 +1,139 @@
+{# _pack_card.html - Universal gamified study pack card #}
+{% set pct = bundle.progress_pct|default(0) %}
+{% set total_count = bundle.video_count|default(bundle.total_count|default(bundle.resource_count|default(0))) %}
+{% set completed_count = bundle.completed_count|default(0) %}
+{% set next_url = bundle.url|default('#') %}
+{% set card_color = bundle.color|default('#2a5cff') %}
+{% set is_new = bundle.is_new|default(false) %}
+{% set is_top = bundle.is_top|default(false) %}
+{% set is_trending = bundle.is_trending|default(false) %}
+
+{# Resolve YouTube thumbnail — use first video's youtube_id if available #}
+{% set yt_id = bundle.first_video_youtube_id|default(bundle.videos[0].youtube_id if bundle.videos else none) %}
+{% set thumb_url = 'https://img.youtube.com/vi/' ~ yt_id ~ '/hqdefault.jpg' if yt_id else none %}
+
+<div class="pack-outer">
+  <div class="depth-2"></div>
+  <div class="depth-1"></div>
+  <div class="pack-card {% if is_new %}is-new{% endif %} {% if is_top %}is-top{% endif %}">
+
+    <a href="{{ next_url }}" class="cover" aria-label="{{ bundle.title }}">
+
+      {# Cover background: YouTube thumbnail if available, gradient fallback otherwise #}
+      {% if thumb_url %}
+      <div class="cover-bg has-thumbnail"
+           style="background-image: url('{{ thumb_url }}'); background-size: cover; background-position: center; {% if pct >= 100 %}filter: saturate(0.35);{% endif %}">
+      </div>
+      {% else %}
+      <div class="cover-bg"
+           style="background: {{ bundle.gradient|default(card_color) }}; {% if pct >= 100 %}filter: saturate(0.4);{% endif %}">
+      </div>
+      {% endif %}
+
+      <div class="cover-overlay" 
+           style="{% if pct >= 100 %}background:linear-gradient(to bottom,rgba(0,0,0,0.35),rgba(0,0,0,0.72));{% elif thumb_url %}background:linear-gradient(to bottom,rgba(0,0,0,0.2),rgba(0,0,0,0.6));{% endif %}">
+      </div>
+
+      {% if pct >= 100 %}
+      <div class="complete-stamp">
+        <div class="stamp-inner">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#3ddc84" stroke-width="2"><polyline points="2,8 6,12 14,4"/></svg>
+          <span>Completed</span>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if is_new %}<span class="status-badge badge-new">New</span>{% endif %}
+      {% if is_top %}<span class="status-badge badge-top">Top rated</span>{% endif %}
+      {% if is_trending %}<span class="status-badge badge-trending">Trending</span>{% endif %}
+
+      <div class="cover-content">
+        <div class="cover-top">
+          <span class="subject-pill">{{ (bundle.subject_name|default(bundle.subject.name if bundle.subject else "Study Pack"))|strip_course_code }}</span>
+          <span class="video-count">
+            <svg width="10" height="10" viewBox="0 0 14 14" fill="white"><rect x="1" y="1" width="7" height="7" rx="1" opacity="0.35"/><rect x="3" y="3" width="7" height="7" rx="1" opacity="0.6"/><rect x="5" y="5" width="7" height="7" rx="1"/></svg>
+            {{ total_count }} {{ 'videos' if bundle.type == 'study_pack' else 'resources' }}
+          </span>
+        </div>
+
+
+      </div>
+
+      {% if pct < 100 %}
+      <div class="diff-bar">
+        <span style="background:#3ddc84;"></span>
+        <span style="background:#f5c542;"></span>
+        <span style="background:#f06b6b;"></span>
+      </div>
+      {% endif %}
+
+
+
+    </a>
+
+    <div class="pack-body {% if pct >= 100 %}completed-body{% endif %}">
+      <div class="pack-subject">{{ (bundle.subject_name|default(bundle.subject.name if bundle.subject else "Learning Pack"))|strip_course_code }}</div>
+      <div class="pack-title">
+        <a href="{{ next_url }}">{{ bundle.title|strip_course_code }}</a>
+      </div>
+
+      {% if bundle.creator %}
+      <div class="creator-tag">
+        <div class="creator-avatar">{{ (bundle.creator.nickname or bundle.creator.username)[:2]|upper }}</div>
+        <span class="creator-name">Shared by <strong>@{{ bundle.creator.username }}</strong></span>
+      </div>
+      {% endif %}
+
+      {% if is_top and bundle.rating %}
+      <div class="rating-row">
+        <div class="stars">
+          {% for i in range(5) %}
+          <svg class="star" viewBox="0 0 12 12"><polygon points="6,1 7.5,4.5 11,4.8 8.5,7 9.3,10.5 6,8.8 2.7,10.5 3.5,7 1,4.8 4.5,4.5" fill="#f5c542" {% if i >= bundle.rating|int %}opacity="0.3"{% endif %}/></svg>
+          {% endfor %}
+        </div>
+        <span class="rating-score">{{ bundle.rating }}</span>
+        <span class="rating-count">· {{ bundle.learner_count }} learners</span>
+      </div>
+      {% endif %}
+
+      {% if pct >= 100 and bundle.type == 'study_pack' %}
+      <div class="aura-chip">
+        <svg width="10" height="10" viewBox="0 0 16 16" fill="#f5c542"><polygon points="8,1 10,6 15,6 11,10 13,15 8,12 3,15 5,10 1,6 6,6"/></svg>
++{{ (total_count * 30) }} Aura earned
+      </div>
+      <div class="res-strip">
+        <span class="res-item done"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="3,8 6,12 13,4"/></svg>Notes</span>
+        <span class="res-item done"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="3,8 6,12 13,4"/></svg>Cards</span>
+        <span class="res-item done"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="3,8 6,12 13,4"/></svg>Quiz</span>
+        <span class="res-item done"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="3,8 6,12 13,4"/></svg>Sheet</span>
+      </div>
+      {% elif pct > 0 %}
+      <div class="progress-meta">
+        <span class="progress-label">{{ completed_count }} of {{ total_count }} videos watched</span>
+        <span class="progress-pct" {% if pct >= 80 %}style="color:var(--sp-green);"{% endif %}>{{ pct }}%</span>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" style="width: {{ pct }}%; {% if pct >= 80 %}background: var(--sp-green);{% endif %}"></div>
+      </div>
+      {% else %}
+      <div class="res-strip">
+        <span class="res-item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="2" width="10" height="12" rx="1"/><line x1="6" y1="6" x2="10" y2="6"/><line x1="6" y1="9" x2="10" y2="9"/></svg>Notes</span>
+        <span class="res-item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="3" width="8" height="10" rx="1"/><rect x="2" y="5" width="8" height="10" rx="1" opacity="0.4"/></svg>Cards</span>
+        <span class="res-item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><line x1="8" y1="5" x2="8" y2="9"/><circle cx="8" cy="11" r="0.8" fill="currentColor"/></svg>Quiz</span>
+        <span class="res-item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3h10v2H3z"/><line x1="3" y1="8" x2="13" y2="8"/><line x1="3" y1="11" x2="9" y2="11"/></svg>Sheet</span>
+      </div>
+      {% endif %}
+
+      <div class="pack-footer">
+        <a href="{{ next_url }}" class="btn-primary {% if pct >= 100 %}green-tint{% elif pct > 0 %}accent{% endif %}" {% if pct >= 88 %}style="background:rgba(61,220,132,0.1);border-color:rgba(61,220,132,0.25);color:var(--sp-green);"{% endif %}>
+          {% if pct >= 100 %}Review pack{% elif pct >= 80 %}Finish pack →{% elif pct > 0 %}Continue →{% else %}Start pack{% endif %}
+        </a>
+        <button class="btn-share" onclick="event.preventDefault(); sharePack('{{ bundle.title | replace("'", "\\'") }}', '{{ next_url }}')">
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="13" cy="3" r="2"/><circle cx="3" cy="8" r="2"/><circle cx="13" cy="13" r="2"/><line x1="5" y1="7" x2="11" y2="4"/><line x1="5" y1="9" x2="11" y2="12"/></svg>
+          Share
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

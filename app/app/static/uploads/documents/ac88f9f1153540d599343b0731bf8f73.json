@@ -1,0 +1,188 @@
+{
+  "schema_version": "1.0",
+  "document_type": "notes",
+  "generated_at": "2026-04-10T00:20:08.292956+00:00",
+  "title": "Verification Bundle",
+  "course": "Physics",
+  "level": "Intermediate",
+  "metadata": {
+    "estimated_read_time": "45 mins",
+    "focus_areas": "Core concepts",
+    "prerequisites": "Basics"
+  },
+  "sections": [
+    {
+      "section_number": 1,
+      "section_title": "Section 1",
+      "section_type": "concepts",
+      "content": [
+        {
+          "block_type": "definition",
+          "label": "Concept 1",
+          "text": "Definition for concept 1 with formula $x_1=i^2$."
+        },
+        {
+          "block_type": "formula",
+          "label": "Formula 1",
+          "text": "$a^2+b^2=c^2$"
+        },
+        {
+          "block_type": "worked_example",
+          "text": "Example 1",
+          "steps": [
+            "Step 1",
+            "Step 2",
+            "Step 3"
+          ]
+        },
+        {
+          "block_type": "list",
+          "items": [
+            "Point A",
+            "Point B"
+          ]
+        }
+      ]
+    },
+    {
+      "section_number": 2,
+      "section_title": "Section 2",
+      "section_type": "concepts",
+      "content": [
+        {
+          "block_type": "definition",
+          "label": "Concept 2",
+          "text": "Definition for concept 2 with formula $x_2=i^2$."
+        },
+        {
+          "block_type": "formula",
+          "label": "Formula 2",
+          "text": "$a^2+b^2=c^2$"
+        },
+        {
+          "block_type": "worked_example",
+          "text": "Example 2",
+          "steps": [
+            "Step 1",
+            "Step 2",
+            "Step 3"
+          ]
+        },
+        {
+          "block_type": "list",
+          "items": [
+            "Point A",
+            "Point B"
+          ]
+        }
+      ]
+    },
+    {
+      "section_number": 3,
+      "section_title": "Section 3",
+      "section_type": "concepts",
+      "content": [
+        {
+          "block_type": "definition",
+          "label": "Concept 3",
+          "text": "Definition for concept 3 with formula $x_3=i^2$."
+        },
+        {
+          "block_type": "formula",
+          "label": "Formula 3",
+          "text": "$a^2+b^2=c^2$"
+        },
+        {
+          "block_type": "worked_example",
+          "text": "Example 3",
+          "steps": [
+            "Step 1",
+            "Step 2",
+            "Step 3"
+          ]
+        },
+        {
+          "block_type": "list",
+          "items": [
+            "Point A",
+            "Point B"
+          ]
+        }
+      ]
+    },
+    {
+      "section_number": 4,
+      "section_title": "Section 4",
+      "section_type": "concepts",
+      "content": [
+        {
+          "block_type": "definition",
+          "label": "Concept 4",
+          "text": "Definition for concept 4 with formula $x_4=i^2$."
+        },
+        {
+          "block_type": "formula",
+          "label": "Formula 4",
+          "text": "$a^2+b^2=c^2$"
+        },
+        {
+          "block_type": "worked_example",
+          "text": "Example 4",
+          "steps": [
+            "Step 1",
+            "Step 2",
+            "Step 3"
+          ]
+        },
+        {
+          "block_type": "list",
+          "items": [
+            "Point A",
+            "Point B"
+          ]
+        }
+      ]
+    },
+    {
+      "section_number": 5,
+      "section_title": "Section 5",
+      "section_type": "revision",
+      "content": [
+        {
+          "block_type": "definition",
+          "label": "Concept 5",
+          "text": "Definition for concept 5 with formula $x_5=i^2$."
+        },
+        {
+          "block_type": "formula",
+          "label": "Formula 5",
+          "text": "$a^2+b^2=c^2$"
+        },
+        {
+          "block_type": "worked_example",
+          "text": "Example 5",
+          "steps": [
+            "Step 1",
+            "Step 2",
+            "Step 3"
+          ]
+        },
+        {
+          "block_type": "list",
+          "items": [
+            "Point A",
+            "Point B"
+          ]
+        }
+      ]
+    }
+  ],
+  "summary": [
+    "Summary point one with enough words for revision and retention.",
+    "Summary point two with enough words for revision and retention.",
+    "Summary point three with enough words for revision and retention.",
+    "Summary point four with enough words for revision and retention.",
+    "Summary point five with enough words for revision and retention."
+  ],
+  "document_hash": "5553db7c24eabbebc9713129bdecd183267e8d46f7fdb0483b78cb7e48982673"
+}

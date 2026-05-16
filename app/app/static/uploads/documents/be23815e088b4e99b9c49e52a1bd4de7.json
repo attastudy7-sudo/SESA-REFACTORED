@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0",
+  "document_type": "notes",
+  "generated_at": "2026-04-09T23:42:31.698711+00:00",
+  "title": "Exponential and Logarithm Functions (MATH161)",
+  "course": "MA101 \u2013 Calculus I",
+  "level": "Intermediate",
+  "metadata": {
+    "estimated_read_time": "10 minutes",
+    "focus_areas": "",
+    "prerequisites": ""
+  },
+  "sections": [
+    {
+      "section_number": 1,
+      "section_title": "Exponential Functions",
+      "section_type": "concepts",
+      "content": [
+        {
+          "block_type": "paragraph",
+          "text": "An exponential function is defined as $f(x) = b^x$ where $b > 0$ and $b \\neq 1$. \n\n**Key Properties:**\n- **Domain:** $(-\\infty, \\infty)$.\n- **Range:** $(0, \\infty)$.\n- **Intercept:** $f(0) = 1$ for any valid base $b$.\n- **Positivity:** $f(x) > 0$ for all $x$.\n\n**Asymptotic Behavior:**\n- If $b > 1$: $f(x) \\to \\infty$ as $x \\to \\infty$, and $f(x) \\to 0$ as $x \\to -\\infty$.\n- If $0 < b < 1$: $f(x) \\to 0$ as $x \\to \\infty$, and $f(x) \\to \\infty$ as $x \\to -\\infty$."
+        }
+      ]
+    },
+    {
+      "section_number": 2,
+      "section_title": "The Natural Exponential Function",
+      "section_type": "concepts",
+      "content": [
+        {
+          "block_type": "paragraph",
+          "text": "The natural exponential function uses the base $e$, where $e \\approx 2.71828$. It is written as $f(x) = e^x$. Because $e > 1$, it follows the growth behavior where $e^x \\to \\infty$ as $x \\to \\infty$."
+        }
+      ]
+    },
+    {
+      "section_number": 3,
+      "section_title": "Logarithmic Functions",
+      "section_type": "concepts",
+      "content": [
+        {
+          "block_type": "paragraph",
+          "text": "Logarithms are the inverses of exponential functions. The statement $y = \\log_b x$ is equivalent to $x = b^y$.\n\n**Fundamental Properties:**\n- **Domain:** $(0, \\infty)$ (You cannot take the log of zero or a negative number).\n- **Range:** $(-\\infty, \\infty)$.\n- $\\log_b b = 1$\n- $\\log_b 1 = 0$\n- Inverse Properties: $\\log_b(b^x) = x$ and $b^{\\log_b x} = x$."
+        }
+      ]
+    },
+    {
+      "section_number": 4,
+      "section_title": "Laws of Logarithms",
+      "section_type": "concepts",
+      "content": [
+        {
+          "block_type": "paragraph",
+          "text": "For any $b > 0, b \\neq 1$, and $x, y > 0$:\n1. **Product Rule:** $\\log_b(xy) = \\log_b x + \\log_b y$\n2. **Quotient Rule:** $\\log_b(\\frac{x}{y}) = \\log_b x - \\log_b y$\n3. **Power Rule:** $\\log_b(x^r) = r \\log_b x$"
+        }
+      ]
+    }
+  ],
+  "summary": [
+    "Review the section content and reinforce the core idea for retention.",
+    "Review the section content and reinforce the core idea for retention.",
+    "Review the section content and reinforce the core idea for retention."
+  ],
+  "document_hash": "cabdd4a64320d2f8d778ee27875f2d7d7459a310264facf14ea7e1a05ca52c22"
+}

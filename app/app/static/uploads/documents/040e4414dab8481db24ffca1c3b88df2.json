@@ -1,0 +1,130 @@
+{
+  "schema_version": "1.0",
+  "document_type": "quiz",
+  "generated_at": "2026-04-09T23:15:50.584115+00:00",
+  "title": "Sorting and Searching Algorithms",
+  "course": "Data Structures",
+  "level": "Intermediate",
+  "type": "Self-Assessment Quiz",
+  "instructions": [
+    "Read each question carefully and choose the best answer."
+  ],
+  "metadata": {
+    "time": "30 minutes",
+    "total_marks": 4,
+    "total_questions": 4
+  },
+  "sections": [
+    {
+      "section_letter": "A",
+      "section_title": "Multiple Choice",
+      "question_type": "multiple_choice",
+      "questions_count": 4,
+      "marks_per_question": 1.0,
+      "total_section_marks": 4,
+      "questions": [
+        {
+          "question_number": 1,
+          "question_text": "Which sorting algorithm builds a sorted array one item at a time and is efficient for nearly sorted data?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Selection sort"
+            },
+            {
+              "letter": "B",
+              "text": "Insertion sort"
+            },
+            {
+              "letter": "C",
+              "text": "Merge sort"
+            },
+            {
+              "letter": "D",
+              "text": "Quick sort"
+            }
+          ],
+          "correct_answer": "B",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 2,
+          "question_text": "What is the time complexity of Binary Search?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "O(n)"
+            },
+            {
+              "letter": "B",
+              "text": "O(n log n)"
+            },
+            {
+              "letter": "C",
+              "text": "O(log n)"
+            },
+            {
+              "letter": "D",
+              "text": "O(1)"
+            }
+          ],
+          "correct_answer": "C",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 3,
+          "question_text": "Which algorithm guarantees O(n log n) complexity regardless of the input distribution?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Quick sort"
+            },
+            {
+              "letter": "B",
+              "text": "Selection sort"
+            },
+            {
+              "letter": "C",
+              "text": "Merge sort"
+            },
+            {
+              "letter": "D",
+              "text": "Linear search"
+            }
+          ],
+          "correct_answer": "C",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 4,
+          "question_text": "What is the average lookup complexity for Hashing with a good distribution?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "O(1)"
+            },
+            {
+              "letter": "B",
+              "text": "O(log n)"
+            },
+            {
+              "letter": "C",
+              "text": "O(n)"
+            },
+            {
+              "letter": "D",
+              "text": "O(n^2)"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        }
+      ]
+    }
+  ],
+  "document_hash": "e68bc9774c6d9a319b611c4dd5cf0b98ec36a2f1d18fe08a289e0dffa6fcc65c"
+}

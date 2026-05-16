@@ -1,0 +1,1043 @@
+   {# --- Inject video context for JS --- #}
+    {% if from_video and video_context %}
+    <script>
+      window.KNOWLY_FROM_VIDEO = true;
+      window.KNOWLY_VIDEO_CONTEXT = {{ video_context|tojson|safe }};
+    </script>
+    {% else %}
+    <script>
+      window.KNOWLY_FROM_VIDEO = false;
+      window.KNOWLY_VIDEO_CONTEXT = null;
+    </script>
+    {% endif %}
+    <!-- Header removed for all devices -->
+
+    {% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/posts/create.css') }}">{%  endblock %}
+
+{% block content %}
+    {% if current_user.is_authenticated and not current_user.is_premium %}
+      {% set uploads_left = current_user.daily_uploads_left %}
+      {% if uploads_left == 0 %}
+        <div class="limit-banner limit-banner--empty">
+          <span class="material-symbols-outlined">block</span>
+          <span>You've used all <strong>2 free uploads</strong> for today. Resets at midnight.</span>
+        </div>
+      {% elif uploads_left == 1 %}
+        <div class="limit-banner limit-banner--warn">
+          <span class="material-symbols-outlined">warning</span>
+          <span><strong>1 upload remaining</strong> today on your free plan.</span>
+        </div>
+      {% endif %}
+    {% endif %}
+
+
+    <div class="step-bar">
+      <div class="step-pill" id="stepPill1">
+        <div class="step-num">1</div>
+        Your material
+      </div>
+      <div class="step-line"></div>
+      <div class="step-pill step-waiting" id="stepPill2">
+        <div class="step-num">2</div>
+        Generate
+      </div>
+      <div class="step-line"></div>
+      <div class="step-pill step-waiting" id="stepPill3">
+        <div class="step-num">3</div>
+        Preview
+      </div>
+    </div>
+
+    <div class="studio-grid studio-centered-grid">
+      <div class="studio-main-col">
+      <!-- Step 1: Your Material -->
+      <section class="studio-panel" id="step1Panel">
+        <div class="panel-label-row">
+          <span class="panel-label">Input Source</span>
+          <span class="ai-chip">
+            <span class="material-symbols-outlined">lightbulb</span>
+            AI Optimized
+          </span>
+        </div>
+
+        <div class="modebar" role="tablist" aria-label="Input mode">
+          <button type="button" id="modeUpload" class="modebtn modebtn-active" onclick="npSetMode('upload')">
+            <span class="material-symbols-outlined">upload_file</span>
+            Upload
+          </button>
+          <button type="button" id="modeText" class="modebtn" onclick="npSetMode('text')">
+            <span class="material-symbols-outlined">edit_note</span>
+            Paste
+          </button>
+          <button type="button" id="modeTopic" class="modebtn" onclick="npSetMode('topic')">
+            <span class="material-symbols-outlined">travel_explore</span>
+            Describe
+          </button>
+        </div>
+
+        <div id="npStepUpload" class="card">
+          <div id="npDropZone" class="dropzone" ondragover="npDrag(event, true)" ondragleave="npDrag(event, false)" ondrop="npDrop(event)">
+            <input id="npFileInput" type="file" accept=".pdf,.docx,.pptx,.ppt,.txt" onchange="npHandleFile(this)">
+            <button type="button" id="npFileRm" class="clear-btn" onclick="npClearFile()" style="display: none;" aria-label="Remove selected file">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+            <label for="npFileInput" class="drop-content">
+              <div class="drop-icon"><span id="npDropIcon" class="material-symbols-outlined">upload_file</span></div>
+              <h3 id="npDropName">Tap to upload your file</h3>
+              <p id="npDropSub">PDF, DOCX, PPTX, PPT, or TXT - max 10 MB</p>
+              <span class="select-btn">
+                <span class="material-symbols-outlined" style="font-size:0.9rem">upload</span>
+                Browse files
+              </span>
+            </label>
+          </div>
+
+          <ol class="guide-list">
+            <li>Use readable academic content with clear headings and topic context.</li>
+            <li>For best results, include concept explanations, examples, and key formulas.</li>
+            <li>If extraction fails, switch to Paste mode and provide raw text directly.</li>
+          </ol>
+        </div>
+
+        <div id="npStepText" class="card" style="display:none;">
+          <label class="field-label" for="npTextarea">Paste your notes</label>
+          {{ form.description(id="npTextarea", class="text-input", rows="10", placeholder="Paste lecture notes, summaries, or chapter text...", oninput="npCheckStep1()") }}
+          <div class="field-footer">
+            <p class="field-help">Minimum 50 characters for good results.</p>
+            <span id="charCount" class="char-count">0 / 50</span>
+          </div>
+        </div>
+
+        <div id="npStepTopic" class="card" style="display:none;">
+          <label class="field-label" for="npTopicInput">What should the AI generate?</label>
+          <textarea id="npTopicInput" class="topic-input" rows="10" placeholder="e.g. Intro to Thermodynamics for first-year engineering" oninput="npCheckStep1()"></textarea>
+          <div class="speech-row">
+            <button type="button" id="npSpeechBtn" class="speech-btn" onclick="toggleSpeechToText()">
+              <span class="material-symbols-outlined" id="npSpeechIcon">mic</span>
+              <span id="npSpeechLabel">Dictate</span>
+            </button>
+            <span id="npSpeechStatus" class="speech-status">Use your browser microphone to dictate the topic.</span>
+          </div>
+          <p class="field-help">Use a specific topic and level for better structure.</p>
+        </div>
+      </section>
+
+      <!-- Step 2: Generate -->
+      <section class="studio-panel results-panel" id="step2Panel" style="display:none;">
+        <div id="npInlineNotice" class="notice" style="display:none;">
+          <span class="material-symbols-outlined">warning</span>
+          <p id="npInlineNoticeText"></p>
+        </div>
+        <div class="results-shell-wrapper">
+          <div class="results-shell">
+            <div id="npPreAnalysis" class="idle-state">
+              <p class="format-label">Every upload generates</p>
+              <div class="format-badges">
+                <span class="fmt-badge"><span class="material-symbols-outlined">quiz</span>Quiz</span>
+                <span class="fmt-badge"><span class="material-symbols-outlined">description</span>Notes</span>
+                <span class="fmt-badge"><span class="material-symbols-outlined">auto_awesome_motion</span>Cheatsheet</span>
+                <span class="fmt-badge"><span class="material-symbols-outlined">style</span>Flashcards</span>
+              </div>
+              <div id="lockMessage" class="lock-message">
+                <span class="material-symbols-outlined">lock</span>
+                <p>Add your source material to unlock generation.</p>
+              </div>
+              <button type="button" id="generateBtn" class="primary-btn" onclick="startAnalysis()"
+                {% if current_user.is_authenticated and not current_user.is_premium and current_user.daily_uploads_left == 0 %}
+                disabled title="You've used all 2 free uploads for today. Resets at midnight."
+                {% endif %}>
+                Generate
+                <span class="material-symbols-outlined">auto_awesome</span>
+              </button>
+            </div>
+            <div id="npLoading" class="loading-state" style="display:none;">
+              <div class="loader-ring"></div>
+              <h3 id="loadingStatus">Reading your material</h3>
+              <p id="loadingSub">Pulling out the key concepts and structure</p>
+              <div class="loading-track"><div id="loadingBar" class="loading-bar"></div></div>
+              <div class="loading-steps">
+                <span class="lstep" id="lstep0">📄 Reading</span>
+                <span class="lstep" id="lstep1">❓ Quiz</span>
+                <span class="lstep" id="lstep2">📝 Notes</span>
+                <span class="lstep" id="lstep3">⚡ Cheatsheet</span>
+                <span class="lstep" id="lstep4">✦ Flashcards</span>
+              </div>
+            </div>
+            <div id="npRejected" class="rejected-state" style="display:none;">
+              <span class="material-symbols-outlined">report</span>
+              <h3>Not academic enough</h3>
+              <p id="rejectReason">This source is not suitable for structured academic generation.</p>
+              <button type="button" class="ghost-btn" onclick="npSetMode('upload')">Try another source</button>
+            </div>
+          </div>
+        </div>
+        <div class="guides-section">
+          <h3>Pro Curator Tip</h3>
+          <ul class="guides-list">
+            <li><strong>Upload structured content:</strong> Documents with clear headings, sections, and examples work best.</li>
+            <li><strong>Be specific with topics:</strong> The more detailed your description, the better the generated material.</li>
+            <li><strong>Check quality:</strong> Review each format before bookmarking to ensure coverage.</li>
+            <li><strong>All formats publish together:</strong> You choose which to bookmark first, but all three are saved.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Step 3: Preview (view-only) -->
+      <section class="studio-panel results-panel" id="step3Panel" style="display:none;">
+        <div id="npAnalysisResults">
+          <div class="tabrow" role="tablist" aria-label="Result format tabs">
+            <button type="button" id="tabQuiz" class="tabbtn tabbtn-active" onclick="switchResultTab('quiz')">Quiz</button>
+            <button type="button" id="tabNotes" class="tabbtn" onclick="switchResultTab('notes')">Notes</button>
+            <button type="button" id="tabCheatsheet" class="tabbtn" onclick="switchResultTab('cheatsheet')">Cheatsheet</button>
+            <button type="button" id="tabFlashcards" class="tabbtn" onclick="switchResultTab('flashcards')">Flashcards</button>
+          </div>
+          <div class="save-hint">Preview only — you can save or edit later from your library.</div>
+          <article class="preview-card">
+            <header class="preview-head">
+              <h3 id="previewTitle">Untitled Study Material</h3>
+              <div class="preview-meta">
+                <span id="previewMeta1"></span>
+                <span id="previewMeta2"></span>
+              </div>
+              <div id="previewConcepts" class="preview-concepts" style="display:none;"></div>
+            </header>
+            <div id="quizPreview"></div>
+            <div id="notesPreview" style="display:none;"></div>
+            <div id="cheatsheetPreview" style="display:none;"></div>
+            <div id="flashcardsPreview" style="display:none;"></div>
+          </article>
+        </div>
+      </section>
+      </div>
+      <!-- Desktop Sidebar for Tips -->
+      <aside class="studio-sidebar">
+        <div class="results-shell-wrapper">
+          <div class="results-shell">
+            <div class="format-badges">
+              <span class="fmt-badge"><span class="material-symbols-outlined">quiz</span>Quiz</span>
+              <span class="fmt-badge"><span class="material-symbols-outlined">description</span>Notes</span>
+              <span class="fmt-badge"><span class="material-symbols-outlined">auto_awesome_motion</span>Cheatsheet</span>
+              <span class="fmt-badge"><span class="material-symbols-outlined">style</span>Flashcards</span>
+            </div>
+          </div>
+        </div>
+        <div class="difficulty-section" style="margin-top: 1rem;">
+          <label for="content_difficulty" style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted, #64748b); display: block; margin-bottom: 0.5rem;">DIFFICULTY LEVEL</label>
+          <select id="content_difficulty" name="content_difficulty" class="difficulty-select" style="width: 100%; padding: 0.5rem; border-radius: 8px; background: var(--bg-input, #2e3244); color: var(--text-primary, #f1f5f9); border: 1px solid var(--border-color, #3e4255); font-size: 0.875rem;">
+            <option value="">Not specified</option>
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+          </select>
+        </div>
+        <div class="guides-section">
+          <h3>Pro Curator Tip</h3>
+          <ul class="guides-list">
+            <li><strong>Upload structured content:</strong> Documents with clear headings, sections, and examples work best.</li>
+            <li><strong>Be specific with topics:</strong> The more detailed your description, the better the generated material.</li>
+            <li><strong>Check quality:</strong> Review each format before bookmarking to ensure coverage.</li>
+            <li><strong>All formats publish together:</strong> You choose which to bookmark first, but all three are saved.</li>
+          </ul>
+        </div>
+      </aside>
+
+    <form class="hidden-csrf" aria-hidden="true">
+      {{ form.csrf_token }}
+    </form>
+
+    <!-- Library Search Modal -->
+    <div id="aiFailModal" class="modal-overlay" style="display:none;">
+      <div class="modal-dialog">
+        <button type="button" class="modal-close" aria-label="Close" onclick="closeAiFailModal()">&times;</button>
+        <h2>Couldn't generate what you wanted?</h2>
+        <p>Would you like to search the Knowly Library for similar resources?</p>
+        <form id="librarySearchForm" onsubmit="return handleLibrarySearch(event)">
+          <input type="text" id="librarySearchInput" class="modal-input" placeholder="Enter topic, course, or keyword..." required>
+          <button type="submit" class="primary-btn">Search Library</button>
+        </form>
+        <button type="button" class="ghost-btn" onclick="closeAiFailModal()">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']],
+      processEscapes: true,
+    },
+    options: {
+      skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+    },
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  let currentMode = 'upload';
+  let currentBundle = null;
+  let activeTab = 'quiz';
+  let preferredType = 'quiz';
+  let droppedFile = null;
+  let speechRecognition = null;
+  let speechListening = false;
+  let speechCommittedText = '';
+  let speechInterimText = '';
+
+  const analyzeUrl = '{{ url_for("posts.analyze_upload") }}';
+  const saveUrl = '{{ url_for("posts.save_selection") }}';
+  const csrfToken = '{{ form.csrf_token._value() }}';
+  const speechBtn = document.getElementById('npSpeechBtn');
+  const speechIcon = document.getElementById('npSpeechIcon');
+  const speechLabel = document.getElementById('npSpeechLabel');
+  const speechStatus = document.getElementById('npSpeechStatus');
+  const topicInput = document.getElementById('npTopicInput');
+
+  function getSpeechRecognition() {
+    if (speechRecognition) {
+      return speechRecognition;
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      return null;
+    }
+
+    speechRecognition = new SpeechRecognition();
+    speechRecognition.lang = 'en-US';
+    speechRecognition.continuous = true;
+    speechRecognition.interimResults = true;
+    speechRecognition.maxAlternatives = 1;
+
+    speechRecognition.onresult = function(event) {
+      let finalText = '';
+      let interimText = '';
+
+      for (let i = event.resultIndex; i < event.results.length; i += 1) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalText += transcript;
+        } else {
+          interimText += transcript;
+        }
+      }
+
+      if (finalText.trim()) {
+        speechCommittedText = [speechCommittedText, finalText.trim()].filter(Boolean).join(' ');
+      }
+      speechInterimText = interimText.trim();
+      topicInput.value = [speechCommittedText, speechInterimText].filter(Boolean).join(' ');
+      topicInput.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+
+    speechRecognition.onstart = function() {
+      speechListening = true;
+      speechCommittedText = (topicInput.value || '').trim();
+      speechInterimText = '';
+      if (speechBtn) speechBtn.classList.add('is-listening');
+      if (speechIcon) speechIcon.textContent = 'mic_off';
+      if (speechLabel) speechLabel.textContent = 'Stop';
+      if (speechStatus) speechStatus.textContent = 'Listening... speak clearly into your microphone.';
+    };
+
+    speechRecognition.onend = function() {
+      speechListening = false;
+      if (speechBtn) speechBtn.classList.remove('is-listening');
+      if (speechIcon) speechIcon.textContent = 'mic';
+      if (speechLabel) speechLabel.textContent = 'Dictate';
+      if (speechStatus) speechStatus.textContent = 'Use your browser microphone to dictate the topic.';
+    };
+
+    speechRecognition.onerror = function(event) {
+      speechListening = false;
+      if (speechStatus) {
+        speechStatus.textContent = event.error === 'not-allowed'
+          ? 'Microphone access was blocked in the browser.'
+          : 'Speech recognition stopped: ' + event.error;
+      }
+      speechCommittedText = '';
+      speechInterimText = '';
+      if (speechBtn) speechBtn.classList.remove('is-listening');
+      if (speechIcon) speechIcon.textContent = 'mic';
+      if (speechLabel) speechLabel.textContent = 'Dictate';
+    };
+
+    return speechRecognition;
+  }
+
+  window.toggleSpeechToText = function() {
+    const recognition = getSpeechRecognition();
+    if (!recognition) {
+      if (speechStatus) speechStatus.textContent = 'Speech-to-text is not supported in this browser.';
+      return;
+    }
+
+    if (speechListening) {
+      recognition.stop();
+      return;
+    }
+
+    recognition.start();
+  };
+
+  if (speechBtn && !getSpeechRecognition()) {
+    speechBtn.disabled = true;
+    if (speechStatus) speechStatus.textContent = 'Speech-to-text is not supported in this browser.';
+  }
+
+  function typesetPreviewMath() {
+    if (typeof window.MathJax === 'undefined' || !window.MathJax) {
+      return;
+    }
+
+    const elements = [
+      document.getElementById('quizPreview'),
+      document.getElementById('notesPreview'),
+      document.getElementById('cheatsheetPreview'),
+    ].filter(function(el) { return el && el.style && el.style.display !== 'none'; });
+
+    if (!elements || !elements.length) {
+      return;
+    }
+
+    if (typeof window.MathJax.typesetClear === 'function') {
+      try {
+        window.MathJax.typesetClear(elements);
+      } catch (e) {
+        /* ignore */
+      }
+    }
+
+    if (typeof window.MathJax.typesetPromise === 'function') {
+      window.MathJax.typesetPromise(elements).catch(function(err) {
+        console.warn('MathJax typeset warning:', err);
+      });
+    }
+  }
+
+  function showInlineNotice(message, tone) {
+    const box = document.getElementById('npInlineNotice');
+    const text = document.getElementById('npInlineNoticeText');
+    text.textContent = message || 'Something went wrong.';
+    box.className = 'notice';
+    if (tone === 'info') {
+      box.classList.add('notice-info');
+    }
+    box.style.display = 'flex';
+    box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function hideInlineNotice() {
+    const box = document.getElementById('npInlineNotice');
+    box.style.display = 'none';
+    box.className = 'notice';
+  }
+
+  function setResultsState(state) {
+    const pre = document.getElementById('npPreAnalysis');
+    const loading = document.getElementById('npLoading');
+    const rejected = document.getElementById('npRejected');
+    const results = document.getElementById('npAnalysisResults');
+
+    pre.style.display = state === 'pre' ? 'grid' : 'none';
+    loading.style.display = state === 'loading' ? 'grid' : 'none';
+    rejected.style.display = state === 'rejected' ? 'grid' : 'none';
+    results.style.display = state === 'results' ? 'block' : 'none';
+
+    const panel = document.getElementById('npStep2');
+    panel.dataset.state = state;
+  }
+
+  function setLocked(isLocked) {
+    const msg = document.getElementById('lockMessage');
+    const btn = document.getElementById('generateBtn');
+    if (msg) msg.style.display = isLocked ? 'flex' : 'none';
+    if (btn) btn.disabled = isLocked;
+  }
+
+  function updateGenerateButton() {
+    const btn = document.getElementById('generateBtn');
+    if (!btn) return;
+    btn.innerHTML = 'Generate Bundle <span class="material-symbols-outlined">auto_awesome</span>';
+  }
+
+  window.npSetMode = function(mode) {
+    currentMode = mode;
+
+    const map = {
+      upload: { btn: 'modeUpload', panel: 'npStepUpload', display: 'block' },
+      text: { btn: 'modeText', panel: 'npStepText', display: 'block' },
+      topic: { btn: 'modeTopic', panel: 'npStepTopic', display: 'block' },
+    };
+
+    Object.keys(map).forEach(function(key) {
+      const cfg = map[key];
+      const btn = document.getElementById(cfg.btn);
+      const panel = document.getElementById(cfg.panel);
+      const isActive = key === mode;
+      btn.classList.toggle('modebtn-active', isActive);
+      panel.style.display = isActive ? cfg.display : 'none';
+    });
+
+    npCheckStep1();
+  };
+
+  window.npCheckStep1 = function() {
+    let ready = false;
+
+    if (currentMode === 'upload') {
+      const input = document.getElementById('npFileInput');
+      ready = !!((input.files && input.files[0]) || droppedFile);
+    } else if (currentMode === 'text') {
+      const val = (document.getElementById('npTextarea').value || '').trim();
+      ready = val.length > 50;
+      const counter = document.getElementById('charCount');
+      if (counter) {
+        counter.textContent = val.length + ' / 50';
+        counter.classList.toggle('ready', ready);
+      }
+    } else {
+      ready = (topicInput.value || '').trim().length > 5;
+    }
+
+    setLocked(!ready);
+  };
+
+  window.npDrag = function(ev, on) {
+    ev.preventDefault();
+    const dz = document.getElementById('npDropZone');
+    if (on) dz.style.borderColor = 'color-mix(in srgb, var(--secondary) 55%, var(--border))';
+    else dz.style.borderColor = '';
+  };
+
+  window.npDrop = function(ev) {
+    ev.preventDefault();
+    const input = document.getElementById('npFileInput');
+    if (ev.dataTransfer.files && ev.dataTransfer.files.length) {
+      droppedFile = ev.dataTransfer.files[0];
+      npHandleFile(input, droppedFile);
+    }
+    npDrag(ev, false);
+  };
+
+  window.npHandleFile = function(input, fileOverride) {
+    const file = fileOverride || (input.files && input.files[0]) || droppedFile;
+    if (!file) return;
+
+    document.getElementById('npDropName').textContent = file.name;
+    document.getElementById('npDropSub').textContent = 'Ready for analysis (' + (file.size / 1024 / 1024).toFixed(2) + ' MB)';
+    document.getElementById('npDropIcon').textContent = 'check_circle';
+    document.getElementById('npFileRm').style.display = 'inline-flex';
+
+    hideInlineNotice();
+    document.getElementById('stepPill1').classList.remove('step-done');
+    document.getElementById('stepPill1').classList.remove('step-waiting');
+    document.getElementById('stepPill2').classList.add('step-waiting');
+    setResultsState('pre');
+    npCheckStep1();
+  };
+
+  function updateStepPills(step1Done) {
+  const p1 = document.getElementById('stepPill1');
+  const p2 = document.getElementById('stepPill2');
+  p1.classList.toggle('step-done', step1Done);
+  p2.classList.toggle('step-waiting', !step1Done);
+}
+
+  window.npClearFile = function() {
+    const input = document.getElementById('npFileInput');
+    input.value = '';
+    droppedFile = null;
+
+    document.getElementById('npDropName').textContent = 'Upload your study source';
+    document.getElementById('npDropSub').textContent = 'PDF, DOCX, PPTX, PPT, or TXT. Max 10MB.';
+    document.getElementById('npDropIcon').textContent = 'upload_file';
+    document.getElementById('npFileRm').style.display = 'none';
+
+    currentBundle = null;
+    activeTab = 'quiz';
+
+    hideInlineNotice();
+    setResultsState('pre');
+    npCheckStep1();
+  };
+
+  window.startAnalysis = async function() {
+    if (document.getElementById('generateBtn').disabled) {
+      showInlineNotice('Complete Step 01 before generating results.');
+      return;
+    }
+
+    hideInlineNotice();
+    document.getElementById('stepPill1').classList.add('step-done');
+    document.getElementById('stepPill1').classList.remove('step-waiting');
+    document.getElementById('stepPill2').classList.remove('step-waiting');
+    setResultsState('loading');
+
+    const loadingBar = document.getElementById('loadingBar');
+    const status = document.getElementById('loadingStatus');
+    const sub = document.getElementById('loadingSub');
+
+    // Timeline: each stage has a realistic duration and maps to a progress window.
+    // Paced so the bar moves fast at the start (extraction is quick) and slows
+    // during AI work — matching what's actually happening on the server.
+    const stages = [
+      { id: 0, t: 'Reading your material',     s: 'Pulling out the key concepts and structure.',         from: 0,  to: 12, ms: 3500  },
+      { id: 1, t: 'Building your quiz',         s: '30 exam-style questions — this one takes a moment.',  from: 12, to: 42, ms: 28000 },
+      { id: 2, t: 'Writing structured notes',   s: 'Organising sections, examples, and formulas.',        from: 42, to: 65, ms: 20000 },
+      { id: 3, t: 'Compiling the cheatsheet',   s: 'Distilling key facts into a fast-reference sheet.',   from: 65, to: 82, ms: 15000 },
+      { id: 4, t: 'Generating flashcards',      s: 'Wrapping up — almost ready for you.',                 from: 82, to: 92, ms: 10000 },
+    ];
+
+    let currentStage = 0;
+    let stageStart = Date.now();
+    let rafId = null;
+
+    function setStep(activeId, doneUpTo) {
+      for (let i = 0; i < 5; i++) {
+        const el = document.getElementById('lstep' + i);
+        if (!el) continue;
+        el.classList.remove('lstep-active', 'lstep-done');
+        if (i < doneUpTo) el.classList.add('lstep-done');
+        else if (i === activeId) el.classList.add('lstep-active');
+      }
+    }
+
+    function tickLoading() {
+      const stage = stages[currentStage];
+      const elapsed = Date.now() - stageStart;
+      const stageFraction = Math.min(elapsed / stage.ms, 0.96); // never fully complete a stage
+      const progress = stage.from + stageFraction * (stage.to - stage.from);
+
+      loadingBar.style.width = Math.min(progress, 92) + '%';
+      status.textContent = stage.t;
+      sub.textContent = stage.s;
+      setStep(stage.id, stage.id);
+
+      // Advance to next stage when this one's time is up
+      if (elapsed >= stage.ms && currentStage < stages.length - 1) {
+        currentStage++;
+        stageStart = Date.now();
+        setStep(stages[currentStage].id, stages[currentStage].id);
+      }
+
+      rafId = requestAnimationFrame(tickLoading);
+    }
+
+    setStep(0, 0);
+    rafId = requestAnimationFrame(tickLoading);
+    const ticker = { cancel: () => cancelAnimationFrame(rafId) };
+
+    try {
+      const formData = new FormData();
+
+      if (currentMode === 'upload') {
+        const fileInput = document.getElementById('npFileInput');
+        const file = (fileInput.files && fileInput.files[0]) || droppedFile;
+        if (!file) {
+          throw new Error('Choose a file before analyzing.');
+        }
+        if (file.size > 10 * 1024 * 1024) {
+          throw new Error('File exceeds the 10 MB limit. Please choose a smaller file.');
+        }
+        formData.append('document', file);
+      } else {
+        const raw = currentMode === 'text'
+          ? document.getElementById('npTextarea').value
+          : document.getElementById('npTopicInput').value;
+        if (!raw || !raw.trim()) {
+          throw new Error('Provide source text before analyzing.');
+        }
+        const blob = new Blob([raw], { type: 'text/plain' });
+        const filename = currentMode === 'text' ? 'pasted-notes.txt' : 'topic-request.txt';
+        formData.append('document', blob, filename);
+      }
+
+      const response = await fetch(analyzeUrl, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrfToken },
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || data.message || 'Analysis failed.');
+      }
+
+      if (data.ai_available === false) {
+        setResultsState('pre');
+        showInlineNotice(data.message || 'AI is temporarily unavailable.');
+        return;
+      }
+
+      if (data.is_academic === false) {
+        document.getElementById('rejectReason').textContent = data.reason || 'This source is not suitable for structured academic generation.';
+        setResultsState('rejected');
+        return;
+      }
+
+      currentBundle = data;
+      setStep(-1, 5); // mark all steps done
+      loadingBar.style.width = '100%';
+      await new Promise(r => setTimeout(r, 350)); // brief moment to show completion
+      renderBundle(data.metadata || {}, data);
+      setResultsState('results');
+      switchResultTab(preferredType);
+      if (data.repair_applied === true) {
+        const repairCount = Array.isArray(data.repair_reasons) ? data.repair_reasons.length : 0;
+        const reasonText = repairCount > 0 ? ` (${repairCount} fix${repairCount > 1 ? 'es' : ''})` : '';
+        showInlineNotice('We kept valid sections and auto-patched validation issues' + reasonText + '.', 'info');
+      }
+    } catch (err) {
+      setResultsState('pre');
+      showInlineNotice(err.message || 'Analysis failed. Try another source.');
+    } finally {
+      ticker.cancel();
+      if (document.getElementById('npLoading').style.display !== 'none') {
+        loadingBar.style.width = '100%';
+        setTimeout(function() { loadingBar.style.width = '0%'; }, 300);
+      }
+    }
+  };
+
+  function renderBundle(meta, bundle) {
+    if (!meta || typeof meta !== 'object') meta = {};
+    if (!bundle || typeof bundle !== 'object') bundle = {};
+    
+    const previewTitle = document.getElementById('previewTitle');
+    if (previewTitle) {
+      previewTitle.textContent = String(meta.title || 'Untitled Study Material');
+    }
+    
+    const previewMeta1 = document.getElementById('previewMeta1');
+    if (previewMeta1) {
+      previewMeta1.textContent = (String(meta.subject_hint || 'General Study') || 'General Study').toUpperCase();
+    }
+    
+    const previewMeta2 = document.getElementById('previewMeta2');
+    if (previewMeta2) {
+      previewMeta2.textContent = 'AI GENERATED';
+    }
+
+    const previewConcepts = document.getElementById('previewConcepts');
+    if (previewConcepts) {
+      const mainTopic = String(meta.main_topic || meta.topic || meta.focus_topic || '').trim();
+      const subtopics = Array.isArray(meta.subtopics) ? meta.subtopics : [];
+      const chips = [];
+
+      if (mainTopic) {
+        chips.push('<span class="preview-concept-chip"><span class="material-symbols-outlined">target</span>' + escapeHtml(mainTopic) + '</span>');
+      }
+
+      subtopics.slice(0, 4).forEach(function(topic) {
+        const clean = String(topic || '').trim();
+        if (clean) {
+          chips.push('<span class="preview-concept-chip"><span class="material-symbols-outlined">label</span>' + escapeHtml(clean) + '</span>');
+        }
+      });
+
+      if (chips.length) {
+        previewConcepts.innerHTML = chips.join('');
+        previewConcepts.style.display = 'flex';
+      } else {
+        previewConcepts.innerHTML = '';
+        previewConcepts.style.display = 'none';
+      }
+    }
+
+    renderQuizPreview(bundle.quiz || {});
+    renderNotesPreview(bundle.notes || {});
+    renderCheatsheetPreview(bundle.cheatsheet || {});
+
+    setTimeout(typesetPreviewMath, 100);
+  }
+
+  function snippet(title, body) {
+    return '<section class="preview-snippet"><h4>' + title + '</h4>' + body + '</section>';
+  }
+
+  function esc(v) {
+    if (!v) return '';
+    const s = String(v);
+    return s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function escapeHtml(text) {
+    return esc(text);
+  }
+
+  function renderMarkdownWithMath(markdown) {
+    if (!markdown || typeof markdown !== 'string') {
+      return '';
+    }
+
+    if (typeof marked !== 'undefined' && marked && marked.parse) {
+      try {
+        return marked.parse(markdown);
+      } catch (e) {
+        return '<p>' + escapeHtml(markdown).replace(/\n/g, '<br>') + '</p>';
+      }
+    }
+
+    return '<p>' + escapeHtml(markdown).replace(/\n/g, '<br>') + '</p>';
+  }
+
+  function renderQuizPreview(quiz) {
+    const host = document.getElementById('quizPreview');
+    if (!host) return;
+
+    let questions = [];
+    if (quiz && typeof quiz === 'object') {
+      questions = Array.isArray(quiz.questions) ? quiz.questions : [];
+    }
+
+if (!questions || !questions.length) {
+        const failMsg = (bundle && bundle.quiz_failed)
+          ? '<p>⚠️ Quiz generation failed this time — notes and cheatsheet are still available. Try uploading again in a moment.</p>'
+          : '<p>No quiz questions were generated.</p>';
+        host.innerHTML = snippet('Quiz', failMsg);
+        return;
+      }
+      
+    host.innerHTML = questions.slice(0, 5).map(function(q, i) {
+      if (!q || typeof q !== 'object') {
+        return snippet('Question ' + (i + 1), '<p>Invalid question data.</p>');
+      }
+
+      const stem = esc(q.question || ('Question ' + (i + 1)));
+      const rawOptions = Array.isArray(q.options) ? q.options : (Array.isArray(q.choices) ? q.choices : []);
+      
+      let opts = '';
+      if (rawOptions && rawOptions.length) {
+        opts = rawOptions.slice(0, 4).map(function(opt) {
+          const text = (opt && typeof opt === 'object') ? esc(opt.text || opt.value || 'Option') : esc(opt || 'Option');
+          return '<li>' + text + '</li>';
+        }).join('');
+      } else {
+        opts = '<li>Option A</li><li>Option B</li><li>Option C</li><li>Option D</li>';
+      }
+      
+      return snippet('Question ' + (i + 1), '<p>' + stem + '</p><ul>' + opts + '</ul>');
+    }).join('');
+  }
+
+  function noteBlockToMarkdown(block) {
+    if (typeof block === 'string') {
+      return String(block || '');
+    }
+    if (!block || typeof block !== 'object') {
+      return '';
+    }
+
+    const text = String(block.text || block.content || block.summary || '').trim();
+    const label = block.label ? ('**' + String(block.label) + '**\n') : '';
+
+    if (block.block_type === 'list' && Array.isArray(block.items) && block.items.length) {
+      return label + block.items.map(function(item) { 
+        return '- ' + String(item || ''); 
+      }).join('\n');
+    }
+
+    if ((block.block_type === 'worked_example' || block.block_type === 'proof') && Array.isArray(block.steps) && block.steps.length) {
+      const intro = text ? (text + '\n') : '';
+      const steps = block.steps.map(function(step, idx) { 
+        return (idx + 1) + '. ' + String(step || ''); 
+      }).join('\n');
+      return label + intro + steps;
+    }
+
+    if (block.block_type === 'table' && Array.isArray(block.headers) && block.headers.length && Array.isArray(block.rows) && block.rows.length) {
+      const header = '| ' + block.headers.map(String).join(' | ') + ' |';
+      const divider = '| ' + block.headers.map(function() { return '---'; }).join(' | ') + ' |';
+      const rows = block.rows.map(function(row) {
+        const cells = Array.isArray(row) ? row.map(String) : [];
+        return '| ' + cells.join(' | ') + ' |';
+      }).join('\n');
+      return label + header + '\n' + divider + '\n' + rows;
+    }
+
+    return label + text;
+  }
+
+  function renderNotesPreview(notes) {
+    const host = document.getElementById('notesPreview');
+    if (!host) return;
+
+    let sections = [];
+    if (notes && typeof notes === 'object') {
+      sections = Array.isArray(notes.sections) ? notes.sections : (Array.isArray(notes.blocks) ? notes.blocks : []);
+    }
+
+    if (!sections || !sections.length) {
+      host.innerHTML = snippet('Notes', '<p>No notes sections were generated.</p>');
+      return;
+    }
+
+    host.innerHTML = sections.slice(0, 4).map(function(section, i) {
+      if (!section || typeof section !== 'object') {
+        return snippet('Section ' + (i + 1), '<p>Invalid section data.</p>');
+      }
+
+      const title = escapeHtml(section.section_title || section.title || section.heading || ('Section ' + (i + 1)));
+      const blocks = Array.isArray(section.content) ? section.content : [];
+      
+      let content = '';
+      if (blocks.length) {
+        content = blocks.slice(0, 4)
+          .map(noteBlockToMarkdown)
+          .filter(function(x) { return x; })
+          .join('\n\n');
+      } else {
+        content = section.body || section.summary || 'Review this section.';
+      }
+
+      const rendered = renderMarkdownWithMath(content);
+      
+      return snippet(title, rendered);
+    }).join('');
+  }
+
+  function renderCheatsheetPreview(sheet) {
+    const host = document.getElementById('cheatsheetPreview');
+    if (!host) return;
+
+    let sections = [];
+    if (sheet && typeof sheet === 'object') {
+      sections = Array.isArray(sheet.sections) ? sheet.sections : (Array.isArray(sheet.entries) ? sheet.entries : []);
+    }
+
+    if (!sections || !sections.length) {
+      host.innerHTML = snippet('Cheatsheet', '<p>No cheatsheet sections were generated.</p>');
+      return;
+    }
+
+    host.innerHTML = sections.slice(0, 4).map(function(section, i) {
+      if (!section || typeof section !== 'object') {
+        return snippet('Section ' + (i + 1), '<p>Invalid section data.</p>');
+      }
+
+      const title = esc(section.section_title || section.title || section.topic || ('Section ' + (i + 1)));
+      const entries = Array.isArray(section.entries) ? section.entries.slice(0, 5) : [];
+      
+      let content = '';
+      if (entries && entries.length) {
+        content = '<ul>' + entries.map(function(entry) {
+          if (!entry || typeof entry !== 'object') {
+            return '<li>Entry</li>';
+          }
+          const label = esc(entry.label || 'Entry');
+          const body = esc(entry.content || '');
+          const notes = (entry.notes) ? (' <em>' + esc(entry.notes) + '</em>') : '';
+          return '<li><strong>' + label + ':</strong> ' + body + notes + '</li>';
+        }).join('') + '</ul>';
+      } else {
+        content = '<p>No entries available.</p>';
+      }
+
+      return snippet(title, content);
+    }).join('');
+  }
+
+  window.switchResultTab = function(tab) {
+    if (!['quiz', 'notes', 'cheatsheet', 'flashcards'].includes(tab)) {
+      tab = 'quiz';
+    }
+    activeTab = tab;
+
+    const tabQuiz = document.getElementById('tabQuiz');
+    const tabNotes = document.getElementById('tabNotes');
+    const tabCheatsheet = document.getElementById('tabCheatsheet');
+    const tabFlashcards = document.getElementById('tabFlashcards');
+
+    if (tabQuiz) tabQuiz.classList.toggle('tabbtn-active', tab === 'quiz');
+    if (tabNotes) tabNotes.classList.toggle('tabbtn-active', tab === 'notes');
+    if (tabCheatsheet) tabCheatsheet.classList.toggle('tabbtn-active', tab === 'cheatsheet');
+    if (tabFlashcards) tabFlashcards.classList.toggle('tabbtn-active', tab === 'flashcards');
+
+    const quizEl = document.getElementById('quizPreview');
+    const notesEl = document.getElementById('notesPreview');
+    const cheatEl = document.getElementById('cheatsheetPreview');
+    const flashEl = document.getElementById('flashcardsPreview');
+
+    if (quizEl) quizEl.style.display = tab === 'quiz' ? 'block' : 'none';
+    if (notesEl) notesEl.style.display = tab === 'notes' ? 'block' : 'none';
+    if (cheatEl) cheatEl.style.display = tab === 'cheatsheet' ? 'block' : 'none';
+    if (flashEl) flashEl.style.display = tab === 'flashcards' ? 'block' : 'none';
+
+    const labelMap = { quiz: 'Quiz', notes: 'Notes', cheatsheet: 'Cheatsheet', flashcards: 'Flashcards' };
+    const bookmarkBtn = document.getElementById('bookmarkBtn');
+    if (bookmarkBtn) {
+      bookmarkBtn.innerHTML =
+        'Save ' + labelMap[tab] + ' Version' +
+        ' <span class="material-symbols-outlined">bookmark_add</span>';
+    }
+
+    setTimeout(typesetPreviewMath, 50);
+  };
+
+  window.finalizeSelection = async function() {
+    if (!currentBundle || !currentBundle[activeTab]) {
+      showInlineNotice('Generate content before saving.');
+      return;
+    }
+
+    const btn = document.getElementById('bookmarkBtn');
+    const original = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="material-symbols-outlined spin-icon">sync</span> Saving...';
+
+    try {
+      const payload = {
+        type: activeTab,
+        content: currentBundle[activeTab],
+        metadata: currentBundle.metadata || {},
+        bundle: {
+          quiz: currentBundle.quiz,
+          notes: currentBundle.notes,
+          cheatsheet: currentBundle.cheatsheet,
+          metadata: currentBundle.metadata,
+        },
+        content_difficulty: document.getElementById('content_difficulty')?.value || '',
+      };
+
+      const response = await fetch(saveUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to save generated content.');
+      }
+
+      window.location.href = data.redirect_url;
+    } catch (err) {
+      showInlineNotice(err.message || 'Could not save content.');
+      btn.disabled = false;
+      btn.innerHTML = original;
+    }
+  };
+
+  setResultsState('pre');
+  npSetMode('upload');
+  preferredType = 'quiz';
+  npCheckStep1();
+})();
+</script>
+{% endblock %}

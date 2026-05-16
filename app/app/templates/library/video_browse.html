@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block title %}Watch Videos{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components/pack_card.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/library/video_browse.css') }}">
+{% endblock %}
+
+{% block content %}
+{# ── SEARCH BAR ── #}
+<div class="vsn-bar">
+  <div class="vsn-inner">
+    <div class="vsn-search-wrap">
+      <div id="videoSearchPill" class="vsn-pill">
+        <i class="fas fa-search vsn-pill-icon"></i>
+        <input type="text" id="videoSearchInput" placeholder="Search any topic — calculus, circuits, algorithms…"
+          autocomplete="off" class="vsn-pill-input" value="{{ initial_query or '' }}"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();window.searchVideos && window.searchVideos(this.value);}">
+        <button type="button" id="videoSearchBtn" class="vsn-pill-btn vsn-pill-btn--go"
+          onclick="window.searchVideos && window.searchVideos(document.getElementById('videoSearchInput').value)"><i
+            class="fas fa-search"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="lib-wrap">
+  <div id="searchResultsSection" style="display: none; margin-bottom: 1.5rem;">
+    <div id="searchResultsGrid" class="explore-grid" style="display:grid;"></div>
+  </div>
+
+  {# ── PRELOADED VIDEOS (shown initially, hidden during search) ── #}
+  <div id="originalContent">
+    <div class="explore-grid" id="originalVideoGrid" style="margin-top: 1.5rem; position: relative; z-index: 0;">
+      {% if videos %}
+        {% for video in videos %}
+          <div class="sv-card-container" style="position: relative;">
+            <a href="{{ url_for('main.video_player', video_id=video.id) if video.db_id else url_for('main.video_player_external', yt=video.youtube_id, t=video.title, c=video.channel or 'YouTube') }}" class="explore-card">
+              <div class="explore-thumb">
+                {% if video.thumbnail %}
+                <img src="{{ video.thumbnail }}" alt="{{ video.title|strip_course_code }}" class="explore-img">
+                {% else %}
+                <img src="https://img.youtube.com/vi/{{ video.youtube_id }}/hqdefault.jpg"
+                  alt="{{ video.title|strip_course_code }}" class="explore-img"
+                  onerror="this.classList.add('hidden');this.nextElementSibling.classList.add('visible');">
+                <div class="explore-placeholder"
+                  style="display:none;width:100%;height:100%;align-items:center;justify-content:center;background:#1a1a2e;color:#4a4a6a;">
+                  <i class="fas fa-play"></i>
+                </div>
+                {% endif %}
+                <div class="explore-play">
+                  <svg viewBox="0 0 24 24" fill="white" width="22" height="22">
+                    <polygon points="6,3 21,12 6,21" />
+                  </svg>
+                </div>
+              </div>
+              <div class="explore-body">
+                <h3 class="explore-card-title" title="{{ video.title|strip_course_code }}">{{ video.title|strip_course_code }}</h3>
+                <div class="explore-card-footer">
+                  <p class="explore-card-meta">{{ video.subject.name|strip_course_code if video.subject else (video.channel or 'YouTube') }}</p>
+                </div>
+              </div>
+            </a>
+            {% if current_user.is_authenticated %}
+            <button class="vb-save-btn {% if video.id in saved_video_ids %}saved{% endif %}" data-video-id="{{ video.id }}"
+              onclick="toggleVideoSave(event, this)"
+              title="{% if video.id in saved_video_ids %}Saved{% else %}Save video{% endif %}"
+              style="position: absolute; bottom: 12px; right: 12px; z-index: 5;">
+              <i class="fas fa-bookmark"></i>
+            </button>
+            {% endif %}
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="vg-offline-msg">No videos available — check your connection or try a different device.</p>
+      {% endif %}
+    </div>
+  </div>{# End originalContent #}
+</div>
+
+{# ── SEARCH + SAVE SCRIPTS ── #}
+<script>
+async function toggleVideoSave(e, btn) {
+  e.preventDefault();
+  e.stopPropagation();
+
+  const videoId = btn.dataset.videoId;
+
+  const payload = {};
+  if (videoId) payload.video_id = videoId;
+
+  const res = await fetch(`/library/video/save`, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (res.ok) {
+    const data = await res.json();
+    btn.classList.toggle('saved', data.saved);
+    btn.title = data.saved ? 'Saved' : 'Save video';
+    if (data.video_id) {
+      btn.dataset.videoId = data.video_id;
+    }
+  }
+}
+
+(function() {
+  function searchVideos(query) {
+    const resultsSection = document.getElementById('searchResultsSection');
+    const resultsGrid    = document.getElementById('searchResultsGrid');
+    const originalContent = document.getElementById('originalContent');
+
+    if (!query || !query.trim()) {
+      if (resultsSection) resultsSection.style.display = 'none';
+      if (originalContent) originalContent.style.display = 'block';
+      return;
+    }
+
+    if (originalContent) originalContent.style.display = 'none';
+    if (resultsSection)  resultsSection.style.display  = 'block';
+    if (resultsGrid)     resultsGrid.style.display      = 'grid';
+    if (resultsGrid)     resultsGrid.innerHTML = '<p style="grid-column:1/-1;color:var(--text-muted);padding:2rem;text-align:center;">Searching…</p>';
+
+    fetch('/library/search-videos?q=' + encodeURIComponent(query) + '&limit=24')
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (!resultsGrid) return;
+        if (data.error === 'non_academic') {
+          resultsGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--text-muted);">No academic videos found for "' + query + '".<br><span style="font-size:0.85rem;opacity:0.8;">Try topics like "calculus", "physics", "programming".</span></div>';
+          return;
+        }
+        if (!data.videos || data.videos.length === 0) {
+          resultsGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--text-muted);">No videos found for "' + query + '"</div>';
+          return;
+        }
+        resultsGrid.innerHTML = data.videos.map(function(v) {
+          var thumb = v.thumbnail || ('https://img.youtube.com/vi/' + v.video_id + '/hqdefault.jpg');
+          var href  = v.db_id ? ('/library/video/' + v.db_id)
+                              : ('/library/video/ext?yt=' + encodeURIComponent(v.video_id) + '&t=' + encodeURIComponent(v.title) + '&c=' + encodeURIComponent(v.channel || 'YouTube'));
+          return '<div class="sv-card-container"><a href="' + href + '" class="explore-card"><div class="explore-thumb"><img src="' + thumb + '" alt="" class="explore-img" onerror="this.style.display=\'none\'"><div class="explore-play"><svg viewBox="0 0 24 24" fill="white" width="22" height="22"><polygon points="6,3 21,12 6,21"/></svg></div></div><div class="explore-body"><h3 class="explore-card-title">' + v.title + '</h3><div class="explore-card-footer"><p class="explore-card-meta">' + (v.subject || v.channel || '') + '</p></div></div></a></div>';
+        }).join('');
+      })
+      .catch(function() {
+        if (resultsGrid) resultsGrid.innerHTML = '<p style="grid-column:1/-1;color:var(--text-muted);padding:2rem;text-align:center;">Search failed — check your connection.</p>';
+      });
+  }
+
+  function init() {
+    var btn   = document.getElementById('videoSearchBtn');
+    var input = document.getElementById('videoSearchInput');
+    if (!btn || !input) return;
+    btn.addEventListener('click', function() { searchVideos(input.value); });
+    input.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); searchVideos(input.value); }
+    });
+    // Auto-search if initial query provided (e.g. from ?q=)
+    if (input.value.trim()) {
+      searchVideos(input.value.trim());
+    }
+  }
+
+  document.addEventListener('turbo:load', init);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+{% endblock %}

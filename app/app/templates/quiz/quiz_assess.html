@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-4">Assess Quiz: {{ post.title }}</h1>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Quiz Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Total Marks:</strong> {{ quiz_data.total_marks }}</p>
+                    <p><strong>XP Reward:</strong> {{ quiz_data.xp_reward }}</p>
+                    <p><strong>Questions:</strong> {{ questions|length }}</p>
+                </div>
+            </div>
+            
+            <h2 class="mb-4">Attempts to Assess</h2>
+            
+            {% if attempts %}
+                {% for attempt in attempts %}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>Attempt by {{ attempt.user.username }}</h5>
+                            <small class="text-muted">
+                                {{ attempt.created_at.strftime('%B %d, %Y %H:%M:%S') }} • 
+                                {{ format_time_taken(attempt.time_taken) }} • 
+                                {{ attempt.score_pct|round(1) }}%
+                            </small>
+                        </div>
+                        <div class="card-body">
+                            {% set user_answers = attempt.answers|from_json %}
+                            
+                            {% for question in questions %}
+                                {% if question.is_open %}
+                                    <div class="mb-4">
+                                        <h6>Question {{ question.index + 1 }} ({{ question.marks }} marks)</h6>
+                                        <p>{{ question.text|safe }}</p>
+                                        
+                                        <div class="mb-2">
+                                            <strong>User's Answer:</strong>
+                                        </div>
+                                        <div class="bg-light p-3 rounded">
+                                            {{ user_answers.get(question.index|string, 'No answer provided') }}
+                                        </div>
+                                        
+                                        {% set assessment = assessments.get(attempt.id, {}).get(question.index) %}
+                                        <form method="POST" class="mt-3">
+                                            <input type="hidden" name="attempt_id" value="{{ attempt.id }}">
+                                            <input type="hidden" name="question_index" value="{{ question.index }}">
+                                            
+                                            <div class="form-group">
+                                                <label for="score-{{ attempt.id }}-{{ question.index }}">Score</label>
+                                                <input type="number" 
+                                                       id="score-{{ attempt.id }}-{{ question.index }}"
+                                                       name="score" 
+                                                       min="0" 
+                                                       max="{{ question.marks }}" 
+                                                       step="0.5"
+                                                       value="{{ assessment.score if assessment else 0.0 }}"
+                                                       class="form-control col-md-3">
+                                            </div>
+                                            
+                                            <div class="form-group">
+                                                <label for="feedback-{{ attempt.id }}-{{ question.index }}">Feedback (Optional)</label>
+                                                <textarea id="feedback-{{ attempt.id }}-{{ question.index }}"
+                                                          name="feedback"
+                                                          class="form-control"
+                                                          rows="3">{{ assessment.feedback if assessment else '' }}</textarea>
+                                            </div>
+                                            
+                                            <button type="submit" class="btn btn-primary">Save Assessment</button>
+                                        </form>
+                                        
+                                        {% if assessment %}
+                                            <div class="mt-2 text-muted">
+                                                Assessed by {{ assessment.assessor.username }} on {{ assessment.assessed_at.strftime('%B %d, %Y %H:%M:%S') }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <hr>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <h5>No attempts have been made for this quiz yet.</h5>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        // Convert JSON string to object for templates
+        Jinja2Extend({
+            from_json: function(value) {
+                return JSON.parse(value);
+            }
+        });
+    </script>
+{% endblock %}

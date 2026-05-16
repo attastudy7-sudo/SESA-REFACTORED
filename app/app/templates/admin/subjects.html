@@ -1,0 +1,90 @@
+{% extends "admin/base.html" %}
+{% block admin_title %}Subjects{% endblock %}
+{% block admin_content %}
+
+<div class="adm-header">
+    <div class="adm-header-left">
+        <div class="adm-header-icon"><i class="fas fa-folder-open"></i></div>
+        <div>
+            <p class="adm-header-title">Manage Subjects</p>
+            <p class="adm-header-sub">{{ subjects|length }} subject{{ 's' if subjects|length != 1 }}</p>
+        </div>
+    </div>
+    <div class="adm-header-actions">
+        <a href="{{ url_for('admin.create_subject') }}" class="adm-btn adm-btn--primary">
+            <i class="fas fa-plus"></i> New Subject
+        </a>
+    </div>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% for category, message in messages %}
+<div class="adm-flash adm-flash--{{ category }}">
+    <i class="fas fa-{% if category=='success' %}check-circle{% elif category=='danger' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+    {{ message }}
+</div>
+{% endfor %}
+{% endwith %}
+
+{% if subjects %}
+<div class="adm-table-wrap">
+    <table class="adm-table">
+        <thead>
+            <tr>
+                <th>Order</th>
+                <th>Subject</th>
+                <th>Description</th>
+                <th>Posts</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for subject in subjects %}
+            <tr class="{% if not subject.is_active %}is-inactive{% endif %}">
+                <td style="color:var(--text-muted);font-size:.8rem">{{ subject.order }}</td>
+                <td>
+                    <div style="display:flex;align-items:center;gap:.6rem">
+                        <i class="fas fa-{{ subject.icon }}" style="color:{{ subject.color }};font-size:1.1rem;width:18px;text-align:center"></i>
+                        <strong style="color:var(--text-primary);font-size:.84rem">{{ subject.name }}</strong>
+                    </div>
+                </td>
+                <td style="max-width:260px;font-size:.8rem">{{ subject.description or '—' }}</td>
+                <td><span class="adm-pill adm-pill--grey">{{ subject.post_count }} posts</span></td>
+                <td>
+                    <form action="{{ url_for('admin.toggle_subject', subject_id=subject.id) }}" method="post" style="display:contents">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="adm-btn adm-btn--sm {% if subject.is_active %}adm-btn--success{% else %}adm-btn--secondary{% endif %}">
+                            <i class="fas fa-{% if subject.is_active %}check-circle{% else %}times-circle{% endif %}"></i>
+                            {% if subject.is_active %}Active{% else %}Inactive{% endif %}
+                        </button>
+                    </form>
+                </td>
+                <td>
+                    <div style="display:flex;gap:.35rem">
+                        <a href="{{ url_for('admin.edit_subject', subject_id=subject.id) }}" class="adm-btn adm-btn--secondary adm-btn--sm">
+                            <i class="fas fa-pen"></i> Edit
+                        </a>
+                        <form action="{{ url_for('admin.delete_subject', subject_id=subject.id) }}" method="post" style="display:contents"
+                              onsubmit="return confirm('Delete {{ subject.name }}? This will unlink all posts from this subject.')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="adm-btn adm-btn--danger adm-btn--sm">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="adm-empty">
+    <i class="fas fa-folder-open"></i>
+    <p>No subjects yet. Create one to start organizing posts.</p>
+    <a href="{{ url_for('admin.create_subject') }}" class="adm-btn adm-btn--primary">Create Subject</a>
+</div>
+{% endif %}
+
+{% endblock %}

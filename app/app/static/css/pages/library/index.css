@@ -1,0 +1,310 @@
+/* Library page-scoped styles */
+
+/* ── WRAPPER ── */
+.lib-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.25rem 5rem;
+  min-height: 100vh;
+}
+@media (min-width: 1024px) { .lib-wrap { padding: 0 3rem 3rem; } }
+
+/* ── MARKETPLACE HERO ── */
+.lmh-hero {
+  padding: 2.5rem 0 1.5rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2rem;
+}
+.lmh-hero-text { margin-bottom: 1.25rem; }
+.lmh-headline {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 0.35rem;
+  line-height: 1.2;
+}
+.lmh-sub {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+@media (max-width: 640px) {
+  .lmh-headline { font-size: 1.25rem; }
+  .lmh-hero { padding: 1.5rem 0 1.25rem; }
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 768px) {
+    /* Ensure the search row takes full width */
+    .lmh-search-row {
+        display: flex !important;
+        width: 100% !important;
+        gap: 0 !important;
+    }
+
+    /* 1. Hide Create Button on Mobile */
+    .lmh-create-btn {
+        display: none !important;
+    }
+
+    /* 2. Make Search Box span full width and thinner */
+    .lmh-pill {
+        flex: 1 !important;
+        width: 100% !important;
+        height: 42px !important; /* Thinner profile */
+        position: relative !important;
+        padding-right: 8px !important;
+    }
+
+    .lmh-pill-input {
+        font-size: 14px !important;
+        padding-right: 40px !important; /* Make room for the button */
+    }
+
+    /* 3. Position the internal search button */
+    .lmh-internal-search-btn {
+        display: flex;
+        position: absolute;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: #6366f1; /* Your primary brand color */
+        color: white;
+        border: none;
+        border-radius: 8px;
+        width: 30px;
+        height: 30px;
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        border-radius: 50%;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 2;
+    }
+}
+
+/* Hide the internal button on Desktop */
+@media (min-width: 769px) {
+    .lmh-internal-search-btn {
+        display: none;
+    }
+}
+
+
+/* ── SEARCH + CREATE ROW ── */
+.lmh-search-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+.lmh-pill {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  background: var(--bg-secondary);
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  padding: 0 16px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.lmh-pill:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.10);
+  background: var(--bg-card);
+}
+.lmh-pill-icon {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  margin-right: 10px;
+}
+.lmh-pill:focus-within .lmh-pill-icon { color: var(--primary); }
+.lmh-pill-input {
+  all: unset;
+  flex: 1;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  padding: 11px 0;
+  min-width: 0;
+  cursor: text;
+  border: none;
+}
+.lmh-pill-input::placeholder { color: var(--text-muted); }
+.lmh-create-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 11px 20px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+  flex-shrink: 0;
+}
+.lmh-create-btn:hover { opacity: 0.88; transform: scale(1.02); }
+
+/* Mobile: glass-like pill styling with border and backdrop */
+@media (max-width: 768px) {
+  .lmh-pill {
+    background: rgba(255, 255, 255, 0.88) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1.5px solid rgba(0, 0, 0, 0.12) !important;
+    border-radius: 20px !important;
+    padding: 6px 6px 6px 18px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255,255,255,0.6) !important;
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  [data-theme="dark"] .lmh-pill {
+    background: rgba(30, 32, 45, 0.92) !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255,255,255,0.06) !important;
+  }
+  .lmh-pill:focus-within {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.22), 0 6px 24px rgba(0, 0, 0, 0.14) !important;
+  }
+  .lmh-pill-icon {
+    display: block !important;
+    color: var(--text-muted) !important;
+    font-size: 1rem !important;
+    margin-right: 10px !important;
+  }
+  .lmh-pill:focus-within .lmh-pill-icon {
+    color: var(--primary) !important;
+  }
+  .lmh-pill-input {
+    padding: 14px 0 !important;
+    background: transparent !important;
+    border: none !important;
+    color: var(--text-primary) !important;
+    font-size: 1rem !important;
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+  .lmh-pill-input::placeholder { color: var(--text-muted) !important; }
+  .lmh-pill-input:focus {
+    outline: none !important;
+  }
+  .lmh-create-btn {
+    background: var(--primary) !important;
+    border: none !important;
+    border-radius: 14px !important;
+    padding: 12px 20px !important;
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.38) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+  .lmh-create-btn:hover {
+    opacity: 0.92 !important;
+    transform: scale(1.03) !important;
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45) !important;
+  }
+  .lmh-create-btn:active {
+    transform: scale(0.97) !important;
+  }
+}
+
+/* ── SORT / FILTER CHIPS ── */
+.lmh-sort-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.lmh-sort-chip {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.lmh-sort-chip:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.lmh-sort-chip--active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+.lmh-sort-chip--active:hover {
+  color: #fff;
+  opacity: 0.9;
+}
+
+/* ── EMPTY STATE ── */
+.sp-empty {
+  padding: 8rem 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  grid-column: 1 / -1;
+}
+.sp-empty-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.sp-empty-desc {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  max-width: 400px;
+}
+
+/* Target mobile screens */
+@media (max-width: 768px) {
+    /* 1. Hide the Create Pack button */
+    .lmh-create-btn {
+        display: none !important;
+    }
+
+    /* 2. Force the search row to be a single row */
+    .lmh-search-row {
+        display: flex !important;
+        width: 100% !important;
+        padding: 0 10px !important;
+    }
+
+    /* 3. Make the search pill expand to fill the width */
+    .lmh-pill {
+        flex: 1 !important;
+        width: 100% !important;
+        height: 40px !important; /* Makes it thinner as requested */
+    }
+}
+
+
+/* Target the input specifically when it is focused */
+.lmh-pill-input:focus, 
+.lmh-pill-input:active {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-top-right-radius: 50%;
+    border-bottom-right-radius: 50%;
+    -webkit-tap-highlight-color: transparent; /* Fixes blue flash on mobile */
+}

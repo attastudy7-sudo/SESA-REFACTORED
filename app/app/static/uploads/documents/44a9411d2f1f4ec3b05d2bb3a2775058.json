@@ -1,0 +1,780 @@
+{
+  "schema_version": "1.0",
+  "document_type": "quiz",
+  "generated_at": "2026-04-10T00:20:07.931775+00:00",
+  "title": "Verification Bundle",
+  "course": "Physics",
+  "level": "Intermediate",
+  "type": "Self-Assessment Quiz",
+  "instructions": [
+    "Read each question carefully and choose the best answer."
+  ],
+  "metadata": {
+    "time": "30 minutes",
+    "total_marks": 30,
+    "total_questions": 30
+  },
+  "sections": [
+    {
+      "section_letter": "A",
+      "section_title": "Multiple Choice",
+      "question_type": "multiple_choice",
+      "questions_count": 30,
+      "marks_per_question": 1.0,
+      "total_section_marks": 30,
+      "questions": [
+        {
+          "question_number": 1,
+          "question_text": "Question 1: What is the best answer?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Correct option"
+            },
+            {
+              "letter": "B",
+              "text": "Distractor 1"
+            },
+            {
+              "letter": "C",
+              "text": "Distractor 2"
+            },
+            {
+              "letter": "D",
+              "text": "Distractor 3"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer is correct because it matches the core concept from the source and excludes the distractors."
+        },
+        {
+          "question_number": 2,
+          "question_text": "Question 2: What is the best answer?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Correct option"
+            },
+            {
+              "letter": "B",
+              "text": "Distractor 1"
+            },
+            {
+              "letter": "C",
+              "text": "Distractor 2"
+            },
+            {
+              "letter": "D",
+              "text": "Distractor 3"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer is correct because it matches the core concept from the source and excludes the distractors."
+        },
+        {
+          "question_number": 3,
+          "question_text": "Question 3: What is the best answer?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Correct option"
+            },
+            {
+              "letter": "B",
+              "text": "Distractor 1"
+            },
+            {
+              "letter": "C",
+              "text": "Distractor 2"
+            },
+            {
+              "letter": "D",
+              "text": "Distractor 3"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer is correct because it matches the core concept from the source and excludes the distractors."
+        },
+        {
+          "question_number": 4,
+          "question_text": "Question 4: What is the best answer?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Correct option"
+            },
+            {
+              "letter": "B",
+              "text": "Distractor 1"
+            },
+            {
+              "letter": "C",
+              "text": "Distractor 2"
+            },
+            {
+              "letter": "D",
+              "text": "Distractor 3"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer is correct because it matches the core concept from the source and excludes the distractors."
+        },
+        {
+          "question_number": 5,
+          "question_text": "Question 5: What is the best answer?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Correct option"
+            },
+            {
+              "letter": "B",
+              "text": "Distractor 1"
+            },
+            {
+              "letter": "C",
+              "text": "Distractor 2"
+            },
+            {
+              "letter": "D",
+              "text": "Distractor 3"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer is correct because it matches the core concept from the source and excludes the distractors."
+        },
+        {
+          "question_number": 6,
+          "question_text": "Question 6: What is the best answer?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Correct option"
+            },
+            {
+              "letter": "B",
+              "text": "Distractor 1"
+            },
+            {
+              "letter": "C",
+              "text": "Distractor 2"
+            },
+            {
+              "letter": "D",
+              "text": "Distractor 3"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer is correct because it matches the core concept from the source and excludes the distractors."
+        },
+        {
+          "question_number": 7,
+          "question_text": "Question 7: What is the best answer?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Correct option"
+            },
+            {
+              "letter": "B",
+              "text": "Distractor 1"
+            },
+            {
+              "letter": "C",
+              "text": "Distractor 2"
+            },
+            {
+              "letter": "D",
+              "text": "Distractor 3"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer is correct because it matches the core concept from the source and excludes the distractors."
+        },
+        {
+          "question_number": 8,
+          "question_text": "Question 8: What is the best answer?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Correct option"
+            },
+            {
+              "letter": "B",
+              "text": "Distractor 1"
+            },
+            {
+              "letter": "C",
+              "text": "Distractor 2"
+            },
+            {
+              "letter": "D",
+              "text": "Distractor 3"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer is correct because it matches the core concept from the source and excludes the distractors."
+        },
+        {
+          "question_number": 9,
+          "question_text": "Question 9: What is the best answer?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Correct option"
+            },
+            {
+              "letter": "B",
+              "text": "Distractor 1"
+            },
+            {
+              "letter": "C",
+              "text": "Distractor 2"
+            },
+            {
+              "letter": "D",
+              "text": "Distractor 3"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer is correct because it matches the core concept from the source and excludes the distractors."
+        },
+        {
+          "question_number": 10,
+          "question_text": "Question 10: What is the best answer?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Correct option"
+            },
+            {
+              "letter": "B",
+              "text": "Distractor 1"
+            },
+            {
+              "letter": "C",
+              "text": "Distractor 2"
+            },
+            {
+              "letter": "D",
+              "text": "Distractor 3"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer is correct because it matches the core concept from the source and excludes the distractors."
+        },
+        {
+          "question_number": 11,
+          "question_text": "Question 11: What is the best answer?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Correct option"
+            },
+            {
+              "letter": "B",
+              "text": "Distractor 1"
+            },
+            {
+              "letter": "C",
+              "text": "Distractor 2"
+            },
+            {
+              "letter": "D",
+              "text": "Distractor 3"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer is correct because it matches the core concept from the source and excludes the distractors."
+        },
+        {
+          "question_number": 12,
+          "question_text": "Question 12: What is the best answer?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Correct option"
+            },
+            {
+              "letter": "B",
+              "text": "Distractor 1"
+            },
+            {
+              "letter": "C",
+              "text": "Distractor 2"
+            },
+            {
+              "letter": "D",
+              "text": "Distractor 3"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer is correct because it matches the core concept from the source and excludes the distractors."
+        },
+        {
+          "question_number": 13,
+          "question_text": "Question 13: What is the best answer?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Correct option"
+            },
+            {
+              "letter": "B",
+              "text": "Distractor 1"
+            },
+            {
+              "letter": "C",
+              "text": "Distractor 2"
+            },
+            {
+              "letter": "D",
+              "text": "Distractor 3"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer is correct because it matches the core concept from the source and excludes the distractors."
+        },
+        {
+          "question_number": 14,
+          "question_text": "Question 14: What is the best answer?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Correct option"
+            },
+            {
+              "letter": "B",
+              "text": "Distractor 1"
+            },
+            {
+              "letter": "C",
+              "text": "Distractor 2"
+            },
+            {
+              "letter": "D",
+              "text": "Distractor 3"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer is correct because it matches the core concept from the source and excludes the distractors."
+        },
+        {
+          "question_number": 15,
+          "question_text": "Question 15: What is the best answer?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Correct option"
+            },
+            {
+              "letter": "B",
+              "text": "Distractor 1"
+            },
+            {
+              "letter": "C",
+              "text": "Distractor 2"
+            },
+            {
+              "letter": "D",
+              "text": "Distractor 3"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer is correct because it matches the core concept from the source and excludes the distractors."
+        },
+        {
+          "question_number": 16,
+          "question_text": "Question 16: What is the best answer?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Correct option"
+            },
+            {
+              "letter": "B",
+              "text": "Distractor 1"
+            },
+            {
+              "letter": "C",
+              "text": "Distractor 2"
+            },
+            {
+              "letter": "D",
+              "text": "Distractor 3"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer is correct because it matches the core concept from the source and excludes the distractors."
+        },
+        {
+          "question_number": 17,
+          "question_text": "Question 17: What is the best answer?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Correct option"
+            },
+            {
+              "letter": "B",
+              "text": "Distractor 1"
+            },
+            {
+              "letter": "C",
+              "text": "Distractor 2"
+            },
+            {
+              "letter": "D",
+              "text": "Distractor 3"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer is correct because it matches the core concept from the source and excludes the distractors."
+        },
+        {
+          "question_number": 18,
+          "question_text": "Question 18: What is the best answer?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Correct option"
+            },
+            {
+              "letter": "B",
+              "text": "Distractor 1"
+            },
+            {
+              "letter": "C",
+              "text": "Distractor 2"
+            },
+            {
+              "letter": "D",
+              "text": "Distractor 3"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer is correct because it matches the core concept from the source and excludes the distractors."
+        },
+        {
+          "question_number": 19,
+          "question_text": "Question 19: What is the best answer?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Correct option"
+            },
+            {
+              "letter": "B",
+              "text": "Distractor 1"
+            },
+            {
+              "letter": "C",
+              "text": "Distractor 2"
+            },
+            {
+              "letter": "D",
+              "text": "Distractor 3"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer is correct because it matches the core concept from the source and excludes the distractors."
+        },
+        {
+          "question_number": 20,
+          "question_text": "Question 20: What is the best answer?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Correct option"
+            },
+            {
+              "letter": "B",
+              "text": "Distractor 1"
+            },
+            {
+              "letter": "C",
+              "text": "Distractor 2"
+            },
+            {
+              "letter": "D",
+              "text": "Distractor 3"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer is correct because it matches the core concept from the source and excludes the distractors."
+        },
+        {
+          "question_number": 21,
+          "question_text": "Question 21: What is the best answer?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Correct option"
+            },
+            {
+              "letter": "B",
+              "text": "Distractor 1"
+            },
+            {
+              "letter": "C",
+              "text": "Distractor 2"
+            },
+            {
+              "letter": "D",
+              "text": "Distractor 3"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer is correct because it matches the core concept from the source and excludes the distractors."
+        },
+        {
+          "question_number": 22,
+          "question_text": "Question 22: What is the best answer?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Correct option"
+            },
+            {
+              "letter": "B",
+              "text": "Distractor 1"
+            },
+            {
+              "letter": "C",
+              "text": "Distractor 2"
+            },
+            {
+              "letter": "D",
+              "text": "Distractor 3"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer is correct because it matches the core concept from the source and excludes the distractors."
+        },
+        {
+          "question_number": 23,
+          "question_text": "Question 23: What is the best answer?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Correct option"
+            },
+            {
+              "letter": "B",
+              "text": "Distractor 1"
+            },
+            {
+              "letter": "C",
+              "text": "Distractor 2"
+            },
+            {
+              "letter": "D",
+              "text": "Distractor 3"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer is correct because it matches the core concept from the source and excludes the distractors."
+        },
+        {
+          "question_number": 24,
+          "question_text": "Question 24: What is the best answer?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Correct option"
+            },
+            {
+              "letter": "B",
+              "text": "Distractor 1"
+            },
+            {
+              "letter": "C",
+              "text": "Distractor 2"
+            },
+            {
+              "letter": "D",
+              "text": "Distractor 3"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer is correct because it matches the core concept from the source and excludes the distractors."
+        },
+        {
+          "question_number": 25,
+          "question_text": "Question 25: What is the best answer?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Correct option"
+            },
+            {
+              "letter": "B",
+              "text": "Distractor 1"
+            },
+            {
+              "letter": "C",
+              "text": "Distractor 2"
+            },
+            {
+              "letter": "D",
+              "text": "Distractor 3"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer is correct because it matches the core concept from the source and excludes the distractors."
+        },
+        {
+          "question_number": 26,
+          "question_text": "Question 26: What is the best answer?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Correct option"
+            },
+            {
+              "letter": "B",
+              "text": "Distractor 1"
+            },
+            {
+              "letter": "C",
+              "text": "Distractor 2"
+            },
+            {
+              "letter": "D",
+              "text": "Distractor 3"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer is correct because it matches the core concept from the source and excludes the distractors."
+        },
+        {
+          "question_number": 27,
+          "question_text": "Question 27: What is the best answer?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Correct option"
+            },
+            {
+              "letter": "B",
+              "text": "Distractor 1"
+            },
+            {
+              "letter": "C",
+              "text": "Distractor 2"
+            },
+            {
+              "letter": "D",
+              "text": "Distractor 3"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer is correct because it matches the core concept from the source and excludes the distractors."
+        },
+        {
+          "question_number": 28,
+          "question_text": "Question 28: What is the best answer?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Correct option"
+            },
+            {
+              "letter": "B",
+              "text": "Distractor 1"
+            },
+            {
+              "letter": "C",
+              "text": "Distractor 2"
+            },
+            {
+              "letter": "D",
+              "text": "Distractor 3"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer is correct because it matches the core concept from the source and excludes the distractors."
+        },
+        {
+          "question_number": 29,
+          "question_text": "Question 29: What is the best answer?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Correct option"
+            },
+            {
+              "letter": "B",
+              "text": "Distractor 1"
+            },
+            {
+              "letter": "C",
+              "text": "Distractor 2"
+            },
+            {
+              "letter": "D",
+              "text": "Distractor 3"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer is correct because it matches the core concept from the source and excludes the distractors."
+        },
+        {
+          "question_number": 30,
+          "question_text": "Question 30: What is the best answer?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Correct option"
+            },
+            {
+              "letter": "B",
+              "text": "Distractor 1"
+            },
+            {
+              "letter": "C",
+              "text": "Distractor 2"
+            },
+            {
+              "letter": "D",
+              "text": "Distractor 3"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer is correct because it matches the core concept from the source and excludes the distractors."
+        }
+      ]
+    }
+  ],
+  "document_hash": "1b52640a73f1d83f3cd8ede708e1d34a44f0bb6e4d40ec9cd80f4daae94481f0"
+}

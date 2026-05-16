@@ -1,0 +1,176 @@
+
+.rg-form { display: grid; gap: .9rem; }
+.adm-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .45rem;
+  justify-content: flex-end;
+}
+.rg-grid {
+  display: grid;
+  gap: .85rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.rg-grid label { display: grid; gap: .35rem; font-size: .8rem; color: var(--text-secondary); }
+.rg-grid input {
+  border: 1.5px solid var(--border);
+  background: var(--bg-main);
+  color: var(--text-primary);
+  border-radius: 10px;
+  padding: .55rem .7rem;
+  font-size: .84rem;
+}
+.rg-grid select {
+  border: 1.5px solid var(--border);
+  background: var(--bg-main);
+  color: var(--text-primary);
+  border-radius: 10px;
+  padding: .55rem .7rem;
+  font-size: .84rem;
+}
+.rg-grid textarea {
+  border: 1.5px solid var(--border);
+  background: var(--bg-main);
+  color: var(--text-primary);
+  border-radius: 10px;
+  padding: .55rem .7rem;
+  font-size: .84rem;
+  font-family: inherit;
+  resize: vertical;
+}
+.rg-block {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: .9rem;
+  display: grid;
+  gap: .65rem;
+  background: var(--bg-secondary);
+}
+.rg-block-title {
+  margin: 0;
+  font-size: .8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.rg-checks { display: flex; gap: 1rem; flex-wrap: wrap; font-size: .82rem; }
+.rg-checks label { display: inline-flex; align-items: center; gap: .35rem; color: var(--text-secondary); }
+.rg-actions {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+  padding-top: .25rem;
+  border-top: 1px solid var(--border);
+}
+.rg-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: .65rem;
+}
+.rg-stat {
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  border-radius: 10px;
+  padding: .6rem .7rem;
+  display: grid;
+  gap: .2rem;
+}
+.rg-stat span {
+  color: var(--text-muted);
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.rg-stat strong {
+  color: var(--text-primary);
+  font-size: .9rem;
+}
+.rg-errors { margin-top: .9rem; }
+.rg-errors ul { margin: .45rem 0 0; padding-left: 1rem; display: grid; gap: .45rem; }
+.rg-errors li { font-size: .8rem; color: var(--text-primary); }
+.rg-errors li span { color: #ef4444; font-size: .75rem; }
+.rg-help { margin: .25rem 0 .6rem; font-size: .8rem; color: var(--text-muted); }
+.rg-programmes { display: flex; flex-wrap: wrap; gap: .4rem; }
+.rg-programmes-select {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: .45rem;
+}
+.rg-programme-option {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: .2rem .45rem;
+  align-items: start;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: .55rem;
+  cursor: pointer;
+}
+.rg-programme-option input {
+  margin-top: .2rem;
+}
+.rg-programme-option span {
+  font-size: .8rem;
+  color: var(--text-primary);
+}
+.rg-programme-option small {
+  grid-column: 2;
+  color: var(--text-muted);
+  font-size: .7rem;
+}
+.rg-empty {
+  color: var(--text-muted);
+  font-size: .78rem;
+}
+.rg-fixed-types {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .45rem;
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  border-radius: 10px;
+  padding: .6rem .7rem;
+}
+.rg-fixed-label {
+  color: var(--text-muted);
+  font-size: .76rem;
+  font-weight: 700;
+}
+.rg-type-pill {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: .2rem .55rem;
+  font-size: .73rem;
+  color: var(--text-secondary);
+  background: var(--bg-main);
+}
+.rg-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: .3rem .55rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  font-size: .73rem;
+  color: var(--text-secondary);
+}
+
+.rg-jobs-list {
+  display: grid;
+  gap: .45rem;
+}
+
+.rg-job-row {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: .55rem .65rem;
+  display: flex;
+  justify-content: space-between;
+  gap: .45rem;
+  font-size: .78rem;
+}
+
+.rg-job-meta {
+  color: var(--text-muted);
+  font-size: .72rem;
+}

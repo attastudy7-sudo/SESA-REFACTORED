@@ -1,0 +1,72 @@
+{
+  "schema_version": "1.0",
+  "document_type": "cheatsheet",
+  "generated_at": "2026-04-10T00:09:05.215619+00:00",
+  "title": "Derivatives and Differentiation Techniques",
+  "course": "MA101 \u2013 Calculus I",
+  "level": "Intermediate",
+  "metadata": {
+    "purpose": "Rapid revision and recall",
+    "exam_context": "",
+    "topics": []
+  },
+  "sections": [
+    {
+      "section_title": "Core Formulas",
+      "section_type": "definitions",
+      "entries": [
+        {
+          "label": "Definition",
+          "content": "- **Power Rule**: $\\frac{d}{dx} x^n = nx^{n-1}$\n- **Product Rule**: $(uv)' = uv' + vu'$\n- **Quotient Rule**: $(\\frac{u}{v})' = \\frac{vu' - uv'}{v^2}$\n- **Chain Rule**: $\\frac{dy}{dx} = \\frac{dy}{du} \\frac{du}{dx}$"
+        },
+        {
+          "label": "Application",
+          "content": "Apply this concept using a simple practice example."
+        }
+      ]
+    },
+    {
+      "section_title": "Trigonometric Derivatives",
+      "section_type": "definitions",
+      "entries": [
+        {
+          "label": "Definition",
+          "content": "- $\\frac{d}{dx} \\sin x = \\cos x$\n- $\\frac{d}{dx} \\cos x = -\\sin x$\n- $\\frac{d}{dx} \\tan x = \\sec^2 x$\n- $\\frac{d}{dx} \\csc x = -\\csc x \\cot x$\n- $\\frac{d}{dx} \\sec x = \\sec x \\tan x$\n- $\\frac{d}{dx} \\cot x = -\\csc^2 x$"
+        },
+        {
+          "label": "Application",
+          "content": "Apply this concept using a simple practice example."
+        }
+      ]
+    },
+    {
+      "section_title": "Notation & Definitions",
+      "section_type": "definitions",
+      "entries": [
+        {
+          "label": "Definition",
+          "content": "- **Leibniz Notation**: $\\frac{dy}{dx}$\n- **Prime Notation**: $f'(x)$ or $y'$\n- **Increment Notation**: $\\Delta y = f(x + \\Delta x) - f(x)$\n- **Derivative at a point**: $\\frac{dy}{dx} = \\lim_{\\Delta x \\to 0} \\frac{\\Delta y}{\\Delta x}$"
+        },
+        {
+          "label": "Application",
+          "content": "Apply this concept using a simple practice example."
+        }
+      ]
+    },
+    {
+      "section_title": "Common Derivatives",
+      "section_type": "definitions",
+      "entries": [
+        {
+          "label": "Definition",
+          "content": "- $\\frac{d}{dx} e^x = e^x$\n- $\\frac{d}{dx} x = 1$\n- $\\frac{d}{dx} c = 0$\n- $\\frac{d}{dx} \\sqrt{x} = \\frac{1}{2\\sqrt{x}}$"
+        },
+        {
+          "label": "Application",
+          "content": "Apply this concept using a simple practice example."
+        }
+      ]
+    }
+  ],
+  "document_hash": "583fa866cdaa6b750cf368b5fcd535f14a9399a571e1ee8eba4de65ef3f5b4d8"
+}

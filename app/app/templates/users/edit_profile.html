@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Profile{% endblock %}
+
+{% block content %}
+<div class="ep-wrap">
+
+  <!-- Page header -->
+  <div class="ep-header">
+    <div class="ep-header-icon">
+      <i class="fas fa-user-edit"></i>
+    </div>
+    <div class="ep-header-text">
+      <h1 class="ep-title">Edit Profile</h1>
+      <p class="ep-subtitle"><i class="fas fa-palette"></i> Customise your profile information</p>
+    </div>
+  </div>
+
+  <!-- Form card -->
+  <div class="ep-card">
+    <form method="post" enctype="multipart/form-data" class="ep-form" novalidate>
+      {{ form.hidden_tag() }}
+
+      <!-- Avatar section -->
+      <div class="ep-avatar-section">
+        <div class="ep-avatar-row">
+          <div class="ep-avatar-wrap">
+            <img src="{{ current_user.profile_picture_url }}"
+                 alt="{{ current_user.username }}"
+                 class="ep-avatar"
+                 id="avatar-preview">
+            <div class="ep-avatar-badge"><i class="fas fa-camera"></i></div>
+          </div>
+          <div class="ep-avatar-info">
+            <h3 class="ep-avatar-label">Profile Picture</h3>
+            <p class="ep-avatar-hint">Square image, at least 200 x 200 px</p>
+          </div>
+        </div>
+
+        <div class="ep-file-wrap">
+          {{ form.profile_picture(class="ep-file-input", id="profile_picture",
+             onchange="epUpdateFile(this)", accept="image/*") }}
+          <label for="profile_picture" class="ep-file-label">
+            <i class="fas fa-upload"></i>
+            <span id="ep-file-name">Choose new picture</span>
+          </label>
+        </div>
+        {% if form.profile_picture.errors %}
+          <span class="ep-error"><i class="fas fa-exclamation-circle"></i> {{ form.profile_picture.errors[0] }}</span>
+        {% endif %}
+      </div>
+
+      <div class="ep-divider"></div>
+
+      <!-- Full name -->
+      <div class="ep-field">
+        <label class="ep-label">
+          <i class="fas fa-signature"></i>
+          {{ form.nickname.label.text }}
+        </label>
+        {{ form.nickname(class="ep-input", placeholder="Your nickname") }}
+        {% if form.nickname.errors %}
+          <span class="ep-error"><i class="fas fa-exclamation-circle"></i> {{ form.nickname.errors[0] }}</span>
+        {% endif %}
+      </div>
+
+      <!-- Bio -->
+      <div class="ep-field">
+        <label class="ep-label">
+          <i class="fas fa-pencil-alt"></i>
+          {{ form.bio.label.text }}
+          {% if not current_user.bio %}<span class="ep-xp-badge">+5 XP</span>{% endif %}
+        </label>
+        {{ form.bio(class="ep-input ep-textarea", rows=4,
+           placeholder="Tell us about yourself...", id="ep-bio") }}
+        {% if form.bio.errors %}
+          <span class="ep-error"><i class="fas fa-exclamation-circle"></i> {{ form.bio.errors[0] }}</span>
+        {% endif %}
+        <div class="ep-counter">
+          <span id="ep-bio-count">{{ form.bio.data|length if form.bio.data else 0 }}</span>/500
+        </div>
+      </div>
+
+      <!-- School -->
+      <div class="ep-field ep-field--dropdown">
+        <label class="ep-label">
+          <i class="fas fa-university"></i>
+          School / University
+          {% if not current_user.school %}<span class="ep-xp-badge">+10 XP</span>{% endif %}
+        </label>
+        <input type="text" id="ep-school-search"
+               placeholder="Search university..."
+               class="ep-input" autocomplete="off">
+        <input type="hidden" name="school" id="ep-school-value"
+               value="{{ form.school.data or '' }}">
+        <div class="ep-dropdown" id="ep-school-dropdown"></div>
+      </div>
+
+      <!-- Programme -->
+      <div class="ep-field ep-field--dropdown">
+        <label class="ep-label">
+          <i class="fas fa-graduation-cap"></i>
+          Programme / Course of Study
+          {% if not current_user.programme %}<span class="ep-xp-badge">+15 XP</span>{% endif %}
+        </label>
+        <input type="text" id="ep-prog-search"
+               placeholder="Search programme..."
+               class="ep-input" autocomplete="off">
+        <input type="hidden" name="programme" id="ep-prog-value"
+               value="{{ form.programme.data or '' }}">
+        <div class="ep-dropdown" id="ep-prog-dropdown"></div>
+      </div>
+
+      <div class="ep-divider"></div>
+
+      <!-- Actions -->
+      <div class="ep-actions">
+        <a href="{{ url_for('users.profile', username=current_user.username) }}"
+           class="ep-btn ep-btn--ghost">
+          <i class="fas fa-times"></i> Cancel
+        </a>
+        {{ form.submit(class="ep-btn ep-btn--primary") }}
+      </div>
+
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/users/edit_profile.css') }}">{%  endblock %}
+
+{% block extra_js %}
+<script>
+/* ── Avatar file preview ── */
+function epUpdateFile(input) {
+  var nameEl = document.getElementById('ep-file-name');
+  nameEl.textContent = (input.files[0] && input.files[0].name) || 'Choose new picture';
+  if (input.files && input.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      document.getElementById('avatar-preview').src = e.target.result;
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+/* ── Bio character counter ── */
+(function () {
+  var bio   = document.getElementById('ep-bio');
+  var count = document.getElementById('ep-bio-count');
+  if (!bio || !count) return;
+  bio.addEventListener('input', function () {
+    var n = this.value.length;
+    count.textContent = n;
+    count.classList.toggle('ep-warn', n > 450);
+  });
+})();
+
+/* ── Autocomplete dropdown factory ── */
+function epDropdown(searchId, dropdownId, hiddenId, items) {
+  var search   = document.getElementById(searchId);
+  var dropdown = document.getElementById(dropdownId);
+  var hidden   = document.getElementById(hiddenId);
+  if (!search) return;
+
+  /* Pre-fill the visible input from the hidden value */
+  if (hidden.value) search.value = hidden.value;
+
+  search.addEventListener('input', function () {
+    var q = this.value.trim().toLowerCase();
+    hidden.value = this.value;   /* allow custom free-text entries */
+    dropdown.innerHTML = '';
+
+    if (!q) { dropdown.classList.remove('open'); return; }
+
+    var hits = items.filter(function (i) { return i.toLowerCase().indexOf(q) !== -1; });
+
+    hits.forEach(function (item) {
+      var div = document.createElement('div');
+      div.className   = 'ep-dropdown-item';
+      div.textContent = item;
+      div.addEventListener('click', function () {
+        search.value = item;
+        hidden.value = item;
+        dropdown.classList.remove('open');
+      });
+      dropdown.appendChild(div);
+    });
+
+    dropdown.classList.toggle('open', hits.length > 0);
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('#' + searchId) && !e.target.closest('#' + dropdownId)) {
+      dropdown.classList.remove('open');
+    }
+  });
+}
+
+var UNIS = [
+  "University of Ghana",
+  "Kwame Nkrumah University of Science and Technology (KNUST)",
+  "University of Cape Coast",
+  "University for Development Studies",
+  "Ghana Institute of Management and Public Administration (GIMPA)",
+  "Ashesi University",
+  "Central University",
+  "Valley View University",
+  "Methodist University Ghana",
+  "University of Professional Studies Accra (UPSA)",
+  "Ghana Communication Technology University (GCTU)",
+  "Accra Technical University",
+  "Ho Technical University",
+  "Kumasi Technical University",
+  "Takoradi Technical University",
+  "Koforidua Technical University",
+  "Sunyani Technical University",
+  "Cape Coast Technical University",
+  "Wa Technical University",
+  "Bolgatanga Technical University",
+  "University of Health and Allied Sciences",
+  "Ghana Institute of Journalism",
+  "National Film and Television Institute (NAFTI)",
+  "SD Dombo University of Business and Integrated Development Studies",
+  "C.K. Tedam University of Technology and Applied Sciences",
+  "Regent University College of Science and Technology",
+  "Other"
+];
+
+var PROGS = [
+  "BSc Computer Science",
+  "BSc Information Technology",
+  "BSc Computer Engineering",
+  "BSc Electrical Engineering",
+  "BSc Mechanical Engineering",
+  "BSc Civil Engineering",
+  "BSc Chemical Engineering",
+  "BA Economics",
+  "BSc Business Administration",
+  "BSc Packaging Technology",
+  "BSc Accounting",
+  "BSc Marketing",
+  "BA English",
+  "BA History",
+  "BSc Mathematics",
+  "BSc Statistics",
+  "BSc Physics",
+  "BSc Chemistry",
+  "BSc Biology",
+  "BSc Biochemistry",
+  "BSc Nursing",
+  "BSc Pharmacy",
+  "MBChB Medicine and Surgery",
+  "BA Law",
+  "LLB Law",
+  "BSc Agriculture",
+  "BSc Education",
+  "BA Communication Studies",
+  "BSc Psychology",
+  "BSc Sociology",
+  "BSc Political Science",
+  "BSc Architecture",
+  "BSc Quantity Surveying",
+  "BSc Land Economy",
+  "MBA",
+  "MSc Computer Science",
+  "MSc Engineering",
+  "Other"
+];
+
+epDropdown('ep-school-search', 'ep-school-dropdown', 'ep-school-value', UNIS);
+epDropdown('ep-prog-search',   'ep-prog-dropdown',   'ep-prog-value',   PROGS);
+</script>
+{% endblock %}

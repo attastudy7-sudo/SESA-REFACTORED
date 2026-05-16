@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+{% block title %}Leaderboard — {{ post.title|strip_course_code }}{% endblock %}
+
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/quiz/quiz_leaderboard.css') }}">{%  endblock %}
+
+{% block content %}
+<div class="lb-page-container">
+
+    <!-- ══════════════════════════════════════
+         PAGE HEADER
+         ══════════════════════════════════════ -->
+    <div class="lb-view-header">
+        <div class="lb-header-content">
+            <div class="header-icon-wrap">
+                <i class="fas fa-trophy"></i>
+            </div>
+            <div class="header-text">
+                <h1>Quiz Leaderboard</h1>
+                <p class="header-subtitle">
+                    <i class="fas fa-book-open"></i>
+                    {{ post.title|strip_course_code }}
+                </p>
+            </div>
+        </div>
+        <a href="{{ url_for('posts.view', post_id=post.id) }}" class="back-link" data-knowly-back="1" data-back-fallback="{{ url_for('posts.view', post_id=post.id) }}">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back to Post</span>
+        </a>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         STATS STRIP
+         ══════════════════════════════════════ -->
+    <div class="lb-stats-card">
+        <div class="lb-stats-inner">
+            <div class="lb-stat-item">
+                <span class="lb-stat-val">{{ total_participants }}</span>
+                <span class="lb-stat-lbl"><i class="fas fa-users"></i> Participants</span>
+            </div>
+
+            {% if user_entry %}
+            <div class="lb-stat-divider"></div>
+            <div class="lb-stat-item">
+                <span class="lb-stat-val
+                    {% if user_entry.score_pct >= 80 %}lb-val-green
+                    {% elif user_entry.score_pct >= 60 %}lb-val-blue
+                    {% elif user_entry.score_pct >= 40 %}lb-val-amber
+                    {% else %}lb-val-red{% endif %}">
+                    {{ "%.2f"|format(user_entry.score_pct) }}%
+                </span>
+                <span class="lb-stat-lbl"><i class="fas fa-bullseye"></i> Your Score</span>
+            </div>
+            <div class="lb-stat-divider"></div>
+            <div class="lb-stat-item">
+                <span class="lb-stat-val lb-val-amber">+{{ user_entry.xp_earned }}</span>
+                <span class="lb-stat-lbl"><i class="fas fa-bolt"></i> XP Earned</span>
+            </div>
+            <div class="lb-stat-divider"></div>
+            <div class="lb-stat-item">
+                <span class="lb-stat-val">{{ format_time_taken(user_entry.time_taken) }}</span>
+                <span class="lb-stat-lbl"><i class="fas fa-clock"></i> Your Time</span>
+            </div>
+            <div class="lb-stat-divider"></div>
+            <div class="lb-stat-item">
+                {% if user_entry.score_pct >= 60 %}
+                    {% if user_entry.is_public %}
+                        <form method="POST"
+                              action="{{ url_for('quiz.quiz_unpublish', post_id=post.id) }}"
+                              style="margin:0;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="lb-publish-btn lb-publish-btn--active">
+                                <i class="fas fa-eye"></i> Listed
+                            </button>
+                        </form>
+                    {% else %}
+                        <form method="POST"
+                              action="{{ url_for('quiz.quiz_publish', post_id=post.id) }}"
+                              style="margin:0;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="lb-publish-btn">
+                                <i class="fas fa-trophy"></i> Publish
+                            </button>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    <span class="lb-publish-locked" title="Score must be ≥ 60% to publish">
+                        <i class="fas fa-lock"></i> 60% required
+                    </span>
+                {% endif %}
+                <span class="lb-stat-lbl"><i class="fas fa-globe"></i> Leaderboard</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         LEADERBOARD CARD
+         ══════════════════════════════════════ -->
+    <div class="lb-main-card">
+
+        <!-- Card header -->
+        <div class="lb-card-header">
+            <div class="lb-card-header-left">
+                <div class="lb-card-icon">
+                    <i class="fas fa-ranking-star"></i>
+                </div>
+                <div>
+                    <h2 class="lb-card-title">Top Performers</h2>
+                    <p class="lb-card-sub">Best attempt per user · sorted by score, then fastest time · must be ≥ 60% to appear</p>
+                </div>
+            </div>
+            <a href="{{ url_for('quiz.quiz_start', post_id=post.id) }}" class="btn-primary-app">
+                {% if user_entry %}
+                <i class="fas fa-redo"></i> Retake Quiz
+                {% else %}
+                <i class="fas fa-play"></i> Take Quiz
+                {% endif %}
+            </a>
+        </div>
+
+        {% if leaderboard_entries %}
+        <!-- ── Leaderboard rows ── -->
+        <div class="lb-list">
+            {% for entry in leaderboard_entries %}
+            <div class="lb-row
+                {% if loop.index == 1 %}lb-row--gold
+                {% elif loop.index == 2 %}lb-row--silver
+                {% elif loop.index == 3 %}lb-row--bronze{% endif %}
+                {% if current_user.is_authenticated and entry.user_id == current_user.id %} lb-row--me{% endif %}"
+                style="animation-delay: {{ (loop.index0 * 0.055) }}s;">
+
+                <!-- Rank -->
+                <div class="lb-rank">
+                    {% if loop.index == 1 %}
+                        <span class="lb-medal lb-medal--gold"><i class="fas fa-trophy"></i></span>
+                    {% elif loop.index == 2 %}
+                        <span class="lb-medal lb-medal--silver"><i class="fas fa-medal"></i></span>
+                    {% elif loop.index == 3 %}
+                        <span class="lb-medal lb-medal--bronze"><i class="fas fa-medal"></i></span>
+                    {% else %}
+                        <span class="lb-rank-num">#{{ loop.index }}</span>
+                    {% endif %}
+                </div>
+
+                <!-- User -->
+                <a href="{{ url_for('users.profile', username=entry.user.username) }}" class="lb-user">
+                    <img src="{{ entry.user.profile_picture_url }}"
+                         alt="{{ entry.user.username }}"
+                         class="lb-avatar">
+                    <div class="lb-user-info">
+                        <span class="lb-username">
+                            {{ entry.user.nickname or entry.user.username }}
+                            {% if current_user.is_authenticated and entry.user_id == current_user.id %}
+                            <span class="lb-you-pill">You</span>
+                            {% endif %}
+                        </span>
+                        <span class="lb-handle">@{{ entry.user.username }}</span>
+                    </div>
+                </a>
+
+                <!-- Score bar -->
+                <div class="lb-score-col">
+                    <div class="lb-bar-track">
+                        <div class="lb-bar-fill"
+                             style="width: {{ entry.score_pct }}%;
+                                    --bar-color:
+                                        {% if entry.score_pct >= 80 %}#10b981
+                                        {% elif entry.score_pct >= 60 %}#6366f1
+                                        {% elif entry.score_pct >= 40 %}#f59e0b
+                                        {% else %}#ef4444{% endif %};">
+                        </div>
+                    </div>
+                    <span class="lb-pct
+                        {% if entry.score_pct >= 80 %}lb-pct--green
+                        {% elif entry.score_pct >= 60 %}lb-pct--blue
+                        {% elif entry.score_pct >= 40 %}lb-pct--amber
+                        {% else %}lb-pct--red{% endif %}">
+                        {{ "%.2f"|format(entry.score_pct) }}%
+                    </span>
+                </div>
+
+                <!-- Time -->
+                <div class="lb-time">
+                    <i class="fas fa-clock"></i>
+                    {{ format_time_taken(entry.time_taken) }}
+                </div>
+
+                <!-- XP -->
+                <div class="lb-xp">
+                    <i class="fas fa-bolt"></i>
+                    +{{ entry.xp_earned }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- CTA footer -->
+        <div class="lb-cta-bar">
+            {% if not user_entry %}
+            <p class="lb-cta-text">You haven't taken this quiz yet. Challenge yourself!</p>
+            <a href="{{ url_for('quiz.quiz_start', post_id=post.id) }}" class="btn-primary-app">
+                <i class="fas fa-play"></i> Take the Quiz
+            </a>
+            {% else %}
+            <p class="lb-cta-text">Think you can do better? Give it another shot.</p>
+            <a href="{{ url_for('quiz.quiz_start', post_id=post.id) }}" class="btn-ghost-app">
+                <i class="fas fa-redo"></i> Retake &amp; Improve
+            </a>
+            {% endif %}
+        </div>
+
+        {% else %}
+        <!-- Empty state -->
+        <div class="lb-empty">
+            <div class="lb-empty-icon">
+                <i class="fas fa-flag-checkered"></i>
+            </div>
+            <h3 class="lb-empty-title">No attempts yet</h3>
+            <p class="lb-empty-text">Be the first to take the quiz and claim the top spot!</p>
+            <a href="{{ url_for('quiz.quiz_start', post_id=post.id) }}" class="btn-primary-app">
+                <i class="fas fa-play"></i> Take the Quiz
+            </a>
+        </div>
+        {% endif %}
+
+    </div><!-- /lb-main-card -->
+
+</div><!-- /lb-page-container -->
+
+{% endblock %}

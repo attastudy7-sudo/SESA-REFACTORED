@@ -1,0 +1,163 @@
+{% extends "admin/base.html" %}
+
+{% block extra_css %}{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin/resource_generation.css') }}">{%  endblock %}
+{% block admin_title %}Bulk Generation{% endblock %}
+{% block admin_content %}
+
+<div class="adm-header">
+  <div class="adm-header-left">
+    <div class="adm-header-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
+    <div>
+      <p class="adm-header-title">Bulk Generation</p>
+      <p class="adm-header-sub">Admin-only workspace for KnowlyGen-style gap-based content generation.</p>
+    </div>
+  </div>
+  <div class="adm-header-actions">
+    <a href="{{ url_for('admin.resource_generation_manual_job') }}" class="adm-btn adm-btn--secondary">
+      <i class="fas fa-plus"></i> Manual
+    </a>
+    <a href="{{ url_for('admin.resource_generation_generate_for_subject') }}" class="adm-btn adm-btn--secondary">
+      <i class="fas fa-magic"></i> Subject
+    </a>
+    <form method="POST" action="{{ url_for('admin.process_generation_queue') }}" style="display:inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="adm-btn adm-btn--secondary" type="submit" {% if not stats.pending or runner_state.running %}disabled{% endif %}>
+        <i class="fas fa-layer-group"></i> Process Queue
+      </button>
+    </form>
+    <a href="{{ url_for('admin.resource_generation_jobs') }}" class="adm-btn adm-btn--secondary">
+      <i class="fas fa-list-check"></i> Jobs
+    </a>
+    <a href="{{ url_for('admin.resource_generation_runs') }}" class="adm-btn adm-btn--secondary">
+      <i class="fas fa-timeline"></i> Runs
+    </a>
+    <a href="{{ url_for('admin.resource_generation_log') }}" class="adm-btn adm-btn--secondary">
+      <i class="fas fa-terminal"></i> Log
+    </a>
+    {% if runner_state.running %}
+    <form method="POST" action="{{ url_for('admin.stop_generation_run') }}" style="display:inline">
+      <button class="adm-btn adm-btn--secondary" type="submit">
+        <i class="fas fa-stop"></i> Stop
+      </button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="adm-card">
+  <p class="adm-card-title"><i class="fas fa-wave-square"></i> Runner Status</p>
+  <div class="rg-stats">
+    <div class="rg-stat"><span>Status</span><strong>{{ 'Running' if runner_state.running else 'Idle' }}</strong></div>
+    <div class="rg-stat"><span>Run ID</span><strong>{{ runner_state.run_id or '—' }}</strong></div>
+    <div class="rg-stat"><span>Pending</span><strong>{{ stats.pending }}</strong></div>
+    <div class="rg-stat"><span>Generating</span><strong>{{ stats.generating }}</strong></div>
+    <div class="rg-stat"><span>Posted</span><strong>{{ stats.posted }}</strong></div>
+    <div class="rg-stat"><span>Failed</span><strong>{{ stats.failed }}</strong></div>
+  </div>
+</div>
+
+<div class="adm-card">
+  <p class="adm-card-title"><i class="fas fa-sliders"></i> Run Configuration</p>
+  <form method="POST" class="rg-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div class="rg-grid">
+      <label>
+        <span>Minimum Coverage</span>
+        <input type="number" name="min_coverage" min="1" max="20" value="3" required>
+      </label>
+
+      <label>
+        <span>Topics Per Subject</span>
+        <input type="number" name="topics_per_subject" min="1" max="6" value="2" required>
+      </label>
+
+      <label>
+        <span>Max Subjects This Run</span>
+        <input type="number" name="max_subjects" min="1" max="200" value="10" required>
+      </label>
+
+      <label>
+        <span>Max API Calls</span>
+        <input type="number" name="max_api_calls" min="1" max="1000" value="50" required>
+      </label>
+
+      <label>
+        <span>Delay Between Jobs (seconds)</span>
+        <input type="number" name="delay_seconds" min="0" max="120" value="10" required>
+      </label>
+
+      <label>
+        <span>Year Filter</span>
+        <select name="year_filter">
+          <option value="">All</option>
+          <option value="1">Year 1</option>
+          <option value="2">Year 2</option>
+          <option value="3">Year 3</option>
+          <option value="4">Year 4</option>
+        </select>
+      </label>
+
+      <label>
+        <span>Semester Filter</span>
+        <select name="semester_filter">
+          <option value="">Both</option>
+          <option value="1">Semester 1</option>
+          <option value="2">Semester 2</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="rg-block">
+      <p class="rg-block-title">Programmes</p>
+      <p class="rg-help">Select one or more programmes. Leave all unchecked to run across all active programmes.</p>
+      <div class="rg-programmes-select">
+        {% for p in programmes %}
+          <label class="rg-programme-option">
+            <input type="checkbox" name="programme_slugs" value="{{ p.slug }}">
+            <span>{{ p.name }}</span>
+            <small>{{ p.slug }}</small>
+          </label>
+        {% else %}
+          <span class="rg-empty">No active programmes found.</span>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="rg-fixed-types" role="note" aria-label="Fixed content types">
+      <span class="rg-fixed-label">Always generates:</span>
+      <span class="rg-type-pill">Notes</span>
+      <span class="rg-type-pill">Quiz</span>
+      <span class="rg-type-pill">Cheatsheet</span>
+    </div>
+
+    <div class="rg-actions">
+      <button type="submit" name="dry_run" value="1" class="adm-btn adm-btn--secondary">
+        <i class="fas fa-vial"></i> Dry Run
+      </button>
+      <button type="submit" name="dry_run" value="0" class="adm-btn adm-btn--primary">
+        <i class="fas fa-play"></i> Run Generation
+      </button>
+    </div>
+  </form>
+</div>
+
+{% if recent_jobs %}
+<div class="adm-card">
+  <p class="adm-card-title"><i class="fas fa-clock-rotate-left"></i> Recent Generation Jobs</p>
+  <div class="rg-jobs-list">
+    {% for job in recent_jobs %}
+      <div class="rg-job-row">
+        <div>
+          <strong>{{ job.topic }}</strong>
+          <div class="rg-job-meta">{{ job.subject_slug }} · {{ job.content_type }} · {{ job.status }}</div>
+        </div>
+        <div class="rg-job-meta">#{{ job.id }}</div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/payments/my_subscription.css') }}">{%  endblock %}
+
+{% block content %}
+<div class="sub-container">
+
+  <!-- Page header -->
+  <div class="purchases-header">
+    <div class="header-icon" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">
+      <i class="fas fa-crown"></i>
+    </div>
+    <div>
+      <h1>My Subscription</h1>
+      <p>Manage your plan and view billing history</p>
+    </div>
+  </div>
+
+  <!-- ── Active plan card ── -->
+  {% if active_sub %}
+  {% set days_left = ((active_sub.expires_at - now).days) if active_sub else 0 %}
+  <div class="sub-active-card">
+    <div class="sub-active-top">
+      <div class="sub-plan-badge">
+        <i class="fas fa-bolt"></i> {{ active_sub.plan_name }}
+      </div>
+      <span class="sub-status-pill sub-status-pill--active">Active</span>
+    </div>
+
+    <div class="sub-details-grid">
+      <div class="sub-detail-item">
+        <span class="sub-detail-label">Started</span>
+        <span class="sub-detail-val">{{ active_sub.started_at.strftime('%b %d, %Y') }}</span>
+      </div>
+      <div class="sub-detail-item">
+        <span class="sub-detail-label">Expires</span>
+        <span class="sub-detail-val">{{ active_sub.expires_at.strftime('%b %d, %Y') }}</span>
+      </div>
+      <div class="sub-detail-item">
+        <span class="sub-detail-label">Amount paid</span>
+        <span class="sub-detail-val">GHS {{ "%.2f"|format(active_sub.amount_paid) }}</span>
+      </div>
+      <div class="sub-detail-item">
+        <span class="sub-detail-label">Payment method</span>
+        <span class="sub-detail-val">{{ active_sub.payment_method | title if active_sub.payment_method else '—' }}</span>
+      </div>
+    </div>
+
+    <!-- Days remaining bar -->
+    {% set plan = plans.get(active_sub.plan_key, {}) %}
+    {% set total_days = plan.get('duration_days', 30) %}
+    {% set days_used  = (total_days - ((active_sub.expires_at - now).days | int)) %}
+    {% set pct_used   = ([([days_used, 0]|max), total_days]|min * 100 // total_days) %}
+    <div class="sub-days-wrap">
+      <div class="sub-days-bar-track">
+        <div class="sub-days-bar-fill" style="width:{{ pct_used }}%"></div>
+      </div>
+      <p class="sub-days-hint">
+        {% set days_rem = ((active_sub.expires_at - now).days) | int %}
+        {% if days_rem <= 3 %}
+          <span style="color:#ef4444;font-weight:700;">⚠️ {{ days_rem }} day{{ 's' if days_rem != 1 }} remaining — renew soon!</span>
+        {% else %}
+          {{ days_rem }} day{{ 's' if days_rem != 1 }} remaining
+        {% endif %}
+      </p>
+    </div>
+
+    <!-- Features included -->
+    {% if plan.get('features') %}
+    <ul class="sub-features">
+      {% for f in plan['features'] %}
+      <li><i class="fas fa-check-circle"></i> {{ f }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+
+  {% else %}
+  <!-- No active plan -->
+  <div class="sub-inactive-card">
+    <div class="sub-inactive-icon">👑</div>
+    <h2>No active subscription</h2>
+    <p>Upgrade to get unlimited quiz attempts, full answer explanations, and leaderboard access.</p>
+    <a href="{{ url_for('payments.plan_checkout', plan='monthly_unlimited') }}"
+       class="sub-upgrade-btn">
+      <i class="fas fa-bolt"></i> Upgrade Now — GHS 20 / month
+    </a>
+  </div>
+  {% endif %}
+
+  <!-- ── Billing history ── -->
+  {% if history %}
+  <div class="sub-history-section">
+    <h2 class="sub-section-title">Billing History</h2>
+    <div class="sub-history-list">
+      {% for sub in history %}
+      <div class="sub-history-row">
+        <div class="sub-history-icon"
+             style="background:{% if sub.status == 'active' %}rgba(16,185,129,.12){% elif sub.status == 'pending' %}rgba(245,158,11,.12){% else %}rgba(239,68,68,.12){% endif %};
+                    color:{% if sub.status == 'active' %}#10b981{% elif sub.status == 'pending' %}#f59e0b{% else %}#ef4444{% endif %}">
+          <i class="fas fa-{% if sub.status == 'active' %}check{% elif sub.status == 'pending' %}clock{% else %}times{% endif %}"></i>
+        </div>
+        <div class="sub-history-info">
+          <p class="sub-history-plan">{{ sub.plan_name }}</p>
+          <div class="sub-history-meta">
+            <span><i class="fas fa-calendar-alt"></i> {{ sub.created_at.strftime('%b %d, %Y') }}</span>
+            <span><i class="fas fa-credit-card"></i> {{ sub.payment_method | title if sub.payment_method else '—' }}</span>
+            {% if sub.transaction_id %}
+            <span style="font-family:monospace;font-size:.7rem;">{{ sub.transaction_id[:16] }}…</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="sub-history-right">
+          <span class="sub-status-pill sub-status-pill--{{ sub.status }}">{{ sub.status | title }}</span>
+          <span class="sub-history-amount">GHS {{ "%.2f"|format(sub.amount_paid) }}</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Link to document purchases -->
+  <div style="text-align:center;margin-top:1rem;">
+    <a href="{{ url_for('payments.my_purchases') }}" class="sub-link">
+      <i class="fas fa-file-invoice"></i> View document purchases
+    </a>
+  </div>
+
+</div>
+
+{% endblock %}

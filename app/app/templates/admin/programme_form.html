@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} — Admin{% endblock %}
+
+{% block content %}
+<div class="home-wrap" style="max-width:560px">
+
+  <div class="ks-page-header">
+    <div class="ks-page-header-left">
+      <i class="fas fa-{{ 'pen' if programme else 'plus' }}"></i>
+      <div>
+        <h2>{{ title }}</h2>
+        <p>{% if programme %}Editing "{{ programme.name }}"{% else %}Add a new academic programme{% endif %}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="ks-form-card">
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+
+      <div class="ks-form-group">
+        <label class="ks-form-label">{{ form.name.label.text }}</label>
+        {{ form.name(class="ks-form-input", placeholder="e.g. Computer Science") }}
+        {% if form.name.errors %}<p class="ks-form-hint" style="color:#ef4444">{{ form.name.errors[0] }}</p>{% endif %}
+      </div>
+
+      <div class="ks-form-group">
+        <label class="ks-form-label">{{ form.description.label.text }}</label>
+        {{ form.description(rows=3, class="ks-form-input", placeholder="Optional short description") }}
+      </div>
+
+      <div class="ks-form-group">
+        <label class="ks-form-label">{{ form.faculty.label.text }}</label>
+        {{ form.faculty(class="ks-form-input", placeholder="e.g. Faculty of Engineering", list="faculty-suggestions") }}
+        <datalist id="faculty-suggestions">
+          {% for f in existing_faculties %}
+          <option value="{{ f }}">
+          {% endfor %}
+        </datalist>
+        <p class="ks-form-hint">Groups this programme under a faculty on the library index.</p>
+      </div>
+
+      <div class="ks-form-row">
+        <div class="ks-form-group">
+          <label class="ks-form-label">{{ form.icon.label.text }}</label>
+          {{ form.icon(class="ks-form-input", placeholder="graduation-cap") }}
+          <p class="ks-form-hint">
+            Font Awesome name, no "fa-".
+            <a href="https://fontawesome.com/icons" target="_blank">Browse</a>
+          </p>
+        </div>
+        <div class="ks-form-group">
+          <label class="ks-form-label">{{ form.color.label.text }}</label>
+          {{ form.color(type="color", class="ks-form-input", style="height:42px;padding:.2rem .4rem;cursor:pointer;") }}
+        </div>
+      </div>
+
+      <div class="ks-form-row">
+        <div class="ks-form-group">
+          <label class="ks-form-label">{{ form.order.label.text }}</label>
+          {{ form.order(type="number", class="ks-form-input", placeholder="0") }}
+          <p class="ks-form-hint">Lower = appears first</p>
+        </div>
+        <div class="ks-form-check">
+          {{ form.is_active() }}
+          {{ form.is_active.label }}
+        </div>
+      </div>
+
+      <div class="ks-form-actions">
+        <a href="{{ url_for('admin.programmes') }}" class="ks-btn-cancel">Cancel</a>
+        {{ form.submit(class="ks-btn-submit") }}
+      </div>
+    </form>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,160 @@
+{% extends "admin/base.html" %}
+
+{% block admin_title %}{{ title }}{% endblock %}
+{% block admin_content %}
+
+<div class="adm-header">
+    <div class="adm-header-left">
+        <div class="adm-header-icon"><i class="fas fa-{% if subject %}pen{% else %}plus{% endif %}"></i></div>
+        <div>
+            <p class="adm-header-title">{{ title }}</p>
+            <p class="adm-header-sub">{% if subject %}Editing an existing subject{% else %}Create a new
+                subject/category{% endif %}</p>
+        </div>
+    </div>
+</div>
+
+<div class="adm-form-card">
+    <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="form-group">
+            {{ form.name.label }}
+            {{ form.name(class="form-control", placeholder="e.g., Mathematics, Physics, Computer Science") }}
+            {% if form.name.errors %}
+            <span class="error">{{ form.name.errors[0] }}</span>
+            {% endif %}
+            <small class="form-hint">This will be displayed to users</small>
+        </div>
+
+        <div class="form-group">
+            {{ form.description.label }}
+            {{ form.description(class="form-control textarea", rows=3, placeholder="Optional description of this
+            subject") }}
+            {% if form.description.errors %}
+            <span class="error">{{ form.description.errors[0] }}</span>
+            {% endif %}
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.icon.label }}
+                {{ form.icon(class="form-control", placeholder="calculator") }}
+                {% if form.icon.errors %}
+                <span class="error">{{ form.icon.errors[0] }}</span>
+                {% endif %}
+                <small class="form-hint">
+                    Font Awesome icon name (without "fa-").
+                    <a href="https://fontawesome.com/icons" target="_blank">Browse icons</a>
+                </small>
+            </div>
+
+            <div class="form-group">
+                {{ form.color.label }}
+                {{ form.color(class="form-control", type="color", placeholder="#6366f1") }}
+                {% if form.color.errors %}
+                <span class="error">{{ form.color.errors[0] }}</span>
+                {% endif %}
+                <small class="form-hint">Pick a color for this subject</small>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.order.label }}
+                {{ form.order(class="form-control", type="number", placeholder="0") }}
+                {% if form.order.errors %}
+                <span class="error">{{ form.order.errors[0] }}</span>
+                {% endif %}
+                <small class="form-hint">Display order (lower numbers appear first)</small>
+            </div>
+
+            <div class="form-group checkbox-group">
+                {{ form.is_active() }}
+                {{ form.is_active.label }}
+            </div>
+        </div>
+
+        {% if subject %}
+        <div class="form-group">
+            <label>Programmes</label>
+            {% set progs = subject.programmes.all() %}
+            {% if progs %}
+            <ul style="margin: .4rem 0 .5rem 1rem; padding: 0; list-style: disc;">
+                {% for p in progs %}
+                <li style="font-size: .85rem; margin-bottom: .25rem;">
+                    {{ p.name }}
+                    <form method="post"
+                        action="{{ url_for('admin.remove_subject_programme', subject_id=subject.id, programme_id=p.id) }}"
+                        style="display:inline; margin-left:.5rem;">
+                        {{ form.hidden_tag() }}
+                        <button type="submit"
+                            style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:.75rem;">✕
+                            remove</button>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p style="font-size:.85rem; color:var(--text-muted);">No programmes assigned.</p>
+            {% endif %}
+            <form method="post" action="{{ url_for('admin.add_subject_programme', subject_id=subject.id) }}"
+                style="display:flex; gap:.5rem; margin-top:.5rem;">
+                {{ form.hidden_tag() }}
+                <select name="add_programme_id" class="form-control" style="flex:1;">
+                    <option value="0">— Add to a programme —</option>
+                    {% for p in all_programmes %}
+                    {% if p not in subject.programmes.all() %}
+                    <option value="{{ p.id }}">{{ p.name }}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-sm btn-primary">Add</button>
+            </form>
+            <small class="form-hint">Add or remove this subject from programmes</small>
+        </div>
+        {% endif %}
+
+        {% if subject %}
+        <div class="preview-card">
+            <h3>Preview</h3>
+            <div class="subject-preview" id="preview">
+                <i class="fas fa-{{ form.icon.data or 'book' }}" style="color: {{ form.color.data or '#6366f1' }};"></i>
+                <span>{{ form.name.data or 'Subject Name' }}</span>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="form-actions">
+            <a href="{{ url_for('admin.subjects') }}" class="btn btn-secondary">Cancel</a>
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+    </form>
+</div>
+</div>
+
+<script>
+    document.addEventListener('turbo:load', function () {
+        const nameInput = document.getElementById('name');
+        const iconInput = document.getElementById('icon');
+        const colorInput = document.getElementById('color');
+        const preview = document.getElementById('preview');
+
+        if (!preview) return;
+
+        function updatePreview() {
+            const name = nameInput.value || 'Subject Name';
+            const icon = iconInput.value || 'book';
+            const color = colorInput.value || '#6366f1';
+            preview.innerHTML = `
+            <i class="fas fa-${icon}" style="color: ${color};"></i>
+            <span>${name}</span>
+        `;
+        }
+
+        if (nameInput) nameInput.addEventListener('input', updatePreview);
+        if (iconInput) iconInput.addEventListener('input', updatePreview);
+        if (colorInput) colorInput.addEventListener('input', updatePreview);
+    });
+</script>
+{% endblock %}

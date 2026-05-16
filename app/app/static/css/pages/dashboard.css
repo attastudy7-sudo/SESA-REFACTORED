@@ -1,0 +1,827 @@
+/* ═══════════════════════════════════════════════════════════════
+   KNOWLY · DASHBOARD PAGE STYLES
+   Designed to work exclusively with:
+     - base.html CSS tokens (:root / [data-theme="dark"])
+     - pack_card.css (--sp-* tokens + .db-card-grid)
+   No external dependencies. No new colours invented.
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Outer wrapper ── */
+.db-wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2.25rem 1.5rem 5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.75rem;
+  font-family: var(--font-body);
+  color: var(--text-primary);
+}
+
+/* ── Streak-at-risk banner ── */
+.db-streak-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1.5rem;
+  background: rgba(245, 159, 11, 0.06);
+  border-bottom: 1px solid rgba(245, 159, 11, 0.15);
+  font-size: 0.815rem;
+  color: var(--text-secondary);
+}
+
+.db-streak-banner strong {
+  font-weight: 700;
+  color: var(--sp-yellow, #f59e0b);
+}
+
+.db-streak-cta {
+  margin-left: 0.35rem;
+  color: var(--sp-yellow, #f59e0b);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.db-streak-cta:hover { text-decoration: underline; }
+
+.db-streak-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  padding: 2px 4px;
+  opacity: 0.6;
+  transition: opacity 120ms;
+}
+
+.db-streak-close:hover { opacity: 1; }
+
+/* ══════════════════════════════════════
+   PAGE HEADER
+══════════════════════════════════════ */
+.db-page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding-bottom: 1.75rem;
+  border-bottom: 0.5px solid var(--sp-border, var(--border));
+}
+
+.db-page-header-left {}
+
+.db-overline {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* ── Enhanced Greeting Typography ── */
+.db-headline {
+    font-family: var(--font-display); /* Ensures it uses your premium display font */
+    font-size: 2.5rem; /* Increased base size */
+    font-weight: 850; /* Extra bold for premium impact */
+    line-height: 1.1;
+    letter-spacing: -0.02em; /* Tighter letter spacing for a modern look */
+    color: var(--text-primary);
+    margin: 0.5rem 0;
+}
+
+.db-time-overline {
+    font-size: 13px; /* Slightly larger overline */
+    letter-spacing: 0.25em;
+    display: block;
+    margin-bottom: 4px;
+}
+
+/* ── Mobile Specific Sizing ── */
+@media (max-width: 768px) {
+    .db-headline {
+        font-size: 2.2rem; /* Large enough to be the focal point on small screens */
+        margin-top: 0.25rem;
+    }
+    
+    .db-welcome-subtitle {
+        font-size: 1rem; /* Slightly larger subtitle for readability */
+        opacity: 0.8;
+    }
+}
+
+.db-headline {
+    background: linear-gradient(135deg, var(--text-primary) 60%, var(--sp-yellow) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* ── Stat chips row ── */
+.db-header-chips {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding-bottom: 4px;
+}
+
+.db-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 0.5px solid var(--sp-border, var(--border));
+  background: var(--sp-surface, var(--bg-card));
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: border-color 140ms, background 140ms;
+}
+
+.db-chip:hover {
+  border-color: var(--sp-border-hover, var(--border-hover));
+  background: var(--sp-surface-2, var(--bg-secondary));
+  color: var(--text-primary);
+}
+
+.db-chip-link { cursor: pointer; }
+
+.db-chip-val {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+.db-chip-lbl {
+  color: var(--text-muted);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+/* ══════════════════════════════════════
+   SECTION
+══════════════════════════════════════ */
+.db-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.db-section-label,
+.db-overline.section-label {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.db-section-label::after,
+.db-overline.section-label::after {
+  content: '';
+  flex: 1;
+  height: 0.5px;
+  background: var(--sp-border, var(--border));
+}
+
+/* ── Section heading used directly in the HTML ── */
+.db-section .db-overline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 0;
+}
+
+.db-section .db-overline::after {
+  content: '';
+  flex: 1;
+  height: 0.5px;
+  background: var(--sp-border, var(--border));
+}
+
+/* ══════════════════════════════════════
+   ONBOARDING CARD (empty state)
+══════════════════════════════════════ */
+.db-onboarding-card {
+  background: var(--sp-surface, var(--bg-card));
+  border: 0.5px solid var(--sp-border, var(--border));
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+[data-theme="dark"] .db-onboarding-card {
+  background: rgba(30, 41, 59, 0.45);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.db-onboarding-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem 1.5rem 1.25rem;
+  border-bottom: 0.5px solid var(--sp-border, var(--border));
+}
+
+.db-onboarding-icon {
+  font-size: 1.75rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.db-onboarding-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 3px;
+  letter-spacing: -0.02em;
+}
+
+.db-onboarding-subtitle {
+  font-size: 0.815rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ── Checklist steps ── */
+.db-checklist {
+  padding: 0.25rem 0;
+}
+
+.db-check-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 0.5px solid var(--sp-border, var(--border));
+  text-decoration: none;
+  color: inherit;
+  transition: background 120ms;
+  cursor: pointer;
+}
+
+.db-check-item:last-child {
+  border-bottom: none;
+}
+
+.db-check-item:hover {
+  background: var(--sp-surface-2, var(--bg-secondary));
+}
+
+.db-check-item.done {
+  opacity: 0.55;
+}
+
+.db-check-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid var(--sp-border-hover, var(--border-hover));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: border-color 140ms, background 140ms, color 140ms;
+}
+
+.db-check-item.done .db-check-circle {
+  background: var(--sp-green, #10b981);
+  border-color: var(--sp-green, #10b981);
+  color: #ffffff;
+}
+
+.db-check-item:hover:not(.done) .db-check-circle {
+  border-color: var(--primary, #6366f1);
+  color: var(--primary, #6366f1);
+}
+
+.db-check-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.db-check-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.db-check-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.db-check-arrow {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  flex-shrink: 0;
+  transition: transform 140ms;
+}
+
+.db-check-item:hover .db-check-arrow {
+  transform: translateX(3px);
+  color: var(--text-secondary);
+}
+
+/* ══════════════════════════════════════
+   ACTIVITY LIST
+══════════════════════════════════════ */
+.db-activity-list {
+  background: var(--sp-surface, var(--bg-card));
+  border: 0.5px solid var(--sp-border, var(--border));
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.db-act-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 0.5px solid var(--sp-border, var(--border));
+  animation: dbRowIn 280ms var(--sp-ease, cubic-bezier(0.16, 1, 0.3, 1)) both;
+  animation-delay: calc(var(--i) * 40ms);
+  transition: background 120ms;
+}
+
+.db-act-row:last-child { border-bottom: none; }
+
+.db-act-row:hover {
+  background: var(--sp-surface-2, var(--bg-secondary));
+}
+
+.db-act-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.db-act-video {
+  background: var(--sp-accent-dim, rgba(99,102,241,0.1));
+  color: var(--sp-accent, var(--primary));
+}
+
+.db-act-quiz {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--sp-green, #10b981);
+}
+
+.db-act-body { flex: 1; min-width: 0; }
+
+.db-act-title {
+  font-size: 0.83rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+
+.db-act-when {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.db-act-xp {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sp-yellow, #f59e0b);
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════
+   VITALS ROW (commented out in HTML but keeping styles)
+══════════════════════════════════════ */
+.db-vitals-row {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 3rem;
+  padding: 2rem 2.5rem;
+  background: var(--sp-surface, var(--bg-card));
+  border: 0.5px solid var(--sp-border, var(--border));
+  border-radius: 20px;
+  flex-wrap: wrap;
+}
+
+[data-theme="dark"] .db-vitals-row {
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border-color: rgba(255, 255, 255, 0.07);
+}
+
+.db-vital {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 1;
+  min-width: 120px;
+}
+
+.db-vital-icon {
+  font-size: 1.35rem;
+  margin-bottom: 0.65rem;
+  color: var(--text-muted);
+}
+
+.db-vital-icon.streak-icon { color: var(--sp-yellow, #f59e0b); }
+.db-vital-icon.packs-icon  { color: var(--sp-accent, var(--primary)); }
+.db-vital-icon.aura-icon   { color: var(--sp-yellow, #f59e0b); }
+
+.db-vital-num {
+  font-family: var(--font-display);
+  font-size: 2.25rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--text-primary);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.db-vital-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ══════════════════════════════════════
+   ANIMATIONS
+══════════════════════════════════════ */
+@keyframes dbRowIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ══════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════ */
+@media (max-width: 768px) {
+  .db-wrap {
+    padding: 1.25rem 0.875rem 4.5rem;
+    gap: 2rem;
+  }
+
+  .db-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.875rem;
+    padding-bottom: 1.25rem;
+  }
+
+  .db-headline { font-size: 26px; }
+
+  .db-header-chips { gap: 5px; }
+
+  .db-chip { padding: 4px 9px; font-size: 10px; }
+
+  .db-vitals-row {
+    padding: 1.25rem;
+    gap: 1.25rem;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .db-vitals-row::-webkit-scrollbar { display: none; }
+
+  .db-vital { min-width: 85px; flex-shrink: 0; }
+  .db-vital-num { font-size: 1.75rem; }
+
+  .db-onboarding-header { padding: 1.25rem; }
+  .db-check-item { padding: 0.9rem 1.25rem; }
+}
+
+/* ══════════════════════════════════════
+   REDUCED MOTION
+══════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  .db-act-row { animation: none; }
+  .db-check-arrow { transition: none; }
+}
+
+/* ── Premium Header & Raw Stats ── */
+.db-premium-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 3rem 0 2rem;
+}
+
+.db-time-overline {
+  color: var(--sp-yellow, #f59e0b);
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 11px;
+}
+
+.db-welcome-subtitle {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-top: 8px;
+}
+
+.db-raw-stats {
+  display: flex;
+  gap: 2.5rem;
+  align-items: center;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-val {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.stat-lbl {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
+.stat-divider {
+  width: 1px;
+  height: 30px;
+  background: var(--border);
+  opacity: 0.5;
+}
+
+/* ── Scrollable Rows ── */
+.db-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.db-scroll-row {
+    display: flex;
+    gap: 1.25rem;
+    overflow-x: auto;
+    padding-bottom: 1.5rem;
+    
+    /* Snap Logic */
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    
+    /* THE FIX: Match this to your page's horizontal padding (e.g., 1rem or 20px) */
+    scroll-padding-left: 1.25rem; 
+    
+    /* Clean up */
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.db-scroll-row::-webkit-scrollbar {
+    display: none;
+}
+/* Ensure the scroll stops on every item rather than flying past them */
+.db-scroll-item {
+  flex: 0 0 280px; 
+  scroll-snap-align: start;
+  scroll-snap-stop: always; /* KEY: Prevents "over-scrolling" past items */
+}
+
+/* Adds a subtle scale effect when interacting with rows */
+.db-scroll-item {
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.db-scroll-item:active {
+    transform: scale(0.98); /* Slight "press" effect on touch */
+}
+
+/* Add a gradient "fade" to the right side of rows to signal more content */
+.db-section {
+    position: relative;
+}
+
+@media (min-width: 769px) {
+    .db-section::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 40px; /* Adjust based on your header height */
+        bottom: 0;
+        width: 100px;
+        background: linear-gradient(to right, transparent, var(--bg-main));
+        pointer-events: none; /* Allows clicking through the fade */
+        z-index: 2;
+    }
+}
+
+/* ── Weak Topics Premium Styling ── */
+.db-weak-topics-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 4px 0;
+}
+
+.db-topic-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    background: var(--bg-secondary);
+    border: 0.5px solid var(--border);
+    border-radius: 6px; /* Squarer edges feel more "pro" than pills */
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.db-topic-chip:hover {
+    border-color: var(--sp-yellow);
+    background: rgba(245, 159, 11, 0.03);
+}
+
+.topic-indicator {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.topic-indicator.status-critical { background: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.4); }
+.topic-indicator.status-reviewing { background: #f59e0b; }
+
+.topic-count {
+    font-size: 10px;
+    opacity: 0.5;
+    padding-left: 4px;
+    border-left: 1px solid var(--border);
+}
+
+/* ── Section Header Alignment ── */
+.db-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+}
+
+
+/* ── Stat Icons ── */
+.stat-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.stat-icon {
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+.stat-icon.aura { color: var(--sp-yellow); }
+.stat-icon.rank { color: #94a3b8; }
+.stat-icon.streak { color: #f97316; }
+
+/* ── Mobile Layout Optimization ── */
+@media (max-width: 768px) {
+    .db-wrap {
+        padding: 1.5rem 1rem 5rem !important; /* Tightens edges for mobile */
+        gap: 1.75rem !important;
+    }
+
+    .db-premium-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.5rem;
+        padding-top: 1rem;
+    }
+
+    .db-raw-stats {
+        width: 100%;
+        justify-content: space-between;
+        gap: 0; /* Let space-between handle it */
+    }
+
+    .stat-item {
+        flex: 1;
+        align-items: flex-start;
+    }
+
+    .stat-val {
+        font-size: 1.25rem !important;
+    }
+
+    /* Keep the divider visible on mobile for structure but make it thinner */
+    .stat-divider {
+        margin: 0 10px;
+        height: 20px;
+    }
+    
+    /* Ensure the scroll row goes edge-to-edge on mobile */
+    .db-scroll-row {
+        margin-left: -1rem;
+        margin-right: -1rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+/* Ensure the Knowledge Vault scroll matches the In-Progress row */
+.db-section .db-scroll-row {
+    margin-top: 0;
+}
+
+.db-scroll-row::-webkit-scrollbar { display: none; } /* Hide for premium look */
+
+/* ── Enforce Card Sizing in Scroll Rows ── */
+.db-scroll-item {
+    flex: 0 0 280px; /* Forces cards to stay at 280px wide */
+    width: 280px;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+}
+
+/* ── Specific Styling for Vault Cards (Optional Premium Touch) ── */
+.db-scroll-item.vault-card {
+    flex: 0 0 240px; /* Slightly smaller than 'In Progress' cards */
+    width: 240px;
+    opacity: 0.9; /* Subtle visual distinction for completed work */
+    transition: opacity 0.3s ease;
+}
+
+.db-scroll-item.vault-card:hover {
+    opacity: 1;
+}
+
+/* ── Mobile Fix ── */
+@media (max-width: 768px) {
+    .db-scroll-row {
+        /* This ensures the scroll area goes edge-to-edge behind the scenes */
+        margin-left: -1.25rem;
+        margin-right: -1.25rem;
+        
+        /* This creates the visual 'start' and 'end' buffer */
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+        
+        /* Match scroll-padding to the padding-left above */
+        scroll-padding-left: 1.25rem;
+    }
+
+    .db-scroll-item {
+        /* 80% is the 'sweet spot' to show the current card + a peek of the next */
+        flex: 0 0 80%; 
+        width: 80%;
+    }
+
+    .db-scroll-item.vault-card {
+        flex: 0 0 70%;
+        width: 70%;
+    }
+}
+
+.db-view-all {
+  font-size: 11px;
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+  text-transform: uppercase;
+}

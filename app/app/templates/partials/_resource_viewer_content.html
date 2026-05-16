@@ -1,0 +1,368 @@
+<div class="rv-shell">
+
+  <!-- Breadcrumb -->
+  <div class="rv-breadcrumb">
+    <a href="{{ url_for('main.library_all_videos') }}">Study Packs</a>
+    <i class="fas fa-chevron-right"></i>
+    <a href="{{ url_for('main.video_player', video_id=pack.videos[0].video.id) if pack.videos else '#' }}">{{ pack.title|truncate(40) }}</a>
+    <i class="fas fa-chevron-right"></i>
+    <span>{{ resource.resource_type|replace('_',' ')|title }}</span>
+  </div>
+
+  <!-- Header -->
+  {% set cp_icons = {'flashcards':'fa-clone','micro_quiz':'fa-circle-question','notes':'fa-file-lines','cheatsheet':'fa-bolt','boss_quiz':'fa-trophy'} %}
+  {% set cp_labels = {'flashcards':'Flashcards','micro_quiz':'Micro Quiz','notes':'Complete Notes','cheatsheet':'Cheat Sheet','boss_quiz':'Final Boss Quiz'} %}
+  {% set cp_descs  = {'flashcards':'Flip through key concepts from this video','micro_quiz':'5 quick questions to test your understanding','notes':'Full structured notes covering the entire pack','cheatsheet':'Dense formula and definition reference','boss_quiz':'30-question exam-style final assessment'} %}
+
+  <div class="rv-header">
+    <div class="rv-header-icon rv-icon--{{ resource.resource_type }}">
+      <i class="fas {{ cp_icons.get(resource.resource_type, 'fa-star') }}"></i>
+    </div>
+    <div class="rv-header-body">
+      <h1>{{ cp_labels.get(resource.resource_type, resource.resource_type) }}</h1>
+      <p>{{ cp_descs.get(resource.resource_type, '') }} &nbsp;·&nbsp; {{ pack.title|truncate(40) }}</p>
+    </div>
+  </div>
+
+  <!-- Already done banner -->
+  {% if already_done %}
+  <div class="rv-done-banner">
+    <i class="fas fa-circle-check"></i>
+    You already completed this — well done! You can review it below or continue watching.
+  </div>
+  {% endif %}
+
+  <!-- ── UPGRADE CARD (free user, premium resource) ── -->
+  {% if not can_view %}
+  <div class="rv-upgrade">
+    <i class="fas fa-lock" style="font-size:2rem;color:#f59e0b;margin-bottom:1rem;display:block;"></i>
+    <h2>This resource is for Pro members</h2>
+    <p>Upgrade to unlock {{ cp_labels.get(resource.resource_type) }}, micro-quizzes, complete notes, cheatsheets, and the Final Boss Quiz for every pack.</p>
+    <div class="rv-upgrade-btns">
+      <a href="{{ url_for('payments.plan_checkout') }}" class="rv-btn-upgrade">
+        <i class="fas fa-bolt"></i> Upgrade to Pro
+      </a>
+      <a href="{{ next_url }}" class="rv-btn-continue">
+        Continue watching <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+  </div>
+
+  <!-- ── GENERATING ── -->
+  {% elif resource.generation_status in ('pending', 'generating') %}
+  <div class="rv-generating">
+    <i class="fas fa-circle-notch fa-spin"></i>
+    This resource is still being generated. Come back in a moment or continue watching —
+    it will be ready by the time you need it.
+    <br><br>
+    <a href="{{ next_url }}" class="rv-btn-continue" style="display:inline-block;margin-top:0.5rem;">
+      Continue watching <i class="fas fa-arrow-right"></i>
+    </a>
+  </div>
+
+  <!-- ── FAILED ── -->
+  {% elif resource.generation_status == 'failed' %}
+  <div class="rv-generating">
+    <i class="fas fa-triangle-exclamation" style="color:#f59e0b;"></i>
+    Generation failed for this resource. This can happen when captions aren't available for the video.
+    <br><br>
+    <a href="{{ next_url }}" class="rv-btn-continue" style="display:inline-block;margin-top:0.5rem;">
+      Continue watching <i class="fas fa-arrow-right"></i>
+    </a>
+  </div>
+
+  {% else %}
+
+  <!-- ════════════════════════════════════════════════════════════
+       FLASHCARDS VIEWER
+  ═══════════════════════════════════════════════════════════════ -->
+  {% if resource.resource_type == 'flashcards' %}
+  {% set cards = content.flashcards if content and content.flashcards else [] %}
+  <div class="fc-deck" id="fcDeck">
+    <div class="fc-progress">
+      <span id="fcCounter">1 / {{ cards|length }}</span>
+      <div class="fc-progress-track">
+        <div class="fc-progress-fill" id="fcProgressFill" style="width: {{ (1/cards|length*100)|round|int if cards else 0 }}%;"></div>
+      </div>
+    </div>
+
+    <div class="fc-card-wrap">
+      <div class="fc-card" id="fcCard" onclick="flipCard()">
+        <div class="fc-face fc-front">
+          <div class="fc-face-label">Front</div>
+          <div class="fc-face-text" id="fcFront">{{ cards[0].front if cards else '' }}</div>
+          <div class="fc-hint">Tap to reveal answer</div>
+        </div>
+        <div class="fc-face fc-back">
+          <div class="fc-face-label">Answer</div>
+          <div class="fc-face-text" id="fcBack">{{ cards[0].back if cards else '' }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fc-nav">
+      <button class="fc-nav-btn" id="fcPrev" onclick="prevCard()" disabled>
+        <i class="fas fa-arrow-left"></i> Prev
+      </button>
+      <button class="fc-nav-btn fc-nav-btn--flip" onclick="flipCard()">
+        Flip <i class="fas fa-rotate"></i>
+      </button>
+      <button class="fc-nav-btn" id="fcNext" onclick="nextCard()">
+        Next <i class="fas fa-arrow-right"></i>
+      </button>
+    </div>
+
+    <button class="fc-complete-btn" id="fcCompleteBtn" onclick="completeResource()">
+      <i class="fas fa-circle-check"></i> I've reviewed all cards — continue
+    </button>
+  </div>
+
+  <script>
+  (function() {
+    const FC_CARDS = {{ cards|tojson }};
+    let fcIdx = 0;
+    let fcFlipped = false;
+
+    window.flipCard = function() {
+      fcFlipped = !fcFlipped;
+      document.getElementById('fcCard').classList.toggle('flipped', fcFlipped);
+    };
+
+    window.nextCard = function() {
+      if (fcIdx >= FC_CARDS.length - 1) return;
+      fcIdx++;
+      fcFlipped = false;
+      updateCard();
+      if (fcIdx === FC_CARDS.length - 1) {
+        document.getElementById('fcCompleteBtn').classList.add('visible');
+      }
+    };
+
+    window.prevCard = function() {
+      if (fcIdx <= 0) return;
+      fcIdx--;
+      fcFlipped = false;
+      updateCard();
+    };
+
+    function updateCard() {
+      const card = FC_CARDS[fcIdx];
+      document.getElementById('fcCard').classList.remove('flipped');
+      document.getElementById('fcFront').textContent = card.front;
+      document.getElementById('fcBack').textContent  = card.back;
+      document.getElementById('fcCounter').textContent = `${fcIdx + 1} / ${FC_CARDS.length}`;
+      document.getElementById('fcProgressFill').style.width = `${((fcIdx + 1) / FC_CARDS.length) * 100}%`;
+      document.getElementById('fcPrev').disabled = (fcIdx === 0);
+      document.getElementById('fcNext').disabled = (fcIdx === FC_CARDS.length - 1);
+      setTimeout(() => { fcFlipped = false; }, 50);
+    }
+  })();
+  </script>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       MICRO QUIZ + BOSS QUIZ VIEWER
+  ═══════════════════════════════════════════════════════════════ -->
+  {% elif resource.resource_type in ('micro_quiz', 'boss_quiz') %}
+  {% set questions = content.questions if content and content.questions else [] %}
+  <div class="quiz-wrap" id="quizWrap">
+    {% for q in questions %}
+    <div class="quiz-q-block" id="qBlock{{ loop.index0 }}">
+      <div class="quiz-q-num">Question {{ loop.index }} of {{ questions|length }}</div>
+      <div class="quiz-q-stem">{{ q.question }}</div>
+      <div class="quiz-options">
+        {% for opt in q.options %}
+        <div class="quiz-opt"
+             data-q="{{ loop.index0 }}"
+             data-letter="{{ opt.letter }}"
+             data-correct="{{ q.correct_answer }}"
+             onclick="selectOption(this)">
+          <span class="quiz-opt-letter">{{ opt.letter }}</span>
+          {{ opt.text }}
+        </div>
+        {% endfor %}
+      </div>
+      {% if q.explanation %}
+      <div class="quiz-explanation" id="qExp{{ loop.index0 }}">
+        <i class="fas fa-lightbulb" style="color:#f59e0b;margin-right:6px;"></i>
+        {{ q.explanation }}
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+
+    <div class="quiz-submit-row">
+      <button class="quiz-submit-btn" onclick="submitQuiz()">
+        Submit answers <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+
+    <div class="quiz-score-card" id="quizScoreCard">
+      <div class="quiz-score-num" id="quizScoreNum">0/0</div>
+      <div class="quiz-score-label">questions correct</div>
+      <button class="rv-done-btn" style="max-width:320px;margin:0 auto;" onclick="completeResource()">
+        <i class="fas fa-circle-check"></i> Done — continue watching
+      </button>
+    </div>
+  </div>
+
+  <script>
+  (function() {
+    const QUIZ_ANSWERS = {};
+    let quizSubmitted = false;
+
+    window.selectOption = function(el) {
+      if (quizSubmitted) return;
+      const qIdx = el.dataset.q;
+      // Deselect siblings
+      el.closest('.quiz-options').querySelectorAll('.quiz-opt').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+      QUIZ_ANSWERS[qIdx] = el.dataset.letter;
+    };
+
+    window.submitQuiz = function() {
+      if (quizSubmitted) return;
+      quizSubmitted = true;
+
+      let correct = 0;
+      const total = document.querySelectorAll('.quiz-q-block').length;
+
+      document.querySelectorAll('.quiz-opt').forEach(el => {
+        const qIdx = el.dataset.q;
+        const isCorrect = el.dataset.letter === el.dataset.correct;
+        const wasSelected = el.classList.contains('selected');
+
+        if (isCorrect) el.classList.add('correct');
+        if (wasSelected && !isCorrect) el.classList.add('wrong');
+        if (wasSelected && isCorrect) correct++;
+
+        const exp = document.getElementById(`qExp${qIdx}`);
+        if (exp) exp.classList.add('show');
+      });
+
+      document.getElementById('quizScoreNum').textContent = `${correct}/${total}`;
+      document.getElementById('quizScoreCard').classList.add('show');
+      document.querySelector('.quiz-submit-btn').style.display = 'none';
+      window._quizScore = correct;
+      window._quizTotal = total;
+    };
+  })();
+  </script>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       NOTES VIEWER
+  ═══════════════════════════════════════════════════════════════ -->
+  {% elif resource.resource_type == 'notes' %}
+  {% set sections = content.sections if content and content.sections else [] %}
+  {% set summary  = content.summary  if content and content.summary  else [] %}
+  <div class="notes-wrap">
+    {% for section in sections %}
+    <div class="notes-section">
+      <div class="notes-section-title">{{ section.section_title or section.title or ('Section ' ~ loop.index) }}</div>
+      {% for block in (section.content or []) %}
+        {% if block.block_type == 'formula' or block.block_type == 'theorem' %}
+          <div class="notes-block">
+            {% if block.label %}<span class="notes-label">{{ block.label }}:</span>{% endif %}
+            <code class="notes-formula">{{ block.text or block.content or '' }}</code>
+          </div>
+        {% elif block.block_type == 'definition' %}
+          <div class="notes-block">
+            <span class="notes-label">{{ block.label or 'Definition' }}:</span>
+            {{ block.text or block.content or '' }}
+          </div>
+        {% elif block.block_type == 'list' %}
+          <ul class="notes-block">
+            {% for item in (block.items or []) %}<li>{{ item }}</li>{% endfor %}
+          </ul>
+        {% else %}
+          <div class="notes-block">{{ block.text or block.content or '' }}</div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% endfor %}
+
+    {% if summary %}
+    <div class="notes-summary">
+      <h3><i class="fas fa-list-check" style="margin-right:6px;"></i>Summary</h3>
+      <ul>
+        {% for point in summary %}<li>{{ point }}</li>{% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+  <button class="rv-done-btn" onclick="completeResource()">
+    <i class="fas fa-circle-check"></i> Done — continue watching
+  </button>
+
+
+  <!-- ════════════════════════════════════════════════════════════
+       CHEATSHEET VIEWER
+  ═══════════════════════════════════════════════════════════════ -->
+  {% elif resource.resource_type == 'cheatsheet' %}
+  {% set sections = content.sections if content and content.sections else [] %}
+  <div class="cheat-wrap">
+    {% for section in sections %}
+    <div class="cheat-section">
+      <div class="cheat-section-title">{{ section.section_title or section.title or ('Section ' ~ loop.index) }}</div>
+      {% for entry in (section.entries or []) %}
+      <div class="cheat-entry">
+        <span class="cheat-entry-label">{{ entry.label or '' }}</span>
+        <div>
+          <div class="cheat-entry-content">{{ entry.content or '' }}</div>
+          {% if entry.notes %}<div class="cheat-entry-note">{{ entry.notes }}</div>{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+  <button class="rv-done-btn" onclick="completeResource()">
+    <i class="fas fa-circle-check"></i> Done — continue watching
+  </button>
+
+  {% endif %}
+  {% endif %}{# end can_view / status checks #}
+
+</div>{# end rv-shell #}
+
+<script>
+(function() {
+  const RV_PACK_ID    = {{ pack_id }};
+  const RV_RES_ID     = {{ resource.id }};
+  const RV_NEXT_URL   = {{ next_url|tojson }};
+  const RV_XP         = {{ xp_reward }};
+  const RV_ALREADY_DONE = {{ 'true' if already_done else 'false' }};
+
+  const getCSRF = () => document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+  window.completeResource = function() {
+      if (RV_ALREADY_DONE) {
+          window.location.href = RV_NEXT_URL;
+          return;
+      }
+
+      const payload = { score: window._quizScore ?? null, total: window._quizTotal ?? null };
+
+      fetch(`/library/pack/${RV_PACK_ID}/resource/${RV_RES_ID}/complete`, {
+          method: 'POST',
+          headers: { 'X-CSRFToken': getCSRF(), 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+      })
+      .then(r => r.json())
+      .then(d => {
+          if (d.xp > 0) {
+              // Brief XP toast
+              const t = document.createElement('div');
+              t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;padding:10px 20px;border-radius:8px;font-size:0.85rem;font-weight:700;z-index:9999;white-space:nowrap;';
+              t.innerHTML = `<i class="fas fa-bolt"></i> +${d.xp} Aura earned!`;
+              document.body.appendChild(t);
+              setTimeout(() => { t.remove(); window.location.href = RV_NEXT_URL; }, 1800);
+          } else {
+              window.location.href = RV_NEXT_URL;
+          }
+      })
+      .catch(() => { window.location.href = RV_NEXT_URL; });
+  };
+})();
+</script>

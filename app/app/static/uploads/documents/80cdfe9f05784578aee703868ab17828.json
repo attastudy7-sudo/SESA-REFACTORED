@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0",
+  "document_type": "cheatsheet",
+  "generated_at": "2026-04-10T00:20:08.327246+00:00",
+  "title": "Verification Bundle",
+  "course": "Physics",
+  "level": "Intermediate",
+  "metadata": {
+    "purpose": "Rapid revision",
+    "exam_context": "",
+    "topics": [
+      "Kinematics",
+      "Dynamics"
+    ]
+  },
+  "sections": [
+    {
+      "section_title": "Core Formulas",
+      "section_type": "formulas",
+      "entries": [
+        {
+          "label": "Formula 1",
+          "content": "$E=mc^2$",
+          "notes": "Energy mass relation"
+        },
+        {
+          "label": "Formula 2",
+          "content": "$F=ma$"
+        },
+        {
+          "label": "Formula 3",
+          "content": "$v=u+at$"
+        },
+        {
+          "label": "Formula 4",
+          "content": "$s=ut+\\frac{1}{2}at^2$"
+        }
+      ]
+    },
+    {
+      "section_title": "Definitions",
+      "section_type": "definitions",
+      "entries": [
+        {
+          "label": "Term 1",
+          "content": "Definition 1"
+        },
+        {
+          "label": "Term 2",
+          "content": "Definition 2"
+        },
+        {
+          "label": "Term 3",
+          "content": "Definition 3"
+        },
+        {
+          "label": "Term 4",
+          "content": "Definition 4"
+        }
+      ]
+    }
+  ],
+  "document_hash": "f5b48be1e6caa19151b00d051a2d601adfcc4a94aae5cc5c8ef691ce6daa82a3"
+}

@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "document_type": "notes",
+  "generated_at": "2026-04-09T23:13:16.323416+00:00",
+  "title": "Algorithm Analysis and Data Structures Fundamentals",
+  "course": "Data Structures",
+  "level": "Intermediate",
+  "metadata": {
+    "estimated_read_time": "8 minutes",
+    "focus_areas": "",
+    "prerequisites": ""
+  },
+  "sections": [
+    {
+      "section_number": 1,
+      "section_title": "Big-O",
+      "section_type": "concepts",
+      "content": [
+        {
+          "block_type": "paragraph",
+          "text": "Big-O describes asymptotic upper bounds."
+        },
+        {
+          "block_type": "list",
+          "text": "Key points",
+          "items": [
+            "O(1)",
+            "O(log n)",
+            "O(n)"
+          ]
+        }
+      ]
+    }
+  ],
+  "summary": [
+    "Complexity ranking",
+    "Sorting tradeoffs",
+    "Search constraints"
+  ],
+  "document_hash": "fd79c7548420c511858704af429cfcebaef84d485471ce041c0824b594bbd4d4"
+}

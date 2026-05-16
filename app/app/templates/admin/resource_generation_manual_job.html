@@ -1,0 +1,164 @@
+{% extends "admin/base.html" %}
+
+{% block extra_css %}{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin/resource_generation_manual_job.css') }}">{%  endblock %}
+{% block admin_title %}Manual{% endblock %}
+{% block admin_content %}
+
+<div class="adm-header">
+  <div class="adm-header-left">
+    <div class="adm-header-icon"><i class="fas fa-plus"></i></div>
+    <div>
+      <p class="adm-header-title">Manual</p>
+      <p class="adm-header-sub">Queue high-priority jobs for notes, quiz, and cheatsheet together.</p>
+    </div>
+  </div>
+  <div class="adm-header-actions">
+    <a href="{{ url_for('admin.resource_generation') }}" class="adm-btn adm-btn--secondary">
+      <i class="fas fa-arrow-left"></i> Back
+    </a>
+  </div>
+</div>
+
+<div class="adm-card rg-shell">
+  <form method="POST" class="rg-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div class="rg-panel">
+      <p class="rg-panel-title">Topic Setup</p>
+      <div class="rg-grid">
+        <label class="rg-field rg-field--subject">
+          <span>Subject</span>
+          <input
+            type="text"
+            id="subject_lookup"
+            name="subject_lookup"
+            list="subject_lookup_list"
+            placeholder="Start typing subject name..."
+            autocomplete="off"
+            required
+          >
+          <input type="hidden" name="subject_id" id="subject_id_hidden" required>
+          <datalist id="subject_lookup_list">
+            {% for s in subjects %}
+            <option value="{{ s.name }}" data-id="{{ s.id }}"></option>
+            {% endfor %}
+          </datalist>
+        </label>
+
+        <label class="rg-field rg-field--topic">
+          <span>Topic</span>
+          <input type="text" name="topic" required placeholder="Integration by Parts">
+        </label>
+
+        <label class="rg-field rg-field--level">
+          <span>Level</span>
+          <select name="level">
+            <option value="Beginner">Beginner</option>
+            <option value="Elementary">Elementary</option>
+            <option value="Intermediate" selected>Intermediate</option>
+            <option value="Advanced">Advanced</option>
+          </select>
+        </label>
+
+        <label class="rg-field rg-field--year">
+          <span>Year (optional)</span>
+          <select name="year">
+            <option value="">Any</option>
+            <option value="1">Year 1</option>
+            <option value="2">Year 2</option>
+            <option value="3">Year 3</option>
+            <option value="4">Year 4</option>
+          </select>
+        </label>
+
+        <label class="rg-field rg-field--semester">
+          <span>Semester (optional)</span>
+          <select name="semester">
+            <option value="">Both</option>
+            <option value="1">Semester 1</option>
+            <option value="2">Semester 2</option>
+          </select>
+        </label>
+      </div>
+    </div>
+
+    <div class="rg-fixed-types" role="note" aria-label="Fixed content types">
+      <span class="rg-fixed-label">Always queues:</span>
+      <span class="rg-type-pill">Notes</span>
+      <span class="rg-type-pill">Quiz</span>
+      <span class="rg-type-pill">Cheatsheet</span>
+    </div>
+
+    <div class="rg-actions">
+      <button class="adm-btn adm-btn--primary" type="submit">
+        <i class="fas fa-plus"></i> Queue Manual Job
+      </button>
+      <a href="{{ url_for('admin.resource_generation_jobs') }}" class="adm-btn adm-btn--secondary">View Queue</a>
+    </div>
+  </form>
+</div>
+
+<script>
+(function () {
+  const lookupInput = document.getElementById('subject_lookup');
+  const hiddenInput = document.getElementById('subject_id_hidden');
+  const list = document.getElementById('subject_lookup_list');
+
+  if (!lookupInput || !hiddenInput || !list) {
+    return;
+  }
+
+  function syncSubjectId() {
+    const value = (lookupInput.value || '').trim();
+    if (!value) {
+      hiddenInput.value = '';
+      lookupInput.setCustomValidity('Please choose a subject.');
+      return;
+    }
+
+    const options = list.querySelectorAll('option');
+    let matched = null;
+    options.forEach(function (opt) {
+      if (!matched && (opt.value || '').trim().toLowerCase() === value.toLowerCase()) {
+        matched = opt;
+      }
+    });
+
+    if (!matched) {
+      const starts = [];
+      options.forEach(function (opt) {
+        const optionValue = (opt.value || '').trim().toLowerCase();
+        if (optionValue.startsWith(value.toLowerCase())) {
+          starts.push(opt);
+        }
+      });
+      if (starts.length === 1) {
+        matched = starts[0];
+        lookupInput.value = matched.value;
+      }
+    }
+
+    if (matched) {
+      hiddenInput.value = matched.getAttribute('data-id') || '';
+      lookupInput.setCustomValidity('');
+      return;
+    }
+
+    hiddenInput.value = '';
+    lookupInput.setCustomValidity('Select a subject from the suggestions.');
+  }
+
+  lookupInput.addEventListener('input', syncSubjectId);
+  lookupInput.addEventListener('change', syncSubjectId);
+
+  const form = lookupInput.closest('form');
+  if (form) {
+    form.addEventListener('submit', function () {
+      syncSubjectId();
+    });
+  }
+})();
+</script>
+
+{% endblock %}

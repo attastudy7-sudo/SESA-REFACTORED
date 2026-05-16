@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "document_type": "cheatsheet",
+  "generated_at": "2026-04-09T23:15:50.744512+00:00",
+  "title": "Sorting and Searching Algorithms",
+  "course": "Data Structures",
+  "level": "Intermediate",
+  "metadata": {
+    "purpose": "Rapid revision and recall",
+    "exam_context": "",
+    "topics": []
+  },
+  "sections": [
+    {
+      "section_title": "Complexity Table",
+      "section_type": "definitions",
+      "entries": [
+        {
+          "label": "Definition",
+          "content": "Linear Search: O(n); Binary Search: O(log n); Merge Sort: O(n log n); Hashing: O(1) average."
+        },
+        {
+          "label": "Application",
+          "content": "Apply this concept using a simple practice example."
+        }
+      ]
+    },
+    {
+      "section_title": "Algorithm Characteristics",
+      "section_type": "definitions",
+      "entries": [
+        {
+          "label": "Definition",
+          "content": "Selection: Repeatedly selects min. Insertion: Best for nearly sorted data. Merge: Divide-and-conquer. Quick: Pivot-based. Hashing: Requires good distribution."
+        },
+        {
+          "label": "Application",
+          "content": "Apply this concept using a simple practice example."
+        }
+      ]
+    }
+  ],
+  "document_hash": "b92a54428290972c136e0c6d211cfe379518c7395ec9422da723671b04b09253"
+}

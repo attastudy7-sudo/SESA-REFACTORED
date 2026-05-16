@@ -1,0 +1,237 @@
+{% extends "admin/base.html" %}
+
+{% block extra_css %}{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin/posts.css') }}">{%  endblock %}
+{% block admin_title %}Posts{% endblock %}
+{% block admin_content %}
+
+<div class="adm-header">
+    <div class="adm-header-left">
+        <div class="adm-header-icon"><i class="fas fa-file-lines"></i></div>
+        <div>
+            <p class="adm-header-title">Manage Posts</p>
+            <p class="adm-header-sub">{{ posts.total }} post{{ 's' if posts.total != 1 }}</p>
+        </div>
+    </div>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% for category, message in messages %}
+<div class="adm-flash adm-flash--{{ category }}">
+    <i class="fas fa-{% if category=='success' %}check-circle{% elif category=='danger' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+    {{ message }}
+</div>
+{% endfor %}
+{% endwith %}
+
+{# ── Status tab bar ── #}
+<div class="adm-tab-bar">
+    <a href="{{ url_for('admin.posts', search=search, subject=subject_filter) }}"
+       class="adm-tab {% if not status_filter %}adm-tab--active{% endif %}">All</a>
+    <a href="{{ url_for('admin.posts', status='pending', search=search, subject=subject_filter) }}"
+       class="adm-tab {% if status_filter=='pending' %}adm-tab--active{% endif %}">
+        <i class="fas fa-clock"></i> Pending
+    </a>
+    <a href="{{ url_for('admin.posts', status='approved', search=search, subject=subject_filter) }}"
+       class="adm-tab {% if status_filter=='approved' %}adm-tab--active{% endif %}">
+        <i class="fas fa-check-circle"></i> Approved
+    </a>
+    <a href="{{ url_for('admin.posts', status='rejected', search=search, subject=subject_filter) }}"
+       class="adm-tab {% if status_filter=='rejected' %}adm-tab--active{% endif %}">
+        <i class="fas fa-times-circle"></i> Rejected
+    </a>
+</div>
+
+{# ── Search + subject filter ── #}
+<div class="adm-search-wrap">
+    <form method="get" style="display:flex;align-items:center;gap:.75rem;flex:1;flex-wrap:wrap">
+        {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
+        <div class="adm-search-input-wrap">
+            <i class="fas fa-search adm-search-icon"></i>
+            <input type="text" name="search" value="{{ search }}"
+                   class="adm-search-input" placeholder="Search posts or authors…">
+        </div>
+        <select name="subject" class="adm-form-input" style="width:auto;padding:.55rem .875rem;min-width:150px"
+                onchange="this.form.submit()">
+            <option value="">All Subjects</option>
+            {% for subject in subjects %}
+            <option value="{{ subject.id }}" {% if subject_filter == subject.id %}selected{% endif %}>
+                {{ subject.name }}
+            </option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="adm-btn adm-btn--primary">Filter</button>
+        {% if search or subject_filter %}
+        <a href="{{ url_for('admin.posts', status=status_filter) }}" class="adm-btn adm-btn--secondary">Clear</a>
+        {% endif %}
+    </form>
+</div>
+
+{% if posts.items %}
+
+{# ── Desktop table ── #}
+<div class="adm-table-wrap">
+    <table class="adm-table">
+        <thead>
+            <tr>
+                <th>Post</th>
+                <th>Author</th>
+                <th>Subject</th>
+                <th>Status</th>
+                <th>Stats</th>
+                <th>Date</th>
+                <th style="text-align:right">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for post in posts.items %}
+            <tr>
+                <td style="max-width:280px">
+                    <div style="display:flex;align-items:center;gap:.6rem">
+                        <div class="ap-post-icon {% if post.has_document %}ap-post-icon--doc{% else %}ap-post-icon--note{% endif %}">
+                            <i class="fas fa-{% if post.has_document %}file-pdf{% else %}sticky-note{% endif %}"></i>
+                        </div>
+                        <span style="font-weight:700;font-size:.84rem;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px">
+                            {{ post.title[:50] }}{% if post.title|length > 50 %}…{% endif %}
+                        </span>
+                    </div>
+                </td>
+                <td>
+                    <a href="{{ url_for('users.profile', username=post.author.username) }}"
+                       style="color:var(--primary);font-weight:600;font-size:.83rem;text-decoration:none">
+                        {{ post.author.username }}
+                    </a>
+                </td>
+                <td>
+                    {% if post.subject %}
+                    <span class="adm-pill" style="color:{{ post.subject.color }};background:{{ post.subject.color }}18;border:1px solid {{ post.subject.color }}35">
+                        <i class="fas fa-{{ post.subject.icon }}"></i> {{ post.subject.name }}
+                    </span>
+                    {% else %}
+                    <span style="color:var(--text-muted);font-size:.8rem">—</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if post.status == 'approved' %}
+                        <span class="adm-pill adm-pill--green"><i class="fas fa-check-circle"></i> Approved</span>
+                    {% elif post.status == 'pending' %}
+                        <span class="adm-pill adm-pill--amber"><i class="fas fa-clock"></i> Pending</span>
+                    {% elif post.status == 'rejected' %}
+                        <span class="adm-pill adm-pill--red"><i class="fas fa-times-circle"></i> Rejected</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div style="display:flex;gap:.75rem;font-size:.78rem;color:var(--text-muted)">
+                        <span title="Likes"><i class="fas fa-heart"></i> {{ post.like_count() }}</span>
+                        <span title="Comments"><i class="fas fa-comment"></i> {{ post.comment_count() }}</span>
+                        {% if post.document %}
+                        <span title="Downloads"><i class="fas fa-download"></i> {{ post.document.download_count }}</span>
+                        {% endif %}
+                    </div>
+                </td>
+                <td style="font-size:.78rem;color:var(--text-muted);white-space:nowrap">
+                    {{ post.created_at.strftime('%b %d, %Y') }}
+                </td>
+                <td style="text-align:right">
+                    <div style="display:flex;gap:.35rem;justify-content:flex-end">
+                        <a href="{{ url_for('posts.view', post_id=post.id) }}"
+                           class="adm-btn adm-btn--secondary adm-btn--sm" target="_blank">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <form action="{{ url_for('admin.delete_post', post_id=post.id) }}" method="post"
+                              style="display:contents"
+                              onsubmit="return confirm('Delete this post? This cannot be undone.')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="adm-btn adm-btn--danger adm-btn--sm">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{# ── Mobile cards ── #}
+<div class="ap-mobile-cards">
+    {% for post in posts.items %}
+    <div class="ap-mob-card">
+        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem">
+            <div class="ap-post-icon {% if post.has_document %}ap-post-icon--doc{% else %}ap-post-icon--note{% endif %} ap-post-icon--sm">
+                <i class="fas fa-{% if post.has_document %}file-pdf{% else %}sticky-note{% endif %}"></i>
+            </div>
+            <div style="flex:1;min-width:0">
+                <div style="font-weight:700;font-size:.85rem;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ post.title }}</div>
+                <div style="font-size:.72rem;color:var(--text-muted)">
+                    by <a href="{{ url_for('users.profile', username=post.author.username) }}"
+                          style="color:var(--primary);font-weight:600;text-decoration:none">{{ post.author.username }}</a>
+                    · {{ post.created_at.strftime('%b %d, %Y') }}
+                </div>
+            </div>
+            <div style="display:flex;gap:.3rem;flex-shrink:0">
+                <a href="{{ url_for('posts.view', post_id=post.id) }}"
+                   class="adm-btn adm-btn--secondary adm-btn--sm" target="_blank">
+                    <i class="fas fa-eye"></i>
+                </a>
+                <form action="{{ url_for('admin.delete_post', post_id=post.id) }}" method="post"
+                      style="display:contents"
+                      onsubmit="return confirm('Delete this post?')">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="adm-btn adm-btn--danger adm-btn--sm">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap">
+            <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+                {% if post.subject %}
+                <span class="adm-pill" style="color:{{ post.subject.color }};background:{{ post.subject.color }}18;border:1px solid {{ post.subject.color }}35;font-size:.65rem">
+                    <i class="fas fa-{{ post.subject.icon }}"></i> {{ post.subject.name }}
+                </span>
+                {% endif %}
+                {% if post.status == 'approved' %}
+                    <span class="adm-pill adm-pill--green" style="font-size:.65rem"><i class="fas fa-check-circle"></i> Approved</span>
+                {% elif post.status == 'pending' %}
+                    <span class="adm-pill adm-pill--amber" style="font-size:.65rem"><i class="fas fa-clock"></i> Pending</span>
+                {% elif post.status == 'rejected' %}
+                    <span class="adm-pill adm-pill--red" style="font-size:.65rem"><i class="fas fa-times-circle"></i> Rejected</span>
+                {% endif %}
+            </div>
+            <div style="display:flex;gap:.6rem;font-size:.75rem;color:var(--text-muted)">
+                <span><i class="fas fa-heart"></i> <span><i class="fas fa-heart"></i> {{ post.like_count() }}</span></span>
+                <span><i class="fas fa-comment"></i> {{ post.comment_count() }}</span>
+                {% if post.document %}<span><i class="fas fa-download"></i> {{ post.document.download_count }}</span>{% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if posts.pages > 1 %}
+<div class="adm-pagination">
+    {% if posts.has_prev %}
+    <a href="{{ url_for('admin.posts', page=posts.prev_num, search=search, subject=subject_filter, status=status_filter) }}"
+       class="adm-page-btn"><i class="fas fa-chevron-left"></i> Prev</a>
+    {% endif %}
+    <span class="adm-page-info">Page {{ posts.page }} of {{ posts.pages }}</span>
+    {% if posts.has_next %}
+    <a href="{{ url_for('admin.posts', page=posts.next_num, search=search, subject=subject_filter, status=status_filter) }}"
+       class="adm-page-btn">Next <i class="fas fa-chevron-right"></i></a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% else %}
+<div class="adm-empty">
+    <i class="fas fa-inbox"></i>
+    <p>{% if search or subject_filter or status_filter %}No posts match your filters.{% else %}No posts yet.{% endif %}</p>
+    {% if search or subject_filter or status_filter %}
+    <a href="{{ url_for('admin.posts') }}" class="adm-btn adm-btn--secondary">Clear filters</a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}{# admin_content #}

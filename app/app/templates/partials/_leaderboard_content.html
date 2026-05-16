@@ -1,0 +1,47 @@
+<div class="lb-wrap">
+  <div class="lb-header">
+    <h1 class="lb-title">🏆 Global Leaderboard</h1>
+    <p class="lb-sub">All-time XP rankings — every quiz, upload and note counts forever.</p>
+    {% if user_rank %}
+    <div class="lb-your-rank">
+      You are <strong>#{{ user_rank }}</strong> globally
+      {% if user_rank == 1 %}🥇
+      {% elif user_rank == 2 %}🥈
+      {% elif user_rank == 3 %}🥉
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="lb-table">
+    {% for user in top_users %}
+    {% set rank = loop.index %}
+    <a href="{{ url_for('users.profile', username=user.username) }}"
+       class="lb-row {% if current_user.is_authenticated and user.id == current_user.id %}lb-row--you{% endif %}">
+      <div class="lb-rank
+        {% if rank == 1 %}lb-rank--gold
+        {% elif rank == 2 %}lb-rank--silver
+        {% elif rank == 3 %}lb-rank--bronze
+        {% endif %}">
+        {% if rank == 1 %}🥇
+        {% elif rank == 2 %}🥈
+        {% elif rank == 3 %}🥉
+        {% else %}#{{ rank }}
+        {% endif %}
+      </div>
+      <img src="{{ user.profile_picture_url }}" class="lb-avatar" alt="{{ user.username }}">
+      <div class="lb-info">
+        <span class="lb-name">{{ user.nickname or user.username }}</span>
+        <span class="lb-username">@{{ user.username }}</span>
+      </div>
+      {% if user.xp_title %}
+      <span class="lb-badge">{{ user.xp_title }}</span>
+      {% endif %}
+      <div class="lb-xp">
+        <span class="lb-xp-val">{{ user.xp_points | int }}</span>
+        <span class="lb-xp-lbl">XP</span>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</div>

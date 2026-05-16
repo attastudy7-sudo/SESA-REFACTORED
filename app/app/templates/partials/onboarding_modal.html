@@ -1,0 +1,275 @@
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/partials/onboarding_modal.css') }}">
+<div id="onboardingModal" class="ob-modal-overlay" style="display:none;">
+  <div class="ob-modal-card">
+    <div class="ob-modal-header">
+      <div class="ob-progress-bar">
+        <div class="ob-progress-fill" id="modalObProgressFill" style="width: 0%;"></div>
+      </div>
+      <button onclick="closeOnboardingModal(true)" class="ob-close-btn">✕</button>
+    </div>
+
+    <div class="ob-modal-body">
+      <!-- Step 1: Nickname -->
+      <div class="ob-step-panel active" id="modalObStep1">
+        <div class="ob-step-icon">👋</div>
+        <h1 class="ob-step-title">What's your nickname?</h1>
+        <p class="ob-step-desc">Let's personalize your experience</p>
+        <div class="ob-input-group">
+          <input type="text" id="modalObNickname" class="ob-input" placeholder="Your nickname" value="{{ current_user.nickname or '' }}" autofocus>
+        </div>
+        <button class="ob-next-btn" onclick="goToObStep(2)">Continue</button>
+      </div>
+
+      <!-- Step 2: Username -->
+      <div class="ob-step-panel" id="modalObStep2">
+        <div class="ob-step-icon">🏷️</div>
+        <h1 class="ob-step-title">Pick a username</h1>
+        <p class="ob-step-desc">This is how other students will find you</p>
+        <div class="ob-input-group">
+          <span class="ob-input-prefix">@</span>
+          <input type="text" id="modalObUsername" class="ob-input ob-input--prefixed" placeholder="username" value="{{ current_user.username or '' }}">
+        </div>
+        <button class="ob-next-btn" onclick="goToObStep(3)">Continue</button>
+        <div class="ob-step-footer">
+          <button class="ob-back-btn" onclick="goToObStep(1)"><i class="fas fa-arrow-left"></i> Back</button>
+          <div></div> <!-- Spacer -->
+        </div>
+      </div>
+
+      <!-- Step 3: School -->
+      <div class="ob-step-panel" id="modalObStep3">
+        <div class="ob-step-icon">🏫</div>
+        <h1 class="ob-step-title">Where do you study?</h1>
+        <p class="ob-step-desc">We'll connect you with classmates</p>
+        <div class="ob-input-group">
+          <input type="text" id="modalObSchool" class="ob-input" placeholder="e.g. University of Ghana" value="{{ current_user.school or '' }}" autocomplete="off">
+          <div id="obSchoolSuggestions" class="ob-lookup-results" style="display:none;"></div>
+        </div>
+        <button class="ob-next-btn" onclick="goToObStep(4)">Continue</button>
+        <div class="ob-step-footer">
+          <button class="ob-back-btn" onclick="goToObStep(2)"><i class="fas fa-arrow-left"></i> Back</button>
+          <button class="ob-skip-btn" onclick="goToObStep(4)">Skip for now <i class="fas fa-angles-right"></i></button>
+        </div>
+      </div>
+
+      <!-- Step 4: Programme -->
+      <div class="ob-step-panel" id="modalObStep4">
+        <div class="ob-step-icon">📚</div>
+        <h1 class="ob-step-title">What are you studying?</h1>
+        <p class="ob-step-desc">We'll recommend materials for your courses</p>
+        <div class="ob-input-group">
+          <input type="text" id="modalObProgramme" class="ob-input" placeholder="Type your programme (e.g. Computer Science)" autocomplete="off">
+          <div id="obProgSuggestions" class="ob-lookup-results" style="display:none;"></div>
+        </div>
+        <form action="{{ url_for('main.onboarding') }}" method="POST" id="modalObForm">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="nickname" id="modalObFormNickname">
+          <input type="hidden" name="username" id="modalObFormUsername">
+          <input type="hidden" name="school" id="modalObFormSchool">
+          <input type="hidden" name="programme" id="modalObFormProgramme">
+          <button type="button" class="ob-next-btn ob-finish-btn" onclick="finishOnboarding()">
+            <i class="fas fa-rocket"></i> Let's go!
+          </button>
+        </form>
+         <div class="ob-step-footer">
+           <button class="ob-back-btn" onclick="goToObStep(3)"><i class="fas fa-arrow-left"></i> Back</button>
+           <button class="ob-skip-btn" onclick="document.getElementById('modalObForm').submit();">Skip & finish <i class="fas fa-check"></i></button>
+         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentObStep = 1;
+const totalObSteps = 4;
+
+ const GHANA_PROGRAMMES = [
+   "BSc Computer Science","BSc Information Technology","BSc Computer Engineering",
+   "BSc Electrical Engineering","BSc Mechanical Engineering","BSc Civil Engineering",
+   "BSc Chemical Engineering","BA Economics","BSc Business Administration",
+   "BSc Accounting","BSc Marketing","BA English","BA History",
+   "BSc Mathematics","BSc Statistics","BSc Physics","BSc Chemistry",
+   "BSc Biology","BSc Biochemistry","BSc Nursing","BSc Pharmacy",
+   "MBChB Medicine and Surgery","LLB Law","BSc Agriculture",
+   "BSc Education","BA Communication Studies","BSc Psychology",
+   "BSc Sociology","BSc Political Science","BSc Architecture",
+   "BSc Quantity Surveying","BSc Land Economy","MBA",
+   "MSc Computer Science","MSc Engineering","Other"
+ ];
+ const GHANA_UNIVERSITIES = [
+   "University of Ghana","KNUST","University of Cape Coast",
+   "University for Development Studies","GIMPA","Ashesi University",
+   "Central University","Valley View University","Methodist University Ghana",
+   "UPSA","GCTU","Accra Technical University","Ho Technical University",
+   "Kumasi Technical University","Takoradi Technical University",
+   "Koforidua Technical University","Sunyani Technical University",
+   "Cape Coast Technical University","Wa Technical University",
+   "Bolgatanga Technical University","University of Health and Allied Sciences",
+   "Ghana Institute of Journalism","NAFTI","Regent University College",
+   "C.K. Tedam University","SD Dombo University","Other"
+ ];
+ const ALL_PROGRAMMES = GHANA_PROGRAMMES;
+
+function openOnboardingModal() {
+  console.log('[Onboarding] openOnboardingModal called');
+  const m = document.getElementById('onboardingModal');
+  if (m) {
+    m.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    goToObStep(1);
+    console.log('[Onboarding] Modal displayed');
+  }
+}
+window.onboardingModalLoaded = true;
+
+// Debounce helper
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+// Global University Lookup
+const schoolInput = document.getElementById('modalObSchool');
+const schoolResults = document.getElementById('obSchoolSuggestions');
+
+const searchUniversities = debounce(async (query) => {
+  const q = query.toLowerCase().trim();
+  if (q.length < 1) {
+    schoolResults.style.display = 'none';
+    return;
+  }
+  schoolResults.innerHTML = '<div class="ob-lookup-loader"><div class="ob-spinner"></div>Searching universities...</div>';
+  schoolResults.style.display = 'block';
+
+   const localMatches = GHANA_UNIVERSITIES.filter(name => name.toLowerCase().includes(q))
+    .map(name => ({ name, country: 'Ghana', alpha_two_code: 'GH' }));
+
+  try {
+    const resp = await fetch(`http://universities.hipolabs.com/search?name=${encodeURIComponent(q)}`);
+    const apiData = await resp.json();
+    const seen = new Set(localMatches.map(m => m.name.toLowerCase()));
+    const merged = [...localMatches];
+    apiData.slice(0, 10).forEach(uni => {
+      if (!seen.has(uni.name.toLowerCase())) { merged.push(uni); seen.add(uni.name.toLowerCase()); }
+    });
+
+    schoolResults.innerHTML = '';
+    if (merged.length > 0) {
+      merged.slice(0, 10).forEach(uni => {
+        const div = document.createElement('div');
+        div.className = 'ob-lookup-item';
+        div.style.display = 'flex'; div.style.justifyContent = 'space-between'; div.style.alignItems = 'center';
+        div.innerHTML = `<span>${uni.name}</span> <small style="color:#64748b;margin-left:0.5rem;font-size:0.7rem;background:rgba(255,255,255,0.05);padding:2px 6px;border-radius:4px;">${uni.alpha_two_code}</small>`;
+        div.onclick = () => { schoolInput.value = uni.name; schoolResults.style.display = 'none'; };
+        schoolResults.appendChild(div);
+      });
+    } else {
+      schoolResults.innerHTML = '<div class="ob-lookup-empty">No results. You can still use this name.</div>';
+    }
+  } catch (err) {
+    console.error('Uni lookup failed', err);
+    schoolResults.style.display = 'none';
+  }
+}, 300);
+
+// Global Programme Lookup
+const progInput = document.getElementById('modalObProgramme');
+const progResults = document.getElementById('obProgSuggestions');
+
+const searchProgrammes = debounce(async (query) => {
+  const q = query.toLowerCase().trim();
+  if (q.length < 1) {
+    progResults.style.display = 'none';
+    return;
+  }
+  progResults.innerHTML = '<div class="ob-lookup-loader"><div class="ob-spinner"></div>Filtering programmes...</div>';
+  progResults.style.display = 'block';
+
+  setTimeout(() => {
+    const matches = ALL_PROGRAMMES.filter(name => name.toLowerCase().includes(q));
+    progResults.innerHTML = '';
+    if (matches.length > 0) {
+      matches.slice(0, 10).forEach(name => {
+        const div = document.createElement('div');
+        div.className = 'ob-lookup-item';
+        div.textContent = name;
+        div.onclick = () => { progInput.value = name; progResults.style.display = 'none'; };
+        progResults.appendChild(div);
+      });
+    } else {
+       progResults.innerHTML = `<div class="ob-lookup-empty">Not found. We'll add "${query}" for you.</div>`;
+    }
+  }, 100);
+}, 200);
+
+if (schoolInput) schoolInput.addEventListener('input', (e) => searchUniversities(e.target.value));
+if (progInput) progInput.addEventListener('input', (e) => searchProgrammes(e.target.value));
+
+document.addEventListener('click', (e) => {
+  if (schoolInput && e.target !== schoolInput && !schoolResults.contains(e.target)) schoolResults.style.display = 'none';
+  if (progInput && e.target !== progInput && !progResults.contains(e.target)) progResults.style.display = 'none';
+});
+
+function closeOnboardingModal(permanently = false) {
+  const m = document.getElementById('onboardingModal');
+  if (m) {
+    m.style.display = 'none';
+    m.style.backdropFilter = 'none'; // Remove blur effect
+    m.style.webkitBackdropFilter = 'none'; // Remove blur for Safari
+    document.body.style.overflow = '';
+  }
+  if (permanently) fetch('/users/skip-education', { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token() }}' } });
+}
+
+function goToObStep(step) {
+  const currentPanel = document.getElementById('modalObStep' + currentObStep);
+  if (currentPanel) currentPanel.classList.remove('active');
+  currentObStep = step;
+  const nextPanel = document.getElementById('modalObStep' + currentObStep);
+  if (nextPanel) {
+    nextPanel.classList.add('active');
+    const input = nextPanel.querySelector('input:not([type=hidden]), select');
+    if (input) setTimeout(() => input.focus(), 100);
+  }
+  const pct = ((currentObStep - 1) / (totalObSteps - 1)) * 100;
+  document.getElementById('modalObProgressFill').style.width = pct + '%';
+}
+
+function finishOnboarding() {
+  const btn = document.querySelector('.ob-finish-btn');
+  if (btn) { btn.innerHTML = '<div class="ob-spinner" style="margin:0"></div>'; btn.disabled = true; }
+  
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = '/onboarding';
+  
+  const csrfInput = document.createElement('input');
+  csrfInput.type = 'hidden';
+  csrfInput.name = 'csrf_token';
+  csrfInput.value = '{{ csrf_token() }}';
+  form.appendChild(csrfInput);
+  
+  const fields = {
+    nickname: document.getElementById('modalObNickname').value,
+    username: document.getElementById('modalObUsername').value,
+    school: document.getElementById('modalObSchool').value,
+    programme: document.getElementById('modalObProgramme').value
+  };
+  
+  for (const [name, value] of Object.entries(fields)) {
+    const input = document.createElement('input');
+    input.type = 'hidden'; input.name = name; input.value = value;
+    form.appendChild(input);
+  }
+  document.body.appendChild(form);
+  form.submit();
+}
+</script>

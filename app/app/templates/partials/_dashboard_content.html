@@ -1,0 +1,177 @@
+{# ── Streak-at-risk banner ───────────────────────────────────────────────── #}
+{% if streak_at_risk %}
+<div class="db-streak-banner" id="streakBanner">
+  <span>🔥</span>
+  Your <strong>{{ current_user.current_streak }}-day streak</strong> ends tonight — watch one video to keep it alive.
+  <a href="{{ url_for('main.library_all_videos') }}" class="db-streak-cta">Go now →</a>
+  <button class="db-streak-close" onclick="this.closest('.db-streak-banner').remove()" aria-label="Dismiss">✕</button>
+</div>
+{% endif %}
+
+<div class="db-wrap">
+
+<div class="db-premium-header">
+  <div class="db-greeting-group">
+    <span class="db-time-overline">Welcome back 🎊</span>
+    <h1 class="db-headline">
+      {{ current_user.nickname.split()[0] if current_user.nickname else current_user.username }}
+    </h1>
+    <p class="db-welcome-subtitle">Your learning journey continues.</p>
+  </div>
+
+  <div class="db-raw-stats">
+    <div class="stat-item">
+      <div class="stat-header">
+        <i class="fas fa-sparkles stat-icon aura"></i>
+        <span class="stat-val">{{ current_user.aura_balance }}</span>
+      </div>
+      <span class="stat-lbl">Aura</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <div class="stat-header">
+        <i class="fas fa-trophy stat-icon rank"></i>
+        <span class="stat-val">#{{ rank }}</span>
+      </div>
+      <span class="stat-lbl">Global</span>
+    </div>
+    <div class="stat-divider d-none-mobile"></div>
+    <div class="stat-item d-none-mobile">
+      <div class="stat-header">
+        <i class="fas fa-fire stat-icon streak"></i>
+        <span class="stat-val">{{ current_user.current_streak }}d</span>
+      </div>
+      <span class="stat-lbl">Streak</span>
+    </div>
+  </div>
+</div>
+
+
+{# ── Weak Topics alert (only if route passes weak_topics) ─────────────── #}
+  {% if weak_topics %}
+  <div class="db-section">
+    <span class="db-overline">Refine your focus</span>
+    <div class="db-weak-topics-container">
+      {% for topic in weak_topics %}
+      <div class="db-topic-chip">
+        <span class="topic-indicator status-{{ topic.status|lower }}"></span>
+        <span class="topic-name">{{ topic.topic_name }}</span>
+        {% if topic.fail_count > 1 %}
+          <span class="topic-count">{{ topic.fail_count }}</span>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {# ── In-progress packs ───────────────────────────────────────────────── #}
+  {% if in_progress_packs %}
+{# ── In-progress packs ───────────────────────────────────────────────── #}
+<div class="db-section">
+  <div class="db-section-header">
+    <span class="db-overline">In progress</span>
+    <a href="#" class="db-view-all">View all</a>
+  </div>
+  <!-- Change db-card-grid to db-scroll-row -->
+  <div class="db-scroll-row">
+    {% for pack in in_progress_packs %}
+      <div class="db-scroll-item">
+        {% set bundle = pack %}
+        {% include '_pack_card.html' %}
+      </div>
+    {% endfor %}
+  </div>
+</div>
+  {% endif %}
+
+  {# ── Completed packs ─────────────────────────────────────────────────── #}
+  {% if completed_packs %}
+  <div class="db-section">
+    <div class="db-section-header">
+      <span class="db-overline">
+        <i class="fas fa-archive" style="margin-right: 4px; color: var(--sp-yellow);"></i> 
+        Knowledge vault
+      </span>
+      <a href="#" class="db-view-all">Archive</a>
+    </div>
+    
+    <div class="db-scroll-row">
+      {% for pack in completed_packs %}
+      <div class="db-scroll-item">
+        {% set bundle = pack %}
+        {% include '_pack_card.html' %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {# ── Empty / onboarding state ────────────────────────────────────────── #}
+  {% if not in_progress_packs and not completed_packs %}
+  <div class="db-section">
+    <div class="db-onboarding-card">
+      <div class="db-onboarding-header">
+        <div class="db-onboarding-icon">🚀</div>
+        <div>
+          <h3 class="db-onboarding-title">Welcome to Knowly!</h3>
+          <p class="db-onboarding-subtitle">Three steps to your first Aura drop.</p>
+        </div>
+      </div>
+
+      <div class="db-checklist">
+        <a href="javascript:void(0)" onclick="openSettingsModal('education')"
+           class="db-check-item {% if current_user.programme %}done{% endif %}">
+          <div class="db-check-circle">
+            {% if current_user.programme %}
+            <i class="fas fa-check" style="font-size:10px;"></i>
+            {% else %}1{% endif %}
+          </div>
+          <div class="db-check-body">
+            <div class="db-check-title">Set your programme</div>
+            <div class="db-check-desc">Personalise your recommendations in settings.</div>
+          </div>
+          <i class="fas fa-chevron-right db-check-arrow"></i>
+        </a>
+
+        <a href="{{ url_for('main.library_all_videos') }}" class="db-check-item">
+          <div class="db-check-circle">2</div>
+          <div class="db-check-body">
+            <div class="db-check-title">Pick your first subject</div>
+            <div class="db-check-desc">Browse the library for courses in your field.</div>
+          </div>
+          <i class="fas fa-chevron-right db-check-arrow"></i>
+        </a>
+
+        <a href="{{ url_for('main.index') }}" class="db-check-item">
+          <div class="db-check-circle">3</div>
+          <div class="db-check-body">
+            <div class="db-check-title">Start your first video</div>
+            <div class="db-check-desc">Search a topic and enter the Study Room.</div>
+          </div>
+          <i class="fas fa-chevron-right db-check-arrow"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+</div>{# /db-wrap #}
+
+<script>
+  (function () {
+    const h = new Date().getHours();
+    const el = document.getElementById('dbTimeLabel');
+    const greeting = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+    
+    if (el) {
+      el.style.opacity = 0;
+      el.textContent = greeting;
+      // Soft fade in for that premium feel
+      setTimeout(() => {
+        el.style.transition = "opacity 0.8s ease-in-out";
+        el.style.opacity = 1;
+      }, 100);
+    }
+  })();
+</script>

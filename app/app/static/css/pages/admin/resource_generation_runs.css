@@ -1,0 +1,41 @@
+
+.rg-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: .5rem;
+  font-size: .84rem;
+}
+.rg-table-wrap { overflow: auto; }
+.rg-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.rg-table th,
+.rg-table td {
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  padding: .5rem;
+  font-size: .78rem;
+  vertical-align: middle;
+}
+.rg-progress {
+  display: grid;
+  gap: .2rem;
+  min-width: 120px;
+}
+.rg-progress span { font-size: .72rem; color: var(--text-secondary); }
+.rg-progress-bar {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+.rg-progress-bar > div {
+  height: 100%;
+  background: color-mix(in srgb, var(--secondary) 60%, #22c55e);
+}
+.rg-empty {
+  color: var(--text-muted);
+  font-size: .82rem;
+}

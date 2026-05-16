@@ -1,0 +1,203 @@
+
+.rg-form { display: grid; gap: .9rem; }
+.rg-shell {
+  border-radius: 14px;
+}
+.adm-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .45rem;
+  justify-content: flex-end;
+}
+.rg-grid {
+  display: grid;
+  gap: .7rem;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: start;
+}
+.rg-grid--topics {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: .55rem;
+}
+.rg-grid--scope label {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-main);
+  padding: .5rem .55rem;
+  min-height: 86px;
+}
+.rg-grid label {
+  display: grid;
+  gap: .35rem;
+  font-size: .8rem;
+  color: var(--text-secondary);
+  min-width: 0;
+}
+.rg-panel {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: .9rem;
+  display: grid;
+  gap: .65rem;
+  background: var(--bg-secondary);
+}
+.rg-panel--compact {
+  padding: .58rem .65rem;
+  gap: .35rem;
+}
+.rg-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+}
+.rg-panel-title {
+  margin: 0;
+  font-size: .82rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: .01em;
+}
+.rg-info-badge {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  background: var(--bg-main);
+  font-size: .75rem;
+}
+.rg-inline-check {
+  display: inline-flex;
+  gap: .45rem;
+  align-items: center;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.rg-field--auto-topic { grid-column: span 8; }
+.rg-field--topic-count { grid-column: span 4; }
+.rg-field { grid-column: span 12; }
+.rg-grid input,
+.rg-grid select,
+textarea {
+  width: 100%;
+  min-width: 0;
+  border: 1.5px solid var(--border);
+  background: var(--bg-main);
+  color: var(--text-primary);
+  border-radius: 10px;
+  padding: .55rem .7rem;
+  font-size: .84rem;
+}
+.rg-grid--topics input,
+.rg-grid--topics select {
+  min-height: 38px;
+  padding-top: .42rem;
+  padding-bottom: .42rem;
+}
+textarea {
+  resize: vertical;
+  width: 100%;
+  font-family: inherit;
+}
+.rg-field--subject { grid-column: span 6; }
+.rg-field--programme { grid-column: span 6; }
+.rg-field--level { grid-column: span 4; }
+.rg-field--year { grid-column: span 4; }
+.rg-field--semester { grid-column: span 4; }
+.rg-block,
+.rg-actions {
+  position: relative;
+  z-index: 1;
+}
+.rg-actions {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+  padding-top: .25rem;
+  border-top: 1px solid var(--border);
+}
+.rg-preview-grid {
+  display: grid;
+  gap: .7rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.rg-preview-col {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: .75rem;
+  background: var(--bg-secondary);
+  display: flex;
+  flex-direction: column;
+}
+.rg-preview-title {
+  margin: 0 0 .35rem;
+  font-size: .82rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.rg-preview-list {
+  margin: 0;
+  padding-left: 1rem;
+  display: grid;
+  gap: .25rem;
+  font-size: .8rem;
+  color: var(--text-secondary);
+}
+.rg-preview-list li {
+  line-height: 1.35;
+}
+.rg-preview-empty {
+  color: var(--text-muted);
+}
+.rg-fixed-types {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .45rem;
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  border-radius: 10px;
+  padding: .6rem .7rem;
+}
+.rg-fixed-label {
+  color: var(--text-muted);
+  font-size: .76rem;
+  font-weight: 700;
+}
+.rg-type-pill {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: .2rem .55rem;
+  font-size: .73rem;
+  color: var(--text-secondary);
+  background: var(--bg-main);
+}
+
+@media (max-width: 979px) {
+  .rg-field--subject,
+  .rg-field--programme,
+  .rg-field--level,
+  .rg-field--year,
+  .rg-field--semester,
+  .rg-field--auto-topic,
+  .rg-field--topic-count {
+    grid-column: span 12;
+  }
+}
+
+@media (min-width: 980px) and (max-width: 1180px) {
+  .rg-field--subject,
+  .rg-field--programme,
+  .rg-field--level {
+    grid-column: span 12;
+  }
+
+  .rg-field--year,
+  .rg-field--semester {
+    grid-column: span 6;
+  }
+}

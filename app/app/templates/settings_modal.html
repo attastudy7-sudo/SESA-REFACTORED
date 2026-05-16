@@ -1,0 +1,453 @@
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/settings_modal.css') }}">
+<!-- ═══════════════════════════════════════════════════════════════
+     KNOWLY UNIFIED SETTINGS MODAL
+     Replace the existing appearanceModal div AND add openSettingsModal JS.
+     Paste this block just before </body> in base.html,
+     replacing the entire existing appearanceModal div.
+═══════════════════════════════════════════════════════════════ -->
+
+<div id="settingsModal"
+  style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); backdrop-filter:blur(6px); z-index:10000; align-items:center; justify-content:center; padding:1rem; box-sizing:border-box;">
+  <div class="stg-shell">
+
+    <!-- Close button -->
+    <button class="stg-close" onclick="closeSettingsModal()" aria-label="Close settings">
+      <i class="fas fa-times"></i>
+    </button>
+
+    <!-- LEFT NAV -->
+    <nav class="stg-nav">
+      <div class="stg-nav-header">Settings</div>
+      <button class="stg-nav-item active" onclick="stgTab('profile', this)">
+        <i class="fas fa-user-circle"></i> Profile
+      </button>
+      <button class="stg-nav-item" onclick="stgTab('education', this)">
+        <i class="fas fa-graduation-cap"></i> Education
+      </button>
+      <button class="stg-nav-item" onclick="stgTab('account', this)">
+        <i class="fas fa-shield-halved"></i> Account
+      </button>
+      <button class="stg-nav-item" onclick="stgTab('subscription', this)">
+        <i class="fas fa-bolt"></i> Subscription
+      </button>
+      <button class="stg-nav-item" onclick="stgTab('appearance', this)">
+        <i class="fas fa-palette"></i> Appearance
+      </button>
+    </nav>
+
+    <!-- RIGHT CONTENT -->
+    <div class="stg-content">
+
+      <!-- ── PROFILE TAB ── -->
+      <div class="stg-panel active" id="stg-profile">
+        <h2 class="stg-panel-title">Profile</h2>
+        <p class="stg-panel-sub">How you appear to other students on Knowly.</p>
+
+        <form method="POST" action="{{ url_for('users.edit_profile') }}" enctype="multipart/form-data" class="stg-form"
+          id="profileForm">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <!-- Avatar -->
+          <div class="stg-avatar-row">
+            <img src="{{ current_user.profile_picture_url }}" alt="avatar" class="stg-avatar-preview"
+              id="stgAvatarPreview">
+            <div>
+              <label class="stg-file-btn">
+                <i class="fas fa-camera"></i> Change photo
+                <input type="file" name="profile_picture" accept="image/*" style="display:none"
+                  onchange="previewAvatar(this)">
+              </label>
+              <p class="stg-hint">JPG or PNG, max 2MB</p>
+            </div>
+          </div>
+
+          <div class="stg-field-row">
+            <div class="stg-field">
+              <label class="stg-label">Full name</label>
+              <input type="text" name="nickname" class="stg-input" value="{{ current_user.nickname or '' }}"
+                placeholder="Your full name">
+            </div>
+            <div class="stg-field">
+              <label class="stg-label">Username</label>
+              <input type="text" class="stg-input" value="@{{ current_user.username }}" disabled
+                style="opacity:0.5; cursor:not-allowed;">
+              <span class="stg-hint">Username cannot be changed after signup</span>
+            </div>
+          </div>
+
+          <div class="stg-field">
+            <label class="stg-label">Bio</label>
+            <textarea name="bio" class="stg-input stg-textarea" placeholder="Tell other students a bit about yourself…"
+              rows="3">{{ current_user.bio or '' }}</textarea>
+          </div>
+          {% if current_user.programme %}
+          <div class="stg-field">
+            <label class="stg-label">Your subjects</label>
+            <div class="stg-subjects-wrap" id="stgSubjectsWrap">
+              {% set user_prog = namespace(obj=None) %}
+              {% for prog in programmes if prog.name == current_user.programme %}
+              {% set user_prog.obj = prog %}
+              {% endfor %}
+              {% if user_prog.obj %}
+              {% for subject in user_prog.obj.subjects if subject.is_active %}
+              <span class="stg-subject-chip">
+                <i class="fas fa-{{ subject.icon or 'book' }}"></i>
+                {{ subject.name }}
+              </span>
+              {% endfor %}
+              {% else %}
+              <span class="stg-hint">No subjects found for your programme.</span>
+              {% endif %}
+            </div>
+            <span class="stg-hint">Subjects are determined by your programme. Change your programme above to update
+              them.</span>
+          </div>
+          {% endif %}
+          <div class="stg-actions">
+            <button type="submit" class="stg-btn-primary">Save profile</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ── EDUCATION TAB ── -->
+      <div class="stg-panel" id="stg-education">
+        <h2 class="stg-panel-title">Education</h2>
+        <p class="stg-panel-sub">Controls which videos and study packs are shown to you by default.</p>
+
+        <form method="POST" action="{{ url_for('users.save_education') }}" class="stg-form" id="educationForm">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <div class="stg-field">
+            <label class="stg-label">School / University</label>
+            <input type="text" name="school" class="stg-input" value="{{ current_user.school or '' }}"
+              placeholder="e.g. University of Ghana, KNUST">
+          </div>
+
+          <div class="stg-field">
+            <label class="stg-label">Programme</label>
+            <input type="text" name="programme" id="stgProgrammeInput" class="stg-input"
+              value="{{ current_user.programme or '' }}" placeholder="e.g. Computer Science, Medicine"
+              autocomplete="off">
+            <div class="stg-autocomplete" id="stgProgrammeSuggestions"></div>
+            <span class="stg-hint">This personalises your video feed and study pack recommendations.</span>
+          </div>
+
+          {% if current_user.programme %}
+          <div class="stg-info-badge">
+            <i class="fas fa-circle-check"></i>
+            Currently set to <strong>{{ current_user.programme }}</strong>
+            {% if current_user.school %}at <strong>{{ current_user.school }}</strong>{% endif %}
+          </div>
+          {% endif %}
+
+          <div class="stg-actions">
+            <button type="submit" class="stg-btn-primary">Save education</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ── ACCOUNT TAB ── -->
+      <div class="stg-panel" id="stg-account">
+        <h2 class="stg-panel-title">Account</h2>
+        <p class="stg-panel-sub">Manage your login credentials and account security.</p>
+
+        <!-- Email section -->
+        <div class="stg-section">
+          <div class="stg-section-label">Email address</div>
+          <div class="stg-info-row">
+            <span class="stg-info-value">{{ current_user.email }}</span>
+            {% if current_user.email_verified %}
+            <span class="stg-badge stg-badge--green"><i class="fas fa-circle-check"></i> Verified</span>
+            {% else %}
+            <span class="stg-badge stg-badge--amber"><i class="fas fa-circle-exclamation"></i> Unverified</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="stg-divider"></div>
+
+        <!-- Password section -->
+        <div class="stg-section">
+          <div class="stg-section-label">Password</div>
+          {% if current_user.password_hash %}
+          <button class="stg-btn-secondary" onclick="togglePasswordForm()">
+            <i class="fas fa-key"></i> Change password
+          </button>
+          <form id="stgPasswordForm" style="display:none; margin-top:1rem;" method="POST"
+            action="{{ url_for('auth.reset_password_request') }}" class="stg-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="stg-field">
+              <label class="stg-label">Current password</label>
+              <input type="password" name="current_password" class="stg-input" placeholder="Enter current password">
+            </div>
+            <div class="stg-field-row">
+              <div class="stg-field">
+                <label class="stg-label">New password</label>
+                <input type="password" name="new_password" class="stg-input" placeholder="New password">
+              </div>
+              <div class="stg-field">
+                <label class="stg-label">Confirm new password</label>
+                <input type="password" name="confirm_password" class="stg-input" placeholder="Confirm new password">
+              </div>
+            </div>
+            <div class="stg-actions">
+              <button type="submit" class="stg-btn-primary">Update password</button>
+              <button type="button" class="stg-btn-ghost" onclick="togglePasswordForm()">Cancel</button>
+            </div>
+          </form>
+          {% else %}
+          <div class="stg-info-badge">
+            <i class="fas fa-google" style="color:#4285f4;"></i>
+            You signed in with Google. No password is set on this account.
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="stg-divider"></div>
+
+        <!-- Connected accounts -->
+        <div class="stg-section">
+          <div class="stg-section-label">Connected accounts</div>
+          <div class="stg-info-row">
+            <span style="display:flex; align-items:center; gap:0.5rem; font-size:0.88rem; color:var(--text-secondary);">
+              <i class="fab fa-google" style="color:#4285f4; font-size:1rem;"></i> Google
+            </span>
+            {% if not current_user.password_hash %}
+            <span class="stg-badge stg-badge--green"><i class="fas fa-link"></i> Connected</span>
+            {% else %}
+            <span class="stg-badge" style="color:var(--text-muted); border-color:var(--border);">Not connected</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="stg-divider"></div>
+
+        <!-- Danger zone -->
+        <div class="stg-section">
+          <div class="stg-section-label" style="color:#f87171;">Danger zone</div>
+          <p class="stg-hint" style="margin-bottom:0.75rem;">Deleting your account is permanent and cannot be undone.
+            All your packs, progress, and Aura will be lost.</p>
+          <button class="stg-btn-danger" onclick="confirmDeleteAccount()">
+            <i class="fas fa-trash-can"></i> Delete my account
+          </button>
+        </div>
+      </div>
+
+      <!-- ── SUBSCRIPTION TAB ── -->
+      <div class="stg-panel" id="stg-subscription">
+        <h2 class="stg-panel-title">Subscription</h2>
+        <p class="stg-panel-sub">Your current plan and billing.</p>
+
+        <!-- Current plan badge -->
+        <div class="stg-plan-card {% if current_user.is_premium %}stg-plan-card--pro{% endif %}">
+          <div class="stg-plan-badge">
+            {% if current_user.is_premium %}
+            <i class="fas fa-bolt"></i> Pro
+            {% else %}
+            <i class="fas fa-user"></i> Free
+            {% endif %}
+          </div>
+          <div class="stg-plan-info">
+            {% if current_user.is_premium %}
+            <div class="stg-plan-name">{{ current_user.subscription_tier|title }} Plan</div>
+            {% if current_user.subscription_end_date %}
+            <div class="stg-plan-meta">Renews {{ current_user.subscription_end_date.strftime('%b %d, %Y') }}</div>
+            {% endif %}
+            {% else %}
+            <div class="stg-plan-name">Free Plan</div>
+            <div class="stg-plan-meta">{{ current_user.free_attempts_left() }} quiz attempt{{ 's' if
+              current_user.free_attempts_left() != 1 else '' }} remaining today</div>
+            {% endif %}
+          </div>
+          {% if not current_user.is_premium %}
+          <a href="{{ url_for('payments.plan_checkout') }}" class="stg-btn-primary"
+            style="text-decoration:none; white-space:nowrap;">
+            <i class="fas fa-bolt"></i> Upgrade
+          </a>
+          {% endif %}
+        </div>
+
+        <!-- Plan comparison -->
+        {% if not current_user.is_premium %}
+        <div class="stg-plan-features">
+          <div class="stg-plan-feature-row">
+            <i class="fas fa-circle-check" style="color:var(--primary);"></i>
+            <span>Unlimited quiz attempts</span>
+          </div>
+          <div class="stg-plan-feature-row">
+            <i class="fas fa-circle-check" style="color:var(--primary);"></i>
+            <span>Full answer explanations</span>
+          </div>
+          <div class="stg-plan-feature-row">
+            <i class="fas fa-circle-check" style="color:var(--primary);"></i>
+            <span>Leaderboard access</span>
+          </div>
+          <div class="stg-plan-feature-row">
+            <i class="fas fa-circle-check" style="color:var(--primary);"></i>
+            <span>Priority AI generation</span>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="stg-divider"></div>
+
+        <!-- Billing history link -->
+        <div class="stg-section">
+          <div class="stg-section-label">Billing history</div>
+          <a href="{{ url_for('payments.my_subscription') }}" class="stg-btn-secondary" style="text-decoration:none;"
+            target="_blank">
+            <i class="fas fa-receipt"></i> View full billing history
+          </a>
+        </div>
+      </div>
+
+      <!-- ── APPEARANCE TAB ── -->
+      <div class="stg-panel" id="stg-appearance">
+        <h2 class="stg-panel-title">Appearance</h2>
+        <p class="stg-panel-sub">Customise how Knowly looks for you.</p>
+
+        <div class="stg-section">
+          <div class="stg-section-label">Theme</div>
+          <div class="stg-theme-grid">
+            <button id="themeSystem" onclick="setTheme('system')" class="stg-theme-btn">
+              <i class="fas fa-circle-half-stroke"></i>
+              <span>System</span>
+            </button>
+            <button id="themeLight" onclick="setTheme('light')" class="stg-theme-btn">
+              <i class="fas fa-sun"></i>
+              <span>Light</span>
+            </button>
+            <button id="themeDark" onclick="setTheme('dark')" class="stg-theme-btn">
+              <i class="fas fa-moon"></i>
+              <span>Dark</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /stg-content -->
+  </div><!-- /stg-shell -->
+</div><!-- /settingsModal -->
+
+
+<script>
+  (function () {
+    // ── Open / close ──────────────────────────────────────────────
+    window.openSettingsModal = function (tab) {
+      const modal = document.getElementById('settingsModal');
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      if (tab) {
+        const btn = document.querySelector(`.stg-nav-item[onclick*="'${tab}'"]`);
+        if (btn) stgTab(tab, btn);
+      }
+      syncStgThemeButtons();
+    };
+
+    window.closeSettingsModal = function () {
+      const modal = document.getElementById('settingsModal');
+      modal.classList.remove('open');
+      document.body.style.overflow = '';
+    };
+
+    // Also make openAppearanceModal open settings on appearance tab
+    window.openAppearanceModal = function () {
+      openSettingsModal('appearance');
+    };
+
+    // Close on backdrop click
+    document.getElementById('settingsModal').addEventListener('click', function (e) {
+      if (e.target === this) closeSettingsModal();
+    });
+
+    // Close on Escape
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeSettingsModal();
+    });
+
+    // ── Tab switching ─────────────────────────────────────────────
+    window.stgTab = function (name, btn) {
+      document.querySelectorAll('.stg-nav-item').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.stg-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      const panel = document.getElementById('stg-' + name);
+      if (panel) panel.classList.add('active');
+      if (name === 'appearance') syncStgThemeButtons();
+    };
+
+    // ── Avatar preview ────────────────────────────────────────────
+    window.previewAvatar = function (input) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const preview = document.getElementById('stgAvatarPreview');
+          if (preview) preview.src = e.target.result;
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    };
+
+    // ── Password form toggle ──────────────────────────────────────
+    window.togglePasswordForm = function () {
+      const form = document.getElementById('stgPasswordForm');
+      if (form) form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    };
+
+    // ── Delete account confirmation ───────────────────────────────
+    window.confirmDeleteAccount = function () {
+      if (confirm('Are you sure you want to permanently delete your account? This cannot be undone.')) {
+        // POST to delete route — wire this up when you build the route
+        alert('Account deletion is not yet enabled. Contact support to delete your account.');
+      }
+    };
+
+    // ── Theme sync for settings modal ────────────────────────────
+    function syncStgThemeButtons() {
+      const mode = localStorage.getItem('knowly-theme-mode') || 'system';
+      document.querySelectorAll('.stg-theme-btn').forEach(function (btn) {
+        btn.classList.remove('active-theme');
+      });
+      const map = { system: 'themeSystem', light: 'themeLight', dark: 'themeDark' };
+      const active = document.getElementById(map[mode]);
+      if (active) active.classList.add('active-theme');
+    }
+    window.syncStgThemeButtons = syncStgThemeButtons;
+
+    // ── Programme autocomplete ────────────────────────────────────
+    const progInput = document.getElementById('stgProgrammeInput');
+    const progSuggestions = document.getElementById('stgProgrammeSuggestions');
+
+    if (progInput && progSuggestions) {
+      let debounceTimer;
+      progInput.addEventListener('input', function () {
+        clearTimeout(debounceTimer);
+        const q = this.value.trim();
+        if (q.length < 2) { progSuggestions.style.display = 'none'; return; }
+        debounceTimer = setTimeout(function () {
+          fetch('/api/programmes?q=' + encodeURIComponent(q))
+            .then(r => r.ok ? r.json() : [])
+            .then(function (data) {
+              if (!data.length) { progSuggestions.style.display = 'none'; return; }
+              progSuggestions.innerHTML = data.slice(0, 8).map(function (p) {
+                return `<div class="stg-autocomplete-item" onclick="selectProgramme('${p.replace(/'/g, "\\'")}')">${p}</div>`;
+              }).join('');
+              progSuggestions.style.display = 'block';
+            })
+            .catch(function () { progSuggestions.style.display = 'none'; });
+        }, 220);
+      });
+
+      document.addEventListener('click', function (e) {
+        if (!progInput.contains(e.target) && !progSuggestions.contains(e.target)) {
+          progSuggestions.style.display = 'none';
+        }
+      });
+    }
+
+    window.selectProgramme = function (name) {
+      if (progInput) progInput.value = name;
+      if (progSuggestions) progSuggestions.style.display = 'none';
+    };
+
+  })();
+</script>

@@ -1,0 +1,167 @@
+{% extends "admin/base.html" %}
+
+{% block extra_css %}{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin/send_email.css') }}">{%  endblock %}
+{% block admin_title %}Email Users{% endblock %}
+{% block admin_content %}
+
+
+<div class="adm-header">
+    <div class="adm-header-left">
+        <div class="adm-header-icon"><i class="fas fa-paper-plane"></i></div>
+        <div>
+            <p class="adm-header-title">Send Bulk Email</p>
+            <p class="adm-header-sub">Compose and send an email to your users</p>
+        </div>
+    </div>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% for category, message in messages %}
+<div class="adm-flash adm-flash--{{ category }}">
+    <i class="fas fa-{% if category=='success' %}check-circle{% elif category=='danger' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+    {{ message }}
+</div>
+{% endfor %}
+{% endwith %}
+
+
+<div class="adm-stats">
+    <div class="adm-stat">
+        <div class="adm-stat-icon adm-stat-icon--blue"><i class="fas fa-users"></i></div>
+        <div><p class="adm-stat-num">{{ total_users }}</p><p class="adm-stat-label">Total Users</p></div>
+    </div>
+    <div class="adm-stat">
+        <div class="adm-stat-icon adm-stat-icon--green"><i class="fas fa-envelope"></i></div>
+        <div><p class="adm-stat-num">{{ users | length }}</p><p class="adm-stat-label">Have Email</p></div>
+    </div>
+</div>
+
+    <!-- Form -->
+    <form method="POST" action="{{ url_for('admin.send_email') }}" id="emailForm">
+        {{form.csrf_token}}
+
+        <!-- Recipients -->
+        <!-- Recipients -->
+        <div class="adm-card">
+            <p class="adm-card-title"><i class="fas fa-users"></i> Recipients</p>
+
+            <div class="toggle-group">
+                <button type="button" class="toggle-btn active" id="btnAll" onclick="setMode('all')">
+                    <i class="fas fa-globe"></i> All Users ({{ users | length }})
+                </button>
+                <button type="button" class="toggle-btn" id="btnSelected" onclick="setMode('selected')">
+                    <i class="fas fa-user-check"></i> Select Specific Users
+                </button>
+            </div>
+
+            <input type="hidden" name="send_to" id="sendToInput" value="all">
+
+            <div class="user-select-wrapper" id="userSelectWrapper">
+                <div class="select-all-row" onclick="toggleAll()">
+                    <input type="checkbox" id="selectAll" class="user-check"> Select All
+                </div>
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th style="width:40px;"></th>
+                            <th>Username</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td><input type="checkbox" name="selected_emails" value="{{ user.email }}" class="user-check user-checkbox"></td>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.email }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+       <!-- Compose -->
+        <div class="adm-card">
+            <p class="adm-card-title"><i class="fas fa-pen"></i> Compose Email</p>
+
+            <div class="adm-form-group">
+                <label class="adm-form-label">Subject</label>
+                <input type="text" name="subject" class="adm-form-input" placeholder="e.g. Important update from Knowly" required>
+            </div>
+
+            <div class="adm-form-group">
+                <label class="adm-form-label">Message Body</label>
+                <textarea name="body" class="adm-form-input" placeholder="Write your message here. HTML is supported." required></textarea>
+                <p class="adm-form-hint"><i class="fas fa-info-circle"></i> HTML is supported — e.g. &lt;b&gt;bold&lt;/b&gt;, &lt;a href=''&gt;links&lt;/a&gt;</p>
+            </div>
+
+            <div class="adm-form-actions">
+                <button type="submit" class="adm-btn adm-btn--primary" id="sendBtn" onclick="return confirmSend()">
+                    <i class="fas fa-paper-plane"></i>
+                    <span id="sendBtnText">Send to All {{ users | length }} Users</span>
+                </button>
+            </div>
+        </div>
+
+    </form>
+
+     <!-- Back link -->
+    <a href="{{ url_for('admin.dashboard') }}" class="adm-btn adm-btn--secondary adm-btn--sm">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+
+<script>
+// Assign Jinja values to JS variables to avoid syntax errors
+var totalEmailUsers = {{ users | length }};
+
+function setMode(mode) {
+    document.getElementById('sendToInput').value = mode;
+    document.getElementById('btnAll').classList.toggle('active', mode === 'all');
+    document.getElementById('btnSelected').classList.toggle('active', mode === 'selected');
+    document.getElementById('userSelectWrapper').classList.toggle('visible', mode === 'selected');
+    updateBtnText();
+}
+
+function toggleAll() {
+    var master = document.getElementById('selectAll');
+    master.checked = !master.checked;
+    document.querySelectorAll('.user-checkbox').forEach(function(cb) {
+        cb.checked = master.checked;
+    });
+    updateBtnText();
+}
+
+document.querySelectorAll('.user-checkbox').forEach(function(cb) {
+    cb.addEventListener('change', updateBtnText);
+});
+
+function updateBtnText() {
+    var mode = document.getElementById('sendToInput').value;
+    var btn  = document.getElementById('sendBtnText');
+    if (mode === 'all') {
+        btn.textContent = 'Send to All ' + totalEmailUsers + ' Users';
+    } else {
+        var count = document.querySelectorAll('.user-checkbox:checked').length;
+        btn.textContent = 'Send to ' + count + ' Selected User' + (count !== 1 ? 's' : '');
+    }
+}
+
+function confirmSend() {
+    var mode    = document.getElementById('sendToInput').value;
+    var subject = document.querySelector('input[name="subject"]').value.trim();
+    var body    = document.querySelector('textarea[name="body"]').value.trim();
+    if (!subject || !body) return true;
+
+    var count = totalEmailUsers;
+    if (mode === 'selected') {
+        count = document.querySelectorAll('.user-checkbox:checked').length;
+        if (count === 0) { alert('Please select at least one user.'); return false; }
+    }
+    return confirm('Send "' + subject + '" to ' + count + ' user' + (count !== 1 ? 's' : '') + '?');
+}
+</script>
+
+
+{% endblock %}{# admin_content #}

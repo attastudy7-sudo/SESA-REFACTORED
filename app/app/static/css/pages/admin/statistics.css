@@ -1,0 +1,46 @@
+
+.stat-list { display: flex; flex-direction: column; gap: .15rem; }
+.stat-row {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .5rem .6rem; border-radius: 9px;
+    transition: background .12s;
+}
+.stat-row:hover { background: var(--bg-hover); }
+.stat-rank {
+    font-size: .85rem; font-weight: 800;
+    color: var(--text-muted);
+    min-width: 22px; text-align: center;
+    flex-shrink: 0;
+}
+.stat-rank--gold   { color: #f59e0b; }
+.stat-rank--silver { color: #94a3b8; }
+.stat-rank--bronze { color: #b45309; }
+.stat-info { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.stat-name {
+    font-weight: 700; font-size: .83rem;
+    color: var(--text-primary); text-decoration: none;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.stat-name:hover { color: var(--primary); }
+.stat-sub { font-size: .7rem; color: var(--text-muted); }
+.stat-empty { font-size: .82rem; color: var(--text-muted); padding: .5rem .6rem; }
+
+/* score bar */
+.score-bar-wrap {
+    width: 80px; height: 6px;
+    background: var(--bg-hover); border-radius: 99px; overflow: hidden;
+    flex-shrink: 0;
+}
+.score-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #f59e0b, #10b981);
+    border-radius: 99px;
+    transition: width .4s ease;
+}
+
+/* rose pill not in base */
+.adm-pill--rose { background: rgba(225,29,72,.1); color: #e11d48; }
+
+@media (max-width: 700px) {
+    .score-bar-wrap { display: none; }
+}

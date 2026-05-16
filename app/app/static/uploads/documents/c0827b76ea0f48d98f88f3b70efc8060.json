@@ -1,0 +1,72 @@
+{
+  "schema_version": "1.0",
+  "document_type": "cheatsheet",
+  "generated_at": "2026-04-09T23:19:09.084494+00:00",
+  "title": "Series and Sequence: Introduction to Pure Mathematics",
+  "course": "Pure Mathematics",
+  "level": "Intermediate",
+  "metadata": {
+    "purpose": "Rapid revision and recall",
+    "exam_context": "",
+    "topics": []
+  },
+  "sections": [
+    {
+      "section_title": "Arithmetic Progression (AP)",
+      "section_type": "definitions",
+      "entries": [
+        {
+          "label": "Definition",
+          "content": "First term: a | Common difference: d = Un - Un-1 | Nth term: Un = a + (n-1)d | Sum: Sn = n/2(a + l) OR Sn = n/2[2a + (n-1)d]"
+        },
+        {
+          "label": "Application",
+          "content": "Apply this concept using a simple practice example."
+        }
+      ]
+    },
+    {
+      "section_title": "Geometric Progression (GP)",
+      "section_type": "definitions",
+      "entries": [
+        {
+          "label": "Definition",
+          "content": "First term: a | Common ratio: r = Un / Un-1 | Nth term: Un = ar^(n-1) | Sum (r < 1): Sn = a(1 - r^n)/(1 - r) | Sum (r > 1): Sn = a(r^n - 1)/(r - 1)"
+        },
+        {
+          "label": "Application",
+          "content": "Apply this concept using a simple practice example."
+        }
+      ]
+    },
+    {
+      "section_title": "Infinite Series",
+      "section_type": "definitions",
+      "entries": [
+        {
+          "label": "Definition",
+          "content": "Sum to Infinity (only if |r| < 1): S\u221e = a / (1 - r)"
+        },
+        {
+          "label": "Application",
+          "content": "Apply this concept using a simple practice example."
+        }
+      ]
+    },
+    {
+      "section_title": "Key Symbols",
+      "section_type": "definitions",
+      "entries": [
+        {
+          "label": "Definition",
+          "content": "a = first term; d = common difference; r = common ratio; n = number of terms; l = last term; Un = nth term; Sn = sum of n terms"
+        },
+        {
+          "label": "Application",
+          "content": "Apply this concept using a simple practice example."
+        }
+      ]
+    }
+  ],
+  "document_hash": "31e040ad0d28563c5003a8a6990b4aaf87779c27f3293839c23bc858f0ff2dd0"
+}

@@ -1,0 +1,72 @@
+{
+  "schema_version": "1.0",
+  "document_type": "quiz",
+  "generated_at": "2026-04-09T23:13:16.196820+00:00",
+  "title": "Algorithm Analysis and Data Structures Fundamentals",
+  "course": "Data Structures",
+  "level": "Intermediate",
+  "type": "Self-Assessment Quiz",
+  "instructions": [
+    "Read each question carefully and choose the best answer."
+  ],
+  "metadata": {
+    "time": "15 minutes",
+    "total_marks": 5,
+    "total_questions": 2
+  },
+  "sections": [
+    {
+      "section_letter": "A",
+      "section_title": "Multiple Choice",
+      "question_type": "multiple_choice",
+      "questions_count": 1,
+      "marks_per_question": 3.0,
+      "total_section_marks": 3,
+      "questions": [
+        {
+          "question_number": 1,
+          "question_text": "Average complexity of merge sort is?",
+          "marks": 3,
+          "options": [
+            {
+              "letter": "A",
+              "text": "O(n)"
+            },
+            {
+              "letter": "B",
+              "text": "O(log n)"
+            },
+            {
+              "letter": "C",
+              "text": "O(n log n)"
+            },
+            {
+              "letter": "D",
+              "text": "O(n^2)"
+            }
+          ],
+          "correct_answer": "C",
+          "explanation": "Merge sort divides and merges recursively, producing n log n behavior in average and worst cases."
+        }
+      ]
+    },
+    {
+      "section_letter": "B",
+      "section_title": "True or False",
+      "question_type": "true_false",
+      "questions_count": 1,
+      "marks_per_question": 2.0,
+      "total_section_marks": 2,
+      "questions": [
+        {
+          "question_number": 1,
+          "question_text": "Binary search requires sorted data.",
+          "marks": 2,
+          "correct_answer": "True",
+          "explanation": "Binary search compares the midpoint and halves the search range repeatedly on sorted arrays."
+        }
+      ]
+    }
+  ],
+  "document_hash": "c6c609319a85d4b16a83fefc9edda24f10e99fa95d21ec7c76c17b0d47fc027a"
+}

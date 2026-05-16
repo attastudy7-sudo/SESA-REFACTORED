@@ -1,0 +1,157 @@
+{% set aura_balance = user.aura_balance or 0 %}
+{% set aura_tier = 'Novice' %}
+{% set tier_color = '#6b7280' %}
+{% set next_threshold = 1000 %}
+{% set next_tier = 'Scholar' %}
+
+{% if aura_balance >= 20000 %}
+    {% set aura_tier = 'Oracle' %}
+    {% set tier_color = '#f59e0b' %}
+    {% set next_threshold = 50000 %}
+    {% set next_tier = 'Ascendant' %}
+{% elif aura_balance >= 5000 %}
+    {% set aura_tier = 'Sage' %}
+    {% set tier_color = '#8b5cf6' %}
+    {% set next_threshold = 20000 %}
+    {% set next_tier = 'Oracle' %}
+{% elif aura_balance >= 1000 %}
+    {% set aura_tier = 'Scholar' %}
+    {% set tier_color = '#3b82f6' %}
+    {% set next_threshold = 5000 %}
+    {% set next_tier = 'Sage' %}
+{% endif %}
+
+<div class="rp-container">
+  <!-- Hero Header -->
+  <header class="rp-hero">
+    <div class="rp-cover"></div>
+    <div class="rp-hero-inner">
+      <div class="rp-avatar-wrap">
+        <img src="{{ user.profile_picture_url }}" alt="{{ user.username }}" class="rp-avatar">
+        {% if current_user.is_authenticated and current_user.id == user.id %}
+        <span class="rp-online-dot" title="Active"></span>
+        {% endif %}
+      </div>
+      <div class="rp-info">
+        <div class="rp-name-row">
+          <h1 class="rp-name">{{ user.nickname or user.username }}</h1>
+          <span class="rp-tier" style="--tc: {{ tier_color }}">{{ aura_tier }}</span>
+        </div>
+        <div class="rp-meta">@{{ user.username }}</div>
+        <div class="rp-stats-row">
+          <span class="rp-stat"><strong>{{ user.posts.count() if user.posts else 0 }}</strong> courses</span>
+          <span class="rp-stat"><strong>{{ user.followers_count() }}</strong> followers</span>
+          <span class="rp-stat"><strong>{{ user.following.count() if user.following else 0 }}</strong> following</span>
+          <span class="rp-stat aura-stat"><strong>{{ aura_balance }}</strong> aura</span>
+        </div>
+      </div>
+      <div class="rp-actions">
+        {% if current_user.is_authenticated %}
+          {% if current_user.id == user.id %}
+            <button class="rp-btn rp-btn-edit" onclick="openSettingsModal('profile')">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+          {% else %}
+            <form action="{{ url_for('users.follow' if not current_user.is_following(user) else 'users.unfollow', username=user.username) }}" method="post" class="rp-follow-form">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="rp-btn {% if current_user.is_following(user) %}rp-btn-ghost{% else %}rp-btn-primary{% endif %}">
+                <i class="fas fa-{{ 'user-minus' if current_user.is_following(user) else 'user-plus' }}"></i>
+                {{ 'Following' if current_user.is_following(user) else 'Follow' }}
+              </button>
+            </form>
+          {% endif %}
+        {% else %}
+          <a href="{{ url_for('auth.login') }}" class="rp-btn rp-btn-primary">
+            <i class="fas fa-user-plus"></i> Follow
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <!-- Optional bio -->
+  {% if user.bio %}
+  <div class="rp-bio-box">
+    <p class="rp-bio">{{ user.bio }}</p>
+  </div>
+  {% endif %}
+
+   <!-- Tabs -->
+   <nav class="rp-tabs">
+     <button class="rp-tab active" data-tab="courses">Courses</button>
+     <button class="rp-tab" data-tab="activity">Activity</button>
+     {% if current_user.is_authenticated and current_user.id == user.id %}
+     <button class="rp-tab" data-tab="guilds">Guilds</button>
+     {% endif %}
+   </nav>
+
+   <!-- Tab panes -->
+   <div class="rp-content">
+     <div class="rp-pane active" id="pane-courses">
+      {% if topic_cards %}
+        <div class="rp-posts-list">
+          {% for card in topic_cards %}
+            <a href="{{ url_for('main.library_subject', slug=card.subject.slug) }}" class="rp-post-item">
+              <div class="rp-post-icon" style="background: {{ card.subject.color }}15; color: {{ card.subject.color }}">
+                <i class="fas fa-{{ card.topic_icon }}"></i>
+              </div>
+              <div class="rp-post-body">
+                <div class="rp-post-title">{{ card.topic_label|strip_course_code }}</div>
+                <div class="rp-post-meta">
+                  <span>{{ card.total_count }} resources</span>
+                  <span class="rp-mid-dot">·</span>
+                  <span>{{ card.subject.name }}</span>
+                </div>
+              </div>
+              <i class="fas fa-chevron-right rp-post-arrow"></i>
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="rp-empty">
+          <i class="fas fa-folder-open"></i>
+          <p>No courses yet</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="rp-pane" id="pane-activity">
+      <div class="rp-activity-grid">
+        <div class="rp-activity-card streak">
+          <div class="rp-act-icon">🔥</div>
+          <div class="rp-act-info">
+            <div class="rp-act-value">{{ user.current_streak or 0 }} Day Streak</div>
+            <div class="rp-act-label">Best: {{ user.longest_streak or 0 }} days</div>
+          </div>
+        </div>
+        <div class="rp-activity-card quiz">
+          <div class="rp-act-icon">📊</div>
+          <div class="rp-act-info">
+            <div class="rp-act-value">{{ quiz_stats.total or 0 }} Quizzes</div>
+            <div class="rp-act-label">{{ quiz_stats.avg_score or 0 }}% average</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% if current_user.is_authenticated and current_user.id == user.id %}
+    <div class="rp-pane" id="pane-guilds">
+      <div class="rp-empty">
+        <i class="fas fa-users"></i>
+        <p>Guilds will appear here</p>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.rp-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.rp-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.rp-pane').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('pane-' + btn.dataset.tab).classList.add('active');
+  });
+});
+</script>

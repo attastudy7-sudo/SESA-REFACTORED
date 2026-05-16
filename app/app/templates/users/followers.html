@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}{{ user.username }}'s Followers — Knowly{% endblock %}
+
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/users/followers.css') }}">{%  endblock %}
+
+{% block content %}
+{% include 'partials/_followers_content.html' %}
+{% endblock %}

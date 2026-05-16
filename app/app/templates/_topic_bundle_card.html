@@ -1,0 +1,19 @@
+{# _topic_bundle_card.html — Bridge adapter: maps topic_groups dicts into _pack_card.html format.
+   NOTE: filterBundles() in _library_index_content.html queries .pack-outer/.pack-title/.pack-subject
+   which only works because this card ultimately renders _pack_card.html. If you ever swap to
+   _bundle_card.html, update filterBundles() selectors to match .sp-card/.sp-title/.sp-subject-tag #}
+{% set bundle = {
+    'title': topic.topic_label,
+    'subject_name': subject.name if subject else 'Study Pack',
+    'subject': subject,
+    'color': subject.color if subject else '#2a5cff',
+    'type': 'topic_bundle',
+    'url': url_for('main.study_room_topic', subject_slug=subject.slug, topic_key=topic.topic_key) if subject else '#',
+    'progress_pct': 0,
+    'total_count': topic.total|default(topic.total_count|default(0)),
+    'resource_count': topic.total|default(topic.total_count|default(0)),
+    'completed_count': 0,
+    'video_count': 0,
+    'first_video_youtube_id': topic.first_video_youtube_id|default(none),
+} %}
+{% include '_pack_card.html' %}

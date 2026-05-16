@@ -1,0 +1,22 @@
+
+.lb-wrap { max-width: 680px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+.lb-header { text-align: center; margin-bottom: 1.75rem; }
+.lb-title { font-size: clamp(1.4rem, 4vw, 2rem); font-weight: 900; color: var(--text-primary); margin-bottom: .35rem; }
+.lb-sub { color: var(--text-muted); font-size: .85rem; }
+.lb-your-rank { display: inline-block; margin-top: .75rem; padding: .45rem 1.1rem; border-radius: 50px; background: rgba(37,99,235,.1); border: 1px solid rgba(37,99,235,.25); color: var(--primary, #2563eb); font-size: .88rem; font-weight: 700; }
+.lb-table { display: flex; flex-direction: column; gap: .5rem; }
+.lb-row { display: flex; align-items: center; gap: .85rem; padding: .85rem 1rem; border-radius: 14px; background: var(--bg-card); border: 1.5px solid var(--border); text-decoration: none; transition: all .15s; }
+.lb-row:hover { border-color: var(--primary); transform: translateX(3px); }
+.lb-row--you { border-color: #2563eb; background: rgba(37,99,235,.06); }
+.lb-rank { font-size: .95rem; font-weight: 900; color: var(--text-muted); min-width: 2.2rem; text-align: center; }
+.lb-rank--gold   { color: #f59e0b; font-size: 1.3rem; }
+.lb-rank--silver { color: #94a3b8; font-size: 1.3rem; }
+.lb-rank--bronze { color: #b45309; font-size: 1.3rem; }
+.lb-avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.lb-info { flex: 1; min-width: 0; }
+.lb-name { display: block; font-weight: 700; font-size: .88rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lb-username { font-size: .75rem; color: var(--text-muted); }
+.lb-badge { padding: .2rem .55rem; border-radius: 999px; background: rgba(139,92,246,.12); color: #8b5cf6; font-size: .7rem; font-weight: 700; white-space: nowrap; }
+.lb-xp { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; }
+.lb-xp-val { font-family: var(--font-display, inherit); font-size: 1rem; font-weight: 900; color: var(--text-primary); line-height: 1; }
+.lb-xp-lbl { font-size: .6rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; }

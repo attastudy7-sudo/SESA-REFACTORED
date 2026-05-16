@@ -1,0 +1,1103 @@
+{% extends "base.html" %}
+
+{% block title %}How it works{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── How It Works Page ────────────────────────────────────────────── */
+.hiw-root {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem;
+}
+
+/* Hero */
+.hiw-hero {
+    text-align: center;
+    padding: 2rem 0 3rem;
+    position: relative;
+}
+.hiw-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--primary);
+    background: var(--primary-soft);
+    border: 1px solid var(--primary-glow);
+    border-radius: 20px;
+    padding: 0.3rem 0.875rem;
+    margin-bottom: 1.25rem;
+}
+.hiw-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 900;
+    color: var(--text-primary);
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    margin: 0 0 1rem;
+}
+.hiw-title em {
+    font-style: normal;
+    background: var(--brand-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.hiw-subtitle {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    max-width: 560px;
+    margin: 0 auto 2rem;
+}
+.hiw-cta-row {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.hiw-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1.4rem;
+    background: var(--primary);
+    color: #fff;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: opacity 0.15s, transform 0.15s;
+    font-family: var(--font-body);
+}
+.hiw-btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+.hiw-btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1.4rem;
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-hover);
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+    font-family: var(--font-body);
+}
+.hiw-btn-ghost:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-soft);
+}
+
+/* Section label */
+.hiw-section-label {
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+.hiw-section-title {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    margin: 0 0 0.4rem;
+    line-height: 1.25;
+}
+.hiw-section-sub {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 1.75rem;
+}
+
+/* Divider */
+.hiw-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 3rem 0;
+}
+
+/* ── FLOW STEPS ─────────────────────────────────────────────────── */
+.hiw-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+}
+.hiw-flow::before {
+    content: '';
+    position: absolute;
+    left: 22px;
+    top: 28px;
+    bottom: 28px;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--primary), transparent);
+    opacity: 0.25;
+}
+.hiw-step {
+    display: flex;
+    gap: 1.25rem;
+    padding: 1.5rem 0;
+    position: relative;
+}
+.hiw-step-num {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 1px solid var(--border-hover);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 0.78rem;
+    font-weight: 900;
+    color: var(--primary);
+    position: relative;
+    z-index: 1;
+    transition: background 0.2s, border-color 0.2s;
+}
+.hiw-step:hover .hiw-step-num {
+    background: var(--primary-soft);
+    border-color: var(--primary);
+}
+.hiw-step-body { flex: 1; padding-top: 0.6rem; }
+.hiw-step-title {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 0.35rem;
+}
+.hiw-step-desc {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.65;
+    margin: 0;
+}
+.hiw-step-tag {
+    display: inline-block;
+    margin-top: 0.5rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--primary);
+    background: var(--primary-soft);
+    border-radius: 6px;
+    padding: 0.15rem 0.5rem;
+}
+
+/* ── FEATURE CARDS ──────────────────────────────────────────────── */
+.hiw-feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+}
+.hiw-feature-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    cursor: default;
+}
+.hiw-feature-card:hover {
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+.hiw-feature-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    margin-bottom: 0.875rem;
+}
+.icon-purple { background: rgba(99,102,241,0.1); color: #6366f1; }
+.icon-blue   { background: rgba(37,99,235,0.1);  color: #2563eb; }
+.icon-teal   { background: rgba(20,184,166,0.1); color: #14b8a6; }
+.icon-amber  { background: rgba(245,158,11,0.1); color: #f59e0b; }
+.icon-green  { background: rgba(16,185,129,0.1); color: #10b981; }
+.icon-pink   { background: rgba(236,72,153,0.1); color: #ec4899; }
+.icon-red    { background: rgba(239,68,68,0.1);  color: #ef4444; }
+.icon-indigo { background: rgba(79,70,229,0.1);  color: #4f46e5; }
+
+[data-theme="dark"] .icon-purple { background: rgba(129,140,248,0.12); color: #818cf8; }
+[data-theme="dark"] .icon-blue   { background: rgba(96,165,250,0.12);  color: #60a5fa; }
+[data-theme="dark"] .icon-teal   { background: rgba(45,212,191,0.12);  color: #2dd4bf; }
+[data-theme="dark"] .icon-amber  { background: rgba(251,191,36,0.12);  color: #fbbf24; }
+[data-theme="dark"] .icon-green  { background: rgba(52,211,153,0.12);  color: #34d399; }
+[data-theme="dark"] .icon-pink   { background: rgba(244,114,182,0.12); color: #f472b6; }
+[data-theme="dark"] .icon-red    { background: rgba(248,113,113,0.12); color: #f87171; }
+[data-theme="dark"] .icon-indigo { background: rgba(129,140,248,0.12); color: #a5b4fc; }
+
+.hiw-feature-name {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 0.35rem;
+}
+.hiw-feature-desc {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* ── AURA TIERS ─────────────────────────────────────────────────── */
+.hiw-tier-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+}
+.hiw-tier {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.875rem 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: border-color 0.2s;
+}
+.hiw-tier:hover { border-color: var(--border-hover); }
+.hiw-tier-badge {
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+.hiw-tier-info { flex: 1; min-width: 0; }
+.hiw-tier-name {
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 0.1rem;
+}
+.hiw-tier-req {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+.hiw-tier-perk {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    text-align: right;
+    max-width: 160px;
+    line-height: 1.4;
+}
+
+/* ── PRICING CARDS ──────────────────────────────────────────────── */
+.hiw-pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+}
+.hiw-plan {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.hiw-plan:hover {
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-md);
+}
+.hiw-plan.featured {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 1px var(--primary-glow);
+    position: relative;
+}
+.hiw-plan-badge {
+    position: absolute;
+    top: -1px;
+    right: 1.25rem;
+    font-size: 0.62rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    background: var(--primary);
+    color: #fff;
+    padding: 0.2rem 0.6rem 0.25rem;
+    border-radius: 0 0 6px 6px;
+}
+.hiw-plan-name {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 900;
+    color: var(--text-primary);
+    margin: 0;
+}
+.hiw-plan-price {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--text-primary);
+    line-height: 1;
+}
+.hiw-plan-price span {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+.hiw-plan-desc {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin: 0;
+}
+.hiw-plan-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    flex: 1;
+}
+.hiw-plan-items li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+.hiw-plan-items li i {
+    font-size: 0.65rem;
+    color: #10b981;
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+}
+.hiw-plan-items li.muted { color: var(--text-muted); }
+.hiw-plan-items li.muted i { color: var(--text-muted); }
+.hiw-plan-cta {
+    display: block;
+    text-align: center;
+    padding: 0.6rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: opacity 0.15s, background 0.15s;
+    font-family: var(--font-body);
+}
+.hiw-plan-cta.primary {
+    background: var(--primary);
+    color: #fff;
+}
+.hiw-plan-cta.primary:hover { opacity: 0.88; }
+.hiw-plan-cta.ghost {
+    border: 1px solid var(--border-hover);
+    color: var(--text-secondary);
+    background: transparent;
+}
+.hiw-plan-cta.ghost:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-soft);
+}
+
+/* ── RULES / COMMUNITY ──────────────────────────────────────────── */
+.hiw-rules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+}
+.hiw-rule-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+}
+.hiw-rule-card.danger { border-color: rgba(239,68,68,0.2); }
+[data-theme="dark"] .hiw-rule-card.danger { border-color: rgba(248,113,113,0.15); }
+.hiw-rule-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.3rem;
+}
+.hiw-rule-label i { font-size: 0.75rem; }
+.hiw-rule-desc {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* ── FAQ ────────────────────────────────────────────────────────── */
+.hiw-faq {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+}
+.hiw-faq-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+}
+.hiw-faq-q {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    cursor: pointer;
+    user-select: none;
+    gap: 1rem;
+}
+.hiw-faq-q i {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    transition: transform 0.2s;
+}
+.hiw-faq-item.open .hiw-faq-q i { transform: rotate(180deg); }
+.hiw-faq-a {
+    display: none;
+    padding: 0 1.25rem 1rem;
+    font-size: 0.825rem;
+    color: var(--text-secondary);
+    line-height: 1.65;
+    border-top: 1px solid var(--border);
+}
+.hiw-faq-item.open .hiw-faq-a { display: block; }
+
+/* ── BOTTOM CTA ─────────────────────────────────────────────────── */
+.hiw-bottom-cta {
+    text-align: center;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2.5rem 1.5rem;
+    margin-top: 3rem;
+}
+.hiw-bottom-cta h2 {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    margin: 0 0 0.625rem;
+}
+.hiw-bottom-cta p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0 0 1.5rem;
+    line-height: 1.6;
+}
+
+/* ── RESPONSIVE ─────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+    .hiw-root { padding: 1.5rem 1rem 3rem; }
+    .hiw-hero { padding: 1rem 0 2rem; }
+    .hiw-flow::before { left: 20px; }
+    .hiw-tier-perk { display: none; }
+    .hiw-pricing-grid { grid-template-columns: 1fr; }
+    .hiw-plan.featured { margin: 0; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hiw-root">
+
+    <!-- HERO -->
+    <div class="hiw-hero">
+        <div class="hiw-eyebrow">
+            <i class="fas fa-circle-info" style="font-size:0.7rem;"></i>
+            How Knowly works
+        </div>
+        <h1 class="hiw-title">YouTube is the world's best<br>university. <em>We make it stick.</em></h1>
+        <p class="hiw-subtitle">
+            Knowly turns curated educational videos into complete study sessions — with AI-generated notes,
+            flashcards, quizzes, and progress tracking. Everything a lecture should be, nothing it isn't.
+        </p>
+        <div class="hiw-cta-row">
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('main.index') }}" class="hiw-btn-primary">
+                <i class="fas fa-search" style="font-size:0.8rem;"></i>
+                Search a topic
+            </a>
+            <a href="{{ url_for('main.library_all_videos') }}" class="hiw-btn-ghost">
+                Browse Study Packs
+            </a>
+            {% else %}
+            <a href="{{ url_for('main.join') }}" class="hiw-btn-primary">
+                <i class="fas fa-bolt" style="font-size:0.8rem;"></i>
+                Start for free
+            </a>
+            <a href="{{ url_for('main.index') }}" class="hiw-btn-ghost">
+                Explore without signing up
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="hiw-divider"></div>
+
+    <!-- THE CORE LOOP -->
+    <div style="margin-bottom:2rem;">
+        <div class="hiw-section-label">The core loop</div>
+        <div class="hiw-section-title">From search to mastery in one session</div>
+        <div class="hiw-section-sub">No tab-switching. No distractions. No forgetting everything a week later.</div>
+    </div>
+
+    <div class="hiw-flow">
+        <div class="hiw-step">
+            <div class="hiw-step-num">01</div>
+            <div class="hiw-step-body">
+                <div class="hiw-step-title">Search any topic</div>
+                <p class="hiw-step-desc">
+                    Type in a subject — "Calculus 1," "Organic Chemistry," "Data Structures" — and Knowly
+                    surfaces curated videos from verified, high-quality YouTube educators.
+                    No entertainment content. No algorithm rabbit holes. Just the best academic material
+                    on that exact topic, ranked and filtered for you.
+                </p>
+                <span class="hiw-step-tag">No account needed to browse</span>
+            </div>
+        </div>
+
+        <div class="hiw-step">
+            <div class="hiw-step-num">02</div>
+            <div class="hiw-step-body">
+                <div class="hiw-step-title">Enter the Study Room</div>
+                <p class="hiw-step-desc">
+                    Click any video and you're in — a distraction-free Study Room built around that content.
+                    Watch the video with AI-generated chapter markers so you can jump to exactly what you need.
+                    A Smart Timeline shows you key concepts as they appear in the video in real time.
+                    Creator credit stays front and centre — you're always one click away from subscribing to the original channel.
+                </p>
+                <span class="hiw-step-tag">Guests can watch fully — no wall</span>
+            </div>
+        </div>
+
+        <div class="hiw-step">
+            <div class="hiw-step-num">03</div>
+            <div class="hiw-step-body">
+                <div class="hiw-step-title">Generate your Study Pack</div>
+                <p class="hiw-step-desc">
+                    When you're ready, hit generate. In seconds, Knowly's AI builds a complete Study Pack:
+                    structured notes from the video transcript, a formula cheatsheet, a flashcard deck
+                    with every key term, and a quiz to test what actually stuck.
+                    Study Packs are stored permanently to your account — come back before exams and
+                    the same videos, same notes, same quiz are right where you left them.
+                </p>
+                <span class="hiw-step-tag">Free users get 2 generations per day</span>
+            </div>
+        </div>
+
+        <div class="hiw-step">
+            <div class="hiw-step-num">04</div>
+            <div class="hiw-step-body">
+                <div class="hiw-step-title">Work through the pack</div>
+                <p class="hiw-step-desc">
+                    Your Study Pack is structured as a learning path — not a pile of content.
+                    Each video unlocks a 3-question micro-quiz. Pass it, move to the next video.
+                    Struggle with a question? The AI shows you exactly where in the notes it was covered
+                    and offers an alternate explanation using a different analogy.
+                    Finish all videos and pass the Final Boss Quiz to earn your Mastery Badge.
+                </p>
+                <span class="hiw-step-tag">Spaced repetition built in</span>
+            </div>
+        </div>
+
+        <div class="hiw-step">
+            <div class="hiw-step-num">05</div>
+            <div class="hiw-step-body">
+                <div class="hiw-step-title">Track what needs work</div>
+                <p class="hiw-step-desc">
+                    Your Dashboard tracks every topic you've studied and flags your weakest areas automatically.
+                    Concepts you repeatedly miss become priority flashcards in your daily review deck.
+                    Your Aura score — Knowly's reputation system — reflects genuine mastery,
+                    not just activity. The leaderboard rewards students who actually understand the material.
+                </p>
+                <span class="hiw-step-tag">Weak topics automatically surface</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="hiw-divider"></div>
+
+    <!-- STUDY PACK FEATURES -->
+    <div style="margin-bottom:1.75rem;">
+        <div class="hiw-section-label">Inside a Study Pack</div>
+        <div class="hiw-section-title">Everything in one place, nothing missing</div>
+        <div class="hiw-section-sub">
+            Every Study Pack contains six types of content, automatically generated and linked together.
+        </div>
+    </div>
+
+    <div class="hiw-feature-grid">
+        <div class="hiw-feature-card">
+            <div class="hiw-feature-icon icon-purple"><i class="fas fa-file-lines"></i></div>
+            <div class="hiw-feature-name">Structured Notes</div>
+            <p class="hiw-feature-desc">
+                AI reads the full video transcript and organises it into headed sections, bullet points,
+                and callout boxes. Your notes, your AI, no copy-paste.
+            </p>
+        </div>
+        <div class="hiw-feature-card">
+            <div class="hiw-feature-icon icon-teal"><i class="fas fa-scroll"></i></div>
+            <div class="hiw-feature-name">Formula Cheatsheet</div>
+            <p class="hiw-feature-desc">
+                Every formula, definition, and key term extracted and rendered in clean LaTeX.
+                Perfect for STEM topics. One page covers the whole video.
+            </p>
+        </div>
+        <div class="hiw-feature-card">
+            <div class="hiw-feature-icon icon-amber"><i class="fas fa-layer-group"></i></div>
+            <div class="hiw-feature-name">Flashcard Deck</div>
+            <p class="hiw-feature-desc">
+                Atomic Q&A cards, one concept per card, tagged to the exact video timestamp they came from.
+                Review mode, shuffle mode, or grind the ones you keep missing.
+            </p>
+        </div>
+        <div class="hiw-feature-card">
+            <div class="hiw-feature-icon icon-blue"><i class="fas fa-circle-question"></i></div>
+            <div class="hiw-feature-name">Quiz Engine</div>
+            <p class="hiw-feature-desc">
+                Micro-quizzes (3 questions) after each video to lock in understanding before you move on,
+                plus a comprehensive Final Boss Quiz at the end of the full pack.
+            </p>
+        </div>
+        <div class="hiw-feature-card">
+            <div class="hiw-feature-icon icon-green"><i class="fas fa-play-circle"></i></div>
+            <div class="hiw-feature-name">Curated Video Sequence</div>
+            <p class="hiw-feature-desc">
+                Not just one video — 3 to 5 videos on the same topic, sequenced from foundation to deep dive.
+                The system picks the best match from verified educators on that exact concept.
+            </p>
+        </div>
+        <div class="hiw-feature-card">
+            <div class="hiw-feature-icon icon-pink"><i class="fas fa-robot"></i></div>
+            <div class="hiw-feature-name">AI Tutor Chat</div>
+            <p class="hiw-feature-desc">
+                Highlight any line in your notes and ask the AI to simplify it, expand on it,
+                or explain it using an analogy. The AI is grounded in your specific pack content — no hallucinations.
+            </p>
+        </div>
+        <div class="hiw-feature-card">
+            <div class="hiw-feature-icon icon-indigo"><i class="fas fa-arrow-rotate-right"></i></div>
+            <div class="hiw-feature-name">Remix & Share</div>
+            <p class="hiw-feature-desc">
+                Clone any public Study Pack to your account and customise it. Add your own notes,
+                swap a video, adjust the quiz. Your remixed version stays in your vault forever.
+            </p>
+        </div>
+        <div class="hiw-feature-card">
+            <div class="hiw-feature-icon icon-red"><i class="fas fa-triangle-exclamation"></i></div>
+            <div class="hiw-feature-name">Weak Topic Alerts</div>
+            <p class="hiw-feature-desc">
+                Topics you fail in quizzes get flagged as Critical in your dashboard.
+                The AI surfaces them in your next session automatically — before you forget you forgot them.
+            </p>
+        </div>
+    </div>
+
+    <div class="hiw-divider"></div>
+
+    <!-- STUDY ROOM -->
+    <div style="margin-bottom:1.75rem;">
+        <div class="hiw-section-label">The Study Room</div>
+        <div class="hiw-section-title">A full learning environment, not just a video player</div>
+        <div class="hiw-section-sub">
+            When you open a Study Pack, you enter the Study Room — a focused workspace with everything
+            accessible in one view, nothing to pull you away.
+        </div>
+    </div>
+
+    <div class="hiw-feature-grid">
+        <div class="hiw-feature-card">
+            <div class="hiw-feature-icon icon-blue"><i class="fas fa-chart-line"></i></div>
+            <div class="hiw-feature-name">Smart Progress Bar</div>
+            <p class="hiw-feature-desc">
+                A persistent tracker fills as you complete each video, quiz, and flashcard set.
+                See exactly how close you are to pack mastery at a glance.
+            </p>
+        </div>
+        <div class="hiw-feature-card">
+            <div class="hiw-feature-icon icon-purple"><i class="fas fa-list-check"></i></div>
+            <div class="hiw-feature-name">Dynamic Syllabus</div>
+            <p class="hiw-feature-desc">
+                A side nav checklist that unlocks each item — quiz, next video, flashcards — only after
+                the previous step is done. Keeps your focus linear and your brain in flow state.
+            </p>
+        </div>
+        <div class="hiw-feature-card">
+            <div class="hiw-feature-icon icon-teal"><i class="fas fa-clock"></i></div>
+            <div class="hiw-feature-name">Chapter Anchors</div>
+            <p class="hiw-feature-desc">
+                Long videos are automatically segmented into clickable chapters by the AI.
+                Jump to "Integration by Parts starts here" without scrubbing through an hour of content.
+            </p>
+        </div>
+        <div class="hiw-feature-card">
+            <div class="hiw-feature-icon icon-amber"><i class="fas fa-users"></i></div>
+            <div class="hiw-feature-name">Library Ambience</div>
+            <p class="hiw-feature-desc">
+                See how many other students are studying the same pack right now — anonymously.
+                The social pressure of a virtual library without the distractions of a real one.
+            </p>
+        </div>
+        <div class="hiw-feature-card">
+            <div class="hiw-feature-icon icon-green"><i class="fas fa-highlighter"></i></div>
+            <div class="hiw-feature-name">Highlight & Ask</div>
+            <p class="hiw-feature-desc">
+                Select any text in your notes to expand, simplify, or convert to a flashcard
+                instantly. Deep-dives on exactly the part that confused you, not a re-read of the whole topic.
+            </p>
+        </div>
+        <div class="hiw-feature-card">
+            <div class="hiw-feature-icon icon-pink"><i class="fas fa-shield-halved"></i></div>
+            <div class="hiw-feature-name">Focus Guard</div>
+            <p class="hiw-feature-desc">
+                Detects when you've paused or drifted for too long and nudges you back in.
+                Optionally suggests a 5-minute Pomodoro break so you return sharper, not exhausted.
+            </p>
+        </div>
+    </div>
+
+    <div class="hiw-divider"></div>
+
+    <!-- AURA SYSTEM -->
+    <div style="margin-bottom:1.75rem;">
+        <div class="hiw-section-label">The Aura system</div>
+        <div class="hiw-section-title">Reputation that reflects real understanding</div>
+        <div class="hiw-section-sub">
+            Aura is Knowly's reputation currency. Unlike likes or followers, Aura is earned through
+            genuine academic effort — finishing packs, acing quizzes, helping peers.
+        </div>
+    </div>
+
+    <div class="hiw-tier-list">
+        <div class="hiw-tier">
+            <div class="hiw-tier-badge" style="background:rgba(148,163,184,0.12);font-size:1.1rem;">🪨</div>
+            <div class="hiw-tier-info">
+                <div class="hiw-tier-name">Novice</div>
+                <div class="hiw-tier-req">0 – 999 Aura · Just getting started</div>
+            </div>
+            <div class="hiw-tier-perk">Full access to the study library and public packs</div>
+        </div>
+        <div class="hiw-tier">
+            <div class="hiw-tier-badge" style="background:rgba(37,99,235,0.1);font-size:1.1rem;">📘</div>
+            <div class="hiw-tier-info">
+                <div class="hiw-tier-name">Scholar</div>
+                <div class="hiw-tier-req">1,000 – 4,999 Aura · Consistent studier</div>
+            </div>
+            <div class="hiw-tier-perk">Unlock Remix and Pack sharing features</div>
+        </div>
+        <div class="hiw-tier">
+            <div class="hiw-tier-badge" style="background:rgba(99,102,241,0.1);font-size:1.1rem;">🔮</div>
+            <div class="hiw-tier-info">
+                <div class="hiw-tier-name">Sage</div>
+                <div class="hiw-tier-req">5,000 – 19,999 Aura · Serious academic</div>
+            </div>
+            <div class="hiw-tier-perk">Gilded comments in Guilds, early feature access</div>
+        </div>
+        <div class="hiw-tier">
+            <div class="hiw-tier-badge" style="background:rgba(168,85,247,0.12);font-size:1.1rem;">✨</div>
+            <div class="hiw-tier-info">
+                <div class="hiw-tier-name">Oracle</div>
+                <div class="hiw-tier-req">20,000+ Aura · Top 1% of the platform</div>
+            </div>
+            <div class="hiw-tier-perk">Purple halo avatar, experimental AI tools, Oracle badge</div>
+        </div>
+    </div>
+
+    <div style="margin-top:1.25rem; padding:1rem 1.25rem; background:var(--bg-card); border:1px solid var(--border); border-radius:12px;">
+        <div style="font-size:0.78rem; color:var(--text-secondary); line-height:1.65;">
+            <strong style="color:var(--text-primary);">How to earn Aura:</strong>
+            Completing a Study Pack <span style="color:var(--primary); font-weight:700;">+100</span> ·
+            Scoring 90%+ on the Final Boss Quiz <span style="color:var(--primary); font-weight:700;">+50</span> ·
+            Publishing a pack that gets 50+ upvotes <span style="color:var(--primary); font-weight:700;">+200</span> ·
+            25 minutes of focused study <span style="color:var(--primary); font-weight:700;">+15</span> ·
+            Your pack gets remixed by 20+ students <span style="color:var(--primary); font-weight:700;">+100</span> ·
+            7-day study streak <span style="color:var(--primary); font-weight:700;">+30</span>
+        </div>
+    </div>
+
+    <div class="hiw-divider"></div>
+
+    <!-- COMMUNITY -->
+    <div style="margin-bottom:1.75rem;">
+        <div class="hiw-section-label">Community</div>
+        <div class="hiw-section-title">Study with your programme, not just for it</div>
+        <div class="hiw-section-sub">
+            Knowly connects you with students across your university and programme.
+            Share packs, follow top students, join subject guilds.
+        </div>
+    </div>
+
+    <div class="hiw-feature-grid">
+        <div class="hiw-feature-card">
+            <div class="hiw-feature-icon icon-purple"><i class="fas fa-shield-halved"></i></div>
+            <div class="hiw-feature-name">Programme Guilds</div>
+            <p class="hiw-feature-desc">
+                Public hubs organised by major — Computer Science, Medicine, Law, and more.
+                Share resources, discuss topics, and connect with future colleagues.
+            </p>
+        </div>
+        <div class="hiw-feature-card">
+            <div class="hiw-feature-icon icon-blue"><i class="fas fa-store"></i></div>
+            <div class="hiw-feature-name">Pack Marketplace</div>
+            <p class="hiw-feature-desc">
+                Browse Study Packs created by other students. Public packs show completion rates
+                and average quiz scores so you know which ones are actually worth it.
+            </p>
+        </div>
+        <div class="hiw-feature-card">
+            <div class="hiw-feature-icon icon-teal"><i class="fas fa-trophy"></i></div>
+            <div class="hiw-feature-name">Leaderboard</div>
+            <p class="hiw-feature-desc">
+                Weekly rankings by Aura earned. Top students in your programme get featured.
+                Ranks reset weekly so it's always competitive, never permanently dominated.
+            </p>
+        </div>
+        <div class="hiw-feature-card">
+            <div class="hiw-feature-icon icon-amber"><i class="fas fa-user-group"></i></div>
+            <div class="hiw-feature-name">Academic Following</div>
+            <p class="hiw-feature-desc">
+                Follow students whose packs and scores you respect. Their new Study Packs appear
+                in your feed. Build your own follower base as your Aura grows.
+            </p>
+        </div>
+    </div>
+
+    <div class="hiw-divider"></div>
+
+    <!-- COMMUNITY RULES -->
+    <div style="margin-bottom:1.75rem;">
+        <div class="hiw-section-label">Community standards</div>
+        <div class="hiw-section-title">This is an academic space. We keep it that way.</div>
+        <div class="hiw-section-sub">
+            Knowly has a zero-tolerance moderation system. Violations are logged, reviewed, and actioned — automatically and by our team.
+        </div>
+    </div>
+
+    <div class="hiw-rules-grid">
+        <div class="hiw-rule-card">
+            <div class="hiw-rule-label"><i class="fas fa-check-circle" style="color:#10b981;"></i> Encouraged</div>
+            <p class="hiw-rule-desc">Sharing high-quality study packs, helping peers in Guilds, giving constructive quiz feedback, crediting original creators.</p>
+        </div>
+        <div class="hiw-rule-card danger">
+            <div class="hiw-rule-label"><i class="fas fa-ban" style="color:#ef4444;"></i> Not tolerated</div>
+            <p class="hiw-rule-desc">Harassment, NSFW content, spam, prompt injection attempts, or plagiarising another student's pack. Violations earn instant suspensions or permanent bans.</p>
+        </div>
+        <div class="hiw-rule-card">
+            <div class="hiw-rule-label"><i class="fas fa-shield" style="color:#6366f1;"></i> AI limits</div>
+            <p class="hiw-rule-desc">Attempting to jailbreak the AI tutor results in a 24-hour AI lockout, escalating to permanent revocation on repeat offences.</p>
+        </div>
+        <div class="hiw-rule-card">
+            <div class="hiw-rule-label"><i class="fas fa-scale-balanced" style="color:#f59e0b;"></i> Fair play</div>
+            <p class="hiw-rule-desc">Aura farming, bot activity, or mass-remixing to game the leaderboard results in Aura deduction and score rollback.</p>
+        </div>
+    </div>
+
+    <div class="hiw-divider"></div>
+
+    <!-- PRICING -->
+    <div style="margin-bottom:1.75rem;">
+        <div class="hiw-section-label">Plans</div>
+        <div class="hiw-section-title">Free for students. Pro for serious ones.</div>
+        <div class="hiw-section-sub">No credit card needed to start. Upgrade only when the free quota feels limiting.</div>
+    </div>
+
+    <div class="hiw-pricing-grid">
+        <div class="hiw-plan">
+            <div class="hiw-plan-name">Free</div>
+            <div class="hiw-plan-price">GHS 0 <span>/ forever</span></div>
+            <p class="hiw-plan-desc">Everything you need to experience Knowly. Limited AI to keep it sustainable.</p>
+            <ul class="hiw-plan-items">
+                <li><i class="fas fa-circle-check"></i> 2 Study Pack generations per day</li>
+                <li><i class="fas fa-circle-check"></i> 3 quiz attempts per week</li>
+                <li><i class="fas fa-circle-check"></i> Full video library access</li>
+                <li><i class="fas fa-circle-check"></i> Browse &amp; clone public packs</li>
+                <li><i class="fas fa-circle-check"></i> Aura, streaks &amp; leaderboard</li>
+                <li class="muted"><i class="fas fa-circle-xmark"></i> AI Tutor chat</li>
+                <li class="muted"><i class="fas fa-circle-xmark"></i> PDF &amp; Anki export</li>
+            </ul>
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('main.index') }}" class="hiw-plan-cta ghost">Start studying</a>
+            {% else %}
+            <a href="{{ url_for('main.join') }}" class="hiw-plan-cta ghost">Sign up free</a>
+            {% endif %}
+        </div>
+
+        <div class="hiw-plan featured">
+            <div class="hiw-plan-badge">Most popular</div>
+            <div class="hiw-plan-name">Pro</div>
+            <div class="hiw-plan-price">GHS 35 <span>/ month</span></div>
+            <p class="hiw-plan-desc">For students with real exams. Unlimited AI, every export, every feature.</p>
+            <ul class="hiw-plan-items">
+                <li><i class="fas fa-circle-check"></i> Unlimited Study Pack generations</li>
+                <li><i class="fas fa-circle-check"></i> Unlimited quiz attempts</li>
+                <li><i class="fas fa-circle-check"></i> AI Tutor chat (grounded in your pack)</li>
+                <li><i class="fas fa-circle-check"></i> PDF export of notes &amp; cheatsheets</li>
+                <li><i class="fas fa-circle-check"></i> Anki deck export</li>
+                <li><i class="fas fa-circle-check"></i> Priority pack generation speed</li>
+                <li><i class="fas fa-circle-check"></i> Referral bonus unlocks</li>
+            </ul>
+            <a href="{{ url_for('payments.my_subscription') }}" class="hiw-plan-cta primary">Upgrade to Pro</a>
+        </div>
+    </div>
+
+    <div style="margin-top:0.875rem; text-align:center; font-size:0.75rem; color:var(--text-muted);">
+        Refer a friend and earn 5 extra daily generations. No card required for Free plan.
+    </div>
+
+    <div class="hiw-divider"></div>
+
+    <!-- FAQ -->
+    <div style="margin-bottom:1.75rem;">
+        <div class="hiw-section-label">FAQ</div>
+        <div class="hiw-section-title">Common questions</div>
+    </div>
+
+    <div class="hiw-faq">
+        <div class="hiw-faq-item">
+            <div class="hiw-faq-q" onclick="toggleFaq(this)">
+                Do I need to sign up to watch videos?
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="hiw-faq-a">
+                No. You can search topics and watch any video in the Study Room without an account.
+                Generating Study Packs, saving progress, and accessing the AI Tutor requires a free account.
+            </div>
+        </div>
+        <div class="hiw-faq-item">
+            <div class="hiw-faq-q" onclick="toggleFaq(this)">
+                Are the AI-generated notes accurate?
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="hiw-faq-a">
+                Notes are generated from the video transcript and are as accurate as what the educator says.
+                For STEM content, formulas are validated and rendered in LaTeX.
+                We recommend using the notes alongside the video, not as a replacement for it.
+                If you spot an issue, you can edit your notes directly in the pack.
+            </div>
+        </div>
+        <div class="hiw-faq-item">
+            <div class="hiw-faq-q" onclick="toggleFaq(this)">
+                Are there ads on Knowly?
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="hiw-faq-a">
+                Knowly itself is ad-free. Videos are played via YouTube's official embed which may include
+                YouTube's own ads — we have no control over these and removing them would violate YouTube's terms.
+                We display clear creator credit under every video so you can support the original channel directly.
+            </div>
+        </div>
+        <div class="hiw-faq-item">
+            <div class="hiw-faq-q" onclick="toggleFaq(this)">
+                How does Aura differ from XP?
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="hiw-faq-a">
+                Aura is the social-facing reputation score visible on your profile and the leaderboard.
+                It reflects genuine study activity — packs completed, quizzes passed, packs shared.
+                Think of it as your academic credibility on the platform.
+            </div>
+        </div>
+        <div class="hiw-faq-item">
+            <div class="hiw-faq-q" onclick="toggleFaq(this)">
+                Can I use Knowly for any subject?
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="hiw-faq-a">
+                Knowly currently covers 50+ university-level subjects with a focus on Ghanaian programmes.
+                The library is growing weekly. If your subject isn't well covered yet, you can upload your
+                own notes or PDFs and Knowly will generate a Study Pack around your material plus
+                matching videos from our curated library.
+            </div>
+        </div>
+        <div class="hiw-faq-item">
+            <div class="hiw-faq-q" onclick="toggleFaq(this)">
+                What happens to my Study Packs if I cancel Pro?
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="hiw-faq-a">
+                All your packs stay in your account on the Free plan. You keep everything you've generated.
+                You just return to the Free quota limit for new generations.
+            </div>
+        </div>
+        <div class="hiw-faq-item">
+            <div class="hiw-faq-q" onclick="toggleFaq(this)">
+                Is my data private?
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="hiw-faq-a">
+                Your private packs are only visible to you. Public packs and your Aura score appear
+                on your profile. We don't sell your data and we don't run ads. Your quiz scores and
+                weak topic data are used only to personalise your study experience.
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM CTA -->
+    <div class="hiw-bottom-cta">
+        <h2>Ready to actually remember what you study?</h2>
+        <p>
+            Search any topic. Watch the best videos. Let the AI do the note-taking.<br>
+            Knowly is free to start — no card, no friction.
+        </p>
+        <div class="hiw-cta-row" style="justify-content:center;">
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('main.index') }}" class="hiw-btn-primary">
+                <i class="fas fa-search" style="font-size:0.8rem;"></i>
+                Search a topic now
+            </a>
+            {% else %}
+            <a href="{{ url_for('main.join') }}" class="hiw-btn-primary">
+                <i class="fas fa-bolt" style="font-size:0.8rem;"></i>
+                Get started free
+            </a>
+            <a href="{{ url_for('main.index') }}" class="hiw-btn-ghost">
+                Browse first
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleFaq(el) {
+    var item = el.parentElement;
+    item.classList.toggle('open');
+}
+</script>
+{% endblock %}

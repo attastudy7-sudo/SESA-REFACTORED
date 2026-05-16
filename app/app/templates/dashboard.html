@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components/pack_card.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/dashboard.css') }}">{% endblock %}
+
+{% block content %}
+    {% include 'partials/_dashboard_content.html' %}
+{% endblock %}

@@ -1,0 +1,799 @@
+{% extends "base.html" %}
+{% block title %}{% if subject %}{{ subject.name|strip_course_code }} — Videos{% else %}All Videos{% endif %}{% endblock
+%}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/library/subject_videos.css') }}">{% endblock %}
+
+{% block content %}
+<div class="vsn-bar">
+  <div class="vsn-inner">
+    <div class="vsn-search-wrap">
+      <div id="videoSearchPill" class="vsn-pill">
+        <i class="fas fa-search vsn-pill-icon"></i>
+        <input type="text" id="videoSearchInput" placeholder="Search any topic — calculus, circuits, algorithms…"
+          autocomplete="off" class="vsn-pill-input"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();window.searchVideos && window.searchVideos(this.value);}" />
+        <button type="button" id="voiceMicBtn" class="vsn-pill-btn vsn-pill-btn--mic" title="Search by voice"><i
+            class="fas fa-microphone"></i></button>
+        <button type="button" id="videoSearchBtn" class="vsn-pill-btn vsn-pill-btn--go"
+          onclick="window.searchVideos && window.searchVideos(document.getElementById('videoSearchInput').value)"><i
+            class="fas fa-search"></i></button>
+      </div>
+    </div>
+  </div>
+  <div id="searchFiltersWrap" class="vsn-filters-wrap">
+    <div id="searchFilters" class="vsn-filters"></div>
+  </div>
+</div>
+
+<div class="lib-wrap">
+  {# breadcrumb only shown when navigating from library, not from search #}
+  {% if subject %}
+  <nav class="lib-breadcrumb">
+    <a href="{{ url_for('main.library') }}"><i class="fas fa-layer-group"></i> Library</a>
+    {% if programme %}
+    <i class="fas fa-chevron-right lib-bc-sep"></i>
+    <a href="{{ url_for('main.library_programme', slug=programme.slug) }}">{{ programme.name|strip_course_code }}</a>
+    {% endif %}
+    <i class="fas fa-chevron-right lib-bc-sep"></i>
+    <span>{{ subject.name|strip_course_code }}</span>
+  </nav>
+  {% endif %}
+
+  <div id="searchLoader" style="display: none;"></div>
+
+  {# ── SEARCH RESULTS (outside originalContent so filters stay visible) ── #}
+  <div id="searchResultsSection" style="display: none; margin-bottom: 1.5rem;">
+
+    <div id="searchResultsGrid" class="explore-grid" style="display:grid;"></div>
+  </div>
+
+  {# Hide original video grid when searching, but keep filters visible #}
+  <div id="originalContent">
+    {# ── FILTERS ── #}
+    {# Subject filter pills removed as requested to avoid redundancy #}
+
+    <div class="explore-grid" id="originalVideoGrid" style="margin-top: 1.5rem; position: relative; z-index: 0;">
+      {% if videos %}
+      {% for video in videos %}
+      <div class="sv-card-container" style="position: relative;">
+        <a href="{{ url_for('main.video_player', video_id=video.id) }}" class="explore-card">
+          <div class="explore-thumb">
+            {% if video.thumbnail %}
+            <img src="{{ video.thumbnail }}" alt="{{ video.title|strip_course_code }}" class="explore-img">
+            <div class="explore-play">
+              <svg viewBox="0 0 24 24" fill="white" width="22" height="22">
+                <polygon points="6,3 21,12 6,21" />
+              </svg>
+            </div>
+            {% else %}
+            <img src="https://img.youtube.com/vi/{{ video.youtube_id }}/hqdefault.jpg"
+              alt="{{ video.title|strip_course_code }}" class="explore-img"
+              onerror="this.classList.add('hidden');this.nextElementSibling.classList.add('visible');">
+            <div class="explore-placeholder"
+              style="display:none;width:100%;height:100%;align-items:center;justify-content:center;background:#1a1a2e;color:#4a4a6a;">
+              <i class="fas fa-play"></i></div>
+            <div class="explore-play">
+              <svg viewBox="0 0 24 24" fill="white" width="22" height="22">
+                <polygon points="6,3 21,12 6,21" />
+              </svg>
+            </div>
+            {% endif %}
+          </div>
+          <div class="explore-body">
+            <h3 class="explore-card-title" title="{{ video.title|strip_course_code }}">{{ video.title|strip_course_code
+              }}</h3>
+            <div class="explore-card-footer">
+              <p class="explore-card-meta">{{ video.subject.name|strip_course_code }}</p>
+            </div>
+          </div>
+        </a>
+        {% if current_user.is_authenticated %}
+        <button class="vb-save-btn {% if video.id in saved_video_ids %}saved{% endif %}" data-video-id="{{ video.id }}"
+          onclick="toggleVideoSave(event, this)"
+          title="{% if video.id in saved_video_ids %}Saved{% else %}Save video{% endif %}"
+          style="position: absolute; bottom: 12px; right: 12px; z-index: 5;">
+          <i class="fas fa-bookmark"></i>
+        </button>
+        {% endif %}
+      </div>
+      {% endfor %}
+      {% else %}
+      <p class="vg-offline-msg" id="staticOfflineMsg">Videos unavailable right now — check your connection.</p>
+      {% endif %}
+    </div>
+  </div>{# End originalContent #}
+</div>
+<script>
+
+  const isLoggedIn = {{ 'true' if current_user.is_authenticated else 'false' }};
+  const STUDY_MODE = {{ 'true' if study_mode else 'false' }};
+
+  // ── PACK CARD HELPERS ─────────────────────────────────────────────────────────
+
+  const PACK_GRADIENTS = [
+    'linear-gradient(135deg,#0f0c29 0%,#302b63 55%,#1a1535 100%)',
+    'linear-gradient(135deg,#1a2a0a 0%,#2e5c12 55%,#0e1f06 100%)',
+    'linear-gradient(135deg,#2a0a0a 0%,#5c1a1a 55%,#1f0808 100%)',
+    'linear-gradient(135deg,#1a0a3c 0%,#3d1f7a 55%,#120828 100%)',
+    'linear-gradient(135deg,#0a1a2a 0%,#123456 55%,#061018 100%)',
+    'linear-gradient(135deg,#2a0a1a 0%,#5c1240 55%,#1f0812 100%)',
+    'linear-gradient(135deg,#1a0a0a 0%,#4a1515 55%,#120606 100%)',
+    'linear-gradient(135deg,#0a2a1a 0%,#0f5c3a 55%,#051a0e 100%)',
+  ];
+
+  const DIFF_BAR_COLORS = {
+    Foundation: '#3ddc84',
+    Practice: '#f5c542',
+    Mastery: '#f06b6b',
+  };
+
+  const stackIcon = '<svg viewBox="0 0 14 14" fill="white" width="10" height="10"><rect x="1" y="1" width="7" height="7" rx="1" opacity=".35"/><rect x="3" y="3" width="7" height="7" rx="1" opacity=".6"/><rect x="5" y="5" width="7" height="7" rx="1"/></svg>';
+
+  function pickGradient(subject) {
+    const s = subject || 'General';
+    let hash = 0;
+    for (let i = 0; i < s.length; i++) hash = s.charCodeAt(i) + ((hash << 5) - hash);
+    return PACK_GRADIENTS[Math.abs(hash) % PACK_GRADIENTS.length];
+  }
+
+  function extractFormula(videos) {
+    const anchor = videos.find(v => v.difficulty === 'Foundation') || videos[0];
+    if (!anchor) return { main: '▶', sub: '' };
+    const t = anchor.title || '';
+    let main = t.split(/\s[—|\-–]\s/)[0].trim();
+    if (main.length > 28) main = main.slice(0, 26) + '…';
+    const stages = [...new Set(videos.map(v => v.difficulty).filter(Boolean))];
+    const sub = stages.join(' · ');
+    return { main, sub };
+  }
+
+  function groupVideosIntoPacks(videos) {
+    const bySubject = {};
+    // First pass: group videos that have a real subject
+    const ungrouped = [];
+    videos.forEach(v => {
+      const subj = (v.subject && v.subject !== 'General' && v.subject !== ''
+        ? v.subject
+        : (v.academic_category && v.academic_category !== 'General' && v.academic_category !== 'Pending AI'
+          ? v.academic_category
+          : null));
+      if (subj) {
+        if (!bySubject[subj]) bySubject[subj] = [];
+        bySubject[subj].push(v);
+      } else {
+        ungrouped.push(v);
+      }
+    });
+    // Second pass: any ungrouped videos get their own pack labelled by the search query
+    if (ungrouped.length > 0) {
+      const fallbackKey = document.getElementById('videoSearchInput')?.value?.trim() || 'Results';
+      if (!bySubject[fallbackKey]) bySubject[fallbackKey] = [];
+      ungrouped.forEach(v => bySubject[fallbackKey].push(v));
+    }
+    const packs = [];
+    Object.entries(bySubject).forEach(([subject, vids]) => {
+      const PACK_SIZE = 6;
+      for (let i = 0; i < vids.length; i += PACK_SIZE) {
+        const slice = vids.slice(i, i + PACK_SIZE);
+        const packNum = Math.floor(i / PACK_SIZE) + 1;
+        const label = vids.length > PACK_SIZE ? `${subject} — Pack ${packNum}` : subject;
+        packs.push({ title: label, subject, videos: slice });
+      }
+    });
+    return packs;
+  }
+
+  function renderPackCard(pack) {
+    const gradient = pickGradient(pack.subject || pack.title);
+    const { main, sub } = extractFormula(pack.videos);
+    const stages = [...new Set(pack.videos.map(v => v.difficulty).filter(Boolean))];
+    const stageOrder = ['Foundation', 'Practice', 'Mastery'];
+    stages.sort((a, b) => stageOrder.indexOf(a) - stageOrder.indexOf(b));
+
+    const diffBarHtml = stages.map(s =>
+      `<span style="background:${DIFF_BAR_COLORS[s] || '#666'};"></span>`
+    ).join('');
+
+    const firstVideo = pack.videos[0];
+    const firstUrl = firstVideo.db_id
+      ? `/library/video/${firstVideo.db_id}`
+      : `/library/video/ext?yt=${firstVideo.video_id}&t=${encodeURIComponent(firstVideo.title)}&c=${encodeURIComponent(firstVideo.channel || 'YouTube')}&cat=${encodeURIComponent(firstVideo.category || '')}`;
+
+    const resIcons = {
+      Notes: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="2" width="10" height="12" rx="1"/><line x1="6" y1="6" x2="10" y2="6"/><line x1="6" y1="9" x2="10" y2="9"/></svg>`,
+      Cards: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="3" width="8" height="10" rx="1"/><rect x="2" y="5" width="8" height="10" rx="1" opacity="0.4"/></svg>`,
+      Quiz: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><line x1="8" y1="5" x2="8" y2="9"/><circle cx="8" cy="11" r="0.8" fill="currentColor"/></svg>`,
+      Sheet: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3h10v2H3z"/><line x1="3" y1="8" x2="13" y2="8"/><line x1="3" y1="11" x2="9" y2="11"/></svg>`,
+    };
+    const resStripHtml = Object.entries(resIcons).map(([label, svg]) =>
+      `<span class="pc-res-item">${svg}${label}</span>`
+    ).join('');
+
+    const shareIcon = `<i class="fas fa-share-nodes"></i> `;
+    const shareBtn = `<button class="pc-btn-share" onclick="event.preventDefault(); event.stopPropagation(); sharePack('${pack.title.replace(/'/g, "\\'")}', '${firstUrl}')">
+        ${shareIcon} Share
+    </button>`;
+
+    const subjectLabel = pack.subject || 'Study Pack';
+    const dataSubject = pack.subject || pack.title || 'General';
+
+    return `
+  <div class="sv-card-wrap" data-subject="${dataSubject.replace(/"/g, '&quot;')}">
+    <div class="pack-outer">
+      <div class="depth-2"></div>
+      <div class="depth-1"></div>
+      <a href="${firstUrl}" class="pack-card">
+        <div class="pc-cover">
+          <div class="pc-cover-bg" style="background:${gradient};"></div>
+          <div class="pc-cover-overlay"></div>
+          <div class="pc-cover-content">
+            <div class="pc-cover-top">
+              <span class="pc-subject-pill">${pack.subject || 'Pack'}</span>
+              <span class="pc-video-count">${stackIcon}${pack.videos.length} video${pack.videos.length !== 1 ? 's' : ''}</span>
+            </div>
+            <div class="pc-formula-area">
+              <div class="pc-formula-main">${main}</div>
+              ${sub ? `<div class="pc-formula-sub">${sub}</div>` : ''}
+            </div>
+          </div>
+          <div class="pc-diff-bar">${diffBarHtml}</div>
+        </div>
+        <div class="pc-body">
+          <div class="pc-subject-label">${subjectLabel}</div>
+          <div class="pc-title">${pack.title}</div>
+          <div class="pc-res-strip">${resStripHtml}</div>
+          <div class="pc-footer">
+            <button class="pc-btn-main">Start pack</button>
+            <button class="pc-btn-share" onclick="event.preventDefault();event.stopPropagation();sharePack('${pack.title.replace(/'/g, "\\'")}', '${firstUrl}')">${shareIcon}Share</button>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>`;
+  }
+
+  // ── DB VIDEO INDEX (for instant local search) ─────────────────────────────────
+  // Serialise the server-rendered videos into a JS array so we can filter them
+  // instantly on the client without a network round-trip.
+  const DB_VIDEOS = [
+    {% for video in videos %}
+  {
+    id: {{ video.id }},
+    title: {{ (video.title or '')| tojson }},
+    youtube_id: {{ (video.youtube_id or '')| tojson }},
+    thumbnail: {{ (video.thumbnail or '')| tojson }},
+    subject: {{ (video.academic_category if video.academic_category and video.academic_category != 'Pending AI' else (video.subject.name if video.subject else ''))| strip_course_code | tojson }},
+    academic_category: {{ (video.academic_category or '')| tojson }},
+    difficulty: {{ (video.content_difficulty or 'Beginner')| tojson }},
+    order_index: {{ (video.order_index or 0)| tojson }},
+    is_saved: {{ 'true' if video.id in saved_video_ids else 'false' }}
+  } {% if not loop.last %}, {% endif %}
+  {% endfor %}
+];
+
+  const PROGRAMME_SUBJECTS = {};
+  {% for prog in all_programmes %}
+  PROGRAMME_SUBJECTS[{{ prog.name | tojson }}] =[
+    {% for s in prog.subjects %}{{ s.name | tojson }} {% if not loop.last %}, {% endif %} {% endfor %}
+];
+  {% endfor %}
+
+  function stripCourseCode(text) {
+    if (!text) return '';
+    if (text.includes(':')) return text.split(':')[1].trim();
+    if (text.includes(' – ')) return text.split(' – ')[1].trim();
+    if (text.includes(' - ')) return text.split(' - ')[1].trim();
+    return text;
+  }
+
+  function clearVideoSearch() {
+    document.getElementById('videoSearchInput').value = '';
+    document.getElementById('searchResultsSection').style.display = 'none';
+    document.getElementById('originalContent').style.display = 'block';
+    document.getElementById('videoSearchInput').focus();
+  }
+
+  function renderVideoCard(video) {
+    const thumbnailUrl = video.thumbnail || `https://img.youtube.com/vi/${video.video_id}/hqdefault.jpg`;
+    const playUrl = `/library/video/ext?yt=${video.video_id}&t=${encodeURIComponent(video.title)}&c=${encodeURIComponent(video.channel || 'YouTube')}&cat=${encodeURIComponent(video.category || '')}`;
+
+    // Check if saved
+    const isSaved = video.is_saved || false;
+    const saveClass = isSaved ? 'saved' : '';
+    const saveTitle = isSaved ? 'Saved' : 'Save video';
+    const dbId = video.db_id || '';
+
+    return `
+    <div class="sv-card-container" style="position: relative;">
+        <a href="${playUrl}" class="explore-card">
+            <div class="explore-thumb">
+                <img src="${thumbnailUrl}" alt="${video.title}" class="explore-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                <div class="explore-placeholder" style="display:none;width:100%;height:100%;align-items:center;justify-content:center;background:#1a1a2e;color:#4a4a6a;"><i class="fas fa-play"></i></div>
+                <div class="explore-play">
+                    <svg viewBox="0 0 24 24" fill="white" width="22" height="22">
+                        <polygon points="6,3 21,12 6,21"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="explore-body">
+                <h3 class="explore-card-title" title="${video.title}">${video.title}</h3>
+                <div class="explore-card-footer">
+                  <p class="explore-card-meta">
+                    ${video.channel || 'YouTube'}
+                    ${video.academic_category && video.academic_category !== 'Pending AI' ? ' • <span style="color:var(--primary); font-weight:600;"><i class="fa-solid fa-circle-check"></i> ' + video.subject + '</span>' : ' • ' + video.subject}
+                  </p>
+                </div>
+            </div>
+        </a>
+        ${isLoggedIn ? `
+        <button class="vb-save-btn ${saveClass}" 
+                data-video-id="${dbId}" 
+                data-yt-id="${video.video_id}" 
+                data-title="${video.title.replace(/"/g, '&quot;')}" 
+                data-channel="${(video.channel || 'YouTube').replace(/"/g, '&quot;')}"
+                data-category="${(video.category || '').replace(/"/g, '&quot;')}"
+                onclick="toggleVideoSave(event,this)" 
+                title="${saveTitle}"
+                style="position: absolute; bottom: 12px; right: 12px; z-index: 5;">
+            <i class="fas fa-bookmark"></i>
+        </button>` : ''}
+    </div>`;
+  }
+
+  function renderCategorizedResults(videos) {
+    // Build subject counts for pills
+    const userProgramme = {{ (current_user.programme | tojson) if current_user.is_authenticated else 'null'
+  }};
+  const subjectCounts = {};
+  videos.forEach(v => {
+    const subj = (v.subject || '').trim();
+    if (!subj) return;
+    subjectCounts[subj] = (subjectCounts[subj] || 0) + 1;
+  });
+  const sortedSubjects = Object.entries(subjectCounts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([name]) => name);
+  // Render pills
+  const filtersDiv = document.getElementById('searchFilters');
+  let pillsHtml = `<button class="explore-pill active" data-filter="all" onclick="filterSearchResults('all')">
+        All <span class="explore-pill-count">(${videos.length})</span>
+    </button>`;
+  sortedSubjects.forEach(subj => {
+    pillsHtml += `<button class="explore-pill" data-filter="${subj}" onclick="filterSearchResults('${subj.replace(/'/g, "\\'")}')">
+            ${stripCourseCode(subj)} <span class="explore-pill-count">(${subjectCounts[subj]})</span>
+        </button>`;
+  });
+  filtersDiv.innerHTML = pillsHtml;
+  filtersDiv.style.display = sortedSubjects.length > 0 ? 'flex' : 'none';
+  syncFiltersWrap();
+
+  window.searchVideosData = videos;
+
+  // Render videos directly on the subject-videos page
+  return matches.map(v => renderVideoCard(v)).join('');
+}
+
+  function filterSearchResults(subject) {
+    document.querySelectorAll('#searchFilters .explore-pill').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.filter === subject);
+    });
+
+    document.querySelectorAll('.sv-card-wrap').forEach(div => {
+      const match = subject === 'all' || div.dataset.subject === subject;
+      div.style.display = match ? 'block' : 'none';
+    });
+  }
+
+  // ── ROW-BY-ROW STAGGERED REVEAL ───────────────────────────────────────────────
+  // Works out how many columns the grid currently has, then fires cards in waves:
+  // every card in row N animates in left-to-right before row N+1 starts.
+
+  function getGridColumns(grid) {
+    const style = window.getComputedStyle(grid);
+    const cols = style.gridTemplateColumns.split(' ').length;
+    return Math.max(1, cols);
+  }
+
+  function revealCardsRowByRow(containers) {
+    if (!containers.length) return;
+    const grid = containers[0].parentElement;
+    const cols = getGridColumns(grid);
+
+    containers.forEach((card, i) => {
+      card.style.opacity = '0';
+      card.style.transform = 'translateX(-28px)';
+      card.style.transition = 'none';
+    });
+
+    const rowDelay = 80;   // ms between rows
+    const cardDelay = 55;   // ms between cards within a row
+    const animDur = 320;  // ms for the slide-in itself
+
+    containers.forEach((card, i) => {
+      const row = Math.floor(i / cols);
+      const col = i % cols;
+      const delay = row * rowDelay + col * cardDelay;
+
+      setTimeout(() => {
+        card.style.transition = `opacity ${animDur}ms ease, transform ${animDur}ms ease`;
+        card.style.opacity = '1';
+        card.style.transform = 'translateX(0)';
+      }, delay);
+    });
+  }
+
+  function initProgressiveReveal() {
+    const containers = Array.from(
+      document.querySelectorAll('#originalVideoGrid .sv-card-container')
+    );
+    if (!containers.length) return;
+    revealCardsRowByRow(containers);
+  }
+
+  // ── LOCAL DB SEARCH ───────────────────────────────────────────────────────────
+  // Filters DB_VIDEOS instantly, no network needed.
+
+  function searchDBVideos(query) {
+    const q = query.toLowerCase().trim();
+    if (!q) return [];
+    const terms = q.split(/\s+/);
+    return DB_VIDEOS.filter(v => {
+      const haystack = (v.title + ' ' + v.subject).toLowerCase();
+      return terms.every(t => haystack.includes(t));
+    });
+  }
+
+  function renderDBResults(matches) {
+    // Build subject pills from real DB subject names
+    const userProgramme = {{ (current_user.programme | tojson) if current_user.is_authenticated else 'null'
+  }};
+  const subjectCounts = {};
+  matches.forEach(v => {
+    const subj = (v.subject || '').trim();
+    if (!subj) return;
+    subjectCounts[subj] = (subjectCounts[subj] || 0) + 1;
+  });
+
+  const sortedSubjects = Object.entries(subjectCounts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([name]) => name);
+
+  const filtersDiv = document.getElementById('searchFilters');
+  if (sortedSubjects.length > 0) {
+    let pillsHtml = `<button class="explore-pill active" data-filter="all" onclick="filterSearchResults('all')">All <span class="explore-pill-count">(${matches.length})</span></button>`;
+    sortedSubjects.forEach(subj => {
+      pillsHtml += `<button class="explore-pill" data-filter="${subj}" onclick="filterSearchResults('${subj.replace(/'/g, "\\'")}')">
+                ${stripCourseCode(subj)} <span class="explore-pill-count">(${subjectCounts[subj]})</span>
+            </button>`;
+    });
+    filtersDiv.innerHTML = pillsHtml;
+    filtersDiv.style.display = 'flex';
+    syncFiltersWrap();
+  }
+
+  return matches.map(v => {
+    const thumb = v.thumbnail ||
+      `https://img.youtube.com/vi/${v.youtube_id}/hqdefault.jpg`;
+    const href = `/library/video/${v.id}`;
+    const saved = v.is_saved;
+    return `
+        <div class="sv-card-container" style="position:relative;">
+          <a href="${href}" class="explore-card">
+            <div class="explore-thumb">
+              <img src="${thumb}" alt="${v.title}" class="explore-img"
+                   onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+              <div class="explore-placeholder" style="display:none;width:100%;height:100%;align-items:center;justify-content:center;background:#1a1a2e;color:#4a4a6a;"><i class="fas fa-play"></i></div>
+              <div class="explore-play">
+                <svg viewBox="0 0 24 24" fill="white" width="22" height="22"><polygon points="6,3 21,12 6,21"/></svg>
+              </div>
+            </div>
+            <div class="explore-body">
+              <h3 class="explore-card-title" title="${v.title}">${v.title}</h3>
+              <div class="explore-card-footer">
+                <p class="explore-card-meta">${v.subject}</p>
+              </div>
+            </div>
+          </a>
+          ${isLoggedIn ? `
+          <button class="vb-save-btn ${saved ? 'saved' : ''}"
+                  data-video-id="${v.id}"
+                  onclick="toggleVideoSave(event,this)"
+                  title="${saved ? 'Saved' : 'Save video'}"
+                  style="position:absolute;bottom:12px;right:12px;z-index:5;">
+            <i class="fas fa-bookmark"></i>
+          </button>` : ''}
+        </div>`;
+  }).join('');
+}
+
+  // ── SEARCH (DB-first, scraper fallback) ───────────────────────────────────────
+
+  async function searchVideos(query) {
+    const resultsSection = document.getElementById('searchResultsSection');
+    const resultsGrid = document.getElementById('searchResultsGrid');
+    const originalContent = document.getElementById('originalContent');
+    const filtersDiv = document.getElementById('searchFilters');
+
+    if (!query || !query.trim()) {
+      resultsSection.style.display = 'none';
+      originalContent.style.display = 'block';
+      filtersDiv.innerHTML = '';
+      syncFiltersWrap();
+      return;
+    }
+
+    originalContent.style.display = 'none';
+    resultsSection.style.display = 'block';
+    resultsGrid.style.display = 'grid';
+    filtersDiv.innerHTML = '';
+    syncFiltersWrap();
+
+    // ── INSTANT: search local DB videos first ──
+    const dbMatches = searchDBVideos(query);
+    if (dbMatches.length > 0) {
+      resultsGrid.innerHTML = renderDBResults(dbMatches);
+      // Animate results in row-by-row
+      const containers = Array.from(resultsGrid.querySelectorAll('.sv-card-container'));
+      revealCardsRowByRow(containers);
+    } else {
+      // Show video-shaped skeletons while scraper runs
+      resultsGrid.innerHTML = '';
+      for (let i = 0; i < 6; i++) {
+        const sk = document.createElement('div');
+        sk.className = 'sk-card';
+        sk.innerHTML = `<div class="sk-thumb"></div><div class="sk-line sk-line--title"></div><div class="sk-line sk-line--meta"></div>`;
+        resultsGrid.appendChild(sk);
+      }
+    }
+
+    // ── ASYNC: always fetch from scraper to supplement/replace ──
+    try {
+      const res = await fetch(`/library/search-videos?q=${encodeURIComponent(query)}&limit=24`);
+      const data = await res.json();
+
+      if (data.error === 'non_academic') {
+        if (dbMatches.length === 0) {
+          filtersDiv.innerHTML = '';
+          syncFiltersWrap();
+          resultsGrid.innerHTML = `
+                    <div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--text-muted);">
+                        <i class="fas fa-graduation-cap" style="font-size:2rem;margin-bottom:1rem;display:block;color:var(--primary);"></i>
+                        No academic videos found for "${query}".<br>
+                        <span style="font-size:0.85rem;opacity:0.8;">Try topics like "calculus", "physics", "programming".</span>
+                    </div>`;
+        }
+        return;
+      }
+
+      if (data.videos && data.videos.length > 0) {
+        // Prefer the DB subject name for any video already in DB_VIDEOS
+        const dbIndex = {};
+        DB_VIDEOS.forEach(dv => { dbIndex[dv.youtube_id] = dv.subject; });
+        data.videos.forEach(v => {
+          const dbSubject = dbIndex[v.video_id];
+          if (dbSubject) v.subject = dbSubject;
+        });
+
+        const html = renderDBResults(data.videos);
+        resultsGrid.innerHTML = html;
+        const containers = Array.from(resultsGrid.querySelectorAll('.sv-card-container'));
+        revealCardsRowByRow(containers);
+      } else if (dbMatches.length === 0) {
+        filtersDiv.innerHTML = '';
+        syncFiltersWrap();
+        resultsGrid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--text-muted);">No videos found for "${query}"</div>`;
+      }
+
+    } catch (err) {
+      if (dbMatches.length === 0) {
+        resultsGrid.innerHTML = '<p class="vg-offline-msg">Search failed — check your connection.</p>';
+      }
+      console.error('Search error:', err);
+    }
+  }
+
+  // ── VOICE SEARCH (Web Speech API) ──
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognition = null;
+  let isListening = false;
+
+  if (SpeechRecognition) {
+    recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+
+    recognition.onstart = () => {
+      isListening = true;
+      document.getElementById('voiceMicBtn').classList.add('active');
+      document.getElementById('videoSearchInput').placeholder = "Listening...";
+    };
+
+    recognition.onend = () => {
+      isListening = false;
+      document.getElementById('voiceMicBtn').classList.remove('active');
+      document.getElementById('videoSearchInput').placeholder = "Search any topic — calculus, circuits, algorithms…";
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      document.getElementById('videoSearchInput').value = transcript;
+      searchVideos(transcript);
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Speech Recognition Error:", event.error);
+      isListening = false;
+      document.getElementById('voiceMicBtn').classList.remove('active');
+    };
+  } else {
+    const micBtn = document.getElementById('voiceMicBtn');
+    if (micBtn) micBtn.style.display = 'none';
+  }
+
+  function toggleVoiceSearch() {
+    if (!recognition) return;
+    if (isListening) {
+      recognition.stop();
+    } else {
+      recognition.start();
+    }
+  }
+
+  // ── INIT ──────────────────────────────────────────────────────────────────────
+
+  document.addEventListener('turbo:load', function () {
+    const searchBtn = document.getElementById('videoSearchBtn');
+    const searchInput = document.getElementById('videoSearchInput');
+    const micBtn = document.getElementById('voiceMicBtn');
+
+    if (searchBtn) {
+      searchBtn.addEventListener('click', () => searchVideos(searchInput.value));
+    }
+    if (micBtn) {
+      micBtn.addEventListener('click', toggleVoiceSearch);
+    }
+    if (searchInput) {
+      searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); searchVideos(searchInput.value); }
+      });
+    }
+
+    initProgressiveReveal();
+
+    // ── INFINITE SCROLL: fire scraper when user scrolls past all DB videos ──
+    (function setupInfiniteScroll() {
+      let currentQuery = '';
+      let nextOffset = 0;
+      let loading = false;
+      let exhausted = false;
+
+      const sentinel = document.createElement('div');
+      sentinel.style.height = '1px';
+      document.getElementById('originalVideoGrid').appendChild(sentinel);
+
+      const observer = new IntersectionObserver(async (entries) => {
+        if (!entries[0].isIntersecting || loading || exhausted) return;
+        // Only fire when the original DB grid is visible (not during a search)
+        if (document.getElementById('originalContent').style.display === 'none') return;
+
+        loading = true;
+
+        // Show skeleton row at the bottom
+        const grid = document.getElementById('originalVideoGrid');
+        const skRow = document.createElement('div');
+        skRow.className = 'sk-infinite-row';
+        skRow.style.cssText = 'display:contents;';
+        for (let i = 0; i < 3; i++) {
+          const sk = document.createElement('div');
+          sk.className = 'sk-card';
+          sk.innerHTML = `<div class="sk-thumb"></div><div class="sk-line sk-line--title"></div><div class="sk-line sk-line--meta"></div>`;
+          skRow.appendChild(sk);
+        }
+        grid.insertBefore(skRow, sentinel);
+
+        try {
+          const q = currentQuery || '{{ subject.name|strip_course_code if subject else "" }}';
+          const res = await fetch(`/library/search-videos?q=${encodeURIComponent(q)}&limit=12&offset=${nextOffset}`);
+          const data = await res.json();
+
+          skRow.remove();
+
+          if (data.videos && data.videos.length > 0) {
+            const frag = document.createDocumentFragment();
+            const newContainers = [];
+            data.videos.forEach(v => {
+              const wrap = document.createElement('div');
+              wrap.innerHTML = renderVideoCard(v);
+              const card = wrap.firstElementChild;
+              frag.appendChild(card);
+              newContainers.push(card);
+            });
+            grid.insertBefore(frag, sentinel);
+            revealCardsRowByRow(newContainers);
+            nextOffset += data.videos.length;
+            if (!data.has_more) exhausted = true;
+          } else {
+            exhausted = true;
+          }
+        } catch (e) {
+          skRow.remove();
+          console.error('Infinite scroll error:', e);
+        }
+
+        loading = false;
+      }, { rootMargin: '300px' });
+
+      observer.observe(sentinel);
+    })();
+
+    const initialQuery = "{{ initial_query | default('') | e }}";
+    if (initialQuery) {
+      searchInput.value = initialQuery;
+      searchVideos(initialQuery);
+    }
+
+    if (STUDY_MODE) {
+      // Scroll search bar into focus and open study room UI
+      if (searchInput) searchInput.focus();
+      // If you have a study room tab button, activate it here e.g.:
+      // document.getElementById('studyRoomTabBtn')?.click();
+    }
+  });
+
+  document.addEventListener('turbo:load', function () {
+    const msg = document.getElementById('staticOfflineMsg');
+    if (msg) {
+      // Only show if genuinely offline
+      if (navigator.onLine) msg.style.display = 'none';
+      window.addEventListener('offline', () => { msg.style.display = 'block'; });
+      window.addEventListener('online', () => { msg.style.display = 'none'; });
+    }
+  });
+
+  // Filter chips row: slide open when chips are populated
+  function syncFiltersWrap() {
+    const filters = document.getElementById('searchFilters');
+    const wrap = document.getElementById('searchFiltersWrap');
+    if (!filters || !wrap) return;
+    const hasChips = filters.children.length > 0 && filters.style.display !== 'none';
+    if (hasChips) wrap.classList.add('visible');
+    else wrap.classList.remove('visible');
+  }
+
+  async function toggleVideoSave(e, btn) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const videoId = btn.dataset.videoId;
+    const ytId = btn.dataset.ytId; // for external
+
+    const payload = {};
+    if (videoId) payload.video_id = videoId;
+    if (ytId) {
+      payload.youtube_id = ytId;
+      payload.title = btn.dataset.title;
+      payload.channel = btn.dataset.channel;
+      payload.category = btn.dataset.category;
+    }
+
+    const res = await fetch(`/library/video/save`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      btn.classList.toggle('saved', data.saved);
+      btn.title = data.saved ? 'Saved' : 'Save video';
+      if (data.video_id) {
+        btn.dataset.videoId = data.video_id;
+      }
+    }
+  }
+</script>
+{% endblock %}

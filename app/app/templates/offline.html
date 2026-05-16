@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>You're offline – knowly</title>
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="/static/images/icon-192x192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>(function(){var t=localStorage.getItem('knowly-theme');if(t)document.documentElement.setAttribute('data-theme',t);})();</script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/offline.css') }}">
+</head>
+<body>
+    <div class="card">
+        <div class="brand">
+            <img src="static/images/icon-72x72.png">
+            knowly
+        </div>
+
+        <div class="offline-illustration">
+            🌐
+        </div>
+
+        <h1>You're offline</h1>
+        <p>
+            Looks like you've lost your internet connection.
+            Connect to Wi-Fi or mobile data to keep studying.
+        </p>
+
+        <button class="btn-retry" onclick="window.location.reload()">
+            ↻ Try again
+        </button>
+
+        <div class="tips">
+            <p>Tip: Previously visited pages may still be available from cache.</p>
+        </div>
+    </div>
+</body>
+</html>

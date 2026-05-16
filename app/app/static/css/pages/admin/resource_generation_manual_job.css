@@ -1,0 +1,90 @@
+
+.rg-form { display: grid; gap: .9rem; }
+.rg-shell {
+  border-radius: 14px;
+}
+.adm-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .45rem;
+  justify-content: flex-end;
+}
+.rg-grid {
+  display: grid;
+  gap: .85rem;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.rg-grid label { display: grid; gap: .35rem; font-size: .8rem; color: var(--text-secondary); }
+.rg-field { grid-column: span 12; }
+.rg-panel {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: .9rem;
+  display: grid;
+  gap: .65rem;
+  background: var(--bg-secondary);
+}
+.rg-panel-title {
+  margin: 0;
+  font-size: .82rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: .01em;
+}
+.rg-grid input,
+.rg-grid select {
+  width: 100%;
+  min-height: 42px;
+  border: 1.5px solid var(--border);
+  background: var(--bg-main);
+  color: var(--text-primary);
+  border-radius: 10px;
+  padding: .55rem .7rem;
+  font-size: .84rem;
+}
+.rg-actions {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+  padding-top: .25rem;
+  border-top: 1px solid var(--border);
+}
+.rg-fixed-types {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .45rem;
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  border-radius: 10px;
+  padding: .6rem .7rem;
+}
+.rg-fixed-label {
+  color: var(--text-muted);
+  font-size: .76rem;
+  font-weight: 700;
+}
+.rg-type-pill {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: .2rem .55rem;
+  font-size: .73rem;
+  color: var(--text-secondary);
+  background: var(--bg-main);
+}
+
+@media (min-width: 980px) {
+  .rg-field--subject { grid-column: span 4; }
+  .rg-field--topic { grid-column: span 8; }
+
+  .rg-field--level,
+  .rg-field--year,
+  .rg-field--semester { grid-column: span 4; }
+}
+
+@media (max-width: 979px) {
+  .rg-field--level,
+  .rg-field--year,
+  .rg-field--semester { grid-column: span 12; }
+}
+

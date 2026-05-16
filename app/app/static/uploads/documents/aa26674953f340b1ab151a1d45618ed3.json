@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0",
+  "document_type": "notes",
+  "generated_at": "2026-04-10T00:09:05.184242+00:00",
+  "title": "Derivatives and Differentiation Techniques",
+  "course": "MA101 \u2013 Calculus I",
+  "level": "Intermediate",
+  "metadata": {
+    "estimated_read_time": "10 minutes",
+    "focus_areas": "",
+    "prerequisites": ""
+  },
+  "sections": [
+    {
+      "section_number": 1,
+      "section_title": "Definition of the Derivative",
+      "section_type": "concepts",
+      "content": [
+        {
+          "block_type": "paragraph",
+          "text": "The derivative of $f(x)$ with respect to $x$ is the function $f'(x)$ defined by the limit:\n$$f'(x) = \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h}$$\nThis limit represents the slope of the tangent line to the curve at a specific point and measures the instantaneous rate of change."
+        }
+      ]
+    },
+    {
+      "section_number": 2,
+      "section_title": "Differentiability and Continuity",
+      "section_type": "concepts",
+      "content": [
+        {
+          "block_type": "paragraph",
+          "text": "A function is differentiable at $x=a$ if $f'(a)$ exists. A key theorem states: If $f(x)$ is differentiable at $x=a$, then $f(x)$ is continuous at $x=a$. Note that the converse is not necessarily true."
+        }
+      ]
+    },
+    {
+      "section_number": 3,
+      "section_title": "Basic Differentiation Rules",
+      "section_type": "concepts",
+      "content": [
+        {
+          "block_type": "paragraph",
+          "text": "1. **Constant Rule**: $\\frac{d}{dx}[c] = 0$\n2. **Power Rule**: $\\frac{d}{dx}[x^n] = nx^{n-1}$ for any real number $n$.\n3. **Constant Multiple Rule**: $\\frac{d}{dx}[cf(x)] = c f'(x)$\n4. **Sum/Difference Rule**: $\\frac{d}{dx}[f(x) \\pm g(x)] = f'(x) \\pm g'(x)$\n5. **Exponential Function**: $\\frac{d}{dx}[e^x] = e^x$"
+        }
+      ]
+    },
+    {
+      "section_number": 4,
+      "section_title": "Product and Quotient Rules",
+      "section_type": "concepts",
+      "content": [
+        {
+          "block_type": "paragraph",
+          "text": "**Product Rule**: Used for the derivative of a product of two functions:\n$$\\frac{d}{dx}[f(x)g(x)] = f(x)g'(x) + g(x)f'(x)$$\n**Quotient Rule**: Used for the derivative of a ratio of two functions:\n$$\\frac{d}{dx}\\left[\\frac{f(x)}{g(x)}\\right] = \\frac{g(x)f'(x) - f(x)g'(x)}{[g(x)]^2}$$"
+        }
+      ]
+    },
+    {
+      "section_number": 5,
+      "section_title": "The Chain Rule",
+      "section_type": "concepts",
+      "content": [
+        {
+          "block_type": "paragraph",
+          "text": "The Chain Rule is used for composite functions $y = f(g(x))$. If $u = g(x)$, then:\n$$\\frac{dy}{dx} = \\frac{dy}{du} \\cdot \\frac{du}{dx}$$\nAlternatively: $\\frac{d}{dx}[f(g(x))] = f'(g(x)) \\cdot g'(x)$."
+        }
+      ]
+    }
+  ],
+  "summary": [
+    "Review the section content and reinforce the core idea for retention.",
+    "Review the section content and reinforce the core idea for retention.",
+    "Review the section content and reinforce the core idea for retention."
+  ],
+  "document_hash": "3cf432351bfd209e748f0c1aa759a4f476468c52c7c01ff791111a3e32a3fc2b"
+}

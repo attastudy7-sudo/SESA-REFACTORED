@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}{{ subject.name|strip_course_code }} — Topics{% endblock %}
+
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/library/subject_topics.css') }}">{%  endblock %}
+
+{% block content %}
+{% set from_prog = request.args.get('from', '') %}
+{% set back_url = url_for('main.library_programme', slug=programme.slug) if programme else url_for('main.library') %}
+<div class="subtopics-wrap">
+  <nav class="lib-breadcrumb">
+    <a href="{{ url_for('main.library') }}"><i class="fas fa-layer-group"></i> Library</a>
+    {% if programme %}
+    <i class="fas fa-chevron-right lib-bc-sep"></i>
+    <a href="{{ url_for('main.library_programme', slug=programme.slug) }}">{{ programme.name|strip_course_code }}</a>
+    {% endif %}
+    <i class="fas fa-chevron-right lib-bc-sep"></i>
+    <span>{{ subject.name|strip_course_code }}</span>
+    <a href="{{ back_url }}" class="lib-breadcrumb-back" data-knowly-back="1" data-back-fallback="{{ back_url }}">
+      <span class="lib-breadcrumb-back-icon"><i class="fas fa-arrow-left"></i></span>
+      <span>Back</span>
+    </a>
+  </nav>
+
+  {% if topic_groups %}
+  <section class="lib-section">
+    <div class="lib-section-panel">
+      <div class="lib-section-head">
+        <div class="lib-section-head-left">
+          <div class="lib-section-icon">
+            <i class="fas fa-book-open"></i>
+          </div>
+          <div>
+            <h2>Topics under this course</h2>
+            <p>{{ topic_groups|length }} topic{% if topic_groups|length != 1 %}s{% endif %} available</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="topic-list">
+        {% for topic in topic_groups %}
+          {% include '_topic_bundle_card.html' with context %}
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  {% else %}
+  <div class="lib-empty">
+    <i class="fas fa-folder-open"></i>
+    <p>No resources found for this subject yet.</p>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

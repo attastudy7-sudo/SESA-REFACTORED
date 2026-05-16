@@ -1,0 +1,287 @@
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/library/study_room.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/library/celebration.css') }}">
+<div class="room-wrap">
+    <!-- TOP BAR -->
+    <div class="room-topbar">
+        <button class="room-tb-btn room-tb-btn--left" onclick="toggleSyllabus()" title="Toggle Syllabus">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <a href="{{ url_for('main.index') }}" class="room-logo">
+            <div class="logo-icon-wrap">
+                <i class="fas fa-chalkboard-user"></i>
+            </div>
+            <span class="logo-text">Study Room</span>
+        </a>
+
+        <a href="{{ url_for('main.dashboard') }}" class="room-tb-btn room-tb-btn--right" title="Exit Study Room">
+            <i class="fas fa-times"></i>
+        </a>
+    </div>
+
+    <div class="room-layout">
+        <!-- LEFT SIDEBAR -->
+        <aside class="pane-syllabus" id="syllabusPane">
+            <div class="sb-head">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                    <div style="min-width:0;">
+                        <div class="sb-prog-label">{{ (programme.name if programme else 'Videos')|strip_course_code }}
+                        </div>
+                        <div class="sb-subject-name">{{ display_subject|strip_course_code }}</div>
+                    </div>
+                    <div style="display:flex;gap:4px;align-items:center;">
+                        <button class="sb-head-btn" onclick="toggleSyllabus()" title="Collapse syllabus" id="sylHeaderBtn">
+                            <i class="fa-solid fa-chevron-left" id="sylHeaderIcon"
+                                style="transition: transform 0.2s; display: inline-block;"></i>
+                        </button>
+                        <button class="close-syllabus-btn" onclick="toggleSyllabus()">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+                {% set total = curriculum_videos|length %}
+                {% set done_count = curriculum_videos|selectattr('id','in',completed_video_ids)|list|length %}
+                {% set pct = ((done_count / total) * 100)|round|int if total > 0 else 0 %}
+                <div class="sb-progress-track">
+                    <div class="sb-progress-fill" style="width:{{ pct }}%"></div>
+                </div>
+                <div class="sb-progress-count">{{ done_count }} of {{ total }} completed</div>
+            </div>
+
+            <div class="sb-scroll">
+                <div class="sb-section">In this subject</div>
+
+                {% set found_active = namespace(value=false) %}
+                {% if syllabus_items %}
+                {% for item in syllabus_items %}
+                {% if item.type == 'video' %}
+                {% set cv = item.video %}
+                {% set is_active = (cv.id == video.id) %}
+                {% set is_done = (cv.id in completed_video_ids) %}
+
+                {% if is_active %}
+                <div class="sb-item sb-active">
+                    <div class="sb-dot sb-dot-play"><i class="fas fa-play"></i></div>
+                    <div class="sb-body">
+                        <div class="sb-name">{{ cv.title|truncate(52) }}</div>
+                        <div class="sb-meta">Watching now</div>
+                    </div>
+                    {% if current_user.is_authenticated and not is_done %}<span class="sb-xp">{{ cv.xp_reward }} <i
+                            class="fa-solid fa-star"></i></span>{% endif %}
+                </div>
+                {% set found_active.value = true %}
+                {% else %}
+                <a href="{{ url_for('main.video_player', video_id=cv.id) }}"
+                    class="sb-item{% if is_done %} sb-done{% endif %}">
+                    <div
+                        class="sb-dot {% if is_done %}sb-dot-done{% elif found_active.value %}sb-dot-lock{% else %}sb-dot-lock{% endif %}" title="{% if is_done %}Lesson completed{% else %}Complete previous lesson to unlock{% endif %}">
+                        <i
+                            class="fas {% if is_done %}fa-check{% elif found_active.value %}fa-clock{% else %}fa-lock{% endif %}"></i>
+                    </div>
+                    <div class="sb-body">
+                        <div class="sb-name">{{ cv.title|truncate(52) }}</div>
+                        <div class="sb-meta">
+                            {% if is_done %}Completed
+                            {% elif found_active.value %}Up next
+                            {% else %}Locked{% endif %}
+                        </div>
+                    </div>
+                    {% if current_user.is_authenticated and not is_done %}<span class="sb-xp">{{ cv.xp_reward }} <i
+                            class="fa-solid fa-star"></i></span>{% endif %}
+                </a>
+                {% endif %}
+                {% elif item.type == 'resource' %}
+                <a href="{{ url_for('main.library_subject', slug=subject_slug) }}" class="sb-item sb-resource">
+                    <div class="sb-dot sb-dot-resource"><i class="fas fa-layer-group"></i></div>
+                    <div class="sb-body">
+                        <div class="sb-name">{{ item.label|truncate(52) }}</div>
+                        <div class="sb-meta">Practice Pack</div>
+                    </div>
+                </a>
+                {% endif %}
+                {% endfor %}
+                {% else %}
+                <div style="padding: 2rem 1.5rem; text-align: center; color: var(--sr-muted);">
+                    <i class="fas fa-video-slash" style="font-size: 1.5rem; opacity: 0.3; margin-bottom: 0.5rem;"></i>
+                    <p style="font-size: 0.8rem;">No videos in this subject yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="pane-main">
+            <div class="main-scroll">
+                <div class="content-inner">
+                    {% if video %}
+                    <div class="video-wrap">
+                        <iframe id="player"
+                            src="https://www.youtube.com/embed/{{ video.youtube_id }}?enablejsapi=1&origin={{ request.host_url|urlencode }}&rel=0&autoplay=1"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen></iframe>
+                    </div>
+                    {% else %}
+                    <div class="video-wrap">
+                        <div class="video-placeholder">
+                            <i class="fas fa-chalkboard-user"></i>
+                            <h2 style="font-size: 1.5rem; font-weight: 700; color: white;">Ready to study?</h2>
+                            <p style="color: rgba(255,255,255,0.6); max-width: 300px; text-align: center;">Select a video from the syllabus or paste a link to start learning.</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="tab-container">
+                        <div class="tab-bar">
+                            <button class="tab-btn on" data-tab="flashcards"><i class="fas fa-clone"></i> Flashcards</button>
+                            <button class="tab-btn" data-tab="notes"><i class="fas fa-file-lines"></i> Notes</button>
+                            <button class="tab-btn" data-tab="cheatsheet"><i class="fas fa-bolt"></i> Cheatsheet</button>
+                            <button class="tab-btn" data-tab="quiz"><i class="fas fa-question-circle"></i> Quiz</button>
+                        </div>
+
+                        <div class="tab-pane on" id="pane-flashcards">
+                            {% if topic_resources.flashcard %}
+                                {% include 'posts/view_flashcard.html' with context %}
+                            {% else %}
+                                <div class="res-empty" style="padding: 40px; text-align: center; color: var(--sr-muted);">
+                                    <i class="fas fa-clone" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.2;"></i>
+                                    <p>No flashcards for this lesson.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="tab-pane" id="pane-notes">
+                            {% if topic_resources.notes %}
+                                <div class="res-view-header">
+                                    <h3>{{ topic_resources.notes.title }}</h3>
+                                    <a href="{{ url_for('posts.view', post_id=topic_resources.notes.id) }}" class="btn btn-sm btn-outline">Full View</a>
+                                </div>
+                                <div class="res-view-body">
+                                    {{ topic_resources.notes.content|safe }}
+                                </div>
+                            {% else %}
+                                <div class="res-empty" style="padding: 40px; text-align: center; color: var(--sr-muted);">
+                                    <i class="fas fa-file-lines" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.2;"></i>
+                                    <p>No notes for this lesson.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="tab-pane" id="pane-cheatsheet">
+                            {% if topic_resources.cheatsheet %}
+                                <div class="res-view-header">
+                                    <h3>{{ topic_resources.cheatsheet.title }}</h3>
+                                    <a href="{{ url_for('posts.view', post_id=topic_resources.cheatsheet.id) }}" class="btn btn-sm btn-outline">Full View</a>
+                                </div>
+                                <div class="res-view-body">
+                                    {{ topic_resources.cheatsheet.content|safe }}
+                                </div>
+                            {% else %}
+                                <div class="res-empty" style="padding: 40px; text-align: center; color: var(--sr-muted);">
+                                    <i class="fas fa-bolt" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.2;"></i>
+                                    <p>No cheatsheet for this lesson.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="tab-pane" id="pane-quiz">
+                            {% if topic_resources.quiz %}
+                                {% include 'posts/view_quiz.html' with context %}
+                            {% else %}
+                                <div class="res-empty" style="padding: 40px; text-align: center; color: var(--sr-muted);">
+                                    <i class="fas fa-question-circle" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.2;"></i>
+                                    <p>No quiz for this lesson.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<script>
+    (function () {
+        function initStudyRoom() {
+            console.log("Initializing Study Room JS...");
+            // TAB SWITCHING LOGIC
+            const tabs = document.querySelectorAll('.tab-btn');
+            const panes = document.querySelectorAll('.tab-pane');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const target = tab.dataset.tab;
+                    tabs.forEach(t => t.classList.remove('on'));
+                    panes.forEach(p => p.classList.remove('on'));
+                    tab.classList.add('on');
+                    const pane = document.getElementById('pane-' + target);
+                    if (pane) pane.classList.add('on');
+                });
+            });
+
+            // SYLLABUS TOGGLE
+            window.toggleSyllabus = function () {
+                const pane = document.getElementById('syllabusPane');
+                const icon = document.getElementById('sylHeaderIcon');
+                if (!pane) return;
+
+                const isMobile = window.innerWidth <= 1024;
+                if (isMobile) {
+                    pane.classList.toggle('show');
+                } else {
+                    pane.classList.toggle('rail');
+                }
+
+                const isCollapsed = isMobile ? !pane.classList.contains('show') : pane.classList.contains('rail');
+                if (icon) {
+                    icon.style.transform = isCollapsed ? 'rotate(-180deg)' : 'rotate(0deg)';
+                }
+            };
+            
+            // CHAT LOGIC
+            window.sendChat = async function() {
+                const i = document.getElementById('chatInput');
+                const h = document.getElementById('chatHistory');
+                if (!i || !h) return;
+                const t = i.value.trim();
+                if (!t) return;
+
+                addBubble('user', t);
+                i.value = '';
+
+                const loadingId = 'ai-loading-' + Date.now();
+                addBubble('ai', '...', loadingId);
+
+                try {
+                    const r = await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: t, context: { video_id: '{{ video.id if video else "" }}' } })
+                    });
+                    const d = await r.json();
+                    const b = document.getElementById(loadingId);
+                    if (b) b.textContent = d.response || 'Sorry, I encountered an error.';
+                } catch (e) {
+                    const b = document.getElementById(loadingId);
+                    if (b) b.textContent = 'Error connecting to AI.';
+                }
+            };
+
+            function addBubble(role, text, id) {
+                const h = document.getElementById('chatHistory');
+                if (!h) return;
+                const d = document.createElement('div');
+                d.className = 'chat-bubble ' + (role === 'user' ? 'chat-user' : 'chat-ai');
+                if (id) d.id = id;
+                d.textContent = text;
+                h.appendChild(d); h.scrollTop = h.scrollHeight;
+            }
+
+            document.getElementById('chatInput')?.addEventListener('keydown', e => {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+            });
+        }
+
+        // Run immediately for Turbo Frame loads
+        initStudyRoom();
+    })();
+</script>

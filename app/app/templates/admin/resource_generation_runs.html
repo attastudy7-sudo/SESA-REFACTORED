@@ -1,0 +1,81 @@
+{% extends "admin/base.html" %}
+
+{% block extra_css %}{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin/resource_generation_runs.css') }}">{%  endblock %}
+{% block admin_title %}Generation Runs{% endblock %}
+{% block admin_content %}
+
+<div class="adm-header">
+  <div class="adm-header-left">
+    <div class="adm-header-icon"><i class="fas fa-timeline"></i></div>
+    <div>
+      <p class="adm-header-title">Generation Runs</p>
+      <p class="adm-header-sub">Run history and completion analytics for bulk generation.</p>
+    </div>
+  </div>
+  <div class="adm-header-actions">
+    <a href="{{ url_for('admin.resource_generation') }}" class="adm-btn adm-btn--secondary">
+      <i class="fas fa-arrow-left"></i> Back
+    </a>
+  </div>
+</div>
+
+<div class="adm-card">
+  <p class="adm-card-title"><i class="fas fa-wave-square"></i> Runner</p>
+  <div class="rg-stats">
+    <div><strong>Status:</strong> {{ 'Running' if runner_state.running else 'Idle' }}</div>
+    <div><strong>Active Run:</strong> {{ runner_state.run_id or '—' }}</div>
+  </div>
+</div>
+
+<div class="adm-card">
+  <p class="adm-card-title"><i class="fas fa-list"></i> Run History</p>
+
+  {% if runs %}
+  <div class="rg-table-wrap">
+    <table class="rg-table">
+      <thead>
+        <tr>
+          <th>Run ID</th>
+          <th>Started</th>
+          <th>Last Updated</th>
+          <th>Total</th>
+          <th>Posted</th>
+          <th>Failed</th>
+          <th>Pending</th>
+          <th>Generating</th>
+          <th>Completion</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for run in runs %}
+        <tr>
+          <td>{{ run.run_id }}</td>
+          <td>{{ run.started_at.strftime('%Y-%m-%d %H:%M') if run.started_at else '—' }}</td>
+          <td>{{ run.last_updated.strftime('%Y-%m-%d %H:%M') if run.last_updated else '—' }}</td>
+          <td>{{ run.total }}</td>
+          <td>{{ run.posted }}</td>
+          <td>{{ run.failed }}</td>
+          <td>{{ run.pending }}</td>
+          <td>{{ run.generating }}</td>
+          <td>
+            <div class="rg-progress">
+              <span>{{ run.completion_pct }}%</span>
+              <div class="rg-progress-bar"><div style="width: {{ run.completion_pct }}%"></div></div>
+            </div>
+          </td>
+          <td>
+            <a class="adm-btn adm-btn--secondary" href="{{ url_for('admin.resource_generation_run_detail', run_id=run.run_id) }}">View</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p class="rg-empty">No generation runs yet.</p>
+  {% endif %}
+</div>
+
+{% endblock %}

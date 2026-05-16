@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta property="og:image" content="/static/images/knowly.png">
+    <title>About | knowly</title>
+    <link rel="icon" type="image/png" href="/static/images/knowly.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/about.css') }}">
+</head>
+<body>
+    <div class="hero-bg">
+        <div class="grid-pattern"></div>
+    </div>
+
+    <div class="about-wrap">
+        <div class="about-topbar">
+            <a class="brand" href="{{ url_for('main.landing') }}">
+                <img src="{{ url_for('static', filename='images/knowly.png') }}" alt="knowly" class="brand-img">
+                <span>knowly</span>
+            </a>
+            <div class="top-actions">
+                <a class="btn btn-outline" href="{{ url_for('main.landing') }}"><i class="fas fa-arrow-left"></i> Back to Landing</a>
+                <a class="btn btn-outline" href="{{ url_for('main.terms') }}"><i class="fas fa-scale-balanced"></i> Terms &amp; Privacy</a>
+            </div>
+        </div>
+
+        <main class="about-card">
+            <header class="about-hero">
+                <div class="icon"><i class="fas fa-graduation-cap"></i></div>
+                <h1 class="about-title">About knowly</h1>
+                <p class="about-subtitle">
+                    knowly is a student-first learning community where notes, insights, and practical study resources are shared to help everyone move faster together.
+                </p>
+            </header>
+
+            <section class="about-grid">
+                <article class="about-item">
+                    <h3><i class="fas fa-lightbulb"></i> Our Mission</h3>
+                    <p>
+                        Make quality study support accessible by helping students share what works, collaborate openly, and learn from each other in one trusted space.
+                    </p>
+                </article>
+
+                <article class="about-item">
+                    <h3><i class="fas fa-users"></i> Community-Driven</h3>
+                    <p>
+                        Build your academic network, discover peers in your courses, and follow creators whose material consistently helps you understand faster.
+                    </p>
+                </article>
+
+                <article class="about-item">
+                    <h3><i class="fas fa-file-lines"></i> Real Study Resources</h3>
+                    <p>
+                        Upload, discover, and organize notes, summaries, and past papers with a mobile-friendly experience that works smoothly across devices.
+                    </p>
+                </article>
+
+                <article class="about-item">
+                    <h3><i class="fas fa-shield-halved"></i> Privacy &amp; Security</h3>
+                    <p>
+                        We protect user accounts with modern security practices and maintain clear platform standards outlined in our Terms and Privacy policy.
+                    </p>
+                </article>
+            </section>
+
+            <section class="about-cta">
+                <h4>Start learning with the community</h4>
+                <p>Join students sharing notes, discovering resources, and improving results together.</p>
+
+                {% if not current_user.is_authenticated %}
+                <div class="about-cta-actions">
+                    <a href="{{ url_for('auth.signup') }}" class="btn btn-primary"><i class="fas fa-user-plus"></i> Create Free Account</a>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline"><i class="fas fa-right-to-bracket"></i> Sign In</a>
+                </div>
+                {% else %}
+                <div class="about-cta-actions">
+                    <a href="{{ url_for('posts.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Create Your First Post</a>
+                </div>
+                {% endif %}
+            </section>
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,352 @@
+{% extends "base.html" %}
+{% block title %}Past Papers — knowly{% endblock %}
+
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/past_papers/index.css') }}">{%  endblock %}
+
+{% block content %}
+<div class="pp-wrap">
+
+  {# ── HERO HEADER ── #}
+  <div class="pp-hero">
+    <div class="pp-hero-bg"></div>
+    <div class="pp-hero-content">
+      <div class="pp-hero-left">
+        <div class="pp-hero-eyebrow">
+          <i class="fas fa-file-alt"></i> Community Archive
+        </div>
+        <h1 class="pp-hero-title">Past Papers</h1>
+        <p class="pp-hero-sub">
+          {{ total_count }} exam paper{{ 's' if total_count != 1 }} shared by students
+        </p>
+      </div>
+      <button class="pp-hero-upload-btn" onclick="toggleUploadForm()" id="uploadToggleBtn">
+        <i class="fas fa-arrow-up"></i>
+        <span>Upload &amp; earn {{ xp_reward }} XP</span>
+      </button>
+    </div>
+  </div>
+
+  {# ── FLASH MESSAGES ── #}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for cat, msg in messages %}
+      <div class="pp-flash pp-flash--{{ cat }}">
+        <i class="fas fa-{% if cat == 'success' %}check-circle{% elif cat == 'danger' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+        {{ msg }}
+      </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  {# ── UPLOAD FORM (collapsible) ── #}
+  <div class="pp-upload-panel" id="uploadPanel">
+    <div class="pp-upload-inner">
+      <div class="pp-upload-head">
+        <div class="pp-upload-head-left">
+          <div class="pp-upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+          <div>
+            <p class="pp-upload-title">Upload a Past Paper</p>
+            <p class="pp-upload-sub">Help classmates &amp; earn <strong>{{ xp_reward }} XP</strong> instantly</p>
+          </div>
+        </div>
+        <button class="pp-upload-close" onclick="toggleUploadForm()" aria-label="Close">&times;</button>
+      </div>
+
+      <form method="POST" action="{{ url_for('past_papers.upload') }}"
+            enctype="multipart/form-data" id="ppUploadForm">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="redirect_to" value="past_papers.index">
+
+        <div class="pp-form-grid">
+          <div class="pp-form-group">
+            <label class="pp-label">Programme</label>
+            <select id="pp-prog-select" class="pp-select" onchange="ppLoadSubjects(this.value)">
+              <option value="">Select programme</option>
+              {% for p in programmes %}
+              <option value="{{ p.id }}">{{ p.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="pp-form-group">
+            <label class="pp-label">Subject <span class="pp-req">*</span></label>
+            <select name="subject_slug" id="pp-subj-select" class="pp-select" disabled required>
+              <option value="">Select programme first</option>
+            </select>
+          </div>
+          <div class="pp-form-group">
+            <label class="pp-label">Exam Year</label>
+            <input type="text" name="year" class="pp-input" placeholder="e.g. 2023" maxlength="4">
+          </div>
+          <div class="pp-form-group">
+            <label class="pp-label">Semester</label>
+            <select name="semester" class="pp-select">
+              <option value="">Not specified</option>
+              <option value="1">Semester 1</option>
+              <option value="2">Semester 2</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pp-form-group pp-desc-group">
+          <label class="pp-label">Description <span class="pp-opt">(optional)</span></label>
+          <input type="text" name="description" class="pp-input"
+                 placeholder="e.g. June 2023 Final Exam, Midsem 2022">
+        </div>
+
+        <div id="pp-drop-zone" class="pp-drop" onclick="document.getElementById('pp-file-inp').click()">
+          <input type="file" id="pp-file-inp" name="file"
+                 accept=".pdf,.jpg,.jpeg,.png" style="display:none" required>
+          <div class="pp-drop-icon-wrap"><i class="fas fa-cloud-upload-alt"></i></div>
+          <span id="pp-drop-label" class="pp-drop-label">Drop PDF or image here, or click to browse</span>
+          <span class="pp-drop-hint">PDF, JPG, PNG — max 20 MB</span>
+        </div>
+
+        <button type="submit" id="pp-submit-btn" class="pp-submit-btn" disabled>
+          <i class="fas fa-upload"></i> Upload &amp; Earn {{ xp_reward }} XP
+        </button>
+      </form>
+    </div>
+  </div>
+
+  {# ── FILTER BAR ── #}
+  <div class="pp-filterbar">
+    <form method="get" action="{{ url_for('past_papers.index') }}" class="pp-filterbar-form">
+      <div class="pp-filterbar-chips">
+
+        <select name="programme" class="pp-chip-select" onchange="this.form.submit()">
+          <option value="">All programmes</option>
+          {% for p in programmes %}
+          <option value="{{ p.id }}" {% if sel_programme == p.id %}selected{% endif %}>{{ p.name }}</option>
+          {% endfor %}
+        </select>
+
+        {% if subjects %}
+        <select name="subject" class="pp-chip-select" onchange="this.form.submit()">
+          <option value="">All subjects</option>
+          {% for s in subjects %}
+          <option value="{{ s.id }}" {% if sel_subject == s.id %}selected{% endif %}>{{ s.name }}</option>
+          {% endfor %}
+        </select>
+        {% endif %}
+
+        {% if sel_programme %}<input type="hidden" name="programme" value="{{ sel_programme }}">{% endif %}
+
+        <select name="year" class="pp-chip-select" onchange="this.form.submit()">
+          <option value="">All years</option>
+          {% for y in years %}
+          <option value="{{ y }}" {% if sel_year == y %}selected{% endif %}>{{ y }}</option>
+          {% endfor %}
+        </select>
+
+        <select name="semester" class="pp-chip-select" onchange="this.form.submit()">
+          <option value="">All semesters</option>
+          <option value="1" {% if sel_semester == '1' %}selected{% endif %}>Semester 1</option>
+          <option value="2" {% if sel_semester == '2' %}selected{% endif %}>Semester 2</option>
+        </select>
+
+      </div>
+
+      {% if sel_programme or sel_subject or sel_year or sel_semester %}
+      <a href="{{ url_for('past_papers.index') }}" class="pp-clear-link">
+        <i class="fas fa-times-circle"></i> Clear filters
+      </a>
+      {% endif %}
+
+    </form>
+  </div>
+
+  {# ── RESULTS COUNT ── #}
+  {% if sel_programme or sel_subject or sel_year or sel_semester %}
+  <p class="pp-results-label">
+    {{ papers.total }} result{{ 's' if papers.total != 1 }} found
+  </p>
+  {% endif %}
+
+  {# ── PAPER LIST ── #}
+  {% if papers.items %}
+  <div class="pp-list">
+    {% for paper in papers.items %}
+    <a href="{{ paper.file_path }}" target="_blank" rel="noopener" class="pp-card">
+
+      {# Left accent bar based on file type #}
+      <div class="pp-card-accent pp-accent-{{ paper.file_type }}"></div>
+
+      {# File type icon #}
+      <div class="pp-card-icon pp-icon-{{ paper.file_type }}">
+        <i class="fas fa-file-{{ 'pdf' if paper.file_type == 'pdf' else 'image' }}"></i>
+      </div>
+
+      {# Main content #}
+      <div class="pp-card-body">
+        <div class="pp-card-top">
+          <span class="pp-card-subject">{{ paper.subject.name|strip_course_code }}</span>
+          <div class="pp-card-badges">
+            {% if paper.year %}<span class="pp-badge pp-badge-year">{{ paper.year }}</span>{% endif %}
+            {% if paper.semester %}<span class="pp-badge pp-badge-sem">Sem {{ paper.semester }}</span>{% endif %}
+            <span class="pp-badge pp-badge-type">{{ paper.file_type | upper }}</span>
+          </div>
+        </div>
+        {% if paper.description %}
+        <p class="pp-card-desc">{{ paper.description }}</p>
+        {% endif %}
+        <div class="pp-card-meta">
+          <span class="pp-meta-item">
+            <img src="{{ paper.user.profile_picture_url }}" class="pp-meta-avatar" alt="">
+            {{ paper.user.username }}
+          </span>
+          <span class="pp-meta-dot"></span>
+          <span class="pp-meta-item">{{ paper.uploaded_at.strftime('%d %b %Y') }}</span>
+          {% if paper.file_size %}
+          <span class="pp-meta-dot"></span>
+          <span class="pp-meta-item">{{ '%.1f'|format(paper.file_size / 1048576) }} MB</span>
+          {% endif %}
+        </div>
+      </div>
+
+      {# CTA arrow #}
+      <div class="pp-card-arrow">
+        <i class="fas fa-arrow-right"></i>
+      </div>
+
+    </a>
+    {% endfor %}
+  </div>
+
+  {# ── PAGINATION ── #}
+  {% if papers.pages > 1 %}
+  <div class="pp-pagination">
+    {% if papers.has_prev %}
+    <a href="{{ url_for('past_papers.index', page=papers.prev_num, programme=sel_programme, subject=sel_subject, year=sel_year, semester=sel_semester) }}" class="pp-pag-btn">
+      <i class="fas fa-chevron-left"></i> Previous
+    </a>
+    {% else %}
+    <span class="pp-pag-btn pp-pag-btn--disabled"><i class="fas fa-chevron-left"></i> Previous</span>
+    {% endif %}
+
+    <div class="pp-pag-pages">
+      {% for p in papers.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+        {% if p %}
+          <a href="{{ url_for('past_papers.index', page=p, programme=sel_programme, subject=sel_subject, year=sel_year, semester=sel_semester) }}"
+             class="pp-pag-num {% if p == papers.page %}pp-pag-num--active{% endif %}">{{ p }}</a>
+        {% else %}
+          <span class="pp-pag-ellipsis">…</span>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    {% if papers.has_next %}
+    <a href="{{ url_for('past_papers.index', page=papers.next_num, programme=sel_programme, subject=sel_subject, year=sel_year, semester=sel_semester) }}" class="pp-pag-btn">
+      Next <i class="fas fa-chevron-right"></i>
+    </a>
+    {% else %}
+    <span class="pp-pag-btn pp-pag-btn--disabled">Next <i class="fas fa-chevron-right"></i></span>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% else %}
+  {# ── EMPTY STATE ── #}
+  <div class="pp-empty">
+    <div class="pp-empty-icon"><i class="fas fa-folder-open"></i></div>
+    <h3 class="pp-empty-title">
+      {% if sel_programme or sel_subject or sel_year or sel_semester %}No papers match your filters{% else %}No papers yet{% endif %}
+    </h3>
+    <p class="pp-empty-sub">
+      {% if sel_programme or sel_subject or sel_year or sel_semester %}
+        Try a different combination, or <a href="{{ url_for('past_papers.index') }}">clear all filters</a>.
+      {% else %}
+        Be the first to contribute and earn {{ xp_reward }} XP!
+      {% endif %}
+    </p>
+    {% if not (sel_programme or sel_subject or sel_year or sel_semester) %}
+    <button class="pp-hero-upload-btn" onclick="toggleUploadForm()">
+      <i class="fas fa-arrow-up"></i><span>Upload the first paper</span>
+    </button>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {# ── MY UPLOADS ── #}
+  {% if my_papers %}
+  <details class="pp-mine">
+    <summary class="pp-mine-head">
+      <i class="fas fa-history"></i>
+      My uploads
+      <span class="pp-mine-count">{{ my_papers | length }}</span>
+    </summary>
+    <div class="pp-mine-body">
+      {% for paper in my_papers %}
+      <div class="pp-mine-row">
+        <div class="pp-mine-icon pp-icon-{{ paper.file_type }}">
+          <i class="fas fa-file-{{ 'pdf' if paper.file_type == 'pdf' else 'image' }}"></i>
+        </div>
+        <div class="pp-mine-info">
+          <span class="pp-mine-name">{{ paper.subject.name|strip_course_code }}{% if paper.year %} · {{ paper.year }}{% endif %}{% if paper.semester %} Sem {{ paper.semester }}{% endif %}</span>
+          <span class="pp-mine-date">{{ paper.uploaded_at.strftime('%d %b %Y') }}</span>
+        </div>
+        <div class="pp-mine-right">
+          {% if paper.xp_awarded %}<span class="pp-mine-xp">+{{ xp_reward }} XP</span>{% endif %}
+          <span class="pp-status pp-status--{{ paper.status }}">{{ paper.status }}</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </details>
+  {% endif %}
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleUploadForm() {
+  const panel = document.getElementById('uploadPanel');
+  const isOpen = panel.classList.toggle('is-open');
+  const btn = document.getElementById('uploadToggleBtn');
+  if (btn) btn.innerHTML = isOpen
+    ? '<i class="fas fa-times"></i><span>Close</span>'
+    : '<i class="fas fa-arrow-up"></i><span>Upload &amp; earn {{ xp_reward }} XP</span>';
+  if (isOpen) setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+}
+
+function ppLoadSubjects(progId) {
+  const sel = document.getElementById('pp-subj-select');
+  if (!progId) { sel.innerHTML = '<option value="">Select programme first</option>'; sel.disabled = true; return; }
+  sel.innerHTML = '<option value="">Loading…</option>'; sel.disabled = true;
+  fetch(`/internal/subjects-by-id/${progId}`)
+    .then(r => r.json())
+    .then(data => {
+      sel.innerHTML = '<option value="">Select a subject</option>';
+      (data.subjects || []).forEach(s => {
+        const o = document.createElement('option');
+        o.value = s.slug; o.textContent = s.name; sel.appendChild(o);
+      });
+      sel.disabled = false;
+    })
+    .catch(() => { sel.innerHTML = '<option value="">Could not load</option>'; });
+}
+
+(function () {
+  const fileInp   = document.getElementById('pp-file-inp');
+  const dropZone  = document.getElementById('pp-drop-zone');
+  const dropLabel = document.getElementById('pp-drop-label');
+  const submitBtn = document.getElementById('pp-submit-btn');
+  if (!fileInp) return;
+
+  function onFile() {
+    if (!fileInp.files.length) return;
+    dropLabel.textContent = '✓  ' + fileInp.files[0].name;
+    dropZone.classList.add('is-ready');
+    submitBtn.disabled = false;
+  }
+  fileInp.addEventListener('change', onFile);
+  dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.style.opacity = '.7'; });
+  dropZone.addEventListener('dragleave', ()  => { dropZone.style.opacity = '1'; });
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault(); dropZone.style.opacity = '1';
+    if (e.dataTransfer.files.length) { fileInp.files = e.dataTransfer.files; onFile(); }
+  });
+})();
+</script>
+{% endblock %}

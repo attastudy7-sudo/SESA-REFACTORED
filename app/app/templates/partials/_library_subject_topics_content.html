@@ -1,0 +1,34 @@
+<div class="lib-wrap">
+  {# breadcrumb only shown when navigating from library, not from search #}
+  {% if subject %}
+  <nav class="lib-breadcrumb">
+    <a href="{{ url_for('main.library') }}"><i class="fas fa-layer-group"></i> Library</a>
+    {% if programme %}
+    <i class="fas fa-chevron-right lib-bc-sep"></i>
+    <a href="{{ url_for('main.library_programme', slug=programme.slug) }}">{{ programme.name|strip_course_code }}</a>
+    {% endif %}
+    <i class="fas fa-chevron-right lib-bc-sep"></i>
+    <span>{{ subject.name|strip_course_code }}</span>
+    <a href="{{ back_url|default('#') }}" class="lib-breadcrumb-back" data-knowly-back="1" data-back-fallback="{{ back_url|default('#') }}">
+      <span class="lib-breadcrumb-back-icon"><i class="fas fa-arrow-left"></i></span>
+      <span>Back</span>
+    </a>
+  </nav>
+  {% endif %}
+
+  <div>
+    {% if topic_groups %}
+    <div class="db-overline" style="margin-top: 1.5rem;">Study Packs</div>
+    <div class="topic-list" style="margin-top: 1rem;">
+      {% for topic in topic_groups %}
+        {% include '_topic_bundle_card.html' with context %}
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="lib-empty">
+      <i class="fas fa-folder-open"></i>
+      <p>No study packs found for this subject yet.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>

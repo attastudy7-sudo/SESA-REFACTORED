@@ -1,0 +1,98 @@
+{
+  "schema_version": "1.0",
+  "document_type": "cheatsheet",
+  "generated_at": "2026-04-10T22:33:30.742758+00:00",
+  "title": "MATH171: Calculus I Practice Question Bank",
+  "course": "MA101 \u2013 Calculus I",
+  "level": "Intermediate",
+  "metadata": {
+    "purpose": "Rapid exam-day formula recall",
+    "exam_context": "",
+    "topics": [
+      "Limits",
+      "Derivatives",
+      "Integrals"
+    ]
+  },
+  "sections": [
+    {
+      "section_title": "Limits & Continuity",
+      "section_type": "formulas",
+      "entries": [
+        {
+          "label": "Existence of Limit",
+          "content": "$\\lim_{x\\to a^-} f(x) = \\lim_{x\\to a^+} f(x)$"
+        },
+        {
+          "label": "Continuity Condition",
+          "content": "$\\lim_{x\\to a} f(x) = f(a)$"
+        },
+        {
+          "label": "IVT",
+          "content": "$f$ cont. on $[a,b] \\implies \\forall N \\in (f(a), f(b)), \\exists c \\in (a,b) : f(c)=N$"
+        },
+        {
+          "label": "Application",
+          "content": "Apply this concept using a simple practice example."
+        }
+      ]
+    },
+    {
+      "section_title": "Differentiation",
+      "section_type": "formulas",
+      "entries": [
+        {
+          "label": "Power Rule",
+          "content": "$\\frac{d}{dx}x^n = nx^{n-1}$"
+        },
+        {
+          "label": "Product Rule",
+          "content": "$(fg)' = f'g + fg'$"
+        },
+        {
+          "label": "Quotient Rule",
+          "content": "$(\\frac{f}{g})' = \\frac{f'g - fg'}{g^2}$"
+        },
+        {
+          "label": "Chain Rule",
+          "content": "$\\frac{dy}{dx} = \\frac{dy}{du} \\cdot \\frac{du}{dx}$"
+        },
+        {
+          "label": "Log Derivative",
+          "content": "$\\frac{d}{dx}\\ln(x) = \\frac{1}{x}$"
+        },
+        {
+          "label": "Exp Derivative",
+          "content": "$\\frac{d}{dx}e^x = e^x$"
+        }
+      ]
+    },
+    {
+      "section_title": "Integration",
+      "section_type": "formulas",
+      "entries": [
+        {
+          "label": "Power Rule",
+          "content": "$\\int x^n dx = \\frac{x^{n+1}}{n+1} + C$"
+        },
+        {
+          "label": "Integration by Parts",
+          "content": "$\\int u dv = uv - \\int v du$"
+        },
+        {
+          "label": "FTC Part 1",
+          "content": "$\\frac{d}{dx}\\int_{a}^{x} f(t) dt = f(x)$"
+        },
+        {
+          "label": "Definite Integral",
+          "content": "$\\int_{a}^{b} f(x) dx = F(b) - F(a)$"
+        },
+        {
+          "label": "Disk Method",
+          "content": "$V = \\pi \\int_{a}^{b} [f(x)]^2 dx$"
+        }
+      ]
+    }
+  ],
+  "document_hash": "1d5aebeb3ea37810193ed7ba4e014ae3e01a265c2569677eecbe790d391e6cfe"
+}

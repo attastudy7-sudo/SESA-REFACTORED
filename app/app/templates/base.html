@@ -1,0 +1,1502 @@
+<!DOCTYPE html>
+<html lang="en" data-is-authenticated="{{ 'true' if current_user.is_authenticated else 'false' }}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="knowly">
+    <meta name="description" content="knowly - Educational social media platform for students">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <!-- View Transition API: browser cross-fades old→new state, hides DOM swap flash -->
+    <meta name="view-transition" content="same-origin">
+
+    <style>
+        @view-transition { navigation: auto; }
+    </style>
+    <title>{% block title %}{% endblock %} - knowly</title>
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="knowly">
+    <meta property="og:title"
+        content="{% block og_title %}knowly — Study materials for university students{% endblock %}">
+    <meta property="og:description"
+        content="{% block og_description %}Notes, quizzes and cheatsheets for Ghanaian university students.{% endblock %}">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:image"
+        content="{% block og_image %}{{ request.host_url }}static/images/icon-512x512.png{% endblock %}">
+    <meta property="og:image:width" content="512">
+    <meta property="og:image:height" content="512">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:image"
+        content="{% block twitter_image %}{{ request.host_url }}static/images/icon-512x512.png{% endblock %}">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="apple-touch-icon" href="/static/images/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/images/icon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/images/icon-16x16.png">
+    <link rel="shortcut icon" href="/static/favicon.ico">
+    <!-- DNS prefetch for third-party origins -->
+
+    <link rel="dns-prefetch" href="https://res.cloudinary.com">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300;1,9..40,400&family=Nunito:wght@300;400;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" data-turbo-track="reload">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/video-play-overlay.css') }}" data-turbo-track="reload">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/base.css') }}" data-turbo-track="reload">
+<script type="module">
+        import 'https://cdn.jsdelivr.net/npm/@hotwired/turbo@8.0.4/dist/turbo.es2017.esm.js';
+
+        // Fix CSRF token handling for Turbo Drive navigation
+        // Instead of removing the meta tag (which causes "CSRF session token is missing" errors),
+        // we preserve it and ensure it's available after navigation
+        document.addEventListener('turbo:load', function() {
+            // Ensure CSRF meta tag exists after Turbo navigation
+            let csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            if (!csrfMeta) {
+                // Fetch a fresh CSRF token if missing
+                fetch('/api/csrf-token', { 
+                    method: 'GET',
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.csrf_token) {
+                        csrfMeta = document.createElement('meta');
+                        csrfMeta.name = 'csrf-token';
+                        csrfMeta.content = data.csrf_token;
+                        document.head.appendChild(csrfMeta);
+                    }
+                })
+                .catch(() => { /* Silent fail - token fetch optional */ });
+            }
+        });
+    </script>
+
+    {% block extra_css %}{% endblock %}
+    <script>
+        /* ── Early Theme Resolution (Prevent FOUC) ── */
+        (function () {
+            const isAuth = {{ 'true' if current_user.is_authenticated else 'false' }};
+            const stored = localStorage.getItem('knowly-theme-mode');
+            const mode = stored || (isAuth ? 'system' : 'dark');
+            let theme = mode;
+            if (mode === 'system' || !['dark', 'light'].includes(mode)) {
+                theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            document.documentElement.setAttribute('data-theme', theme);
+            document.documentElement.setAttribute('data-user-preference', mode);
+        })();
+    </script>
+    <!-- Capture install prompt + restore dark mode as early as possible -->
+    <!-- Theme Setup: Restore preference or default to Dark for Guests -->
+
+</head>
+
+<body>
+{% set flashed = get_flashed_messages(with_categories=true) %}
+
+    <!-- Top nav removed for minimal UI -->
+
+
+
+    <!-- ── MOBILE BOTTOM SHEET (outside nav, so z-index works) ── -->
+    <div class="mobile-sheet-overlay" id="mobileSheetOverlay" onclick="closeMobileSheet()"></div>
+    <div class="mobile-sheet" id="mobileSheet" role="dialog" aria-modal="true" aria-label="Account menu">
+        <div class="mobile-sheet-handle"></div>
+        {% if current_user.is_authenticated %}
+        <div class="mobile-sheet-user">
+            <img src="{{ current_user.profile_picture_url }}" alt="{{ current_user.username }}"
+                class="mobile-sheet-avatar">
+            <div>
+                <p class="mobile-sheet-name">{{ current_user.nickname or current_user.username }}</p>
+                <p class="mobile-sheet-username">@{{ current_user.username }}</p>
+            </div>
+        </div>
+        <div class="mobile-sheet-items">
+            {% if current_user.password_hash is none %}
+            <button class="mobile-sheet-item mobile-sheet-item--highlight" onclick="openAddPasswordModal()"
+                style="width:100%;text-align:left;">
+                <i class="fas fa-key"></i> Add password login
+            </button>
+            {% endif %}
+            <a href="{{ url_for('users.profile', username=current_user.username) }}" class="mobile-sheet-item">
+                <i class="fas fa-user-circle"></i> My Profile
+            </a>
+            <a href="javascript:void(0)" onclick="openSettingsModal('profile')" class="mobile-sheet-item">
+                <i class="fas fa-sliders-h"></i> Edit Profile
+            </a>
+            <a href="{{ url_for('payments.my_purchases') }}" class="mobile-sheet-item">
+                <i class="fas fa-receipt"></i> My Purchases
+            </a>
+            <a href="{{ url_for('payments.my_subscription') }}" class="mobile-sheet-item">
+                <i class="fas fa-crown"></i> My Subscription
+                {% if current_user.has_active_subscription %}
+                <span
+                    style="margin-left:auto;font-size:.65rem;font-weight:700;padding:.1rem .4rem;border-radius:4px;background:rgba(16,185,129,.12);color:#10b981;">Active</span>
+                {% endif %}
+            </a>
+            {% if current_user.is_admin %}
+            <a href="{{ url_for('admin.dashboard') }}" class="mobile-sheet-item">
+                <i class="fas fa-cog"></i> Admin Dashboard
+            </a>
+            {% endif %}
+            <div class="mobile-sheet-divider"></div>
+            <div class="mobile-sheet-item" onclick="toggleDarkMode()" style="cursor:pointer;">
+                <i class="fas fa-moon" id="darkToggleIconMobile"></i>
+                <span id="darkToggleLabelMobile">Dark mode</span>
+                <span class="mobile-dark-pill" id="darkTogglePill" style="margin-left:auto;">Off</span>
+            </div>
+            <div class="mobile-sheet-divider"></div>
+            <form action="{{ url_for('auth.logout') }}" method="POST" style="margin:0;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="mobile-sheet-item mobile-sheet-item--danger"
+                    style="width:100%;text-align:left;">
+                    <i class="fas fa-right-from-bracket"></i> Log Out
+                </button>
+            </form>
+        </div>
+        {% else %}
+        <div class="mobile-sheet-items">
+            <div class="mobile-sheet-item" onclick="toggleDarkMode()" style="cursor:pointer;">
+                <i class="fas fa-moon" id="darkToggleIconMobile"></i>
+                <span id="darkToggleLabelMobile">Dark mode</span>
+                <span class="mobile-dark-pill" id="darkTogglePill" style="margin-left:auto;">Off</span>
+            </div>
+            <div class="mobile-sheet-divider"></div>
+            <a href="#" onclick="openAuthModal('login')" class="mobile-sheet-item">
+                <i class="fas fa-right-to-bracket"></i> Log In
+            </a>
+            <a href="#" onclick="openAuthModal('signup')" class="mobile-sheet-item mobile-sheet-item--highlight">
+                <i class="fas fa-user-plus"></i> Sign Up
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if current_user.is_authenticated %}
+    <div class="quick-actions-overlay" id="quickActionsOverlay"></div>
+    <div class="quick-actions-sheet" id="quickActionsSheet" role="dialog" aria-modal="true" aria-label="Quick actions">
+        <div class="sheet-handle"></div>
+        <div class="sheet-title">Quick Actions</div>
+        <a class="sheet-action" href="{{ url_for('posts.create') }}">
+            <i class="fas fa-upload"></i> Upload Slides
+        </a>
+        <a class="sheet-action" href="{{ url_for('main.library_all_videos') }}">
+            <i class="fas fa-layer-group"></i> Study Packs
+        </a>
+        <a class="sheet-action" href="{{ url_for('main.video_browse') }}">
+            <i class="fas fa-play-circle"></i> Watch Videos
+        </a>
+        <a class="sheet-action" href="{{ url_for('users.search') }}">
+            <i class="fas fa-magnifying-glass"></i> Search People
+        </a>
+        <a class="sheet-action" href="{{ url_for('payments.my_subscription') }}">
+            <i class="fas fa-crown"></i> My Subscription
+        </a>
+    </div>
+    {% endif %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-container" role="region" aria-live="polite" aria-label="Notifications">
+        {% for category, message in flashed %}
+    <div class="flash flash-{{ category }}" role="alert">
+        <span style="flex:1;">{{ message }}</span>
+        <button class="flash-close" aria-label="Dismiss" onclick="
+                this.parentElement.classList.add('flash-dismissing');
+                setTimeout(() => this.parentElement.remove(), 240);
+            ">
+                <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    <script>
+        document.addEventListener('turbo:load', function () {
+            document.querySelectorAll('.flash').forEach(function (el) {
+                setTimeout(function () {
+                    el.classList.add('flash-dismissing');
+                    setTimeout(() => el.remove(), 240);
+                }, 4500);
+            });
+        });
+    </script>
+    {% endif %}
+    {% endwith %}
+    <div class="bg-atmosphere">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+
+    {# Show sidebar for all users (authenticated + guests), on every page #}
+    {% block side_nav_container %}
+    {% set show_desktop_side_nav = show_desktop_side_nav if show_desktop_side_nav is defined else true %}
+
+    <div class="app-shell{% if show_desktop_side_nav %} with-desktop-side-nav{% endif %}" id="appShell">
+        {# Global Mobile Header #}
+        <header class="mobile-header" id="mobileHeader">
+            <button class="mobile-hamburger" id="mobileHamburgerBtn" aria-label="Toggle menu">
+                <i class="fas fa-bars"></i>
+            </button>
+            <a href="{{ url_for('main.index') }}" class="mobile-logo-link">
+                <img src="{{ url_for('static', filename='images/knowly.png') }}" alt="knowly">
+                <span>knowly</span>
+            </a>
+            {% if current_user.is_authenticated %}
+            <button id="mobileProfileBtn" onclick="openMobileSheet()"
+                style="background:none; border:none; cursor:pointer; width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:50%; padding:0; text-decoration:none;">
+                <img src="{{ current_user.profile_picture_url }}" alt="{{ current_user.username }}"
+                    style="width:32px; height:32px; border-radius:50%; object-fit:cover; border:2px solid var(--border);">
+            </button>
+            {% else %}
+            <button onclick="openAuthModal('login')"
+                style="background:var(--primary); border:none; cursor:pointer; color:#fff; font-size:0.78rem; font-weight:700; padding:0.4rem 0.875rem; border-radius:20px; font-family:var(--font-body);">
+                Log in
+            </button>
+            {% endif %}
+        </header>
+
+        <div class="side-nav-overlay" id="sideNavOverlay"></div>
+
+        <aside
+            data-turbo-permanent
+            class="desktop-side-nav{% if show_desktop_side_nav and request.cookies.get('knowly-nav-expanded') == 'true' %} expanded{% endif %}"
+            id="sideNav">
+            <div class="dsn-brand-row">
+                <a href="{{ url_for('main.index') }}" class="dsn-brand">
+                    <img src="{{ url_for('static', filename='images/knowly.png') }}" alt="knowly">
+                    <span>knowly</span>
+                </a>
+                <button class="dsn-collapse-btn" id="sideNavHamburger"
+    aria-label="Toggle Navigation"
+    aria-expanded="{{ 'true' if show_desktop_side_nav and request.cookies.get('knowly-nav-expanded') == 'true' else 'false' }}">
+    <svg class="dsn-chevron-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
+        <path d="M16.5 4A1.5 1.5 0 0 1 18 5.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 3.5 14.5v-9A1.5 1.5 0 0 1 5 4zM7 15h9.5a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5H7zM3.5 5a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5H6V5z"/>
+    </svg>
+</button>
+
+            </div>
+            <button class="dsn-collapse-btn dsn-collapse-btn--solo" id="sideNavHamburgerCollapsed"
+                aria-label="Expand Navigation">
+                <svg class="dsn-chevron-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
+                    <path d="M16.5 4A1.5 1.5 0 0 1 18 5.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 3.5 14.5v-9A1.5 1.5 0 0 1 5 4zM7 15h9.5a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5H7zM3.5 5a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5H6V5z"/>
+                </svg>
+            </button>
+
+            <nav class="dsn-nav" id="dsnNav">
+    <div id="dsnIndicator"></div>
+                <div class="dsn-section">
+                    <div class="dsn-label">Main</div>
+
+<a href="{{ url_for('main.dashboard') }}"
+                        data-turbo-frame="main-content"
+                        data-path="/dashboard"
+                        class="dsn-link{% if request.endpoint == 'main.dashboard' %} active{% endif %}"
+                        role="link" tabindex="0" aria-label="Dashboard">
+<i>
+    <svg viewBox="0 0 448 512" width="1em" height="1em" fill="currentColor">
+      <path d="M192 80c0-26.5-21.5-48-48-48L48 32C21.5 32 0 53.5 0 80l0 96c0 26.5 21.5 48 48 48l96 0c26.5 0 48-21.5 48-48l0-96zm0 256c0-26.5-21.5-48-48-48l-96 0c-26.5 0-48 21.5-48 48l0 96c0 26.5 21.5 48 48 48l96 0c26.5 0 48-21.5 48-48l0-96zM256 80l0 96c0 26.5 21.5 48 48 48l96 0c26.5 0 48-21.5 48-48l0-96c0-26.5-21.5-48-48-48l-96 0c-26.5 0-48 21.5-48 48zM448 336c0-26.5-21.5-48-48-48l-96 0c-26.5 0-48 21.5-48 48l0 96c0 26.5 21.5 48 48 48l96 0c26.5 0 48-21.5 48-48l0-96z"/>
+    </svg>
+  </i>                        <span class="dsn-link-text">Dashboard</span>
+                    </a>
+<a href="{{ url_for('main.library') }}"
+                        data-turbo-frame="main-content"
+                        data-path="/library"
+                        class="dsn-link{% if request.endpoint in ('main.library', 'main.library_all_videos', 'main.library_subject_videos') %} active{% endif %}"
+                        role="link" tabindex="0" aria-label="Study Packs">
+                        <i class="fas fa-layer-group"></i>
+                        <span class="dsn-link-text">Study Packs</span>
+                    </a>
+<a href="{{ url_for('main.video_browse') }}"
+                        data-turbo-frame="main-content"
+                        data-path="/videos"
+                        class="dsn-link{% if request.endpoint == 'main.video_browse' %} active{% endif %}"
+                        role="link" tabindex="0" aria-label="Watch Videos">
+                        <i class="fas fa-play-circle"></i>
+                        <span class="dsn-link-text">Watch Videos</span>
+                    </a>
+                    <a href="{{ url_for('main.study_room_home') }}"
+                        data-turbo-frame="main-content"
+                        class="dsn-link{% if request.endpoint == 'main.study_room_home' or request.endpoint in ('main.video_player', 'main.video_player_external') %} active{% endif %}">
+                        <i class="fas fa-chalkboard-user"></i>
+                        <span class="dsn-link-text">Study Room</span>
+                    </a>
+                </div>
+
+                <div class="dsn-section">
+                    <div class="dsn-label">Explore</div>
+                    <a href="{{ url_for('users.search') }}"
+                        data-turbo-frame="main-content"
+                        class="dsn-link{% if request.endpoint == 'users.search' %} active{% endif %}">
+                        <i class="fas fa-users-viewfinder"></i>
+                        <span class="dsn-link-text">Discover</span>
+                    </a>
+                    <a href="{{ url_for('main.leaderboard') }}"
+                        data-turbo-frame="main-content"
+                        class="dsn-link{% if request.endpoint == 'main.leaderboard' %} active{% endif %}">
+                        <i class="fas fa-trophy"></i>
+                        <span class="dsn-link-text">Leaderboard</span>
+                    </a>
+                    <a href="{{ url_for('main.landing') }}"
+                        data-turbo-frame="main-content"
+                        class="dsn-link{% if request.endpoint == 'main.landing' %} active{% endif %}">
+                        <i class="fas fa-circle-info"></i>
+                        <span class="dsn-link-text">How it works</span>
+                    </a>
+                </div>
+
+                {% if current_user.is_authenticated %}
+                <div class="dsn-section">
+                    <div class="dsn-label">My Stuff</div>
+                    <a href="{{ url_for('users.bookmarks') }}"
+                        data-turbo-frame="main-content"
+                        class="dsn-link{% if request.endpoint == 'users.bookmarks' %} active{% endif %}">
+                        <i class="fas fa-folder-open"></i>
+                        <span class="dsn-link-text">My Stuff</span>
+                    </a>
+                    <a href="{{ url_for('posts.create') }}"
+                        data-turbo-frame="main-content"
+                        class="dsn-link{% if request.endpoint == 'posts.create' %} active{% endif %}">
+                        <i class="fas fa-upload"></i>
+                        <span class="dsn-link-text">Upload</span>
+                    </a>
+                </div>
+                {% endif %}
+            </nav>
+
+            <div class="dsn-footer">
+                {% if current_user.is_authenticated %}
+                <div class="dsn-user" id="sideNavProfileTrigger" aria-haspopup="true" aria-expanded="false">
+                    <img src="{{ current_user.profile_picture_url }}" alt="{{ current_user.username }}"
+                        class="dsn-avatar">
+                    <div class="dsn-user-info">
+                        <span class="dsn-username">{{ current_user.username }}</span>
+                        <span class="dsn-user-meta">{{ current_user.xp }} XP</span>
+                    </div>
+                    <i class="fas fa-angle-up dsn-profile-chevron" id="sideNavProfileChevron"></i>
+                </div>
+
+                <div class="dsn-profile-dropdown" id="sideNavProfileDropdown">
+                    <a href="{{ url_for('users.profile', username=current_user.username) }}" class="dsn-profile-item">
+                        <i class="fas fa-user-circle"></i> Profile
+                    </a>
+                    <button onclick="openSettingsModal()" class="dsn-profile-item"
+                        style="background:none; border:none; width:100%; text-align:left; font-family:inherit; cursor:pointer;">
+                        <i class="fas fa-gear"></i> Settings
+                    </button>
+                    <button onclick="openAppearanceModal()" class="dsn-profile-item"
+                        style="background:none; border:none; width:100%; text-align:left; font-family:inherit; cursor:pointer;">
+                        <i class="fas fa-palette"></i> Appearance
+                    </button>
+                    <div class="mobile-sheet-divider"
+                        style="height:1px; background:var(--border); margin:0.4rem 0.5rem; opacity:0.5;"></div>
+                    <form action="{{ url_for('auth.logout') }}" method="POST" style="margin:0;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="dsn-profile-item logout"
+                            style="background:none; border:none; width:100%; text-align:left; font-family:inherit; cursor:pointer;">
+                            <i class="fas fa-arrow-right-from-bracket"></i> Logout
+                        </button>
+                    </form>
+                </div>
+                {% else %}
+                <button onclick="openAuthModal('login')" class="dsn-btn primary">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span class="dsn-btn-text">Log In</span>
+                </button>
+                {% endif %}
+            </div>
+        </aside>
+
+        <turbo-frame id="main-content" data-shell-content="1"
+            class="main-content{% if show_desktop_side_nav and request.cookies.get('knowly-nav-expanded') == 'true' %} nav-expanded{% endif %}">
+            {% block content %}{% endblock %}
+        </turbo-frame>
+    </div>
+    {% endblock %}
+
+    {# Bottom nav removed: side nav is now always visible on all devices #}
+
+    {% if current_user.is_authenticated %}
+    <script>
+        (function () {
+            const trigger = document.getElementById('quickActionsTrigger');
+            const overlay = document.getElementById('quickActionsOverlay');
+            const sheet = document.getElementById('quickActionsSheet');
+            if (!trigger || !overlay || !sheet) return;
+
+            function isMobileViewport() {
+                return window.matchMedia('(max-width: 768px)').matches;
+            }
+
+
+            function closeSheet() {
+                document.body.classList.remove('qa-open');
+                trigger.setAttribute('aria-expanded', 'false');
+            }
+
+            function openSheet() {
+                document.body.classList.add('qa-open');
+                trigger.setAttribute('aria-expanded', 'true');
+            }
+
+            trigger.addEventListener('click', function (e) {
+                if (!isMobileViewport()) return;
+                e.preventDefault();
+                if (document.body.classList.contains('qa-open')) closeSheet();
+                else openSheet();
+            });
+
+            overlay.addEventListener('click', closeSheet);
+
+            sheet.querySelectorAll('a').forEach(function (link) {
+                link.addEventListener('click', closeSheet);
+            });
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') closeSheet();
+            });
+
+            window.addEventListener('resize', function () {
+                if (!isMobileViewport()) closeSheet();
+            });
+        })();
+    </script>
+    {% endif %}
+
+
+    {% if current_user.is_authenticated %}
+    {% include 'settings_modal.html' %}
+    {% endif %}
+
+    {# Show new onboarding modal only if show_onboarding is true #}
+    {% if show_onboarding %}
+    {% include 'partials/onboarding_modal.html' %}
+    <script>
+        const openOnboardingIfReady = function () {
+            if (typeof openOnboardingModal === 'function') {
+                openOnboardingModal();
+            }
+        };
+
+        // Turbo navigation (when Turbo is available)
+        document.addEventListener('turbo:load', openOnboardingIfReady);
+        // Full page loads (when Turbo is unavailable)
+        document.addEventListener('DOMContentLoaded', openOnboardingIfReady);
+        // Immediate fallback for already-loaded document states
+        setTimeout(openOnboardingIfReady, 0);
+    </script>
+    {% endif %}
+
+    {% if current_user.is_authenticated and show_suggestions %}
+    <div class="ob-overlay" id="suggestionOverlay">
+        <div class="ob-card">
+            <div class="ob-stripe"></div>
+            <div class="ob-icon"><i class="fas fa-user-group"></i></div>
+            <h2 class="ob-title">People you might know 👋🏽</h2>
+            <p class="ob-subtitle">Connect with students from your school or programme</p>
+            <div class="ob-tabs">
+                <button class="ob-tab active" onclick="switchSugTab('school', this)"><i class="fas fa-university"></i>
+                    Same School</button>
+                <button class="ob-tab" onclick="switchSugTab('programme', this)"><i class="fas fa-graduation-cap"></i>
+                    Same Programme</button>
+                <button class="ob-tab" onclick="switchSugTab('random', this)"><i class="fas fa-compass"></i>
+                    Discover</button>
+            </div>
+            <div class="sug-list" id="sug-school">
+                {% for u in suggested_users.same_school %}
+                <div class="sug-item">
+                    <img src="{{ u.profile_picture_url }}" class="sug-avatar" alt="{{ u.username }}">
+                    <div class="sug-info"><span class="sug-name">{{ u.nickname or u.username }}</span><span
+                            class="sug-meta">{{ u.school }}</span></div>
+                    <form action="{{ url_for('users.follow', username=u.username) }}" method="post">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="ob-btn"
+                            style="padding:0.5rem 1rem;font-size:0.8rem;">Follow</button>
+                    </form>
+                </div>
+                {% else %}<p class="sug-empty">No students from your school yet — be the pioneer! 🚀</p>{% endfor %}
+            </div>
+            <div class="sug-list hidden" id="sug-programme">
+                {% for u in suggested_users.same_programme %}
+                <div class="sug-item">
+                    <img src="{{ u.profile_picture_url }}" class="sug-avatar" alt="{{ u.username }}">
+                    <div class="sug-info"><span class="sug-name">{{ u.nickname or u.username }}</span><span
+                            class="sug-meta">{{ u.programme }}</span></div>
+                    <form action="{{ url_for('users.follow', username=u.username) }}" method="post">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="ob-btn"
+                            style="padding:0.5rem 1rem;font-size:0.8rem;">Follow</button>
+                    </form>
+                </div>
+                {% else %}<p class="sug-empty">No one from your programme yet!</p>{% endfor %}
+            </div>
+            <div class="sug-list hidden" id="sug-random">
+                {% for u in suggested_users.random %}
+                <div class="sug-item">
+                    <img src="{{ u.profile_picture_url }}" class="sug-avatar" alt="{{ u.username }}">
+                    <div class="sug-info"><span class="sug-name">{{ u.nickname or u.username }}</span><span
+                            class="sug-meta">@{{ u.username }}</span></div>
+                    <form action="{{ url_for('users.follow', username=u.username) }}" method="post">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="ob-btn"
+                            style="padding:0.5rem 1rem;font-size:0.8rem;">Follow</button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+            <button type="button" class="ob-skip-link" onclick="closeSuggestions()">Maybe later</button>
+        </div>
+    </div>
+    {% endif %}
+
+
+    <script>
+        function closeSuggestions() {
+            const overlay = document.getElementById('suggestionOverlay');
+            if (overlay) overlay.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+        const overlay = document.getElementById('onboardingOverlay');
+        if (overlay) overlay.style.display = 'none';
+
+        /* ── Onboarding step navigation ── */
+        (function () {
+            var step1 = document.getElementById('obStep1');
+            var step2 = document.getElementById('obStep2');
+            var progressDots = document.querySelectorAll('.ob-progress-dot');
+            var submitBtn = document.getElementById('obSubmitBtn');
+            var schoolInput = document.getElementById('ob-school-search');
+            var schoolValue = document.getElementById('ob-school-value');
+            if (!step1 || !step2) return;
+
+            var currentStep = 1;
+
+            function updateProgress() {
+                progressDots.forEach(function (dot, i) {
+                    if (i + 1 < currentStep) {
+                        dot.classList.add('completed');
+                        dot.classList.remove('active');
+                    } else if (i + 1 === currentStep) {
+                        dot.classList.add('active');
+                        dot.classList.remove('completed');
+                    } else {
+                        dot.classList.remove('active', 'completed');
+                    }
+                });
+            }
+
+            function goToStep(step) {
+                currentStep = step;
+                if (step === 1) {
+                    step1.style.display = 'flex';
+                    step2.style.display = 'none';
+                    submitBtn.textContent = 'Continue';
+                } else {
+                    step1.style.display = 'none';
+                    step2.style.display = 'flex';
+                    submitBtn.textContent = 'Save & Continue';
+                }
+                updateProgress();
+            }
+
+            submitBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                if (currentStep === 1) {
+                    if (!schoolValue.value) {
+                        schoolInput.focus();
+                        schoolInput.style.borderColor = '#ef4444';
+                        setTimeout(function () {
+                            schoolInput.style.borderColor = '';
+                        }, 2000);
+                        return;
+                    }
+                    goToStep(2);
+                } else {
+                    document.getElementById('obEducationForm').submit();
+                }
+            });
+
+            schoolInput.addEventListener('keyup', function (e) {
+                if (e.key === 'Enter' && schoolValue.value) {
+                    goToStep(2);
+                }
+            });
+        })();
+
+        /* ── Onboarding dropdown autocomplete ── */
+        (function () {
+            var UNIS = [
+                "University of Ghana", "Kwame Nkrumah University of Science and Technology (KNUST)",
+                "University of Cape Coast", "University for Development Studies",
+                "Ghana Institute of Management and Public Administration (GIMPA)", "Ashesi University",
+                "Central University", "Valley View University", "Methodist University Ghana",
+                "University of Professional Studies Accra (UPSA)",
+                "Ghana Communication Technology University (GCTU)", "Accra Technical University",
+                "Ho Technical University", "Kumasi Technical University", "Takoradi Technical University",
+                "Koforidua Technical University", "Sunyani Technical University",
+                "Cape Coast Technical University", "Wa Technical University", "Bolgatanga Technical University",
+                "University of Health and Allied Sciences", "Ghana Institute of Journalism",
+                "National Film and Television Institute (NAFTI)",
+                "SD Dombo University of Business and Integrated Development Studies",
+                "C.K. Tedam University of Technology and Applied Sciences",
+                "Regent University College of Science and Technology", "Other"
+            ];
+
+            var PROGS = [
+                "BSc Computer Science", "BSc Information Technology", "BSc Computer Engineering",
+                "BSc Electrical Engineering", "BSc Mechanical Engineering", "BSc Civil Engineering",
+                "BSc Chemical Engineering", "BA Economics", "BSc Business Administration",
+                "BSc Accounting", "BSc Marketing", "BA English", "BA History",
+                "BSc Mathematics", "BSc Statistics", "BSc Physics", "BSc Chemistry",
+                "BSc Biology", "BSc Biochemistry", "BSc Nursing", "BSc Pharmacy",
+                "MBChB Medicine and Surgery", "BA Law", "LLB Law", "BSc Agriculture",
+                "BSc Education", "BA Communication Studies", "BSc Psychology", "BSc Sociology",
+                "BSc Political Science", "BSc Architecture", "BSc Quantity Surveying",
+                "BSc Land Economy", "BSc Packaging Technology", "MBA", "MSc Computer Science",
+                "MSc Engineering", "Other"
+            ];
+
+            function obDropdown(searchId, dropdownId, hiddenId, items) {
+                var search = document.getElementById(searchId);
+                var dropdown = document.getElementById(dropdownId);
+                var hidden = document.getElementById(hiddenId);
+                if (!search || !dropdown || !hidden) return;
+
+                search.addEventListener('input', function () {
+                    var q = this.value.trim().toLowerCase();
+                    hidden.value = this.value;
+                    dropdown.innerHTML = '';
+                    if (!q) { dropdown.classList.remove('open'); return; }
+                    var hits = items.filter(function (i) {
+                        if (!i) return false;
+                        return i.toString().toLowerCase().indexOf(q) !== -1;
+                    });
+                    hits.slice(0, 8).forEach(function (item) {
+                        var div = document.createElement('div');
+                        div.className = 'ob-dropdown-item';
+                        div.textContent = item;
+                        div.addEventListener('mousedown', function (e) {
+                            e.preventDefault();
+                            search.value = item;
+                            hidden.value = item;
+                            dropdown.classList.remove('open');
+                        });
+                        dropdown.appendChild(div);
+                    });
+                    dropdown.classList.toggle('open', hits.length > 0);
+                });
+
+                document.addEventListener('click', function (e) {
+                    if (!e.target.closest('#' + searchId) && !e.target.closest('#' + dropdownId)) {
+                        dropdown.classList.remove('open');
+                    }
+                });
+            }
+
+            obDropdown('ob-school-search', 'ob-school-dropdown', 'ob-school-value', UNIS);
+            obDropdown('ob-programme-search', 'ob-programme-dropdown', 'ob-programme-value', PROGS);
+        })();
+
+
+        /* ── Service Worker registration ── */
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js', { scope: '/' })
+                    .then(reg => {
+                        // Check for updates every time the page loads
+                        reg.update();
+
+                        // A new SW has installed and is waiting to activate
+                        reg.addEventListener('updatefound', () => {
+                            const newSW = reg.installing;
+                            newSW.addEventListener('statechange', () => {
+                                if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+                                    _showUpdateToast(reg);
+                                }
+                            });
+                        });
+                    })
+                    .catch(e => { /* Service worker registration warning */ });
+
+                // Only reload when the user explicitly triggered a SW swap via the toast.
+                // _swUpdateRequested is set to true by the update button before posting SKIP_WAITING.
+                let refreshing = false;
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (window._swUpdateRequested && !refreshing) {
+                        refreshing = true;
+                        window.location.reload();
+                    }
+                });
+            });
+        }
+
+        function _showUpdateToast(reg) {
+            const toast = document.getElementById('sw-update-toast');
+            if (!toast) return;
+            toast.style.display = 'flex';
+            document.getElementById('sw-update-btn').addEventListener('click', () => {
+                toast.style.display = 'none';
+                window._swUpdateRequested = true;
+                if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+            });
+        }
+
+        /* ── Install prompt ── */
+        const _pwaBar = document.getElementById('pwa-bar');
+        let _pwaPrompt = window._pwaPrompt || null;
+
+        // Don't show install bar if already running as an installed PWA
+        const _isStandalone = window.matchMedia('(display-mode: standalone)').matches
+            || window.navigator.standalone === true;
+
+        function _showInstallBar() {
+            if (_isStandalone) return;
+            // Check 7-day localStorage dismissal
+            try {
+                const until = parseInt(localStorage.getItem('pwa-dismissed-until') || '0');
+                if (until && Date.now() < until) return;
+            } catch (_) {
+                if (sessionStorage.getItem('pwa-dismissed')) return;
+            }
+            if (_pwaBar) _pwaBar.style.display = 'flex';
+        }
+
+        // In case the event fired before this script ran (captured in <head>)
+        if (_pwaPrompt && !_isStandalone) _showInstallBar();
+
+        window.addEventListener('beforeinstallprompt', e => {
+            e.preventDefault();
+            _pwaPrompt = e;
+            window._pwaPrompt = e;
+            _showInstallBar();
+        });
+
+        const _installBtn = document.getElementById('pwa-install-btn');
+        const _dismissBtn = document.getElementById('pwa-dismiss-btn');
+
+        if (_installBtn) {
+            _installBtn.addEventListener('click', async () => {
+                if (!_pwaPrompt) return;
+                _pwaPrompt.prompt();
+                const { outcome } = await _pwaPrompt.userChoice;
+                _pwaPrompt = null;
+                window._pwaPrompt = null;
+                if (_pwaBar) _pwaBar.style.display = 'none';
+                if (outcome === 'accepted') sessionStorage.removeItem('pwa-dismissed');
+            });
+        }
+
+        if (_dismissBtn) {
+            _dismissBtn.addEventListener('click', () => {
+                if (_pwaBar) _pwaBar.style.display = 'none';
+                // Remember for 7 days instead of just the session
+                try {
+                    localStorage.setItem('pwa-dismissed-until', Date.now() + 7 * 24 * 60 * 60 * 1000);
+                } catch (_) { sessionStorage.setItem('pwa-dismissed', '1'); }
+            });
+        }
+
+        window.addEventListener('appinstalled', () => {
+            if (_pwaBar) _pwaBar.style.display = 'none';
+            sessionStorage.removeItem('pwa-dismissed');
+        });
+    </script>
+    <script>
+        /* ── Global App Utilities ── */
+        window.skipOnboarding = function () {
+            const overlay = document.getElementById('onboardingOverlay');
+            if (overlay) overlay.style.display = 'none';
+            fetch('{{ url_for("users.skip_education") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content,
+                    'Content-Type': 'application/json',
+                },
+            }).catch(() => { });
+        };
+    </script>
+    <script src="{{ url_for('static', filename='js/main.js') }}" defer data-turbo-track="reload"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}" defer data-turbo-track="reload"></script>
+    <script src="{{ url_for('static', filename='js/nav.js') }}" defer data-turbo-track="reload"></script>
+    <script>
+        (function () {
+            const MATHJAX_SRC = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js';
+            const MATHJAX_FONT = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/output/chtml/fonts/woff-v2';
+            let mathJaxLoadPromise = null;
+
+            function applyMathJaxDefaults() {
+                window.MathJax = window.MathJax || {};
+                const cfg = window.MathJax;
+
+                cfg.tex = cfg.tex || {};
+                if (!cfg.tex.inlineMath) cfg.tex.inlineMath = [['$', '$'], ['\\(', '\\)']];
+                if (!cfg.tex.displayMath) cfg.tex.displayMath = [['$$', '$$'], ['\\[', '\\]']];
+                cfg.tex.packages = cfg.tex.packages || { '[+]': ['ams'] };
+
+                cfg.chtml = cfg.chtml || {};
+                if (!cfg.chtml.scale) cfg.chtml.scale = 1.02;
+                if (!cfg.chtml.fontURL) cfg.chtml.fontURL = MATHJAX_FONT;
+
+                cfg.loader = cfg.loader || {};
+                if (!cfg.loader.load) cfg.loader.load = ['[tex]/ams'];
+
+                cfg.options = cfg.options || {};
+                if (!cfg.options.skipHtmlTags) {
+                    cfg.options.skipHtmlTags = ['script', 'noscript', 'style', 'textarea', 'pre', 'code', 'mjx-container', '.MathJax'];
+                }
+            }
+
+            function ensureMathJax() {
+                if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+                    return Promise.resolve(window.MathJax);
+                }
+                if (mathJaxLoadPromise) return mathJaxLoadPromise;
+
+                applyMathJaxDefaults();
+                mathJaxLoadPromise = new Promise(function (resolve, reject) {
+                    const existing = document.querySelector('script[data-knowly-mathjax="1"]');
+                    if (existing) {
+                        if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+                            resolve(window.MathJax);
+                            return;
+                        }
+                        existing.addEventListener('load', function () { resolve(window.MathJax); }, { once: true });
+                        existing.addEventListener('error', reject, { once: true });
+                        return;
+                    }
+
+                    const script = document.createElement('script');
+                    script.src = MATHJAX_SRC;
+                    script.async = true;
+                    script.setAttribute('data-knowly-mathjax', '1');
+                    script.addEventListener('load', function () { resolve(window.MathJax); }, { once: true });
+                    script.addEventListener('error', reject, { once: true });
+                    document.head.appendChild(script);
+                });
+
+                return mathJaxLoadPromise;
+            }
+
+            function normalizeTargets(target) {
+                if (!target) return [document.body];
+                if (target instanceof Element) return [target];
+                if (Array.isArray(target)) return target.filter(Boolean);
+                if (target.length !== undefined) return Array.from(target).filter(Boolean);
+                return [document.body];
+            }
+
+            function normalizeEscapedMath(text) {
+                if (!text || text.indexOf('\\') === -1) return text;
+
+                let out = text
+                    .replace(/\\\\\(/g, '\\(')
+                    .replace(/\\\\\)/g, '\\)')
+                    .replace(/\\\\\[/g, '\\[')
+                    .replace(/\\\\\]/g, '\\]');
+
+                out = out.replace(/(\\\(|\\\[)([\s\S]*?)(\\\)|\\\])/g, function (_, open, inner, close) {
+                    const normalizedInner = inner
+                        .replace(/\\\\([a-zA-Z])/g, '\\$1')
+                        .replace(/\\\\([()\[\]{}])/g, '\\$1');
+                    return open + normalizedInner + close;
+                });
+
+                out = out.replace(/(\$\$?)([\s\S]*?)\1/g, function (_, delim, inner) {
+                    const normalizedInner = inner
+                        .replace(/\\\\([a-zA-Z])/g, '\\$1')
+                        .replace(/\\\\([()\[\]{}])/g, '\\$1');
+                    return delim + normalizedInner + delim;
+                });
+
+                return out;
+            }
+
+            function prepareMathTargets(targets) {
+                targets.forEach(function (root) {
+                    if (!(root instanceof Element)) return;
+
+                    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+                    const toUpdate = [];
+
+                    while (walker.nextNode()) {
+                        const node = walker.currentNode;
+                        if (!node || !node.nodeValue) continue;
+
+                        const parent = node.parentElement;
+                        if (!parent) continue;
+                        if (parent.closest('script, noscript, style, textarea, pre, code, mjx-container, .MathJax')) {
+                            continue;
+                        }
+
+                        const nextValue = normalizeEscapedMath(node.nodeValue);
+                        if (nextValue !== node.nodeValue) {
+                            toUpdate.push({ node: node, value: nextValue });
+                        }
+                    }
+
+                    toUpdate.forEach(function (entry) {
+                        entry.node.nodeValue = entry.value;
+                    });
+                });
+            }
+
+            function typesetMath(target) {
+                const targets = normalizeTargets(target);
+                prepareMathTargets(targets);
+                return ensureMathJax().then(function () {
+                    if (!window.MathJax || typeof window.MathJax.typesetPromise !== 'function') return;
+                    if (typeof window.MathJax.typesetClear === 'function') {
+                        try { window.MathJax.typesetClear(targets); } catch (_) { }
+                    }
+                    return window.MathJax.typesetPromise(targets).catch(function (err) {
+                        // MathJax typeset warning (silenced in production)
+                    });
+                });
+            }
+
+            window.knowlyEnsureMathJax = ensureMathJax;
+            window.knowlyTypesetMath = typesetMath;
+
+            // --- Global Hotwire Turbo Listeners ---
+            document.addEventListener('turbo:load', function() {
+                // Typeset math on every full-page navigation
+                window.knowlyTypesetMath();
+            });
+
+            document.addEventListener('turbo:frame-load', function(event) {
+                // Typeset math inside the newly loaded frame
+                window.knowlyTypesetMath(event.target);
+            });
+
+            window.knowlyGoBack = function (fallbackUrl) {
+                const fallback = fallbackUrl || '/';
+                try {
+                    if (document.referrer) {
+                        const ref = new URL(document.referrer, window.location.origin);
+                        const sameOrigin = ref.origin === window.location.origin;
+                        const refPath = ref.pathname + ref.search;
+                        const curPath = window.location.pathname + window.location.search;
+                        if (sameOrigin && refPath !== curPath && window.history.length > 1) {
+                            window.history.back();
+                            return;
+                        }
+                    }
+                } catch (_) { }
+                window.location.assign(fallback);
+            };
+
+            document.addEventListener('click', function (event) {
+                const target = event.target.closest('[data-knowly-back="1"]');
+                if (!target) return;
+                if (event.defaultPrevented) return;
+                if (event.button !== 0) return;
+                if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+                event.preventDefault();
+                window.knowlyGoBack(target.getAttribute('data-back-fallback') || '/');
+            });
+        })();
+    </script>
+    {% block extra_js %}{% endblock %}
+    {# ── SW update toast ── #}
+    <div id="sw-update-toast" style="
+    display:none;position:fixed;bottom:1.25rem;left:50%;transform:translateX(-50%);
+    background:#1e1b4b;border:1px solid #6366f1;border-radius:16px;
+    padding:.8rem 1.1rem;align-items:center;gap:.85rem;
+    box-shadow:0 8px 40px rgba(99,102,241,.35);z-index:10000;
+    font-size:.8rem;color:#e0e7ff;white-space:nowrap;max-width:calc(100vw - 2rem);
+    animation:pwaSlideUp .35s cubic-bezier(.22,1,.36,1);">
+        <span>✨ A new version of knowly is ready.</span>
+        <button id="sw-update-btn" style="
+      background:#6366f1;color:#fff;border:none;border-radius:9px;
+      padding:.4rem .9rem;font-size:.78rem;font-weight:700;cursor:pointer;
+      white-space:nowrap;flex-shrink:0">
+            Refresh
+        </button>
+    </div>
+    {# ── PWA install prompt ── #}
+    <div id="pwa-bar" style="
+    display:none;position:fixed;bottom:1.25rem;left:50%;transform:translateX(-50%);
+    background:#1e1b4b;border:1px solid #6366f1;border-radius:16px;
+    padding:.8rem 1.1rem;align-items:center;gap:.85rem;
+    box-shadow:0 8px 40px rgba(99,102,241,.35);z-index:9999;
+    font-size:.8rem;color:#e0e7ff;white-space:nowrap;max-width:calc(100vw - 2rem);
+    animation:pwaSlideUp .35s cubic-bezier(.22,1,.36,1);">
+        <img src="/static/images/icon-72x72.png" alt="knowly app icon"
+            style="width:32px;height:32px;border-radius:8px;flex-shrink:0">
+        <span style="flex:1;min-width:0">
+            Add <strong>knowly</strong> to your home screen
+        </span>
+        <button id="pwa-install-btn" style="
+      background:#6366f1;color:#fff;border:none;border-radius:9px;
+      padding:.4rem .9rem;font-size:.78rem;font-weight:700;cursor:pointer;
+      white-space:nowrap;flex-shrink:0">
+            Install
+        </button>
+        <button id="pwa-dismiss-btn" style="
+      background:none;border:none;color:#818cf8;cursor:pointer;
+      font-size:1.1rem;line-height:1;padding:0 .1rem;flex-shrink:0">
+            ✕
+        </button>
+    </div>
+
+    <script>
+        /* ── UI Enhancements: Streaks, XP, and Forms ── */
+        (function () {
+            {% if current_user.is_authenticated %}
+            // XP Level-up detection
+            const currentLvl = {{ current_user.get_level() or 1
+        }};
+        const lastLvl = parseInt(localStorage.getItem('kn-last-level') || '0');
+        if (lastLvl && currentLvl > lastLvl) {
+            const toast = document.getElementById('xp-levelup-toast');
+            const lvlEl = document.getElementById('xp-new-level');
+            if (toast && lvlEl) {
+                lvlEl.textContent = 'Level ' + currentLvl;
+                toast.style.display = 'flex';
+                setTimeout(() => { toast.style.display = 'none'; }, 5000);
+            }
+        }
+        localStorage.setItem('kn-last-level', currentLvl);
+
+        // Streak nudge (after 6pm)
+        const streakCount = {{ current_user.current_streak or 0 }};
+        if (!sessionStorage.getItem('kn-streak-nudge-shown') && streakCount > 0 && new Date().getHours() >= 18) {
+            const nudge = document.createElement('div');
+            nudge.className = 'streak-nudge-toast'; // Styles to be moved to main CSS
+            nudge.style.cssText = 'display:flex;position:fixed;bottom:calc(68px + env(safe-area-inset-bottom) + 8px);left:50%;transform:translateX(-50%);background:#1e1b4b;border:1px solid #f59e0b;border-radius:16px;padding:.75rem 1.1rem;align-items:center;gap:.75rem;box-shadow:0 8px 32px rgba(245,158,11,.25);z-index:9998;font-size:.8rem;color:#fef3c7;white-space:nowrap;max-width:calc(100vw - 2rem);animation:pwaSlideUp .35s cubic-bezier(.22,1,.36,1);';
+            nudge.innerHTML = `<span>🔥 ${streakCount}-day streak! Study today to keep it.</span>
+                    <a href="/" style="background:#f59e0b;color:#000;border:none;border-radius:8px;padding:.35rem .8rem;font-size:.75rem;font-weight:700;cursor:pointer;text-decoration:none;flex-shrink:0;">Study now</a>
+                    <button onclick="this.parentElement.remove();sessionStorage.setItem('kn-streak-nudge-shown','1')" style="background:none;border:none;color:#d97706;cursor:pointer;font-size:1rem;line-height:1;padding:0 .1rem;flex-shrink:0;">✕</button>`;
+            document.body.appendChild(nudge);
+            sessionStorage.setItem('kn-streak-nudge-shown', '1');
+        }
+        {% endif %}
+
+        // Loading state on form submission
+        document.addEventListener('submit', function (e) {
+            const form = e.target;
+            if (!form || ['npForm'].includes(form.id)) return;
+            const btn = form.querySelector('[type="submit"]:not([data-no-spinner])');
+            if (!btn || btn.classList.contains('btn-loading-state')) return;
+            const rect = btn.getBoundingClientRect();
+            btn.style.width = rect.width + 'px';
+            btn.style.height = rect.height + 'px';
+            btn.classList.add('btn-loading-state');
+            btn.disabled = true;
+        }, true);
+        }) ();
+    </script>
+    <!-- ── AUTH MODAL ── -->
+    {% if not current_user.is_authenticated %}
+    <div id="authModal" role="dialog" aria-modal="true" aria-labelledby="authHeaderText" style="display:none;">
+        <div class="auth-modal-container">
+            <button onclick="closeAuthModal()" class="auth-modal-close">✕</button>
+            <div class="auth-modal-header">
+                <img src="{{ url_for('static', filename='images/knowly.png') }}" alt="knowly" class="auth-modal-logo"
+                    onerror="this.style.display='none'">
+                <div id="authHeaderText" class="auth-modal-title">Sign in to continue</div>
+            </div>
+
+            <!-- Initial choice view -->
+            <div id="authChoiceView">
+                <a href="{{ url_for('auth.google_login') }}" class="auth-choice-btn">
+                    <svg width="16" height="16" viewBox="0 0 48 48" fill="none">
+                        <path
+                            d="M47.5 24.6c0-1.6-.1-3.2-.4-4.7H24v8.9h13.2c-.6 3-2.4 5.5-5 7.2v6h8.1c4.7-4.3 7.2-10.7 7.2-17.4z"
+                            fill="#4285F4" />
+                        <path
+                            d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-8.1-6c-2.1 1.4-4.9 2.3-7.8 2.3-6 0-11.1-4-12.9-9.5H2.6v6.2C6.6 42.7 14.7 48 24 48z"
+                            fill="#34A853" />
+                        <path
+                            d="M11.1 29c-.5-1.4-.7-2.9-.7-4.5s.2-3.1.7-4.5v-6.2H2.6C1 17.2 0 20.4 0 24s1 6.8 2.6 9.2l8.5-4.2z"
+                            fill="#FBBC05" />
+                        <path
+                            d="M24 9.5c3.4 0 6.4 1.2 8.8 3.5l6.5-6.5C35.9 2.7 30.5.5 24 .5 14.7.5 6.6 5.8 2.6 14.2l8.5 6.2C12.9 14.5 18 9.5 24 9.5z"
+                            fill="#EA4335" />
+                    </svg>
+                    Sign up with Google
+                </a>
+
+                <div class="auth-modal-divider">
+                    <div class="auth-modal-divider-line"></div>
+                    <span class="auth-modal-divider-text">or</span>
+                    <div class="auth-modal-divider-line"></div>
+                </div>
+
+                <button type="button" onclick="showEmailForm()" class="auth-choice-btn">
+                    <i class="fas fa-envelope"></i> Sign up with Email
+                </button>
+
+                <div class="auth-modal-footer">
+                    Already have an account? <button type="button" onclick="showSignIn()" class="auth-modal-switch">Sign
+                        in</button>
+                </div>
+            </div>
+
+            <!-- Email form view -->
+            <div class="auth-email-form" id="authEmailForm">
+                <div id="authSignupForm">
+                    <div
+                        style="font-size:0.9rem;font-weight:700;color:#f1f5f9;margin-bottom:0.75rem;text-align:center;">
+                        Welcome to Knowly</div>
+                    <form action="{{ url_for('auth.signup') }}" method="POST" novalidate id="signupModalForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div style="display:flex;flex-direction:column;gap:0.6rem;">
+                            <input name="email" type="email" placeholder="Email address" required
+                                class="auth-modal-input" id="signup-email">
+                            <input name="password" id="signup-password" type="password" placeholder="Password" required
+                                class="auth-modal-input" autocomplete="new-password">
+                            <div class="signup-strength-bars" id="signupStrengthBars">
+                                <div class="ssb-bar" id="ssb1"></div>
+                                <div class="ssb-bar" id="ssb2"></div>
+                                <div class="ssb-bar" id="ssb3"></div>
+                            </div>
+                            <div id="signupChecklist" style="display:none;flex-direction:column;gap:0.4rem;font-size:0.8rem;color:#b6bedb;margin:0.3rem 0;">
+                                <div id="sreq-len" style="display:flex;align-items:center;gap:0.4rem;"><i class="fas fa-circle-xmark" style="color:#ef4444;width:1rem;"></i> At least 8 characters</div>
+                                <div id="sreq-upper" style="display:flex;align-items:center;gap:0.4rem;"><i class="fas fa-circle-xmark" style="color:#ef4444;width:1rem;"></i> One uppercase letter</div>
+                                <div id="sreq-digit" style="display:flex;align-items:center;gap:0.4rem;"><i class="fas fa-circle-xmark" style="color:#ef4444;width:1rem;"></i> One number</div>
+                                <div id="sreq-symbol" style="display:flex;align-items:center;gap:0.4rem;"><i class="fas fa-circle-xmark" style="color:#ef4444;width:1rem;"></i> One symbol</div>
+                            </div>
+                            <input name="password2" id="signup-password2" type="password" placeholder="Confirm password"
+                                required class="auth-modal-input">
+                            <button type="submit" class="auth-modal-submit" id="signupSubmitBtn" disabled
+                                style="opacity:0.45;cursor:not-allowed;">Create account</button>
+                            <div class="signup-match-msg" id="signupMatchMsg"></div>
+                        </div>
+                    </form>
+                    <div class="auth-modal-footer">
+                        Already have an account? <button type="button" onclick="showSignIn()"
+                            class="auth-modal-switch">Sign in</button>
+                    </div>
+                </div>
+                <div id="authLoginForm" style="display:none;">
+                    <div
+                        style="font-size:0.9rem;font-weight:700;color:#f1f5f9;margin-bottom:0.75rem;text-align:center;">
+                        Welcome back</div>
+                    <a href="{{ url_for('auth.google_login') }}" class="auth-choice-btn" style="margin-bottom:0.5rem;">
+                        <svg width="16" height="16" viewBox="0 0 48 48" fill="none">
+                            <path
+                                d="M47.5 24.6c0-1.6-.1-3.2-.4-4.7H24v8.9h13.2c-.6 3-2.4 5.5-5 7.2v6h8.1c4.7-4.3 7.2-10.7 7.2-17.4z"
+                                fill="#4285F4" />
+                            <path
+                                d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-8.1-6c-2.1 1.4-4.9 2.3-7.8 2.3-6 0-11.1-4-12.9-9.5H2.6v6.2C6.6 42.7 14.7 48 24 48z"
+                                fill="#34A853" />
+                            <path
+                                d="M11.1 29c-.5-1.4-.7-2.9-.7-4.5s.2-3.1.7-4.5v-6.2H2.6C1 17.2 0 20.4 0 24s1 6.8 2.6 9.2l8.5-4.2z"
+                                fill="#FBBC05" />
+                            <path
+                                d="M24 9.5c3.4 0 6.4 1.2 8.8 3.5l6.5-6.5C35.9 2.7 30.5.5 24 .5 14.7.5 6.6 5.8 2.6 14.2l8.5 6.2C12.9 14.5 18 9.5 24 9.5z"
+                                fill="#EA4335" />
+                        </svg>
+                        Sign in with Google
+                    </a>
+                    <div class="auth-modal-divider">
+                        <div class="auth-modal-divider-line"></div>
+                        <span class="auth-modal-divider-text">or</span>
+                        <div class="auth-modal-divider-line"></div>
+                    </div>
+                    <form action="{{ url_for('auth.login') }}" method="POST" novalidate>
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                            <input id="auth-username" name="username" placeholder="Username or email" required
+                                autocomplete="username" class="auth-modal-input">
+                            <input id="auth-password" name="password" type="password" placeholder="Password" required
+                                autocomplete="current-password" class="auth-modal-input">
+                            <div style="text-align:right;margin-top:-0.25rem;margin-bottom:0.25rem;">
+                                <a href="{{ url_for('auth.reset_password_request') }}" class="auth-modal-link">Forgot
+                                    password?</a>
+                            </div>
+                            <button type="submit" class="auth-modal-submit">Sign in</button>
+                        </div>
+                    </form>
+                    <div class="auth-modal-footer">
+                        Don't have an account? <button type="button" onclick="showSignUpChoice()"
+                            class="auth-modal-switch">Sign up</button>
+                    </div>
+                </div>
+
+                <div class="auth-modal-divider-footer">
+                    By continuing, you agree to our
+                    <a href="#" class="auth-modal-link">Terms</a> and
+                    <a href="#" class="auth-modal-link">Privacy Policy</a>
+                </div>
+            </div>
+
+            {% if flashed %}
+            <div style="margin-top:0.6rem;">
+                {% for category, message in flashed %}
+                <div
+                    style="padding:0.4rem 0.6rem;border-radius:6px;font-size:0.75rem;{% if category == 'danger' %}background:rgba(239,68,68,0.15);color:#fca5a5;{% else %}background:rgba(59,130,246,0.15);color:#93c5fd;{% endif %}">
+                    {{ message }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+
+    <script>
+        /* ── Auth Modal Controller ── */
+        document.addEventListener('turbo:load', function () {
+            document.body.style.overflow = '';
+        });
+
+        window.openAuthModal = function (tab) {
+            const m = document.getElementById('authModal');
+            if (!m) return;
+            m.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            if (tab === 'login') showSignIn();
+            else showSignUpChoice();
+        };
+
+        window.closeAuthModal = function () {
+            const m = document.getElementById('authModal');
+            if (m) m.style.display = 'none';
+            document.body.style.overflow = '';
+        };
+
+        window.showSignUpChoice = function () {
+            const choice = document.getElementById('authChoiceView');
+            const emailForm = document.getElementById('authEmailForm');
+            const header = document.getElementById('authHeaderText');
+            if (choice) choice.style.display = 'block';
+            if (emailForm) emailForm.classList.remove('show');
+            if (header) header.textContent = 'Sign up to continue';
+        };
+
+        window.showEmailForm = function () {
+            document.getElementById('authChoiceView').style.display = 'none';
+            document.getElementById('authEmailForm').classList.add('show');
+            document.getElementById('authLoginForm').style.display = 'none';
+            document.getElementById('authSignupForm').style.display = 'block';
+            const h = document.getElementById('authHeaderText');
+            if (h) h.textContent = 'Sign up with Email';
+            // Initialize password strength checker when signup form is shown
+            if (window.initSignupChecker) window.initSignupChecker();
+        };
+
+        window.showSignIn = function () {
+            document.getElementById('authChoiceView').style.display = 'none';
+            document.getElementById('authEmailForm').classList.add('show');
+            document.getElementById('authSignupForm').style.display = 'none';
+            document.getElementById('authLoginForm').style.display = 'block';
+            const h = document.getElementById('authHeaderText');
+            if (h) h.textContent = 'Sign in to continue';
+        };
+
+        document.addEventListener('turbo:load', function () {
+            const authModal = document.getElementById('authModal');
+            if (authModal) {
+                authModal.addEventListener('click', function (e) { if (e.target === this) closeAuthModal(); });
+            }
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && authModal && authModal.style.display !== 'none') closeAuthModal();
+            });
+
+            // Handle URL params for auto-open
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('signup') === '1') openAuthModal('signup');
+            else if (params.get('login') === '1') openAuthModal('login');
+        });
+    </script>
+
+    <script>
+        (function () {
+            function initSignupChecker() {
+                var pw = document.getElementById('signup-password');
+                var pw2 = document.getElementById('signup-password2');
+                var btn = document.getElementById('signupSubmitBtn');
+                var matchMsg = document.getElementById('signupMatchMsg');
+                if (!pw || !btn) return;
+
+                var reqs = {
+                    len: { el: document.getElementById('sreq-len'), test: function (v) { return v.length >= 8; } },
+                    upper: { el: document.getElementById('sreq-upper'), test: function (v) { return /[A-Z]/.test(v); } },
+                    digit: { el: document.getElementById('sreq-digit'), test: function (v) { return /\d/.test(v); } },
+                    symbol: { el: document.getElementById('sreq-symbol'), test: function (v) { return /[^A-Za-z0-9]/.test(v); } }
+                };
+                var bars = [
+                    document.getElementById('ssb1'),
+                    document.getElementById('ssb2'),
+                    document.getElementById('ssb3')
+                ];
+                var checklist = document.getElementById('signupChecklist');
+                var latestAllMet = false;
+
+                function update() {
+                    var val = pw.value;
+                    var met = 0;
+                    Object.keys(reqs).forEach(function (k) {
+                        var pass = reqs[k].test(val);
+                        if (pass) met++;
+                        if (reqs[k].el) {
+                            reqs[k].el.classList.toggle('met', pass);
+                            var icon = reqs[k].el.querySelector('i');
+                            if (icon) {
+                                icon.className = pass ? 'fas fa-circle-check' : 'fas fa-circle-xmark';
+                                icon.style.color = pass ? '#10b981' : '#ef4444';
+                            }
+                        }
+                    });
+
+                    bars.forEach(function (b, i) {
+                        b.classList.remove('weak', 'ok', 'strong');
+                        if (met >= 1 && i === 0) b.classList.add(met <= 1 ? 'weak' : met <= 2 ? 'ok' : 'strong');
+                        if (met >= 2 && i === 1) b.classList.add(met <= 2 ? 'ok' : 'strong');
+                        if (met >= 3 && i === 2) b.classList.add(met === 4 ? 'strong' : 'ok');
+                    });
+
+                    var allMet = met === 4;
+                    latestAllMet = allMet;
+                    var val2 = pw2 ? pw2.value : '';
+                    var matches = val2 === '' || val === val2;
+
+                    if (matchMsg) {
+                        if (val2 !== '') {
+                            matchMsg.textContent = val === val2 ? 'Passwords match' : 'Passwords do not match';
+                            matchMsg.style.color = val === val2 ? '#10b981' : '#ef4444';
+                        } else {
+                            matchMsg.textContent = '';
+                        }
+                    }
+
+                    // Only enable if all requirements met AND confirmation matches and is non-empty
+                    var confirmFilled = val2 !== '';
+                    var confirmMatches = val === val2;
+                    var canSubmit = allMet && confirmFilled && confirmMatches;
+                    btn.disabled = !canSubmit;
+                    btn.style.opacity = canSubmit ? '1' : '0.45';
+                    btn.style.cursor = canSubmit ? 'pointer' : 'not-allowed';
+
+                    // Show/hide and update strength hint
+                }
+
+                pw.addEventListener('input', update);
+                if (pw2) pw2.addEventListener('input', update);
+
+                // Show checklist when user focuses the password field
+                pw.addEventListener('focus', function () {
+                    if (checklist) checklist.style.display = '';
+                });
+
+                // On blur, hide checklist if all requirements are met
+                pw.addEventListener('blur', function () {
+                    setTimeout(function () {
+                        if (checklist && latestAllMet) {
+                            checklist.style.display = 'none';
+                        }
+                    }, 120);
+                });
+            }
+
+            document.addEventListener('turbo:load', initSignupChecker);
+            window.initSignupChecker = initSignupChecker;
+        })();
+    </script>
+    {% endif %}
+
+
+
+    <!-- Appearance / Settings Modal -->
+    <div id="appearanceModal" class="dsn-modal-overlay"
+        style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:center; justify-content:center; padding:1.5rem; box-sizing:border-box;">
+        <div class="dsn-modal-card"
+            style="background:var(--bg-card); border:1px solid var(--border); border-radius:18px; width:100%; max-width:400px; padding:1.5rem; box-sizing:border-box; position:relative; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+            <button onclick="closeAppearanceModal()"
+                style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1.2rem;"><i
+                    class="fas fa-times" aria-hidden="true"></i></button>
+            <h2
+                style="font-family:var(--font-display); font-size:1.25rem; font-weight:800; margin-bottom:1.5rem; color:var(--text-primary);">
+                Appearance Settings</h2>
+
+            <div style="display:flex; flex-direction:column; gap:1.25rem;">
+                <div>
+                    <label
+                        style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-secondary); margin-bottom:0.75rem;">Theme
+                        Mode</label>
+                    <div
+                        style="display:grid; grid-template-columns:repeat(3, 1fr); gap:0.5rem; background:var(--bg-secondary); padding:0.25rem; border-radius:12px;">
+                        <button id="themeSystem" onclick="setTheme('system')"
+                            style="padding:0.75rem 0.5rem; border-radius:10px; border:1px solid transparent; background:transparent; display:flex; flex-direction:column; align-items:center; gap:0.4rem; cursor:pointer; transition:all 0.2s;">
+                            <i class="fas fa-circle-half-stroke"></i>
+                            <span style="font-size:0.65rem; font-weight:700;">System</span>
+                        </button>
+                        <button id="themeLight" onclick="setTheme('light')"
+                            style="padding:0.75rem 0.5rem; border-radius:10px; border:1px solid transparent; background:transparent; display:flex; flex-direction:column; align-items:center; gap:0.4rem; cursor:pointer; transition:all 0.2s;">
+                            <i class="fas fa-sun"></i>
+                            <span style="font-size:0.65rem; font-weight:700;">Light</span>
+                        </button>
+                        <button id="themeDark" onclick="setTheme('dark')"
+                            style="padding:0.75rem 0.5rem; border-radius:10px; border:1px solid transparent; background:transparent; display:flex; flex-direction:column; align-items:center; gap:0.4rem; cursor:pointer; transition:all 0.2s;">
+                            <i class="fas fa-moon"></i>
+                            <span style="font-size:0.65rem; font-weight:700;">Dark</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid var(--border); text-align:center;">
+                <button onclick="closeAppearanceModal()"
+                    style="padding:0.75rem 2rem; background:var(--primary); color:#fff; border:none; border-radius:10px; font-weight:700; font-size:0.85rem; cursor:pointer; transition:transform 0.2s;"
+                    onmouseover="this.style.transform='scale(1.02)'"
+                    onmouseout="this.style.transform='scale(1)'">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="global-toast" class="global-toast">
+        <div class="toast-inner">
+            <i class="fas fa-check-circle"></i>
+            <span class="toast-content">Link copied to clipboard</span>
+        </div>
+    </div>
+
+    <!-- ── Universal Share Utility ── -->
+    <script>
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('global-toast');
+            if (!toast) return;
+            const content = toast.querySelector('.toast-content');
+            if (content) content.textContent = message;
+
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        async function sharePack(title, url) {
+            if (!url) return;
+            const fullUrl = window.location.origin + url;
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: title,
+                        url: fullUrl
+                    });
+                } catch (err) {
+                    // Silent fail for share (user cancelled or error)
+                }
+            } else {
+                try {
+                    await navigator.clipboard.writeText(fullUrl);
+                    showToast('Link copied to clipboard');
+                } catch (err) {
+                    // Uncomment for debugging: console.log('Share failed:', err);
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

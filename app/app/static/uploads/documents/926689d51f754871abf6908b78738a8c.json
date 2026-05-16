@@ -1,0 +1,131 @@
+{
+  "schema_version": "1.0",
+  "document_type": "cheatsheet",
+  "generated_at": "2026-04-11T17:53:38.640718+00:00",
+  "title": "ECON 151: Elements of Economics - Introduction to Economics",
+  "course": "EC101 \u2013 Microeconomics I",
+  "level": "Intermediate",
+  "metadata": {
+    "purpose": "Rapid revision and recall",
+    "exam_context": "",
+    "topics": []
+  },
+  "sections": [
+    {
+      "section_title": "Core Definitions & Scarcity",
+      "section_type": "formulas",
+      "entries": [
+        {
+          "label": "Economics",
+          "content": "The study of how agents choose to allocate scarce resources with alternative uses and the resulting impact on society."
+        },
+        {
+          "label": "Scarcity Condition",
+          "content": "$Quantity\\ Wanted > Quantity\\ Available$",
+          "notes": "Scarcity exists because resources are limited while human wants are unlimited."
+        },
+        {
+          "label": "Economic Agent",
+          "content": "An individual (consumer, parent, thief) or group (household, firm, government, union) that makes choices."
+        },
+        {
+          "label": "Alternative Use",
+          "content": "The capacity of a resource (e.g., wood, petroleum) to be applied to multiple different production ends."
+        }
+      ]
+    },
+    {
+      "section_title": "Economic Methodology",
+      "section_type": "formulas",
+      "entries": [
+        {
+          "label": "Positive Economics",
+          "content": "Descriptive approach seeking to understand behavior and systems without judgment; describes 'what is'."
+        },
+        {
+          "label": "Normative Economics",
+          "content": "Prescriptive approach evaluating outcomes as good or bad; describes 'what ought to be'."
+        },
+        {
+          "label": "Microeconomics",
+          "content": "Study of individual agents (individuals, firms, governments) and their specific choices/markets."
+        },
+        {
+          "label": "Macroeconomics",
+          "content": "Study of the aggregate economy, focusing on growth, employment, inflation, and Balance of Payments (BOP)."
+        }
+      ]
+    },
+    {
+      "section_title": "Optimization & Decision Formulas",
+      "section_type": "formulas",
+      "entries": [
+        {
+          "label": "Budget Constraint (Goods)",
+          "content": "$P_x Q_x + P_y Q_y = Budget$",
+          "example": "GH\u00a21(Kenkey) + GH\u00a22(Fish) = GH\u00a220"
+        },
+        {
+          "label": "Budget Constraint (Time)",
+          "content": "$T_{total} = \\sum_{i=1}^{n} t_i$",
+          "notes": "Total free hours must equal the sum of hours spent on all activities."
+        },
+        {
+          "label": "Net Benefit",
+          "content": "$Net\\ Benefit = Total\\ Benefits - Total\\ Costs$",
+          "notes": "Used in Cost-Benefit Analysis to identify the optimal alternative."
+        },
+        {
+          "label": "Opportunity Cost",
+          "content": "$OC = Value\\ of\\ Next\\ Best\\ Alternative\\ Forgone$",
+          "notes": "The cost of what is given up to undertake an activity."
+        }
+      ]
+    },
+    {
+      "section_title": "The Three Principles of Economics",
+      "section_type": "formulas",
+      "entries": [
+        {
+          "label": "Optimization",
+          "content": "Making the best choice possible given the available information and constraints."
+        },
+        {
+          "label": "Equilibrium",
+          "content": "A situation where no agent would benefit by changing their own behavior; everyone is simultaneously optimizing."
+        },
+        {
+          "label": "Empiricism",
+          "content": "Evidence-based analysis using data to test theories and determine if they match actual human behavior."
+        },
+        {
+          "label": "Free Rider Problem",
+          "content": "Occurs when individuals enjoy benefits without incurring costs; markets lack mechanisms to solve this 'fairness' issue."
+        }
+      ]
+    },
+    {
+      "section_title": "Economic Policy Criteria",
+      "section_type": "formulas",
+      "entries": [
+        {
+          "label": "Efficiency",
+          "content": "Producing what society wants at the lowest possible cost."
+        },
+        {
+          "label": "Equity",
+          "content": "The fairness of economic outcomes; a highly normative concept."
+        },
+        {
+          "label": "Economic Growth",
+          "content": "An increase in the total output (GDP) of an economy."
+        },
+        {
+          "label": "Stability",
+          "content": "Steady growth of national output, low inflation, and full resource employment."
+        }
+      ]
+    }
+  ],
+  "document_hash": "aa12353e57c0e67f01744c4d0c08a7349c495a5e8b38e6258d55957107e5e173"
+}

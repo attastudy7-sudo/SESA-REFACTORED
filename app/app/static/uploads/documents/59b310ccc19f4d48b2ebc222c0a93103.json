@@ -1,0 +1,780 @@
+{
+  "schema_version": "1.0",
+  "document_type": "quiz",
+  "generated_at": "2026-04-11T17:53:37.426239+00:00",
+  "title": "ECON 151: Elements of Economics - Introduction to Economics",
+  "course": "EC101 \u2013 Microeconomics I",
+  "level": "Intermediate",
+  "type": "Self-Assessment Quiz",
+  "instructions": [
+    "Read each question carefully and choose the best answer."
+  ],
+  "metadata": {
+    "time": "30 minutes",
+    "total_marks": 30,
+    "total_questions": 30
+  },
+  "sections": [
+    {
+      "section_letter": "A",
+      "section_title": "Multiple Choice",
+      "question_type": "multiple_choice",
+      "questions_count": 30,
+      "marks_per_question": 1.0,
+      "total_section_marks": 30,
+      "questions": [
+        {
+          "question_number": 1,
+          "question_text": "Question",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Option 1"
+            },
+            {
+              "letter": "B",
+              "text": "Option 2"
+            },
+            {
+              "letter": "C",
+              "text": "Option 3"
+            },
+            {
+              "letter": "D",
+              "text": "Option 4"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 2,
+          "question_text": "Question",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Option 1"
+            },
+            {
+              "letter": "B",
+              "text": "Option 2"
+            },
+            {
+              "letter": "C",
+              "text": "Option 3"
+            },
+            {
+              "letter": "D",
+              "text": "Option 4"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 3,
+          "question_text": "Question",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Option 1"
+            },
+            {
+              "letter": "B",
+              "text": "Option 2"
+            },
+            {
+              "letter": "C",
+              "text": "Option 3"
+            },
+            {
+              "letter": "D",
+              "text": "Option 4"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 4,
+          "question_text": "Question",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Option 1"
+            },
+            {
+              "letter": "B",
+              "text": "Option 2"
+            },
+            {
+              "letter": "C",
+              "text": "Option 3"
+            },
+            {
+              "letter": "D",
+              "text": "Option 4"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 5,
+          "question_text": "Question",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Option 1"
+            },
+            {
+              "letter": "B",
+              "text": "Option 2"
+            },
+            {
+              "letter": "C",
+              "text": "Option 3"
+            },
+            {
+              "letter": "D",
+              "text": "Option 4"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 6,
+          "question_text": "Question",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Option 1"
+            },
+            {
+              "letter": "B",
+              "text": "Option 2"
+            },
+            {
+              "letter": "C",
+              "text": "Option 3"
+            },
+            {
+              "letter": "D",
+              "text": "Option 4"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 7,
+          "question_text": "Question",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Option 1"
+            },
+            {
+              "letter": "B",
+              "text": "Option 2"
+            },
+            {
+              "letter": "C",
+              "text": "Option 3"
+            },
+            {
+              "letter": "D",
+              "text": "Option 4"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 8,
+          "question_text": "Question",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Option 1"
+            },
+            {
+              "letter": "B",
+              "text": "Option 2"
+            },
+            {
+              "letter": "C",
+              "text": "Option 3"
+            },
+            {
+              "letter": "D",
+              "text": "Option 4"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 9,
+          "question_text": "Question",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Option 1"
+            },
+            {
+              "letter": "B",
+              "text": "Option 2"
+            },
+            {
+              "letter": "C",
+              "text": "Option 3"
+            },
+            {
+              "letter": "D",
+              "text": "Option 4"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 10,
+          "question_text": "Question",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Option 1"
+            },
+            {
+              "letter": "B",
+              "text": "Option 2"
+            },
+            {
+              "letter": "C",
+              "text": "Option 3"
+            },
+            {
+              "letter": "D",
+              "text": "Option 4"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 11,
+          "question_text": "Question",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Option 1"
+            },
+            {
+              "letter": "B",
+              "text": "Option 2"
+            },
+            {
+              "letter": "C",
+              "text": "Option 3"
+            },
+            {
+              "letter": "D",
+              "text": "Option 4"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 12,
+          "question_text": "Question",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Option 1"
+            },
+            {
+              "letter": "B",
+              "text": "Option 2"
+            },
+            {
+              "letter": "C",
+              "text": "Option 3"
+            },
+            {
+              "letter": "D",
+              "text": "Option 4"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 13,
+          "question_text": "Question",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Option 1"
+            },
+            {
+              "letter": "B",
+              "text": "Option 2"
+            },
+            {
+              "letter": "C",
+              "text": "Option 3"
+            },
+            {
+              "letter": "D",
+              "text": "Option 4"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 14,
+          "question_text": "Question",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Option 1"
+            },
+            {
+              "letter": "B",
+              "text": "Option 2"
+            },
+            {
+              "letter": "C",
+              "text": "Option 3"
+            },
+            {
+              "letter": "D",
+              "text": "Option 4"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 15,
+          "question_text": "Question",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Option 1"
+            },
+            {
+              "letter": "B",
+              "text": "Option 2"
+            },
+            {
+              "letter": "C",
+              "text": "Option 3"
+            },
+            {
+              "letter": "D",
+              "text": "Option 4"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 16,
+          "question_text": "Question",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Option 1"
+            },
+            {
+              "letter": "B",
+              "text": "Option 2"
+            },
+            {
+              "letter": "C",
+              "text": "Option 3"
+            },
+            {
+              "letter": "D",
+              "text": "Option 4"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 17,
+          "question_text": "Question",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Option 1"
+            },
+            {
+              "letter": "B",
+              "text": "Option 2"
+            },
+            {
+              "letter": "C",
+              "text": "Option 3"
+            },
+            {
+              "letter": "D",
+              "text": "Option 4"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 18,
+          "question_text": "Question",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Option 1"
+            },
+            {
+              "letter": "B",
+              "text": "Option 2"
+            },
+            {
+              "letter": "C",
+              "text": "Option 3"
+            },
+            {
+              "letter": "D",
+              "text": "Option 4"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 19,
+          "question_text": "Question",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Option 1"
+            },
+            {
+              "letter": "B",
+              "text": "Option 2"
+            },
+            {
+              "letter": "C",
+              "text": "Option 3"
+            },
+            {
+              "letter": "D",
+              "text": "Option 4"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 20,
+          "question_text": "Question",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Option 1"
+            },
+            {
+              "letter": "B",
+              "text": "Option 2"
+            },
+            {
+              "letter": "C",
+              "text": "Option 3"
+            },
+            {
+              "letter": "D",
+              "text": "Option 4"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 21,
+          "question_text": "Question",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Option 1"
+            },
+            {
+              "letter": "B",
+              "text": "Option 2"
+            },
+            {
+              "letter": "C",
+              "text": "Option 3"
+            },
+            {
+              "letter": "D",
+              "text": "Option 4"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 22,
+          "question_text": "Question",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Option 1"
+            },
+            {
+              "letter": "B",
+              "text": "Option 2"
+            },
+            {
+              "letter": "C",
+              "text": "Option 3"
+            },
+            {
+              "letter": "D",
+              "text": "Option 4"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 23,
+          "question_text": "Question",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Option 1"
+            },
+            {
+              "letter": "B",
+              "text": "Option 2"
+            },
+            {
+              "letter": "C",
+              "text": "Option 3"
+            },
+            {
+              "letter": "D",
+              "text": "Option 4"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 24,
+          "question_text": "Question",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Option 1"
+            },
+            {
+              "letter": "B",
+              "text": "Option 2"
+            },
+            {
+              "letter": "C",
+              "text": "Option 3"
+            },
+            {
+              "letter": "D",
+              "text": "Option 4"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 25,
+          "question_text": "Question",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Option 1"
+            },
+            {
+              "letter": "B",
+              "text": "Option 2"
+            },
+            {
+              "letter": "C",
+              "text": "Option 3"
+            },
+            {
+              "letter": "D",
+              "text": "Option 4"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 26,
+          "question_text": "Question",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Option 1"
+            },
+            {
+              "letter": "B",
+              "text": "Option 2"
+            },
+            {
+              "letter": "C",
+              "text": "Option 3"
+            },
+            {
+              "letter": "D",
+              "text": "Option 4"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 27,
+          "question_text": "Question",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Option 1"
+            },
+            {
+              "letter": "B",
+              "text": "Option 2"
+            },
+            {
+              "letter": "C",
+              "text": "Option 3"
+            },
+            {
+              "letter": "D",
+              "text": "Option 4"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 28,
+          "question_text": "Question",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Option 1"
+            },
+            {
+              "letter": "B",
+              "text": "Option 2"
+            },
+            {
+              "letter": "C",
+              "text": "Option 3"
+            },
+            {
+              "letter": "D",
+              "text": "Option 4"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 29,
+          "question_text": "Question",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Option 1"
+            },
+            {
+              "letter": "B",
+              "text": "Option 2"
+            },
+            {
+              "letter": "C",
+              "text": "Option 3"
+            },
+            {
+              "letter": "D",
+              "text": "Option 4"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 30,
+          "question_text": "Question",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Option 1"
+            },
+            {
+              "letter": "B",
+              "text": "Option 2"
+            },
+            {
+              "letter": "C",
+              "text": "Option 3"
+            },
+            {
+              "letter": "D",
+              "text": "Option 4"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        }
+      ]
+    }
+  ],
+  "document_hash": "41278ec11537287aa1588c8ce2532c7b590d8810eedcb7dd5ca684113049cba9"
+}

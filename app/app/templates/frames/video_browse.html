@@ -1,0 +1,5 @@
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components/pack_card.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/library/video_browse.css') }}">
+<turbo-frame id="main-content" data-shell-content="1" class="main-content{% if show_desktop_side_nav and request.cookies.get('knowly-nav-expanded') == 'true' %} nav-expanded{% endif %}">
+    {% include 'partials/_video_browse_content.html' %}
+</turbo-frame>

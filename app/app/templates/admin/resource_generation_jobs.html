@@ -1,0 +1,115 @@
+{% extends "admin/base.html" %}
+
+{% block extra_css %}{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin/resource_generation_jobs.css') }}">{%  endblock %}
+{% block admin_title %}Generation Jobs{% endblock %}
+{% block admin_content %}
+
+<div class="adm-header">
+  <div class="adm-header-left">
+    <div class="adm-header-icon"><i class="fas fa-list-check"></i></div>
+    <div>
+      <p class="adm-header-title">Generation Jobs</p>
+      <p class="adm-header-sub">Track and manage all in-app bulk generation jobs.</p>
+    </div>
+  </div>
+  <div class="adm-header-actions">
+    <a href="{{ url_for('admin.resource_generation') }}" class="adm-btn adm-btn--secondary">
+      <i class="fas fa-arrow-left"></i> Back
+    </a>
+    <a href="{{ url_for('admin.resource_generation_manual_job') }}" class="adm-btn adm-btn--secondary">
+      <i class="fas fa-plus"></i> Manual
+    </a>
+    <a href="{{ url_for('admin.resource_generation_generate_for_subject') }}" class="adm-btn adm-btn--secondary">
+      <i class="fas fa-magic"></i> Subject
+    </a>
+    <a href="{{ url_for('admin.resource_generation_runs') }}" class="adm-btn adm-btn--secondary">
+      <i class="fas fa-timeline"></i> Runs
+    </a>
+    <form method="POST" action="{{ url_for('admin.retry_all_generation_jobs') }}" style="display:inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="adm-btn adm-btn--secondary" type="submit">
+        <i class="fas fa-rotate-right"></i> Retry All
+      </button>
+    </form>
+    <a href="{{ url_for('admin.resource_generation_log') }}" class="adm-btn adm-btn--secondary">
+      <i class="fas fa-terminal"></i> Log
+    </a>
+  </div>
+</div>
+
+<div class="adm-card">
+  <div class="rg-stats">
+    <div><strong>Status:</strong> {{ 'Running' if runner_state.running else 'Idle' }}</div>
+    <div><strong>Pending:</strong> {{ stats.pending }}</div>
+    <div><strong>Generating:</strong> {{ stats.generating }}</div>
+    <div><strong>Posted:</strong> {{ stats.posted }}</div>
+    <div><strong>Failed:</strong> {{ stats.failed }}</div>
+    <div><strong>Cancelled:</strong> {{ stats.cancelled }}</div>
+  </div>
+</div>
+
+<div class="adm-card">
+  <div class="rg-filters">
+    <a class="rg-filter {{ 'active' if not status_filter else '' }}" href="{{ url_for('admin.resource_generation_jobs') }}">All</a>
+    {% for s in ['pending', 'generating', 'posted', 'failed', 'cancelled'] %}
+      <a class="rg-filter {{ 'active' if status_filter == s else '' }}" href="{{ url_for('admin.resource_generation_jobs', status=s) }}">{{ s|capitalize }}</a>
+    {% endfor %}
+  </div>
+
+  {% if jobs %}
+  <div class="rg-table-wrap">
+    <table class="rg-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Topic</th>
+          <th>Subject</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Attempts</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for job in jobs %}
+        <tr>
+          <td>{{ job.id }}</td>
+          <td>{{ job.topic }}</td>
+          <td>{{ job.subject_slug }}</td>
+          <td>{{ job.content_type }}</td>
+          <td>{{ job.status }}</td>
+          <td>{{ job.attempts }}</td>
+          <td>
+            <div class="rg-actions-inline">
+              {% if job.status in ['failed', 'cancelled'] %}
+              <form method="POST" action="{{ url_for('admin.retry_generation_job', job_id=job.id) }}">
+                <button class="adm-btn adm-btn--secondary" type="submit">Retry</button>
+              </form>
+              {% endif %}
+              {% if job.status in ['pending', 'generating'] %}
+              <form method="POST" action="{{ url_for('admin.cancel_generation_job', job_id=job.id) }}">
+                <button class="adm-btn adm-btn--secondary" type="submit">Cancel</button>
+              </form>
+              {% endif %}
+              {% if job.status in ['failed', 'cancelled'] %}
+              <form method="POST" action="{{ url_for('admin.delete_generation_job', job_id=job.id) }}">
+                <button class="adm-btn adm-btn--secondary" type="submit">Delete</button>
+              </form>
+              {% endif %}
+            </div>
+            {% if job.error %}
+            <div class="rg-error">{{ job.error }}</div>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p class="rg-empty">No jobs found for this filter.</p>
+  {% endif %}
+</div>
+
+{% endblock %}

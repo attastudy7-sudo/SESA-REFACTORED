@@ -1,0 +1,89 @@
+<div class="lib-wrap">
+
+  {# ── MARKETPLACE HERO ── #}
+  <div class="lmh-hero">
+    <div class="lmh-hero-text">
+      <h1 class="lmh-headline">All Courses </h1>
+      <p class="lmh-sub">AI-generated courses built from the best academic videos. Find yours or create one.</p>
+    </div>
+    <div class="lmh-search-row">
+  <div class="lmh-pill">
+    <i class="fas fa-search lmh-pill-icon"></i>
+    <input
+      type="text"
+      id="bundle-search"
+      class="lmh-pill-input"
+      placeholder="Search..."
+      oninput="filterBundles()"
+      autocomplete="off"
+    />
+    <!-- Added internal search button -->
+    <button class="lmh-internal-search-btn" onclick="filterBundles()">
+        <i class="fas fa-arrow-right"></i>
+    </button>
+  </div>
+  <!-- This button will be hidden via CSS on mobile -->
+  <a href="/posts/create" class="lmh-create-btn">
+    <i class="fas fa-plus"></i> Create pack
+  </a>
+</div>
+
+    <div class="lmh-sort-row">
+      <button class="lmh-sort-chip lmh-sort-chip--active" data-filter="all" onclick="setSortFilter(this, 'all')">All courses</button>
+      <button class="lmh-sort-chip" data-filter="new" onclick="setSortFilter(this, 'new')">New</button>
+      <button class="lmh-sort-chip" data-filter="top" onclick="setSortFilter(this, 'top')">Top rated</button>
+      <button class="lmh-sort-chip" data-filter="trending" onclick="setSortFilter(this, 'trending')">Trending</button>
+    </div>
+  </div>
+
+  {# ── PACK GRID ── #}
+   <div id="bundlesGrid">
+     {% if topic_cards and topic_cards|length > 0 %}
+     <div id="bundlesContent" class="db-card-grid">
+       {% for bundle in topic_cards %}
+         {% include '_pack_card.html' %}
+       {% endfor %}
+     </div>
+    {% else %}
+    <div id="bundlesEmpty">
+      <div class="sp-empty">
+        <div class="sp-empty-icon" style="font-size:2.5rem; margin-bottom:0.5rem;">📦</div>
+        <div class="sp-empty-title">No study packs found</div>
+        <p class="sp-empty-desc">Try <a href="javascript:void(0)" onclick="openSettingsModal('education')">setting your programme</a> in settings or explore other subjects.</p>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<script>
+  function filterBundles() {
+    const filter = document.getElementById('bundle-search').value.toLowerCase();
+    const activeFilter = document.querySelector('.lmh-sort-chip--active')?.dataset.filter || 'all';
+    applyFilters(filter, activeFilter);
+  }
+
+  function setSortFilter(btn, filter) {
+    document.querySelectorAll('.lmh-sort-chip').forEach(c => c.classList.remove('lmh-sort-chip--active'));
+    btn.classList.add('lmh-sort-chip--active');
+    const searchVal = document.getElementById('bundle-search').value.toLowerCase();
+    applyFilters(searchVal, filter);
+  }
+
+  function applyFilters(searchVal, sortFilter) {
+    const cards = document.querySelectorAll('#bundlesContent .pack-outer');
+    cards.forEach(card => {
+      const titleEl   = card.querySelector('.pack-title');
+      const subjectEl = card.querySelector('.pack-subject');
+      const text    = titleEl   ? titleEl.textContent.toLowerCase()   : '';
+      const subject = subjectEl ? subjectEl.textContent.toLowerCase() : '';
+      const matchesSearch = !searchVal || text.includes(searchVal) || subject.includes(searchVal);
+      let matchesFilter = true;
+      if (sortFilter === 'new')      matchesFilter = card.querySelector('.badge-new')      !== null;
+      if (sortFilter === 'top')      matchesFilter = card.querySelector('.badge-top')      !== null;
+      if (sortFilter === 'trending') matchesFilter = card.querySelector('.badge-trending') !== null;
+      card.style.display = (matchesSearch && matchesFilter) ? '' : 'none';
+    });
+  }
+</script>

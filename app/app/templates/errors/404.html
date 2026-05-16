@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>404 — Page Not Found | knowly</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/images/icon-32x32.png">
+  <link rel="shortcut icon" href="/static/favicon.ico">
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/errors/404.css') }}">
+</head>
+<body>
+  <div class="blob blob-tr"></div>
+  <div class="blob blob-bl"></div>
+
+  <nav class="error-nav">
+    <a href="/" class="nav-logo" aria-label="knowly home">
+      <img src="/static/images/knowly.png" alt="knowly">
+      <span class="nav-logo-name">knowly</span>
+    </a>
+  </nav>
+
+  <main class="scene">
+
+    <div class="error-code">404</div>
+    <div class="divider"></div>
+
+    <h1 class="error-headline">This page is missing a chapter.</h1>
+    <p class="error-sub">
+      Looks like this resource has been moved, deleted, or never existed.
+      Let&rsquo;s get you back on track.
+    </p>
+
+    <div class="actions">
+      <a href="/" class="btn btn-primary">
+        <i class="fa-solid fa-house"></i> Back to Home
+      </a>
+      <a href="/explore" class="btn btn-ghost">
+        <i class="fa-solid fa-compass"></i> Explore Posts
+      </a>
+    </div>
+
+    <div class="breadcrumb">
+      knowly
+      <i class="fa-solid fa-chevron-right"></i>
+      Error
+      <i class="fa-solid fa-chevron-right"></i>
+      404
+    </div>
+
+  </main>
+</body>
+</html>

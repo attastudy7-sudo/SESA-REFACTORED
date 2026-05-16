@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>500 — Server Error | knowly</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/images/icon-32x32.png">
+  <link rel="shortcut icon" href="/static/favicon.ico">
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/errors/500.css') }}">
+</head>
+<body>
+  <div class="blob blob-tr"></div>
+  <div class="blob blob-bl"></div>
+
+  <nav class="error-nav">
+    <a href="/" class="nav-logo" aria-label="knowly home">
+      <img src="/static/images/knowly.png" alt="knowly">
+      <span class="nav-logo-name">knowly</span>
+    </a>
+  </nav>
+
+  <main class="scene">
+
+    <div class="error-code">500</div>
+    <div class="divider"></div>
+
+    <h1 class="error-headline">Something went wrong on our end.</h1>
+    <p class="error-sub">
+      Our servers hit an unexpected snag. It&rsquo;s not you &mdash; it&rsquo;s us.
+      Try refreshing, or head home while we sort it out.
+    </p>
+
+    <div class="actions">
+      <a href="/" class="btn btn-primary">
+        <i class="fa-solid fa-house"></i> Back to Home
+      </a>
+      <a href="javascript:location.reload()" class="btn btn-ghost">
+        <i class="fa-solid fa-rotate-right"></i> Try Again
+      </a>
+    </div>
+
+    <div class="breadcrumb">
+      knowly
+      <i class="fa-solid fa-chevron-right"></i>
+      Error
+      <i class="fa-solid fa-chevron-right"></i>
+      500
+    </div>
+
+  </main>
+</body>
+</html>

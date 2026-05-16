@@ -1,0 +1,155 @@
+{
+  "schema_version": "1.0",
+  "document_type": "quiz",
+  "generated_at": "2026-04-09T23:42:31.566126+00:00",
+  "title": "Exponential and Logarithm Functions (MATH161)",
+  "course": "MA101 \u2013 Calculus I",
+  "level": "Intermediate",
+  "type": "Self-Assessment Quiz",
+  "instructions": [
+    "Read each question carefully and choose the best answer."
+  ],
+  "metadata": {
+    "time": "30 minutes",
+    "total_marks": 5,
+    "total_questions": 5
+  },
+  "sections": [
+    {
+      "section_letter": "A",
+      "section_title": "Multiple Choice",
+      "question_type": "multiple_choice",
+      "questions_count": 5,
+      "marks_per_question": 1.0,
+      "total_section_marks": 5,
+      "questions": [
+        {
+          "question_number": 1,
+          "question_text": "For an exponential function $f(x) = b^x$, what are the constraints on the base $b$?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "$b > 0$ and $b \\neq 1$"
+            },
+            {
+              "letter": "B",
+              "text": "$b \\geq 0$"
+            },
+            {
+              "letter": "C",
+              "text": "$b > 1$ only"
+            },
+            {
+              "letter": "D",
+              "text": "$b$ can be any real number"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "By definition, the base $b$ of an exponential function must be positive and not equal to 1 to ensure the function is well-defined and not a constant function $f(x)=1$."
+        },
+        {
+          "question_number": 2,
+          "question_text": "What is the range of the exponential function $f(x) = b^x$?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "$(-\\infty, \\infty)$"
+            },
+            {
+              "letter": "B",
+              "text": "$(0, \\infty)$"
+            },
+            {
+              "letter": "C",
+              "text": "$[0, \\infty)$"
+            },
+            {
+              "letter": "D",
+              "text": "$(-\\infty, 0)$"
+            }
+          ],
+          "correct_answer": "B",
+          "explanation": "An exponential function $b^x$ is always positive and never reaches zero, thus its range is all positive real numbers."
+        },
+        {
+          "question_number": 3,
+          "question_text": "Which of the following is the logarithmic equivalent of the exponential form $x = b^y$?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "$y = \\log_x b$"
+            },
+            {
+              "letter": "B",
+              "text": "$x = \\log_b y$"
+            },
+            {
+              "letter": "C",
+              "text": "$y = \\log_b x$"
+            },
+            {
+              "letter": "D",
+              "text": "$b = \\log_y x$"
+            }
+          ],
+          "correct_answer": "C",
+          "explanation": "The logarithm $\\log_b x$ is defined as the exponent $y$ to which the base $b$ must be raised to produce $x$."
+        },
+        {
+          "question_number": 4,
+          "question_text": "What is the value of $\\ln(e^x)$?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "$e$"
+            },
+            {
+              "letter": "B",
+              "text": "$1$"
+            },
+            {
+              "letter": "C",
+              "text": "$x$"
+            },
+            {
+              "letter": "D",
+              "text": "$\\log x$"
+            }
+          ],
+          "correct_answer": "C",
+          "explanation": "The natural logarithm and the natural exponential function are inverses; therefore, $\\ln(e^x) = x$."
+        },
+        {
+          "question_number": 5,
+          "question_text": "Using the properties of logarithms, what is $\\log_b(xy)$ equal to?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "$\\log_b x - \\log_b y$"
+            },
+            {
+              "letter": "B",
+              "text": "$\\log_b x + \\log_b y$"
+            },
+            {
+              "letter": "C",
+              "text": "$(\\log_b x)(\\log_b y)$"
+            },
+            {
+              "letter": "D",
+              "text": "$y \\log_b x$"
+            }
+          ],
+          "correct_answer": "B",
+          "explanation": "The product rule for logarithms states that the logarithm of a product is the sum of the logarithms of the factors."
+        }
+      ]
+    }
+  ],
+  "document_hash": "80f0e36005e26fb04e1effc72542c96992d7661f7ffc77b42336bb1ee32e5dd2"
+}

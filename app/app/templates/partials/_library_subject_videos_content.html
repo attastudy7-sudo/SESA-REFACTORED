@@ -1,0 +1,62 @@
+<script>
+(function() {
+  function searchVideos(query) {
+    const resultsSection = document.getElementById('searchResultsSection');
+    const resultsGrid    = document.getElementById('searchResultsGrid');
+    const originalContent = document.getElementById('originalContent');
+
+    if (!query || !query.trim()) {
+      if (resultsSection) resultsSection.style.display = 'none';
+      if (originalContent) originalContent.style.display = 'block';
+      return;
+    }
+
+    if (originalContent) originalContent.style.display = 'none';
+    if (resultsSection)  resultsSection.style.display  = 'block';
+    if (resultsGrid)     resultsGrid.style.display      = 'grid';
+    if (resultsGrid)     resultsGrid.innerHTML = '<p style="grid-column:1/-1;color:var(--text-muted);padding:2rem;text-align:center;">Searching…</p>';
+
+    fetch('/library/search-videos?q=' + encodeURIComponent(query) + '&limit=24')
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (!resultsGrid) return;
+        if (data.error === 'non_academic') {
+          resultsGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--text-muted);">No academic videos found for "' + query + '".<br><span style="font-size:0.85rem;opacity:0.8;">Try topics like "calculus", "physics", "programming".</span></div>';
+          return;
+        }
+        if (!data.videos || data.videos.length === 0) {
+          resultsGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--text-muted);">No videos found for "' + query + '"</div>';
+          return;
+        }
+        resultsGrid.innerHTML = data.videos.map(function(v) {
+          var thumb = v.thumbnail || ('https://img.youtube.com/vi/' + v.video_id + '/hqdefault.jpg');
+          var href  = v.db_id ? ('/library/video/' + v.db_id)
+                              : ('/library/video/ext?yt=' + encodeURIComponent(v.video_id) + '&t=' + encodeURIComponent(v.title) + '&c=' + encodeURIComponent(v.channel || 'YouTube'));
+          return '<div class="sv-card-container"><a href="' + href + '" class="explore-card"><div class="explore-thumb"><img src="' + thumb + '" alt="" class="explore-img" onerror="this.style.display=\'none\'"><div class="explore-play"><svg viewBox="0 0 24 24" fill="white" width="22" height="22"><polygon points="6,3 21,12 6,21"/></svg></div></div><div class="explore-body"><h3 class="explore-card-title">' + v.title + '</h3><div class="explore-card-footer"><p class="explore-card-meta">' + (v.subject || v.channel || '') + '</p></div></div></a></div>';
+        }).join('');
+      })
+      .catch(function() {
+        if (resultsGrid) resultsGrid.innerHTML = '<p style="grid-column:1/-1;color:var(--text-muted);padding:2rem;text-align:center;">Search failed — check your connection.</p>';
+      });
+  }
+
+  function init() {
+    var btn   = document.getElementById('videoSearchBtn');
+    var input = document.getElementById('videoSearchInput');
+    if (!btn || !input) return;
+    btn.addEventListener('click', function() { searchVideos(input.value); });
+    input.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); searchVideos(input.value); }
+    });
+  }
+
+  // Runs on direct page load AND on every Turbo frame swap
+  document.addEventListener('turbo:load', init);
+  // Fallback for non-Turbo direct loads
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>

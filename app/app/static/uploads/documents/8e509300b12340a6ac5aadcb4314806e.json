@@ -1,0 +1,780 @@
+{
+  "schema_version": "1.0",
+  "document_type": "quiz",
+  "generated_at": "2026-04-11T11:44:42.709322+00:00",
+  "title": "Intro to Mathematical Proof Strategies I (CSM 165)",
+  "course": "Discrete Mathematics",
+  "level": "Intermediate",
+  "type": "Self-Assessment Quiz",
+  "instructions": [
+    "Read each question carefully and choose the best answer."
+  ],
+  "metadata": {
+    "time": "30 minutes",
+    "total_marks": 30,
+    "total_questions": 30
+  },
+  "sections": [
+    {
+      "section_letter": "A",
+      "section_title": "Multiple Choice",
+      "question_type": "multiple_choice",
+      "questions_count": 30,
+      "marks_per_question": 1.0,
+      "total_section_marks": 30,
+      "questions": [
+        {
+          "question_number": 1,
+          "question_text": "What is the main idea highlighted in part 1 of this material?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "It focuses on CSM 165: Discrete Mathematics Intro to Mathematical Proof Strategies I Kwame Atta Gyamfi (PhD) Dept.ofMathematics KNUST."
+            },
+            {
+              "letter": "B",
+              "text": "It is unrelated background information."
+            },
+            {
+              "letter": "C",
+              "text": "It only lists random examples."
+            },
+            {
+              "letter": "D",
+              "text": "It contradicts the source completely."
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "The source centers on: CSM 165: Discrete Mathematics Intro to Mathematical Proof Strategies I Kwame Atta Gyamfi (PhD) Dept.ofMathematics KNUST"
+        },
+        {
+          "question_number": 2,
+          "question_text": "What is the main idea highlighted in part 2 of this material?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "It focuses on Example 1 (Axiom of Euclid) For every line \u2113 and point P not on \u2113, there is a unique line containing containing P that i."
+            },
+            {
+              "letter": "B",
+              "text": "It is unrelated background information."
+            },
+            {
+              "letter": "C",
+              "text": "It only lists random examples."
+            },
+            {
+              "letter": "D",
+              "text": "It contradicts the source completely."
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "The source centers on: Example 1 (Axiom of Euclid) For every line \u2113 and point P not on \u2113, there is a unique line containing containing P that i"
+        },
+        {
+          "question_number": 3,
+          "question_text": "What is the main idea highlighted in part 3 of this material?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "It focuses on Mathematical statements: Theorem A true mathematical statement whose truth can be verified.."
+            },
+            {
+              "letter": "B",
+              "text": "It is unrelated background information."
+            },
+            {
+              "letter": "C",
+              "text": "It only lists random examples."
+            },
+            {
+              "letter": "D",
+              "text": "It contradicts the source completely."
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "The source centers on: Mathematical statements: Theorem A true mathematical statement whose truth can be verified."
+        },
+        {
+          "question_number": 4,
+          "question_text": "What is the main idea highlighted in part 4 of this material?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "It focuses on Mathematical statement: Corollary A mathematical statement (or result) from, and is thereby a consequence of, some earli."
+            },
+            {
+              "letter": "B",
+              "text": "It is unrelated background information."
+            },
+            {
+              "letter": "C",
+              "text": "It only lists random examples."
+            },
+            {
+              "letter": "D",
+              "text": "It contradicts the source completely."
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "The source centers on: Mathematical statement: Corollary A mathematical statement (or result) from, and is thereby a consequence of, some earli"
+        },
+        {
+          "question_number": 5,
+          "question_text": "What is the main idea highlighted in part 5 of this material?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "It focuses on 2/66 Definitions of mathematical statement For the most part then, our results are examples used to illustrateprooftechn."
+            },
+            {
+              "letter": "B",
+              "text": "It is unrelated background information."
+            },
+            {
+              "letter": "C",
+              "text": "It only lists random examples."
+            },
+            {
+              "letter": "D",
+              "text": "It contradicts the source completely."
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "The source centers on: 2/66 Definitions of mathematical statement For the most part then, our results are examples used to illustrateprooftechn"
+        },
+        {
+          "question_number": 6,
+          "question_text": "Question 6: Review the core concept from this study material.",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "A"
+            },
+            {
+              "letter": "B",
+              "text": "Not A"
+            },
+            {
+              "letter": "C",
+              "text": "Question 6: Review the core concept from option C"
+            },
+            {
+              "letter": "D",
+              "text": "Question 6: Review the core concept from option D"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This question reinforces the key idea drawn from the source material."
+        },
+        {
+          "question_number": 7,
+          "question_text": "Question 7: Review the core concept from this study material.",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "A"
+            },
+            {
+              "letter": "B",
+              "text": "Not A"
+            },
+            {
+              "letter": "C",
+              "text": "Question 7: Review the core concept from option C"
+            },
+            {
+              "letter": "D",
+              "text": "Question 7: Review the core concept from option D"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This question reinforces the key idea drawn from the source material."
+        },
+        {
+          "question_number": 8,
+          "question_text": "Question 8: Review the core concept from this study material.",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "A"
+            },
+            {
+              "letter": "B",
+              "text": "Not A"
+            },
+            {
+              "letter": "C",
+              "text": "Question 8: Review the core concept from option C"
+            },
+            {
+              "letter": "D",
+              "text": "Question 8: Review the core concept from option D"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This question reinforces the key idea drawn from the source material."
+        },
+        {
+          "question_number": 9,
+          "question_text": "Question 9: Review the core concept from this study material.",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "A"
+            },
+            {
+              "letter": "B",
+              "text": "Not A"
+            },
+            {
+              "letter": "C",
+              "text": "Question 9: Review the core concept from option C"
+            },
+            {
+              "letter": "D",
+              "text": "Question 9: Review the core concept from option D"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This question reinforces the key idea drawn from the source material."
+        },
+        {
+          "question_number": 10,
+          "question_text": "Question 10: Review the core concept from this study material.",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "A"
+            },
+            {
+              "letter": "B",
+              "text": "Not A"
+            },
+            {
+              "letter": "C",
+              "text": "Question 10: Review the core concept fro option C"
+            },
+            {
+              "letter": "D",
+              "text": "Question 10: Review the core concept fro option D"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This question reinforces the key idea drawn from the source material."
+        },
+        {
+          "question_number": 11,
+          "question_text": "Question 11: Review the core concept from this study material.",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "A"
+            },
+            {
+              "letter": "B",
+              "text": "Not A"
+            },
+            {
+              "letter": "C",
+              "text": "Question 11: Review the core concept fro option C"
+            },
+            {
+              "letter": "D",
+              "text": "Question 11: Review the core concept fro option D"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This question reinforces the key idea drawn from the source material."
+        },
+        {
+          "question_number": 12,
+          "question_text": "Question 12: Review the core concept from this study material.",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "A"
+            },
+            {
+              "letter": "B",
+              "text": "Not A"
+            },
+            {
+              "letter": "C",
+              "text": "Question 12: Review the core concept fro option C"
+            },
+            {
+              "letter": "D",
+              "text": "Question 12: Review the core concept fro option D"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This question reinforces the key idea drawn from the source material."
+        },
+        {
+          "question_number": 13,
+          "question_text": "Question 13: Review the core concept from this study material.",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "A"
+            },
+            {
+              "letter": "B",
+              "text": "Not A"
+            },
+            {
+              "letter": "C",
+              "text": "Question 13: Review the core concept fro option C"
+            },
+            {
+              "letter": "D",
+              "text": "Question 13: Review the core concept fro option D"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This question reinforces the key idea drawn from the source material."
+        },
+        {
+          "question_number": 14,
+          "question_text": "Question 14: Review the core concept from this study material.",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "A"
+            },
+            {
+              "letter": "B",
+              "text": "Not A"
+            },
+            {
+              "letter": "C",
+              "text": "Question 14: Review the core concept fro option C"
+            },
+            {
+              "letter": "D",
+              "text": "Question 14: Review the core concept fro option D"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This question reinforces the key idea drawn from the source material."
+        },
+        {
+          "question_number": 15,
+          "question_text": "Question 15: Review the core concept from this study material.",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "A"
+            },
+            {
+              "letter": "B",
+              "text": "Not A"
+            },
+            {
+              "letter": "C",
+              "text": "Question 15: Review the core concept fro option C"
+            },
+            {
+              "letter": "D",
+              "text": "Question 15: Review the core concept fro option D"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This question reinforces the key idea drawn from the source material."
+        },
+        {
+          "question_number": 16,
+          "question_text": "Question 16: Review the core concept from this study material.",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "A"
+            },
+            {
+              "letter": "B",
+              "text": "Not A"
+            },
+            {
+              "letter": "C",
+              "text": "Question 16: Review the core concept fro option C"
+            },
+            {
+              "letter": "D",
+              "text": "Question 16: Review the core concept fro option D"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This question reinforces the key idea drawn from the source material."
+        },
+        {
+          "question_number": 17,
+          "question_text": "Question 17: Review the core concept from this study material.",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "A"
+            },
+            {
+              "letter": "B",
+              "text": "Not A"
+            },
+            {
+              "letter": "C",
+              "text": "Question 17: Review the core concept fro option C"
+            },
+            {
+              "letter": "D",
+              "text": "Question 17: Review the core concept fro option D"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This question reinforces the key idea drawn from the source material."
+        },
+        {
+          "question_number": 18,
+          "question_text": "Question 18: Review the core concept from this study material.",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "A"
+            },
+            {
+              "letter": "B",
+              "text": "Not A"
+            },
+            {
+              "letter": "C",
+              "text": "Question 18: Review the core concept fro option C"
+            },
+            {
+              "letter": "D",
+              "text": "Question 18: Review the core concept fro option D"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This question reinforces the key idea drawn from the source material."
+        },
+        {
+          "question_number": 19,
+          "question_text": "Question 19: Review the core concept from this study material.",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "A"
+            },
+            {
+              "letter": "B",
+              "text": "Not A"
+            },
+            {
+              "letter": "C",
+              "text": "Question 19: Review the core concept fro option C"
+            },
+            {
+              "letter": "D",
+              "text": "Question 19: Review the core concept fro option D"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This question reinforces the key idea drawn from the source material."
+        },
+        {
+          "question_number": 20,
+          "question_text": "Question 20: Review the core concept from this study material.",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "A"
+            },
+            {
+              "letter": "B",
+              "text": "Not A"
+            },
+            {
+              "letter": "C",
+              "text": "Question 20: Review the core concept fro option C"
+            },
+            {
+              "letter": "D",
+              "text": "Question 20: Review the core concept fro option D"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This question reinforces the key idea drawn from the source material."
+        },
+        {
+          "question_number": 21,
+          "question_text": "Question 21: Review the core concept from this study material.",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "A"
+            },
+            {
+              "letter": "B",
+              "text": "Not A"
+            },
+            {
+              "letter": "C",
+              "text": "Question 21: Review the core concept fro option C"
+            },
+            {
+              "letter": "D",
+              "text": "Question 21: Review the core concept fro option D"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This question reinforces the key idea drawn from the source material."
+        },
+        {
+          "question_number": 22,
+          "question_text": "Question 22: Review the core concept from this study material.",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "A"
+            },
+            {
+              "letter": "B",
+              "text": "Not A"
+            },
+            {
+              "letter": "C",
+              "text": "Question 22: Review the core concept fro option C"
+            },
+            {
+              "letter": "D",
+              "text": "Question 22: Review the core concept fro option D"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This question reinforces the key idea drawn from the source material."
+        },
+        {
+          "question_number": 23,
+          "question_text": "Question 23: Review the core concept from this study material.",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "A"
+            },
+            {
+              "letter": "B",
+              "text": "Not A"
+            },
+            {
+              "letter": "C",
+              "text": "Question 23: Review the core concept fro option C"
+            },
+            {
+              "letter": "D",
+              "text": "Question 23: Review the core concept fro option D"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This question reinforces the key idea drawn from the source material."
+        },
+        {
+          "question_number": 24,
+          "question_text": "Question 24: Review the core concept from this study material.",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "A"
+            },
+            {
+              "letter": "B",
+              "text": "Not A"
+            },
+            {
+              "letter": "C",
+              "text": "Question 24: Review the core concept fro option C"
+            },
+            {
+              "letter": "D",
+              "text": "Question 24: Review the core concept fro option D"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This question reinforces the key idea drawn from the source material."
+        },
+        {
+          "question_number": 25,
+          "question_text": "Question 25: Review the core concept from this study material.",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "A"
+            },
+            {
+              "letter": "B",
+              "text": "Not A"
+            },
+            {
+              "letter": "C",
+              "text": "Question 25: Review the core concept fro option C"
+            },
+            {
+              "letter": "D",
+              "text": "Question 25: Review the core concept fro option D"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This question reinforces the key idea drawn from the source material."
+        },
+        {
+          "question_number": 26,
+          "question_text": "Question 26: Review the core concept from this study material.",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "A"
+            },
+            {
+              "letter": "B",
+              "text": "Not A"
+            },
+            {
+              "letter": "C",
+              "text": "Question 26: Review the core concept fro option C"
+            },
+            {
+              "letter": "D",
+              "text": "Question 26: Review the core concept fro option D"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This question reinforces the key idea drawn from the source material."
+        },
+        {
+          "question_number": 27,
+          "question_text": "Question 27: Review the core concept from this study material.",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "A"
+            },
+            {
+              "letter": "B",
+              "text": "Not A"
+            },
+            {
+              "letter": "C",
+              "text": "Question 27: Review the core concept fro option C"
+            },
+            {
+              "letter": "D",
+              "text": "Question 27: Review the core concept fro option D"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This question reinforces the key idea drawn from the source material."
+        },
+        {
+          "question_number": 28,
+          "question_text": "Question 28: Review the core concept from this study material.",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "A"
+            },
+            {
+              "letter": "B",
+              "text": "Not A"
+            },
+            {
+              "letter": "C",
+              "text": "Question 28: Review the core concept fro option C"
+            },
+            {
+              "letter": "D",
+              "text": "Question 28: Review the core concept fro option D"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This question reinforces the key idea drawn from the source material."
+        },
+        {
+          "question_number": 29,
+          "question_text": "Question 29: Review the core concept from this study material.",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "A"
+            },
+            {
+              "letter": "B",
+              "text": "Not A"
+            },
+            {
+              "letter": "C",
+              "text": "Question 29: Review the core concept fro option C"
+            },
+            {
+              "letter": "D",
+              "text": "Question 29: Review the core concept fro option D"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This question reinforces the key idea drawn from the source material."
+        },
+        {
+          "question_number": 30,
+          "question_text": "Question 30: Review the core concept from this study material.",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "A"
+            },
+            {
+              "letter": "B",
+              "text": "Not A"
+            },
+            {
+              "letter": "C",
+              "text": "Question 30: Review the core concept fro option C"
+            },
+            {
+              "letter": "D",
+              "text": "Question 30: Review the core concept fro option D"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This question reinforces the key idea drawn from the source material."
+        }
+      ]
+    }
+  ],
+  "document_hash": "77121f6feba48f7eafd1c516b95a8967521e7f7b85b233e0a3ef418b1071bf2d"
+}

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Library — Knowly{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components/pack_card.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/library/index.css') }}">{% endblock %}
+
+{% block content %}
+    {% include 'partials/_library_index_content.html' %}
+{% endblock %}

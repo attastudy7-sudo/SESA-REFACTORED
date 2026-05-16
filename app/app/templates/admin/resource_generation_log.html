@@ -1,0 +1,78 @@
+{% extends "admin/base.html" %}
+{% block admin_title %}Generation Log{% endblock %}
+{% block admin_content %}
+
+<div class="adm-header">
+  <div class="adm-header-left">
+    <div class="adm-header-icon"><i class="fas fa-terminal"></i></div>
+    <div>
+      <p class="adm-header-title">Generation Log</p>
+      <p class="adm-header-sub">Live run output for in-app KnowlyGen bulk generation.</p>
+    </div>
+  </div>
+  <div class="adm-header-actions">
+    <a href="{{ url_for('admin.resource_generation') }}" class="adm-btn adm-btn--secondary">
+      <i class="fas fa-arrow-left"></i> Back
+    </a>
+    {% if runner_state.running %}
+    <form method="POST" action="{{ url_for('admin.stop_generation_run') }}" style="display:inline">
+      <button class="adm-btn adm-btn--secondary" type="submit"><i class="fas fa-stop"></i> Stop</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="adm-card">
+  <div class="rg-log-meta">
+    <span><strong>Status:</strong> <span id="rgStatus">{{ 'Running' if runner_state.running else 'Idle' }}</span></span>
+    <span><strong>Run:</strong> <span id="rgRunId">{{ runner_state.run_id or '—' }}</span></span>
+    <span><strong>Lines:</strong> <span id="rgLineCount">0</span></span>
+  </div>
+  <pre id="rgLogBox" class="rg-log-box"></pre>
+</div>
+
+<style>
+.rg-log-meta {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: .8rem;
+  margin-bottom: .55rem;
+}
+.rg-log-box {
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #0b1220;
+  color: #dbeafe;
+  padding: .8rem;
+  min-height: 320px;
+  max-height: 62vh;
+  overflow: auto;
+  white-space: pre-wrap;
+  font-size: .75rem;
+}
+</style>
+
+<script>
+  async function refreshLog() {
+    try {
+      const res = await fetch("{{ url_for('admin.resource_generation_log_snapshot') }}");
+      const data = await res.json();
+      const lines = data.lines || [];
+      const box = document.getElementById('rgLogBox');
+      box.textContent = lines.join('\n');
+      box.scrollTop = box.scrollHeight;
+      document.getElementById('rgStatus').textContent = data.running ? 'Running' : 'Idle';
+      document.getElementById('rgRunId').textContent = data.run_id || '—';
+      document.getElementById('rgLineCount').textContent = String(lines.length);
+    } catch (err) {
+      // Ignore transient refresh errors.
+    }
+  }
+
+  refreshLog();
+  setInterval(refreshLog, 2500);
+</script>
+
+{% endblock %}

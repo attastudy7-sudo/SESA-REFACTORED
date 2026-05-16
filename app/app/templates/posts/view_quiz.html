@@ -1,0 +1,374 @@
+{% extends "base.html" %}
+{% block title %}{{ post.title|strip_course_code }}{% endblock %}
+  {% block og_title %}{{ post.title|strip_course_code }} - knowly{% endblock %}
+{% block og_description %}{{ post.description | striptags | truncate(160) if post.description else 'Study ' + post.content_type + ' on knowly' }}{% endblock %}
+
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/posts/view_quiz.css') }}">{%  endblock %}
+
+{% block content %}
+
+{% set qmeta  = quiz_meta or {} %}
+{% set q_count = qmeta.get('total_questions', 0) %}
+{% set q_marks = quiz_data.total_marks if quiz_data else 0 %}
+{% set q_xp    = quiz_data.xp_reward   if quiz_data else 0 %}
+{% set q_time  = qmeta.get('time_allowed') or qmeta.get('time') or qmeta.get('time_minutes') %}
+{% set q_level = qmeta.get('level', '') %}
+{% set like_base = ((post.id * 37 + post.created_at.toordinal() * 13) % 180) + 12 %}
+
+<div class="qv-root">
+
+  {# ══ TOP BAR ══ #}
+  <header class="qv-topbar">
+    <a href="{{ url_for('main.library_subject', slug=post.subject.slug) if post.subject else url_for('main.index') }}" class="qv-back" title="Back" data-knowly-back="1" data-back-fallback="{{ url_for('main.library_subject', slug=post.subject.slug) if post.subject else url_for('main.index') }}">
+      <i class="fas fa-arrow-left"></i>
+    </a>
+    <div class="qv-topbar-spacer"></div>
+    <button class="qv-icon-btn" onclick="shareQuiz()" title="Share">
+      <i class="fas fa-share-nodes"></i>
+    </button>
+  </header>
+
+  <div class="qv-body">
+
+    {# ══ TITLE + ACTION CARD ══ #}
+    <div class="qv-header-stack">
+      <h1 class="qv-title">{{ post.title|strip_course_code }}</h1>
+
+      <div class="qv-action-card">
+        {% if user_entry %}
+        <div class="qv-score-display">
+          <div class="qv-score-ring">
+            <svg viewBox="0 0 64 64" class="qv-ring-svg">
+              <circle cx="32" cy="32" r="26" fill="none" stroke="var(--border)" stroke-width="4"/>
+              <circle cx="32" cy="32" r="26" fill="none"
+                stroke="{% if user_entry.score_pct >= 80 %}#10b981{% elif user_entry.score_pct >= 50 %}#f59e0b{% else %}#ef4444{% endif %}"
+                stroke-width="4" stroke-linecap="round"
+                stroke-dasharray="{{ (user_entry.score_pct / 100 * 163.4) | round(1) }} 163.4"
+                stroke-dashoffset="40.85"
+                transform="rotate(-90 32 32)"/>
+            </svg>
+            <span class="qv-ring-val">{{ user_entry.score_pct | round(0) | int }}%</span>
+          </div>
+          <div class="qv-score-meta">
+            <span class="qv-score-label">Your best score</span>
+            <span class="qv-score-marks">{{ user_entry.earned_marks | round(1) }} / {{ q_marks }} marks</span>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="qv-cta-area">
+          {% if current_user.is_authenticated %}
+            {% if user_entry %}
+            <a href="{{ url_for('quiz.quiz_start', post_id=post.id) }}" class="qv-btn qv-btn--retake">
+              <i class="fas fa-rotate-right"></i> Retake Quiz
+            </a>
+            {% else %}
+            <a href="{{ url_for('quiz.quiz_start', post_id=post.id) }}" class="qv-btn qv-btn--start">
+              <i class="fas fa-play"></i> Start Quiz
+            </a>
+            {% endif %}
+          {% else %}
+          <a href="{{ url_for('auth.login', next=request.path) }}" class="qv-btn qv-btn--start">
+            <i class="fas fa-right-to-bracket"></i> Log in to Take Quiz
+          </a>
+          {% endif %}
+        </div>
+
+        <ul class="qv-rules-list">
+          {% if q_time %}<li><i class="fas fa-clock"></i> Complete in <strong>{{ q_time }}</strong></li>{% endif %}
+          {% if q_count %}<li><i class="fas fa-list-check"></i> <strong>{{ q_count }}</strong> question{{ 's' if q_count != 1 }}, answer all</li>{% endif %}
+          <li><i class="fas fa-eye-slash"></i> Results shown after submission</li>
+          <li><i class="fas fa-rotate-right"></i> Retake anytime to improve</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>{# /hero-band #}
+
+  <div class="qv-body">
+
+    {# ══ LEADERBOARD ══ #}
+    {% if leaderboard_entries %}
+    <section class="qv-section">
+      <div class="qv-section-head">
+        <h2 class="qv-section-title"><i class="fas fa-ranking-star"></i> Leaderboard</h2>
+        <span class="qv-pill">{{ total_participants }} participant{{ 's' if total_participants != 1 }}</span>
+      </div>
+
+      <div class="qv-lb-wrap">
+        {# Top 3 podium on desktop #}
+        {% if leaderboard_entries | length >= 3 %}
+        <div class="qv-podium">
+          {% set top3 = leaderboard_entries[:3] %}
+          {# Order: 2nd, 1st, 3rd #}
+          {% for idx in [1, 0, 2] %}
+          {% if idx < top3 | length %}
+          {% set entry = top3[idx] %}
+          <div class="qv-podium-slot qv-podium-slot--{{ ['silver','gold','bronze'][idx] }}">
+            <img src="{{ entry.user.profile_picture_url }}" class="qv-podium-avatar" alt="">
+            <div class="qv-podium-medal">
+              {% if idx == 0 %}<i class="fas fa-trophy"></i>
+              {% elif idx == 1 %}<i class="fas fa-medal"></i>
+              {% else %}<i class="fas fa-medal"></i>{% endif %}
+            </div>
+            <a href="{{ url_for('users.profile', username=entry.user.username) }}" class="qv-podium-name">
+              {{ (entry.user.nickname or entry.user.username) | truncate(14, True, '') }}
+            </a>
+            <span class="qv-podium-score">{{ entry.score_pct | round(1) }}%</span>
+          </div>
+          {% endif %}
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        {# Full table #}
+        <table class="qv-lb-table">
+          <thead>
+            <tr>
+              <th class="qv-th-rank">#</th>
+              <th>Student</th>
+              <th class="qv-th-r">Score</th>
+              <th class="qv-th-r">Marks</th>
+              <th class="qv-th-r qv-hide-sm">Time</th>
+              <th class="qv-th-r qv-hide-sm">XP</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for entry in leaderboard_entries %}
+            <tr class="qv-lb-row {% if current_user.is_authenticated and entry.user_id == current_user.id %}qv-lb-me{% endif %}">
+              <td class="qv-td-rank">
+                {% if loop.index == 1 %}<span class="qv-medal qv-medal--gold"><i class="fas fa-trophy"></i></span>
+                {% elif loop.index == 2 %}<span class="qv-medal qv-medal--silver"><i class="fas fa-medal"></i></span>
+                {% elif loop.index == 3 %}<span class="qv-medal qv-medal--bronze"><i class="fas fa-medal"></i></span>
+                {% else %}<span class="qv-rank-num">{{ loop.index }}</span>{% endif %}
+              </td>
+              <td>
+                <div class="qv-lb-user">
+                  <img src="{{ entry.user.profile_picture_url }}" class="qv-lb-avatar" alt="">
+                  <a href="{{ url_for('users.profile', username=entry.user.username) }}" class="qv-lb-name">
+                    {{ entry.user.nickname or entry.user.username }}
+                    {% if current_user.is_authenticated and entry.user_id == current_user.id %}
+                    <span class="qv-you-tag">You</span>
+                    {% endif %}
+                  </a>
+                </div>
+              </td>
+              <td class="qv-td-r">
+                <span class="qv-score-pct {% if entry.score_pct >= 80 %}hi{% elif entry.score_pct >= 50 %}mid{% else %}lo{% endif %}">
+                  {{ entry.score_pct | round(1) }}%
+                </span>
+              </td>
+              <td class="qv-td-r qv-td-muted">{{ entry.earned_marks | round(1) }}/{{ q_marks }}</td>
+              <td class="qv-td-r qv-td-muted qv-hide-sm">{{ '%d:%02d' | format(entry.time_taken // 60, entry.time_taken % 60) }}</td>
+              <td class="qv-td-r qv-hide-sm"><span class="qv-xp-tag">+{{ entry.xp_earned }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        {% if current_user.is_authenticated and user_entry %}
+          {% set in_board = leaderboard_entries | selectattr('user_id', 'equalto', current_user.id) | list %}
+          {% if not in_board %}
+          <div class="qv-lb-nudge">
+            <i class="fas fa-user-clock"></i>
+            Your best: <strong>{{ user_entry.score_pct | round(1) }}%</strong> — not in the top {{ leaderboard_entries | length }} yet. Keep going!
+          </div>
+          {% endif %}
+        {% endif %}
+      </div>
+    </section>
+    {% endif %}
+
+    {# ══ COMMENTS ══ #}
+    <section class="qv-section" id="comments">
+      <div class="qv-section-head">
+        <h3 class="qv-section-title"><i class="fas fa-comments"></i> Discussion</h3>
+        <span class="qv-pill">{{ post.comment_count() }}</span>
+      </div>
+
+      {% if current_user.is_authenticated %}
+      <form method="post" action="{{ url_for('posts.comment', post_id=post.id) }}" class="qv-comment-form">
+        {{ comment_form.hidden_tag() }}
+        <img src="{{ current_user.profile_picture_url }}" class="qv-commenter-avatar" alt="">
+        <div class="qv-comment-input-wrap">
+          {{ comment_form.content(class="qv-comment-input", placeholder="Ask a question or share your thoughts…") }}
+          {{ comment_form.submit(class="qv-comment-submit") }}
+        </div>
+      </form>
+      {% else %}
+      <div class="qv-login-nudge">
+        <a href="#" onclick="openAuthModal('login')">Log in</a> to join the discussion
+      </div>
+      {% endif %}
+
+      <div class="qv-comment-list">
+        {% for comment in comments.items %}
+        <div class="qv-comment">
+          <a href="{{ url_for('users.profile', username=comment.author.username) }}">
+            <img src="{{ comment.author.profile_picture_url }}" class="qv-comment-avatar" alt="">
+          </a>
+          <div class="qv-comment-body">
+            <div class="qv-comment-head">
+              <a href="{{ url_for('users.profile', username=comment.author.username) }}" class="qv-comment-author">{{ comment.author.nickname or comment.author.username }}</a>
+              <span class="qv-comment-time">{{ comment.created_at.strftime('%b %d') }}</span>
+            </div>
+            <p class="qv-comment-text">{{ comment.content }}</p>
+          </div>
+        </div>
+        {% endfor %}
+        {% if not comments.items %}
+        <div class="qv-no-comments">
+          <i class="fas fa-comment-medical"></i>
+          <p>No comments yet — be the first.</p>
+        </div>
+        {% endif %}
+      </div>
+
+      {% if comments.has_prev or comments.has_next %}
+      <div class="qv-pagination">
+        {% if comments.has_prev %}
+        <a href="{{ url_for('posts.view', post_id=post.id, page=comments.prev_num) }}" class="qv-page-btn"><i class="fas fa-chevron-left"></i> Prev</a>
+        {% endif %}
+        <span class="qv-page-info">{{ comments.page }} / {{ comments.pages }}</span>
+        {% if comments.has_next %}
+        <a href="{{ url_for('posts.view', post_id=post.id, page=comments.next_num) }}" class="qv-page-btn">Next <i class="fas fa-chevron-right"></i></a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </section>
+
+  </div>{# /qv-body #}
+</div>{# /qv-root #}
+
+{# ══ SHARE SHEET ══ #}
+<div id="shareSheet" class="qv-share-overlay" onclick="if(event.target===this)closeShare()">
+  <div class="qv-share-sheet">
+    <div class="qv-share-handle"></div>
+    <div class="qv-share-header">
+      <span class="qv-share-title" id="shareTitle">Challenge your friends</span>
+      <button class="qv-share-close" onclick="closeShare()"><i class="fas fa-times"></i></button>
+    </div>
+    <p id="shareMsg" class="qv-share-msg"></p>
+    <div class="qv-share-url-row">
+      <input id="shareUrlInput" class="qv-share-url-input" type="text" readonly value="{{ request.url }}">
+      <button class="qv-share-copy" onclick="copyLink()"><i class="fas fa-copy" id="copyIcon"></i></button>
+    </div>
+    <div class="qv-share-options">
+      <a class="qv-share-opt" id="waShare" href="#" target="_blank" rel="noopener">
+        <div class="qv-share-opt-icon" style="background:#25D366"><i class="fab fa-whatsapp"></i></div>
+        <span>WhatsApp</span>
+      </a>
+      <a class="qv-share-opt" id="tgShare" href="#" target="_blank" rel="noopener">
+        <div class="qv-share-opt-icon" style="background:#229ED9"><i class="fab fa-telegram"></i></div>
+        <span>Telegram</span>
+      </a>
+      <a class="qv-share-opt" id="twShare" href="#" target="_blank" rel="noopener">
+        <div class="qv-share-opt-icon" style="background:#000">
+          <svg viewBox="0 0 24 24" fill="white" width="18" height="18"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.727-8.814-8.159-10.686h7.077l4.261 5.638 5.596-5.638zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </div>
+        <span>X / Twitter</span>
+      </a>
+      <button class="qv-share-opt" onclick="nativeShare()">
+        <div class="qv-share-opt-icon" style="background:var(--primary)"><i class="fas fa-share-alt"></i></div>
+        <span>More</span>
+      </button>
+    </div>
+  </div>
+</div>
+<script>
+async function toggleLike(btn) {
+  if (btn.disabled) return;
+  btn.disabled = true;
+  const postId = btn.dataset.postId, isLiked = btn.dataset.liked === 'true';
+  const countEl = document.getElementById('likeCount');
+  const base = parseInt(btn.dataset.base || '0', 10);
+  const newLiked = !isLiked;
+  btn.dataset.liked = newLiked;
+  btn.classList.toggle('is-liked', newLiked);
+  if (countEl) { const d = parseInt(countEl.textContent, 10); countEl.textContent = newLiked ? d + 1 : Math.max(base, d - 1); }
+  try {
+    const res = await fetch(`/posts/${postId}/like`, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.content || '' } });
+    if (!res.ok) throw new Error();
+    const data = await res.json().catch(() => null);
+    if (data?.like_count !== undefined && countEl) countEl.textContent = data.like_count + base;
+  } catch {
+    btn.dataset.liked = isLiked; btn.classList.toggle('is-liked', isLiked);
+    if (countEl) { const d = parseInt(countEl.textContent, 10); countEl.textContent = isLiked ? d + 1 : Math.max(base, d - 1); }
+  } finally { btn.disabled = false; }
+}
+
+// Auto-open share modal if user just completed the quiz
+if (new URLSearchParams(window.location.search).get('shared') === '1') {
+  window.addEventListener('DOMContentLoaded', () => shareQuiz());
+}
+
+function shareQuiz(scorePct) {
+  const url  = window.location.href.split('?')[0];
+  const title = '{{ post.title | replace("\'", "\\'") }}';
+
+  let msg, shareText;
+  if (scorePct === undefined) {
+    // Manual share — generic message
+    msg = 'Think your classmates can handle this? Send it and find out 👀';
+    shareText = `Can you beat me on this quiz? "${title}" — try it on knowly!`;
+  } else if (scorePct >= 80) {
+    msg = `You scored <strong>${scorePct}%</strong> 🏆 Bet your friends can't beat that. Send it and defend your spot.`;
+    shareText = `I just scored ${scorePct}% on "${title}" — think you can beat me? Try it on knowly!`;
+  } else if (scorePct >= 60) {
+    msg = `You got <strong>${scorePct}%</strong> — not bad! But can your friends do better? Only one way to find out.`;
+    shareText = `I scored ${scorePct}% on "${title}" on knowly. Can you top it?`;
+  } else {
+    msg = `This one's tough — you got <strong>${scorePct}%</strong>. Share it and see if anyone else survives 😅`;
+    shareText = `This quiz nearly got me — "${title}" on knowly. Think you can do better?`;
+  }
+
+  document.getElementById('shareMsg').innerHTML = msg;
+
+  const enc  = encodeURIComponent(url);
+  const etxt = encodeURIComponent(shareText);
+  document.getElementById('waShare').href = `https://wa.me/?text=${etxt}%20${enc}`;
+  document.getElementById('tgShare').href = `https://t.me/share/url?url=${enc}&text=${etxt}`;
+  document.getElementById('twShare').href = `https://twitter.com/intent/tweet?text=${etxt}&url=${enc}`;
+  document.getElementById('shareSheet').classList.add('is-open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeShare() { document.getElementById('shareSheet').classList.remove('is-open'); document.body.style.overflow = ''; }
+async function copyLink() {
+  const input = document.getElementById('shareUrlInput'), icon = document.getElementById('copyIcon');
+  try { await navigator.clipboard.writeText(input.value); } catch { input.select(); document.execCommand('copy'); }
+  icon.className = 'fas fa-check';
+  setTimeout(() => { icon.className = 'fas fa-copy'; }, 1800);
+}
+async function nativeShare() {
+  if (navigator.share) { try { await navigator.share({ title: '{{ post.title | replace("'", "\\'") }}', url: window.location.href }); closeShare(); } catch {} }
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeShare(); });
+
+// Auto-open share modal with score if returning from quiz
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('shared') === '1') {
+    const score = parseFloat(params.get('score'));
+    window.addEventListener('load', () => {
+      setTimeout(() => shareQuiz(isNaN(score) ? undefined : score), 400);
+    });
+    // Clean URL without reloading
+    history.replaceState({}, '', window.location.pathname);
+  }
+})();
+
+// ── Auto-enter study mode from subject modal ─────────────────────────────
+if (new URLSearchParams(window.location.search).get('study') === '1') {
+  window.addEventListener('load', function () {
+    setTimeout(function () {
+      if (typeof window.enterStudyMode === 'function') {
+        window.enterStudyMode();
+      }
+    }, 500);
+  });
+}
+</script>
+
+{% endblock %}

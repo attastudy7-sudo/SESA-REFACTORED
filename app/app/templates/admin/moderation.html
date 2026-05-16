@@ -1,0 +1,200 @@
+{% extends "admin/base.html" %}
+
+{% block extra_css %}{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin/moderation.css') }}">{%  endblock %}
+{% block admin_title %}Moderation{% endblock %}
+
+{% block admin_content %}
+
+{# ── Page header ── #}
+<div class="adm-header">
+  <div class="adm-header-left">
+    <div class="adm-header-icon" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">
+      <i class="fas fa-shield-alt"></i>
+    </div>
+    <div>
+      <p class="adm-header-title">Post Moderation</p>
+      <p class="adm-header-sub">Review and approve user-submitted posts before they go live</p>
+    </div>
+  </div>
+  {% if counts.pending > 0 %}
+  <div class="adm-header-actions">
+    <span class="mod-pending-chip">
+      <span class="mod-pending-dot"></span>
+      {{ counts.pending }} awaiting review
+    </span>
+  </div>
+  {% endif %}
+</div>
+
+{# ── Tabs ── #}
+<div class="mod-tabs">
+  <a href="{{ url_for('admin.moderation', tab='pending') }}"
+     class="mod-tab {% if tab == 'pending' %}mod-tab--active mod-tab--pending{% endif %}">
+    <i class="fas fa-clock"></i>
+    <span>Pending</span>
+    {% if counts.pending > 0 %}
+    <span class="mod-tab-badge mod-tab-badge--amber">{{ counts.pending }}</span>
+    {% endif %}
+  </a>
+  <a href="{{ url_for('admin.moderation', tab='approved') }}"
+     class="mod-tab {% if tab == 'approved' %}mod-tab--active mod-tab--approved{% endif %}">
+    <i class="fas fa-check-circle"></i>
+    <span>Approved</span>
+    <span class="mod-tab-badge mod-tab-badge--green">{{ counts.approved }}</span>
+  </a>
+  <a href="{{ url_for('admin.moderation', tab='rejected') }}"
+     class="mod-tab {% if tab == 'rejected' %}mod-tab--active mod-tab--rejected{% endif %}">
+    <i class="fas fa-times-circle"></i>
+    <span>Rejected</span>
+    <span class="mod-tab-badge mod-tab-badge--red">{{ counts.rejected }}</span>
+  </a>
+</div>
+
+{# ── Post list ── #}
+{% if posts.items %}
+<div class="mod-list">
+  {% for post in posts.items %}
+
+  <div class="mod-row">
+
+    {# Title + meta #}
+    <div class="mod-row-main">
+      <div class="mod-row-title-line">
+        <h3 class="mod-row-title">
+          <a href="{{ url_for('posts.view', post_id=post.id) }}" target="_blank" rel="noopener">
+            {{ post.title }}
+            <i class="fas fa-arrow-up-right-from-square mod-ext-icon"></i>
+          </a>
+        </h3>
+        {% if post.status == 'rejected' and post.rejection_reason %}
+        <span class="mod-row-rejected-tag"><i class="fas fa-times"></i> Rejected</span>
+        {% endif %}
+      </div>
+
+      <div class="mod-row-meta">
+        <span>@{{ post.author.username }}</span>
+        <span class="mod-meta-sep">·</span>
+        <span>{{ post.created_at.strftime('%b %d, %Y') }}</span>
+        {% if post.subject %}
+        <span class="mod-meta-sep">·</span>
+        <span class="mod-row-subject" style="color:{{ post.subject.color }}">
+          <i class="fas fa-{{ post.subject.icon }}"></i> {{ post.subject.name }}
+        </span>
+        {% endif %}
+        {% if post.has_document and post.document %}
+        <span class="mod-meta-sep">·</span>
+        <span class="mod-row-doc">
+          <i class="fas fa-paperclip"></i>
+          {{ post.document.file_type.upper() }}
+          · {% if post.document.is_paid %}GH₵{{ post.document.price }}{% else %}Free{% endif %}
+        </span>
+        {% endif %}
+      </div>
+
+      {# Rejection reason — inline, understated #}
+      {% if post.status == 'rejected' and post.rejection_reason %}
+      <p class="mod-row-reason"><i class="fas fa-exclamation-triangle"></i> {{ post.rejection_reason }}</p>
+      {% endif %}
+    </div>
+
+    {# Actions — right-aligned text links #}
+    <div class="mod-row-actions">
+      {% if post.status == 'pending' %}
+        <form action="{{ url_for('admin.approve_post', post_id=post.id) }}" method="post" class="mod-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="next" value="{{ url_for('admin.moderation', tab='pending', page=posts.page) }}">
+          <button type="submit" class="mod-action mod-action--approve">Approve</button>
+        </form>
+        <button class="mod-action mod-action--reject" onclick="toggleReject({{ post.id }})">Reject</button>
+
+      {% elif post.status == 'approved' %}
+        <button class="mod-action mod-action--reject" onclick="toggleReject({{ post.id }})">Revoke</button>
+
+      {% elif post.status == 'rejected' %}
+        <form action="{{ url_for('admin.approve_post', post_id=post.id) }}" method="post" class="mod-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="next" value="{{ url_for('admin.moderation', tab='rejected', page=posts.page) }}">
+          <button type="submit" class="mod-action mod-action--approve">Re-approve</button>
+        </form>
+      {% endif %}
+
+      <a href="{{ url_for('posts.view', post_id=post.id) }}" class="mod-action mod-action--preview" target="_blank">Preview</a>
+
+      <form action="{{ url_for('admin.delete_post', post_id=post.id) }}" method="post" class="mod-form"
+            onsubmit="return confirm('Permanently delete this post?');">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="mod-action mod-action--delete">Delete</button>
+      </form>
+    </div>
+
+  </div>{# /mod-row #}
+
+  {# Inline rejection panel — sits between rows #}
+  {% if post.status in ('pending', 'approved') %}
+  <div id="reject-panel-{{ post.id }}" class="mod-reject-panel" hidden>
+    <form action="{{ url_for('admin.reject_post', post_id=post.id) }}" method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="next" value="{{ url_for('admin.moderation', tab=tab, page=posts.page) }}">
+      <textarea name="reason" class="mod-reject-textarea"
+                placeholder="Reason for rejection — optional, shown to author…"
+                rows="2"></textarea>
+      <div class="mod-reject-btns">
+        <button type="submit" class="mod-action mod-action--reject-confirm">
+          {% if post.status == 'approved' %}Revoke Approval{% else %}Confirm Rejection{% endif %}
+        </button>
+        <button type="button" class="mod-action mod-action--cancel" onclick="toggleReject({{ post.id }})">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+  {% endif %}
+
+  {% endfor %}
+</div>
+
+{# Pagination #}
+{% if posts.has_prev or posts.has_next %}
+<div class="adm-pagination">
+  {% if posts.has_prev %}
+  <a href="{{ url_for('admin.moderation', tab=tab, page=posts.prev_num) }}" class="adm-page-btn">
+    <i class="fas fa-chevron-left"></i> Previous
+  </a>
+  {% endif %}
+  <span class="adm-page-info">Page {{ posts.page }} of {{ posts.pages }}</span>
+  {% if posts.has_next %}
+  <a href="{{ url_for('admin.moderation', tab=tab, page=posts.next_num) }}" class="adm-page-btn">
+    Next <i class="fas fa-chevron-right"></i>
+  </a>
+  {% endif %}
+</div>
+{% endif %}
+
+{% else %}
+<div class="adm-empty">
+  <i class="fas fa-{% if tab == 'pending' %}inbox{% elif tab == 'approved' %}check-double{% else %}ban{% endif %}"></i>
+  <p>
+    {% if tab == 'pending' %}No posts awaiting review — you're all caught up!
+    {% elif tab == 'approved' %}No approved posts yet.
+    {% else %}No rejected posts.{% endif %}
+  </p>
+  {% if tab != 'pending' %}
+  <a href="{{ url_for('admin.moderation', tab='pending') }}" class="adm-btn adm-btn--secondary">
+    <i class="fas fa-clock"></i> View Pending
+  </a>
+  {% endif %}
+</div>
+{% endif %}
+
+<script>
+function toggleReject(postId) {
+  const panel = document.getElementById('reject-panel-' + postId);
+  panel.hidden = !panel.hidden;
+  if (!panel.hidden) {
+    panel.querySelector('textarea')?.focus();
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+</script>
+{% endblock %}

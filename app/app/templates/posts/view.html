@@ -1,0 +1,956 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/posts/view.css') }}">{% endblock %}
+
+{% block content %}
+
+<div class="pv-wrap">
+
+  {# ── Top bar ── #}
+  <div class="pv-topbar">
+    <a href="{{ url_for('main.index') }}" class="pv-back" data-knowly-back="1"
+      data-back-fallback="{{ url_for('main.index') }}">
+      <i class="fas fa-arrow-left"></i> Back
+    </a>
+    {% if current_user.is_authenticated and current_user.id == post.user_id %}
+    <div class="pv-owner-actions">
+      <form action="{{ url_for('posts.delete', post_id=post.id) }}" method="post"
+        onsubmit="return confirm('Delete this post?');" style="display:inline;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="pv-action-btn pv-action-btn--danger">
+          <i class="fas fa-trash"></i>
+        </button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+
+  {# ══════════════════════════════════════════════
+  COMPACT POST HEADER — always visible, never scrolls away
+  ══════════════════════════════════════════════ #}
+  <div class="pv-card">
+
+    <div class="pv-card-meta">
+      <span class="pv-type pv-type--{{ post.content_type or 'notes' }}">
+        {% if post.content_type == 'quiz' %}<i class="fas fa-brain"></i> Quiz
+        {% elif post.content_type == 'cheatsheet' %}<i class="fas fa-clone"></i> Cheatsheet
+        {% elif post.content_type == 'mixed' %}<i class="fas fa-layer-group"></i> Mixed
+        {% else %}<i class="fas fa-sticky-note"></i> Notes{% endif %}
+      </span>
+      <span class="pv-date">{{ post.created_at.strftime('%b %d, %Y') }}</span>
+    </div>
+
+    <h1 class="pv-title">{{ post.title|strip_course_code }}</h1>
+
+    <div class="pv-header-row">
+      <a href="{{ url_for('users.profile', username=post.author.username) }}" class="pv-author">
+        <img src="{{ post.author.profile_picture_url }}" alt="{{ post.author.username }}" class="pv-avatar">
+        <div class="pv-author-info">
+          <span class="pv-author-name">{{ post.author.nickname or post.author.username }}</span>
+          <span class="pv-author-handle">@{{ post.author.username }}</span>
+        </div>
+      </a>
+      {% if post.subject %}
+      <div class="pv-subject" style="--sc: {{ post.subject.color }};">
+        <i class="fas fa-{{ post.subject.icon }}"></i>
+        {{ post.subject.name|strip_course_code }}
+      </div>
+      {% endif %}
+    </div>
+
+    {# ── Engagement bar ── #}
+    <div class="pv-engage">
+      <a class="pv-engage-btn pv-engage-btn--whatsapp"
+        href="https://wa.me/?text={{ ('Check out this study material on Knowly: ' + request.url) | urlencode }}"
+        target="_blank" rel="noopener" title="Share on WhatsApp">
+        <i class="fab fa-whatsapp"></i>
+        <span>Share</span>
+      </a>
+      {% if current_user.is_authenticated %}
+      <button class="pv-engage-btn {% if post.is_liked_by(current_user) %}is-liked{% endif %}"
+        data-post-id="{{ post.id }}" data-liked="{{ 'true' if post.is_liked_by(current_user) else 'false' }}"
+        data-base="0" onclick="toggleLike(this)">
+        <i class="fas fa-heart"></i>
+        <span class="like-count">{{ post.like_count() }}</span>
+      </button>
+      {% else %}
+      <span class="pv-engage-btn">
+        <i class="fas fa-heart"></i>
+        <span>{{ post.like_count() }}</span>
+      </span>
+      {% endif %}
+      <button class="pv-engage-btn" onclick="pvSetTab('discussion')" title="Jump to discussion">
+        <i class="fas fa-comment"></i>
+        <span>{{ post.comment_count() }}</span>
+      </button>
+      {% if has_quiz %}
+      <button class="pv-engage-btn" onclick="pvSetTab('leaderboard')" title="View leaderboard">
+        <i class="fas fa-trophy"></i>
+        <span>{{ total_participants }}</span>
+      </button>
+      {% endif %}
+    </div>
+
+    {# ── TAB BAR — sits at the bottom of the header card ── #}
+    <div class="pv-tabs" id="pvTabs" role="tablist">
+      {# Empty state for missing/empty content #}
+      {% if not post.content or post.content|length == 0 %}
+      <div class="ms-empty">
+        <p class="ms-empty-text">No content found. <a href="{{ url_for('main.index') }}" class="ms-empty-link">Browse
+            packs</a></p>
+      </div>
+      <div class="panel-empty-icon"><i class="fas fa-file-alt"></i></div>
+      <div class="panel-empty-content">
+        <div class="panel-empty-title">No content available</div>
+        <div class="panel-empty-desc">This post does not contain any content yet.</div>
+      </div>
+    </div>
+    {% endif %}
+    <button class="pv-tab" id="tab-overview" role="tab" onclick="pvSetTab('overview')" aria-selected="true">
+      <i class="fas fa-file-alt"></i> Overview
+    </button>
+    {% if has_quiz %}
+    <button class="pv-tab" id="tab-leaderboard" role="tab" onclick="pvSetTab('leaderboard')" aria-selected="false">
+      <i class="fas fa-trophy"></i> Leaderboard
+      {% if total_participants > 0 %}
+      <span class="pv-tab-badge">{{ total_participants }}</span>
+      {% endif %}
+    </button>
+    {% endif %}
+    <button class="pv-tab" id="tab-discussion" role="tab" onclick="pvSetTab('discussion')" aria-selected="false">
+      <i class="fas fa-comments"></i> Discussion
+    </button>
+    {% if structured_content %}
+    <button class="pv-tab" id="tab-content" role="tab" onclick="pvSetTab('content')" aria-selected="false"
+      aria-controls="panel-content">
+      {% if structured_type == 'notes' %}
+      <i class="fas fa-sticky-note"></i> Notes
+      {% else %}
+      <i class="fas fa-clone"></i> Cheatsheet
+      {% endif %}
+    </button>
+    {% if structured_type == 'notes' and structured_content %}
+    <button class="pv-tab pv-tab--study" id="tab-study" role="tab" onclick="pvSetTab('content'); pvEnterStudy()"
+      aria-selected="false">
+      <i class="fas fa-book-open"></i> Study
+    </button>
+    {% endif %}
+    {% endif %}
+  </div>
+
+</div>{# /pv-card #}
+
+{# ══════════════════════════════════════════════
+TAB PANEL: OVERVIEW (description + doc + quiz CTA)
+══════════════════════════════════════════════ #}
+<div class="pv-panel" id="panel-overview" role="tabpanel">
+
+  {# ── Description — truncated with show more ── #}
+  {% if post.description %}
+  <div class="pv-panel-block">
+    <div class="pv-panel-block-label"><i class="fas fa-align-left"></i> About this post</div>
+    <div class="pv-desc-wrap">
+      <div class="pv-desc prose-content pv-desc--clamped" id="postDescription" data-raw="{{ post.description | e }}">
+      </div>
+      <button class="pv-show-more" id="pvShowMore" onclick="pvToggleDesc(this)" aria-expanded="false">
+        Show more <i class="fas fa-chevron-down"></i>
+      </button>
+    </div>
+  </div>
+  {% endif %}
+
+  {# ── Document ── #}
+  {% if post.has_document and post.document %}
+  <div class="pv-panel-block">
+    <div class="pv-panel-block-label"><i class="fas fa-paperclip"></i> Attachment</div>
+    <div class="pv-doc">
+      <div class="pv-doc-info">
+        <div class="pv-doc-icon"><i class="fas fa-file-{{ post.document.file_type }}"></i></div>
+        <div>
+          <span class="pv-doc-name">{{ post.document.original_filename }}</span>
+          <span class="pv-doc-meta">
+            {{ post.document.file_type.upper() }}
+            &middot; {{ (post.document.file_size / 1024 / 1024)|round(2) }} MB
+            {% if post.document.is_paid %}&middot; <strong>GHS {{ post.document.price }}</strong>
+            {% else %}&middot; Free{% endif %}
+          </span>
+        </div>
+      </div>
+      <div class="pv-doc-btns">
+        {% if current_user.is_authenticated %}
+        {% if post.document.has_access(current_user) %}
+        {% if post.document.file_type in ['pdf','png','jpg','jpeg','gif','webp','docx','pptx','doc','ppt','xlsx','xls']
+        %}
+        <button onclick="previewDocument()" class="pv-btn pv-btn--ghost">
+          <i class="fas fa-eye"></i> Preview
+        </button>
+        {% endif %}
+        <a href="{{ url_for('posts.download_document', document_id=post.document.id) }}" class="pv-btn pv-btn--primary">
+          <i class="fas fa-download"></i> Download
+        </a>
+        {% else %}
+        <a href="{{ url_for('payments.checkout', document_id=post.document.id) }}" class="pv-btn pv-btn--primary">
+          <i class="fas fa-lock"></i> Purchase
+        </a>
+        {% endif %}
+        {% else %}
+        <a href="{{ url_for('auth.login') }}" class="pv-btn pv-btn--primary">
+          <i class="fas fa-sign-in-alt"></i> Log in to access
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  {# ── Quiz CTA ── #}
+  {% if post.content_type == 'quiz' and has_quiz %}
+  <div class="pv-panel-block">
+    <div class="pv-quiz-cta">
+      <div class="pv-quiz-cta-left">
+        <div class="pv-quiz-icon"><i class="fas fa-brain"></i></div>
+        <div>
+          <p class="pv-quiz-cta-title">Ready for a challenge?</p>
+          <p class="pv-quiz-cta-sub">Earn XP &amp; compete on the leaderboard</p>
+        </div>
+      </div>
+      {% if current_user.is_authenticated %}
+      {% if post.document and post.document.has_access(current_user) %}
+      <a href="{{ url_for('quiz.quiz_start', post_id=post.id) }}" class="pv-btn pv-btn--quiz">
+        <i class="fas fa-play"></i> Take Quiz
+      </a>
+      {% else %}
+      <a href="{{ url_for('payments.checkout', document_id=post.document.id) }}" class="pv-btn pv-btn--quiz">
+        <i class="fas fa-lock"></i> Purchase to unlock
+      </a>
+      {% endif %}
+      {% else %}
+      <a href="{{ url_for('auth.login') }}" class="pv-btn pv-btn--quiz">
+        <i class="fas fa-sign-in-alt"></i> Log in
+      </a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+</div>{# /panel-overview #}
+
+{% if structured_content %}
+<div class="pv-panel pv-panel--hidden" id="panel-content" role="tabpanel">
+
+  {% if structured_type == 'notes' %}
+  {# ── Study mode bar ── #}
+  <div class="pv-sm-bar" id="pvSmBar" style="display:none">
+    <button class="pv-sm-exit" onclick="pvExitStudy()"><i class="fas fa-times"></i> Read freely</button>
+    <div class="pv-sm-progress-wrap">
+      <div class="pv-sm-track">
+        <div class="pv-sm-fill" id="pvSmFill"></div>
+      </div>
+      <span class="pv-sm-label" id="pvSmLabel">1 / {{ structured_content|length }}</span>
+    </div>
+  </div>
+
+  {# ── Notes renderer ── #}
+  {% for section in structured_content %}
+  <div class="pv-panel-block pv-sm-section" id="pv-section-{{ loop.index }}">
+    <div class="pv-panel-block-label">
+      <i class="fas fa-bookmark"></i> {{ section.section_title }}
+    </div>
+    {% for block in section.content %}
+
+    {% if block.block_type == 'definition' %}
+    <div class="content-block content-block--definition">
+      {% if block.label %}<span class="cb-label">{{ block.label | markdown | safe }}</span>{% endif %}
+      <div class="nv-math-wrap">{{ block.text | markdown | safe }}</div>
+    </div>
+
+    {% elif block.block_type in ('theorem', 'proof') %}
+    <div class="content-block content-block--theorem">
+      {% if block.label %}<span class="cb-label">{{ block.label | markdown | safe }}</span>{% endif %}
+      <div class="nv-math-wrap">{{ block.text | markdown | safe }}</div>
+    </div>
+
+    {% elif block.block_type == 'formula' %}
+    <div class="content-block content-block--formula">
+      {% if block.label %}<span class="cb-label">{{ block.label | markdown | safe }}</span>{% endif %}
+      <div class="cb-formula-text nv-math-wrap">{{ block.text | markdown | safe }}</div>
+    </div>
+
+    {% elif block.block_type in ('example', 'worked_example') %}
+    <div class="content-block content-block--example">
+      {% if block.label %}<span class="cb-label">{{ block.label | markdown | safe }}</span>{% endif %}
+      <div class="nv-math-wrap">{{ block.text | markdown | safe }}</div>
+      {% if block.steps %}
+      <ol class="cb-steps">
+        {% for step in block.steps %}<li>
+          <div class="nv-math-wrap">{{ step | markdown | safe }}</div>
+        </li>{% endfor %}
+      </ol>
+      {% endif %}
+    </div>
+
+    {% elif block.block_type == 'note' %}
+    <div class="content-block content-block--note">
+      <div class="nv-math-wrap">{{ block.text | markdown | safe }}</div>
+    </div>
+
+    {% elif block.block_type == 'list' %}
+    <div class="content-block content-block--list">
+      {% if block.label %}<p class="cb-list-title">{{ block.label | markdown | safe }}</p>{% endif %}
+      <ul class="cb-list">
+        {% for item in block.items %}<li>
+          <div class="nv-math-wrap">{{ item | markdown | safe }}</div>
+        </li>{% endfor %}
+      </ul>
+    </div>
+
+    {% else %}
+    <div class="cb-paragraph nv-math-wrap">{{ block.text | markdown | safe }}</div>
+    {% endif %}
+
+    {% endfor %}
+  </div>
+  {% endfor %}
+
+  {# ── Study mode completion ── #}
+  <div class="pv-sm-complete" id="pvSmComplete" style="display:none">
+    <div class="pv-sm-complete-icon"><i class="fas fa-check-circle"></i></div>
+    <h3 class="pv-sm-complete-title">Notes complete</h3>
+    <p class="pv-sm-complete-sub">You've worked through all {{ structured_content|length }} section{% if
+      structured_content|length != 1 %}s{% endif %}.</p>
+    <button class="pv-sm-complete-btn" onclick="pvExitStudy()"><i class="fas fa-book-open"></i> Read freely</button>
+  </div>
+
+  {% elif structured_type == 'cheatsheet' %}
+  {# ── Cheatsheet renderer ── #}
+  {% for section in structured_content %}
+  <div class="pv-panel-block">
+    <div class="pv-panel-block-label
+        {% if section.section_type == 'formulas' %} pv-panel-block-label--formula
+        {% elif section.section_type == 'definitions' %} pv-panel-block-label--definition
+        {% endif %}">
+      <i class="fas fa-
+          {% if section.section_type == 'formulas' %}square-root-alt
+          {% elif section.section_type == 'definitions' %}book
+          {% elif section.section_type == 'rules' %}gavel
+          {% elif section.section_type == 'steps' %}list-ol
+          {% else %}clone{% endif %}"></i>
+      {{ section.section_title }}
+    </div>
+    <div class="cheat-entries cheat-entries--{{ section.section_type }}">
+      {% for entry in section.entries %}
+      <div class="cheat-entry">
+        <div class="cheat-entry-label">{{ entry.label }}</div>
+        <div class="cheat-entry-content
+            {% if section.section_type == 'formulas' %}cheat-formula{% endif %}">
+          {{ entry.content }}
+        </div>
+        {% if entry.notes %}<div class="cheat-entry-note">{{ entry.notes }}</div>{% endif %}
+        {% if entry.example %}<div class="cheat-entry-example"><span>e.g.</span> {{ entry.example }}</div>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+</div>{# /panel-content #}
+{% endif %}
+
+{# ══════════════════════════════════════════════
+TAB PANEL: LEADERBOARD
+══════════════════════════════════════════════ #}
+{% if has_quiz %}
+<div class="pv-panel pv-panel--hidden" id="panel-leaderboard" role="tabpanel">
+  <div class="pv-lb" id="leaderboard">
+
+    <div class="pv-lb-head">
+      <div class="pv-lb-head-left">
+        <div class="pv-lb-trophy"><i class="fas fa-trophy"></i></div>
+        <div>
+          <h2 class="pv-lb-title">Leaderboard</h2>
+          <p class="pv-lb-sub">Top scores for this quiz</p>
+        </div>
+      </div>
+      <a href="{{ url_for('quiz.quiz_start', post_id=post.id) }}" class="pv-btn pv-btn--quiz pv-btn--sm">
+        {% if user_entry %}<i class="fas fa-redo"></i> Retake{% else %}<i class="fas fa-play"></i> Take Quiz{% endif %}
+      </a>
+    </div>
+
+    {% if user_entry %}
+    <div class="pv-lb-mystats">
+      <div class="pv-lb-stat">
+        <span
+          class="pv-lb-stat-val pv-score-{{ 'green' if user_entry.score_pct >= 80 else ('blue' if user_entry.score_pct >= 60 else ('amber' if user_entry.score_pct >= 40 else 'red')) }}">
+          {{ "%.0f"|format(user_entry.score_pct) }}%
+        </span>
+        <span class="pv-lb-stat-label">Your score</span>
+      </div>
+      <div class="pv-lb-divider"></div>
+      <div class="pv-lb-stat">
+        <span class="pv-lb-stat-val pv-score-amber">+{{ user_entry.xp_earned }} XP</span>
+        <span class="pv-lb-stat-label">Earned</span>
+      </div>
+      <div class="pv-lb-divider"></div>
+      <div class="pv-lb-stat">
+        <span class="pv-lb-stat-val">
+          {% if user_entry.time_taken < 60 %}{{ user_entry.time_taken }}s {% else %}{{ (user_entry.time_taken / 60)|int
+            }}m {{ user_entry.time_taken % 60 }}s{% endif %} </span>
+            <span class="pv-lb-stat-label">Time</span>
+      </div>
+      <div class="pv-lb-divider"></div>
+      <div class="pv-lb-stat">
+        <span class="pv-lb-stat-val">{{ total_participants }}</span>
+        <span class="pv-lb-stat-label">Players</span>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if leaderboard_entries %}
+    <div class="pv-lb-list">
+      {% for entry in leaderboard_entries %}
+      <div class="pv-lb-row
+           {% if loop.index == 1 %}pv-lb-row--gold{% elif loop.index == 2 %}pv-lb-row--silver{% elif loop.index == 3 %}pv-lb-row--bronze{% endif %}
+           {% if current_user.is_authenticated and entry.user_id == current_user.id %}pv-lb-row--me{% endif %}"
+        style="animation-delay:{{ loop.index0 * 0.05 }}s">
+
+        <div class="pv-lb-rank">
+          {% if loop.index == 1 %}<span class="pv-medal pv-medal--gold"><i class="fas fa-trophy"></i></span>
+          {% elif loop.index == 2 %}<span class="pv-medal pv-medal--silver"><i class="fas fa-medal"></i></span>
+          {% elif loop.index == 3 %}<span class="pv-medal pv-medal--bronze"><i class="fas fa-medal"></i></span>
+          {% else %}<span class="pv-rank-num">#{{ loop.index }}</span>{% endif %}
+        </div>
+
+        <a href="{{ url_for('users.profile', username=entry.user.username) }}" class="pv-lb-user">
+          <img src="{{ entry.user.profile_picture_url }}" alt="{{ entry.user.username }}" class="pv-lb-avatar">
+          <div class="pv-lb-user-info">
+            <span class="pv-lb-username">
+              {{ entry.user.nickname or entry.user.username }}
+              {% if current_user.is_authenticated and entry.user_id == current_user.id %}
+              <span class="pv-you">You</span>{% endif %}
+            </span>
+            <span class="pv-lb-handle">@{{ entry.user.username }}</span>
+          </div>
+        </a>
+
+        <div class="pv-lb-score-wrap">
+          <div class="pv-lb-bar-track">
+            <div class="pv-lb-bar-fill"
+              style="width:{{ entry.score_pct }}%;--bc:{% if entry.score_pct >= 80 %}#10b981{% elif entry.score_pct >= 60 %}#6366f1{% elif entry.score_pct >= 40 %}#f59e0b{% else %}#ef4444{% endif %};">
+            </div>
+          </div>
+          <span
+            class="pv-lb-pct pv-score-{{ 'green' if entry.score_pct >= 80 else ('blue' if entry.score_pct >= 60 else ('amber' if entry.score_pct >= 40 else 'red')) }}">
+            {{ "%.0f"|format(entry.score_pct) }}%
+          </span>
+        </div>
+
+        <div class="pv-lb-time">
+          <i class="fas fa-clock"></i>
+          {% if entry.time_taken < 60 %}{{ entry.time_taken }}s {% else %}{{ (entry.time_taken / 60)|int }}m {{
+            entry.time_taken % 60 }}s{% endif %} </div>
+
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="pv-lb-cta">
+        {% if not user_entry %}
+        <p>You haven't attempted this quiz yet — claim your spot on the board!</p>
+        <a href="{{ url_for('quiz.quiz_start', post_id=post.id) }}" class="pv-btn pv-btn--quiz pv-btn--sm">
+          <i class="fas fa-play"></i> Take the quiz
+        </a>
+        {% else %}
+        <p>Think you can beat your score? Challenge yourself again.</p>
+        <a href="{{ url_for('quiz.quiz_start', post_id=post.id) }}" class="pv-btn pv-btn--ghost pv-btn--sm">
+          <i class="fas fa-redo"></i> Retake &amp; improve
+        </a>
+        {% endif %}
+      </div>
+
+      {% else %}
+      <div class="pv-lb-empty">
+        <div class="pv-lb-empty-icon"><i class="fas fa-flag-checkered"></i></div>
+        <p class="pv-lb-empty-title">No attempts yet</p>
+        <p class="pv-lb-empty-sub">Be the first to complete this quiz and take the top spot.</p>
+        <a href="{{ url_for('quiz.quiz_start', post_id=post.id) }}" class="pv-btn pv-btn--quiz pv-btn--sm">
+          <i class="fas fa-play"></i> Start now
+        </a>
+      </div>
+      {% endif %}
+
+    </div>{# /pv-lb #}
+  </div>{# /panel-leaderboard #}
+  {% endif %}
+
+
+  {# ══════════════════════════════════════════════
+  QUICK ACTIONS: Notes, Quiz, Flashcard, Cheatsheet
+  ══════════════════════════════════════════════ #}
+  <div class="pv-quick-actions" style="display: flex; gap: 1rem; justify-content: center; margin: 2.5rem 0 1.5rem 0;">
+    <a href="{{ url_for('posts.create', type='notes', from_post=post.id) }}" class="pv-btn pv-btn--primary"
+      title="Add Notes">
+      <i class="fas fa-sticky-note"></i> Add Notes
+    </a>
+    <a href="{{ url_for('posts.create', type='flashcard', from_post=post.id) }}" class="pv-btn pv-btn--primary"
+      title="Create Flashcard">
+      <i class="fas fa-clone"></i> Create Flashcard
+    </a>
+    <a href="{{ url_for('posts.create', type='cheatsheet', from_post=post.id) }}" class="pv-btn pv-btn--primary"
+      title="Create Cheatsheet">
+      <i class="fas fa-list-alt"></i> Create Cheatsheet
+    </a>
+    {% if has_quiz %}
+    <a href="{{ url_for('quiz.quiz_start', post_id=post.id) }}" class="pv-btn pv-btn--quiz" title="Take Quiz">
+      <i class="fas fa-brain"></i> Take Quiz
+    </a>
+    {% endif %}
+  </div>
+
+  {# ══════════════════════════════════════════════
+  TAB PANEL: COMMENTS
+  ══════════════════════════════════════════════ #}
+  <div class="pv-panel pv-panel--hidden" id="panel-discussion" role="tabpanel">
+    {# ── Comments ── #}
+    <div class="pv-comments" id="comments">
+
+      <div class="pv-comments-head">
+        <span class="pv-section-label"><i class="fas fa-comments"></i> Discussion</span>
+        <span class="pv-count-pill">{{ post.comment_count() }}</span>
+      </div>
+
+      {% if current_user.is_authenticated %}
+      <form method="post" action="{{ url_for('posts.comment', post_id=post.id) }}" class="pv-comment-form">
+        {{ comment_form.hidden_tag() }}
+        <img src="{{ current_user.profile_picture_url }}" alt="{{ current_user.username }}"
+          class="pv-avatar pv-avatar--sm">
+        <div class="pv-comment-input-wrap">
+          {{ comment_form.content(class="pv-comment-input", placeholder="Share your thoughts…") }}
+          {{ comment_form.submit(class="pv-btn pv-btn--primary pv-btn--sm") }}
+        </div>
+      </form>
+      {% else %}
+      <div class="pv-login-nudge">
+        <i class="fas fa-comment-dots"></i>
+        <p><a href="#" onclick="openAuthModal('login')">Log in</a> to join the discussion</p>
+      </div>
+      {% endif %}
+
+      <div class="pv-comment-list">
+        {% for comment in comments.items %}
+        <div class="pv-comment">
+          <a href="{{ url_for('users.profile', username=comment.author.username) }}">
+            <img src="{{ comment.author.profile_picture_url }}" alt="{{ comment.author.username }}"
+              class="pv-avatar pv-avatar--sm">
+          </a>
+          <div class="pv-comment-body">
+            <div class="pv-comment-header">
+              <a href="{{ url_for('users.profile', username=comment.author.username) }}" class="pv-comment-author">
+                {{ comment.author.nickname or comment.author.username }}
+              </a>
+              <span class="pv-comment-time">{{ comment.created_at.strftime('%b %d') }}</span>
+            </div>
+            <p class="pv-comment-text">{{ comment.content }}</p>
+          </div>
+        </div>
+        {% endfor %}
+
+        {% if not comments.items %}
+        <div class="pv-empty-comments">
+          <i class="fas fa-comment-medical"></i>
+          <p>No comments yet — start the conversation.</p>
+        </div>
+        {% endif %}
+      </div>
+
+      {% if comments.has_prev or comments.has_next %}
+      <div class="pv-pagination">
+        {% if comments.has_prev %}
+        <a href="{{ url_for('posts.view', post_id=post.id, page=comments.prev_num) }}" class="pv-page-btn">
+          <i class="fas fa-chevron-left"></i>
+        </a>
+        {% endif %}
+        <span class="pv-page-info">{{ comments.page }} / {{ comments.pages }}</span>
+        {% if comments.has_next %}
+        <a href="{{ url_for('posts.view', post_id=post.id, page=comments.next_num) }}" class="pv-page-btn">
+          <i class="fas fa-chevron-right"></i>
+        </a>
+        {% endif %}
+      </div>
+      {% endif %}
+
+    </div>{# /pv-comments #}
+  </div>{# /panel-discussion #}
+
+  {% if suggested_videos %}
+  <section class="pv-suggested-videos">
+    <h2 class="pv-suggested-title"><i class="fas fa-video"></i> Suggested Videos</h2>
+    <p class="pv-suggested-entreaty">Want to master this topic? Watch these hand-picked academic videos before or after
+      your quiz for deeper understanding and extra XP!</p>
+    <div class="pv-suggested-list">
+      {% for video in suggested_videos %}
+      <div class="pv-suggested-card">
+        <a href="https://www.youtube.com/watch?v={{ video.youtube_id }}" target="_blank"
+          class="pv-suggested-thumb-link">
+          <img src="{{ video.thumbnail or '' }}" alt="{{ video.title|strip_course_code }}" class="pv-suggested-thumb">
+          <div class="pv-suggested-play"><i class="fas fa-play-circle"></i></div>
+        </a>
+        <div class="pv-suggested-info">
+          <div class="pv-suggested-title-main">{{ video.title|strip_course_code }}</div>
+          <div class="pv-suggested-meta"><i class="fas fa-bolt"></i> {{ video.xp_reward }} XP</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+</div>{# /pv-wrap #}
+
+{# ── Preview modal ── #}
+<div id="previewModal" class="pv-preview-modal">
+  <div class="pv-preview-inner">
+    <div class="pv-preview-head">
+      <span><i class="fas fa-eye"></i> {{ post.document.original_filename if post.has_document and post.document else
+        'Preview' }}</span>
+      <button onclick="closePreview()" class="pv-close-btn"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="pv-preview-body" id="previewBody"></div>
+  </div>
+</div>
+
+<script>
+  async function toggleLike(btn) {
+    if (btn.disabled) return;
+    btn.disabled = true;
+    const postId = btn.dataset.postId;
+    const isLiked = btn.dataset.liked === 'true';
+    const countEl = btn.querySelector('.like-count');
+    const base = parseInt(btn.dataset.base || '0', 10);
+    const newLiked = !isLiked;
+    btn.dataset.liked = newLiked;
+    btn.classList.toggle('is-liked', newLiked);
+    if (countEl) {
+      const d = parseInt(countEl.textContent, 10);
+      countEl.textContent = newLiked ? d + 1 : Math.max(base, d - 1);
+    }
+    try {
+      const res = await fetch(`/posts/${postId}/like`, {
+        method: 'POST',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.content || ''
+        }
+      });
+      if (!res.ok) throw new Error('failed');
+      const data = await res.json().catch(() => null);
+      if (data && data.like_count !== undefined && countEl)
+        countEl.textContent = data.like_count + base;
+    } catch (e) {
+      btn.dataset.liked = isLiked;
+      btn.classList.toggle('is-liked', isLiked);
+      if (countEl) {
+        const d = parseInt(countEl.textContent, 10);
+        countEl.textContent = isLiked ? d + 1 : Math.max(base, d - 1);
+      }
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  {% if post.has_document and post.document and current_user.is_authenticated and post.document.has_access(current_user) %}
+  const documentType = '{{ post.document.file_type }}';
+  function getFileIcon(ext) { const m = { pdf: 'fa-file-pdf', docx: 'fa-file-word', doc: 'fa-file-word', pptx: 'fa-file-powerpoint', ppt: 'fa-file-powerpoint', xlsx: 'fa-file-excel', xls: 'fa-file-excel', png: 'fa-file-image', jpg: 'fa-file-image', jpeg: 'fa-file-image', gif: 'fa-file-image', webp: 'fa-file-image' }; return m[ext] || 'fa-file'; }
+  function getLoadingLabel(ext) { const m = { pdf: 'Rendering PDF…', docx: 'Opening in Docs Viewer…', doc: 'Opening in Docs Viewer…', pptx: 'Opening in Slides Viewer…', ppt: 'Opening in Slides Viewer…', xlsx: 'Opening in Sheets Viewer…', xls: 'Opening in Sheets Viewer…' }; return m[ext] || 'Loading preview…'; }
+  function buildLoadingHTML() { const icon = getFileIcon(documentType); const label = getLoadingLabel(documentType); return `<div class="preview-loading" role="status"><div class="spinner"><div class="spinner-icon"><i class="fas ${icon}"></i></div></div><div class="loading-text"><p>${label}</p><span>This may take a moment&hellip;</span></div><div class="loading-bar-track"><div class="loading-bar-fill"></div></div></div>`; }
+
+  async function previewDocument() {
+    const modal = document.getElementById('previewModal');
+    const previewBody = document.getElementById('previewBody');
+    const previewUrl = "{{ url_for('posts.preview_document', document_id=post.document.id) }}";
+    const downloadUrl = "{{ url_for('posts.download_document', document_id=post.document.id) }}";
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    previewBody.innerHTML = buildLoadingHTML();
+    const errorHtml = `<div class="preview-error"><i class="fas fa-exclamation-circle"></i><p>Preview unavailable.</p><a href="${downloadUrl}" class="pv-btn pv-btn--primary" style="margin-top:.5rem"><i class="fas fa-download"></i> Download instead</a></div>`;
+    try {
+      const response = await fetch(previewUrl, { headers: { 'Accept': 'application/json' } });
+      if (response.status === 403) {
+        const checkoutUrl = "{{ url_for('payments.checkout', document_id=post.document.id) if post.has_document and post.document else '#' }}";
+        previewBody.innerHTML = `<div class="preview-error"><i class="fas fa-lock"></i><p style="font-weight:700">Purchase required</p><a href="${checkoutUrl}" class="pv-btn pv-btn--primary" style="margin-top:.5rem"><i class="fas fa-shopping-cart"></i> Purchase to Preview</a></div>`;
+        return;
+      }
+      if (!response.ok) throw new Error('Server error');
+      const data = await response.json();
+      if (data.error) throw new Error(data.error);
+      if (data.type === 'image') {
+        const img = new Image(); img.className = 'preview-image'; img.alt = 'Preview';
+        img.onload = () => { previewBody.innerHTML = ''; previewBody.appendChild(img); };
+        img.onerror = () => { previewBody.innerHTML = errorHtml; };
+        img.src = data.url;
+      } else if (data.type === 'gdocs') {
+        const lid = 'l-' + Date.now();
+        previewBody.innerHTML = `<div class="gdocs-wrapper"><div class="gdocs-notice"><i class="fas fa-info-circle"></i> Powered by Google Docs Viewer — <a href="${downloadUrl}">Download</a> if it doesn't load</div><div style="position:relative;flex:1"><div id="${lid}" style="position:absolute;inset:0;z-index:2;background:var(--bg-secondary)">${buildLoadingHTML()}</div><iframe src="${data.viewer_url}" title="Preview" class="preview-iframe" sandbox="allow-same-origin allow-scripts allow-popups allow-forms" style="position:absolute;inset:0;width:100%;height:100%;border:none;opacity:0;transition:opacity .4s"></iframe></div></div>`;
+        const iframe = previewBody.querySelector('iframe'); const loader = document.getElementById(lid);
+        let loaded = false;
+        function reveal() { if (loaded) return; loaded = true; if (loader) { loader.style.opacity = '0'; setTimeout(() => loader.remove(), 420); } if (iframe) iframe.style.opacity = '1'; }
+        iframe.addEventListener('load', reveal); setTimeout(() => { if (!loaded) reveal(); }, 45000);
+      } else if (data.type === 'local') {
+        previewBody.innerHTML = `<div class="preview-error"><i class="fas fa-laptop-code"></i><p style="font-weight:700">Local dev mode</p><p style="font-size:.82rem">Google Docs Viewer can't reach localhost.</p><a href="${data.url}" target="_blank" class="pv-btn pv-btn--primary" style="margin-top:.5rem"><i class="fas fa-external-link-alt"></i> Open file directly</a></div>`;
+      } else { previewBody.innerHTML = errorHtml; }
+    } catch (e) { console.error('Preview failed:', e); previewBody.innerHTML = errorHtml; }
+  }
+  function closePreview() {
+    document.getElementById('previewModal').classList.remove('active');
+    document.body.style.overflow = '';
+    document.getElementById('previewBody').innerHTML = '';
+  }
+  document.getElementById('previewModal').addEventListener('click', function (e) { if (e.target === this) closePreview(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && document.getElementById('previewModal').classList.contains('active')) closePreview(); });
+  {% endif %}
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<script>
+  (function () {
+    marked.setOptions({ breaks: true, gfm: true });
+    const renderer = new marked.Renderer();
+    renderer.link = function ({ href, title, text }) {
+      const external = href && (href.startsWith('http://') || href.startsWith('https://'));
+      return `<a href="${href}"${title ? ` title="${title}"` : ''}${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>${text}</a>`;
+    };
+    marked.use({ renderer });
+    const el = document.getElementById('postDescription');
+    if (el) {
+      el.innerHTML = marked.parse(el.dataset.raw || '');
+      const shouldTypeset = {{ 'true' if structured_type in ['notes', 'cheatsheet']else 'false' }
+    };
+    if (shouldTypeset) {
+      const tryTypeset = function () {
+        if (typeof window.knowlyTypesetMath !== 'function') return false;
+        window.knowlyTypesetMath(el);
+        return true;
+      };
+      if (!tryTypeset()) {
+        window.addEventListener('load', tryTypeset, { once: true });
+        setTimeout(tryTypeset, 350);
+      }
+    }
+  }
+}) ();
+</script>
+
+<script>
+  // ── Description show-more toggle ─────────────────────────────────────────
+  function pvToggleDesc(btn) {
+    const desc = document.getElementById('postDescription');
+    if (!desc) return;
+    const open = btn.getAttribute('aria-expanded') === 'true';
+    desc.classList.toggle('pv-desc--clamped', open);
+    desc.classList.toggle('pv-desc--expanded', !open);
+    btn.setAttribute('aria-expanded', !open);
+    btn.classList.toggle('is-open', !open);
+    btn.innerHTML = open
+      ? 'Show more <i class="fas fa-chevron-down"></i>'
+      : 'Show less <i class="fas fa-chevron-down"></i>';
+  }
+
+  // Hide the show-more button if content fits without clamping
+  (function () {
+    const desc = document.getElementById('postDescription');
+    const btn = document.getElementById('pvShowMore');
+    if (!desc || !btn) return;
+    // After marked renders, check if content is taller than the clamp height
+    requestAnimationFrame(() => {
+      if (desc.scrollHeight <= desc.clientHeight + 2) {
+        btn.style.display = 'none';
+        desc.classList.remove('pv-desc--clamped');
+      }
+    });
+  })();
+
+  // ── Tab system ────────────────────────────────────────────────────────────
+  const PV_TABS = ['overview', 'content', 'leaderboard', 'discussion'].filter(id =>
+    document.getElementById('panel-' + id)
+  );
+
+  function pvSetTab(name) {
+    if (!PV_TABS.includes(name)) name = PV_TABS[0];
+
+    PV_TABS.forEach(id => {
+      const panel = document.getElementById('panel-' + id);
+      const tab = document.getElementById('tab-' + id);
+      if (panel) panel.classList.toggle('pv-panel--hidden', id !== name);
+      if (tab) tab.setAttribute('aria-selected', id === name ? 'true' : 'false');
+    });
+    // Scroll active tab into view on mobile
+    const activeTab = document.getElementById('tab-' + name);
+    if (activeTab) {
+      activeTab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+
+    const shouldTypeset = {{ 'true' if structured_type in ['notes', 'cheatsheet']else 'false' }
+  };
+  if (shouldTypeset && typeof window.knowlyTypesetMath === 'function') {
+    const activePanel = document.getElementById('panel-' + name);
+    if (activePanel) window.knowlyTypesetMath(activePanel);
+  }
+
+  // URL persistence
+  const url = new URL(window.location);
+  if (name === PV_TABS[0]) {
+    url.searchParams.delete('tab');
+  } else {
+    url.searchParams.set('tab', name);
+  }
+  history.replaceState(null, '', url);
+}
+
+  // Restore tab from URL on load
+  (function () {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    if (tab && PV_TABS.includes(tab)) pvSetTab(tab);
+  })();
+
+  (function () {
+    const shouldTypeset = {{ 'true' if structured_type in ['notes', 'cheatsheet']else 'false' }
+  };
+  if (shouldTypeset) {
+    const tryTypeset = function () {
+      if (typeof window.knowlyTypesetMath !== 'function') return false;
+      window.knowlyTypesetMath(document.querySelector('.pv-wrap'));
+      return true;
+    };
+    if (!tryTypeset()) {
+      window.addEventListener('load', tryTypeset, { once: true });
+      setTimeout(tryTypeset, 350);
+    }
+  }
+}) ();
+
+  // ── Study mode for notes panel ──────────────────────────────
+  (function () {
+    const POST_KEY = 'pvsm_{{ post.id }}';
+    const sections = Array.from(document.querySelectorAll('.pv-sm-section'));
+    const total = sections.length;
+    const panel = document.getElementById('panel-content');
+    const bar = document.getElementById('pvSmBar');
+    const fill = document.getElementById('pvSmFill');
+    const label = document.getElementById('pvSmLabel');
+    const complete = document.getElementById('pvSmComplete');
+    let cur = 0, active = false;
+
+    function save(i) { try { localStorage.setItem(POST_KEY, i); } catch (_) { } }
+    function load() { try { return parseInt(localStorage.getItem(POST_KEY) || '0') || 0; } catch (_) { return 0; } }
+
+    function updateBar(i) {
+      if (fill) fill.style.width = ((i + 1) / total * 100) + '%';
+      if (label) label.textContent = (i + 1) + ' / ' + total;
+    }
+
+    function buildNav(i) {
+      document.querySelectorAll('.pv-sm-nav').forEach(n => n.remove());
+      const sec = sections[i]; if (!sec) return;
+      const nav = document.createElement('div');
+      nav.className = 'pv-sm-nav';
+      const prev = document.createElement('button');
+      prev.className = 'pv-sm-nav-btn'; prev.innerHTML = '<i class="fas fa-chevron-left"></i> Prev';
+      prev.disabled = i === 0;
+      prev.onclick = () => goTo(i - 1);
+      const ctr = document.createElement('span');
+      ctr.className = 'pv-sm-center'; ctr.textContent = (i + 1) + ' of ' + total;
+      const next = document.createElement('button');
+      next.className = 'pv-sm-nav-btn pv-sm-nav-btn--next';
+      next.innerHTML = i < total - 1 ? 'Next <i class="fas fa-chevron-right"></i>' : 'Finish <i class="fas fa-check"></i>';
+      next.onclick = () => i < total - 1 ? goTo(i + 1) : showDone();
+      nav.append(prev, ctr, next);
+      sec.appendChild(nav);
+    }
+
+    function goTo(i) {
+      if (i < 0 || i >= total) return;
+      sections.forEach(s => s.classList.remove('pv-sm-active'));
+      sections[i].classList.add('pv-sm-active');
+      cur = i; updateBar(i); buildNav(i); save(i);
+    }
+
+    function showDone() {
+      sections.forEach(s => s.classList.remove('pv-sm-active'));
+      document.querySelectorAll('.pv-sm-nav').forEach(n => n.remove());
+      if (complete) complete.style.display = 'block';
+      if (fill) fill.style.width = '100%';
+      if (label) label.textContent = total + ' / ' + total;
+      save(total);
+    }
+
+    window.pvEnterStudy = function () {
+      if (!total || !panel) return;
+      active = true;
+      panel.classList.add('pv-study-mode');
+      if (bar) bar.style.display = 'flex';
+      if (complete) complete.style.display = 'none';
+      const saved = load();
+      goTo(saved >= total ? 0 : saved);
+    };
+
+    window.pvExitStudy = function () {
+      active = false;
+      if (panel) panel.classList.remove('pv-study-mode');
+      if (bar) bar.style.display = 'none';
+      if (complete) complete.style.display = 'none';
+      sections.forEach(s => s.classList.remove('pv-sm-active'));
+      document.querySelectorAll('.pv-sm-nav').forEach(n => n.remove());
+    };
+
+    document.addEventListener('keydown', function (e) {
+      if (!active) return;
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); cur < total - 1 ? goTo(cur + 1) : showDone(); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); if (cur > 0) goTo(cur - 1); }
+      if (e.key === 'Escape') pvExitStudy();
+    });
+
+    // ── Reading progress bar ──
+    (function () {
+      const bar = document.getElementById('pvReadProgress');
+      const fill = document.getElementById('pvReadFill');
+      const panel = document.getElementById('panel-content');
+      if (!bar || !fill || !panel) return;
+      bar.style.display = 'block';
+
+      function updateProgress() {
+        const rect = panel.getBoundingClientRect();
+        const total = panel.scrollHeight - window.innerHeight;
+        const scroll = Math.max(0, window.scrollY - panel.offsetTop);
+        const pct = total > 0 ? Math.min(100, (scroll / total) * 100) : 100;
+        fill.style.width = pct + '%';
+      }
+      window.addEventListener('scroll', updateProgress, { passive: true });
+      updateProgress();
+    })();
+
+    // Auto-enter study mode if redirected from subject modal
+    if (new URLSearchParams(window.location.search).get('study') === '1') {
+      // Wait for MathJax and DOM to be fully ready before entering study mode
+      function tryEnter(attempts) {
+        const sections = document.querySelectorAll('.nv-section');
+        if (sections.length > 0) {
+          enterStudyMode();
+        } else if (attempts > 0) {
+          setTimeout(() => tryEnter(attempts - 1), 200);
+        }
+      }
+      if (document.readyState === 'loading') {
+  document.addEventListener('turbo:load', () => setTimeout(() => tryEnter(10), 100));
+      } else {
+        setTimeout(() => tryEnter(10), 100);
+      }
+    }
+  })();
+</script>
+
+{% endblock %}

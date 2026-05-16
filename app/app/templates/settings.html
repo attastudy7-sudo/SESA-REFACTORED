@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<div class="settings-layout">
+  <nav class="settings-nav">
+    <a href="#account" class="settings-link active">Account</a>
+    <a href="#courses" class="settings-link">Courses</a>
+    <a href="#notifications" class="settings-link">Notifications</a>
+    <!-- Add more sections as needed -->
+  </nav>
+  <main class="settings-content">
+    <section id="account" class="settings-section">
+      <h2>Account Settings</h2>
+      <p>Update your profile, email, and password here.</p>
+    </section>
+    <section id="courses" class="settings-section" style="display:none;">
+      <h2>My Courses</h2>
+      <p>Select courses from any programme to add to your personal list.</p>
+      <!-- Placeholder for course selection UI -->
+      <div class="courses-list">
+        <!-- Dynamically render grouped courses here -->
+        <p>[Course selection UI goes here]</p>
+      </div>
+    </section>
+    <section id="notifications" class="settings-section" style="display:none;">
+      <h2>Notifications</h2>
+      <p>Manage your notification preferences.</p>
+    </section>
+  </main>
+</div>
+
+<script>
+// Simple tab navigation for demo
+const links = document.querySelectorAll('.settings-link');
+const sections = document.querySelectorAll('.settings-section');
+links.forEach((link, idx) => {
+  link.addEventListener('click', function(e) {
+    e.preventDefault();
+    links.forEach(l => l.classList.remove('active'));
+    link.classList.add('active');
+    sections.forEach((sec, i) => sec.style.display = (i === idx ? '' : 'none'));
+  });
+});
+</script>
+
+<style>
+.settings-layout {
+  display: flex;
+  min-height: 70vh;
+  background: var(--bg-page, #f9fafb);
+  border-radius: 18px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  overflow: hidden;
+}
+.settings-nav {
+  width: 220px;
+  background: var(--bg-card, #fff);
+  border-right: 1px solid var(--border, #e5e7eb);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 2rem 1rem 2rem 2rem;
+}
+.settings-link {
+  display: block;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  color: var(--text-primary, #22223b);
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.settings-link.active, .settings-link:hover {
+  background: var(--bg-hover, #f1f5f9);
+  color: var(--accent, #2563eb);
+}
+.settings-content {
+  flex: 1;
+  padding: 2.5rem 2rem;
+  background: var(--bg-page, #f9fafb);
+}
+@media (max-width: 700px) {
+  .settings-layout {
+    flex-direction: column;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .settings-nav {
+    width: 100%;
+    flex-direction: row;
+    gap: 0.25rem;
+    padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+    border-right: none;
+    border-bottom: 1px solid var(--border, #e5e7eb);
+    overflow-x: auto;
+  }
+  .settings-link {
+    padding: 0.6rem 1rem;
+    white-space: nowrap;
+    border-radius: 6px;
+    font-size: 1rem;
+  }
+  .settings-content {
+    padding: 1.2rem 0.5rem;
+  }
+}
+</style>
+{% endblock %}

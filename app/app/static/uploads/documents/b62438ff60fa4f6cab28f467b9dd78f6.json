@@ -1,0 +1,155 @@
+{
+  "schema_version": "1.0",
+  "document_type": "quiz",
+  "generated_at": "2026-04-10T00:09:03.671237+00:00",
+  "title": "Derivatives and Differentiation Techniques",
+  "course": "MA101 \u2013 Calculus I",
+  "level": "Intermediate",
+  "type": "Self-Assessment Quiz",
+  "instructions": [
+    "Read each question carefully and choose the best answer."
+  ],
+  "metadata": {
+    "time": "30 minutes",
+    "total_marks": 5,
+    "total_questions": 5
+  },
+  "sections": [
+    {
+      "section_letter": "A",
+      "section_title": "Multiple Choice",
+      "question_type": "multiple_choice",
+      "questions_count": 5,
+      "marks_per_question": 1.0,
+      "total_section_marks": 5,
+      "questions": [
+        {
+          "question_number": 1,
+          "question_text": "What is the formal limit definition of the derivative $f'(x)$?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "$\\lim_{h \\to 0} \\frac{f(x+h) + f(x)}{h}$"
+            },
+            {
+              "letter": "B",
+              "text": "$\\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h}$"
+            },
+            {
+              "letter": "C",
+              "text": "$\\lim_{h \\to \\infty} \\frac{f(x+h) - f(x)}{h}$"
+            },
+            {
+              "letter": "D",
+              "text": "$\\lim_{x \\to 0} \\frac{f(x+h) - f(x)}{x}$"
+            }
+          ],
+          "correct_answer": "B",
+          "explanation": "The derivative measures the instantaneous rate of change and is defined as the limit of the difference quotient as $h$ approaches zero."
+        },
+        {
+          "question_number": 2,
+          "question_text": "Which theorem describes the relationship between differentiability and continuity?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "If $f(x)$ is continuous, it must be differentiable."
+            },
+            {
+              "letter": "B",
+              "text": "If $f(x)$ is differentiable at $x=a$, then $f(x)$ is continuous at $x=a$."
+            },
+            {
+              "letter": "C",
+              "text": "Differentiability and continuity are unrelated."
+            },
+            {
+              "letter": "D",
+              "text": "A function is differentiable only if it is a constant."
+            }
+          ],
+          "correct_answer": "B",
+          "explanation": "Differentiability is a stronger condition than continuity; every differentiable function is continuous, but not every continuous function is differentiable."
+        },
+        {
+          "question_number": 3,
+          "question_text": "What is the derivative of $f(x) = e^x - x$?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "$e^x$"
+            },
+            {
+              "letter": "B",
+              "text": "$e^x - 1$"
+            },
+            {
+              "letter": "C",
+              "text": "$xe^{x-1} - 1$"
+            },
+            {
+              "letter": "D",
+              "text": "$e^x + 1$"
+            }
+          ],
+          "correct_answer": "B",
+          "explanation": "Using the difference rule, the derivative of $e^x$ is $e^x$ and the derivative of $x$ is $1$."
+        },
+        {
+          "question_number": 4,
+          "question_text": "Using the Product Rule, find the derivative of $f(x) = x e^x$.",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "$e^x$"
+            },
+            {
+              "letter": "B",
+              "text": "$x e^x$"
+            },
+            {
+              "letter": "C",
+              "text": "$(x+1)e^x$"
+            },
+            {
+              "letter": "D",
+              "text": "$x^2 e^x$"
+            }
+          ],
+          "correct_answer": "C",
+          "explanation": "By the product rule: $\\frac{d}{dx}[x e^x] = x \\frac{d}{dx}[e^x] + e^x \\frac{d}{dx}[x] = x e^x + e^x(1) = (x+1)e^x$."
+        },
+        {
+          "question_number": 5,
+          "question_text": "What is the derivative of $y = \\cos(x^3)$ using the Chain Rule?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "$-3x^2 \\sin(x^3)$"
+            },
+            {
+              "letter": "B",
+              "text": "$\\sin(x^3)$"
+            },
+            {
+              "letter": "C",
+              "text": "$-3x^2 \\cos(x^3)$"
+            },
+            {
+              "letter": "D",
+              "text": "$- \\sin(3x^2)$"
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "Let $u = x^3$. Then $y = \\cos(u)$. $\\frac{dy}{dx} = \\frac{dy}{du} \\cdot \\frac{du}{dx} = -\\sin(u) \\cdot 3x^2 = -3x^2 \\sin(x^3)$."
+        }
+      ]
+    }
+  ],
+  "document_hash": "934b1f98dfb0f027b6c23dbd934be20cf192de3c2971b403b802d22c1eec1fcb"
+}

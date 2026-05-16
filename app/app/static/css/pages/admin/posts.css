@@ -1,0 +1,46 @@
+
+.ap-post-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .8rem; flex-shrink: 0;
+}
+.ap-post-icon--doc  { background: rgba(37,99,235,.1);  color: var(--primary); }
+.ap-post-icon--note { background: rgba(16,185,129,.1); color: #10b981; }
+.ap-post-icon--sm   { width: 28px; height: 28px; border-radius: 7px; font-size: .72rem; }
+
+/* Tab bar */
+.adm-tab-bar {
+    display: flex; gap: .25rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: .3rem;
+}
+.adm-tab {
+    flex: 1; text-align: center;
+    padding: .45rem .75rem;
+    border-radius: 9px;
+    font-size: .78rem; font-weight: 600;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: all .15s;
+    display: flex; align-items: center; justify-content: center; gap: .3rem;
+}
+.adm-tab:hover { background: var(--bg-hover); color: var(--text-primary); }
+.adm-tab--active { background: var(--primary); color: #fff; }
+
+/* Mobile cards */
+.ap-mobile-cards { display: none; flex-direction: column; gap: .75rem; }
+.ap-mob-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: .875rem 1rem;
+}
+
+@media (max-width: 768px) {
+    .adm-table-wrap { display: none; }
+    .ap-mobile-cards { display: flex; }
+    .adm-tab { font-size: .72rem; padding: .4rem .5rem; }
+    .adm-tab i { display: none; }
+}

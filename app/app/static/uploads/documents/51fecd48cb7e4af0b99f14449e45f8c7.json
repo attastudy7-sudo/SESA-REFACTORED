@@ -1,0 +1,780 @@
+{
+  "schema_version": "1.0",
+  "document_type": "quiz",
+  "generated_at": "2026-04-10T22:33:29.515440+00:00",
+  "title": "MATH171: Calculus I Practice Question Bank",
+  "course": "MA101 \u2013 Calculus I",
+  "level": "Intermediate",
+  "type": "Self-Assessment Quiz",
+  "instructions": [
+    "Read each question carefully and choose the best answer."
+  ],
+  "metadata": {
+    "time": "30 minutes",
+    "total_marks": 30,
+    "total_questions": 30
+  },
+  "sections": [
+    {
+      "section_letter": "A",
+      "section_title": "Multiple Choice",
+      "question_type": "multiple_choice",
+      "questions_count": 30,
+      "marks_per_question": 1.0,
+      "total_section_marks": 30,
+      "questions": [
+        {
+          "question_number": 1,
+          "question_text": "Evaluate the limit: $\\lim_{x\\to 3} \\frac{x^2 - 9}{x - 3}$.",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "C"
+            },
+            {
+              "letter": "B",
+              "text": "Not C"
+            },
+            {
+              "letter": "C",
+              "text": "Evaluate the limit: $\\lim_{x\\to 3} \\frac option C"
+            },
+            {
+              "letter": "D",
+              "text": "Evaluate the limit: $\\lim_{x\\to 3} \\frac option D"
+            }
+          ],
+          "correct_answer": "C",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 2,
+          "question_text": "For $\\lim_{x\\to a} f(x)$ to exist, which condition must hold?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "B"
+            },
+            {
+              "letter": "B",
+              "text": "Not B"
+            },
+            {
+              "letter": "C",
+              "text": "For $\\lim_{x\\to a} f(x)$ to exist, which option C"
+            },
+            {
+              "letter": "D",
+              "text": "For $\\lim_{x\\to a} f(x)$ to exist, which option D"
+            }
+          ],
+          "correct_answer": "B",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 3,
+          "question_text": "If $\\lim_{x\\to a} f(x) = 4$ and $\\lim_{x\\to a} g(x) = 2$, what is $\\lim_{x\\to a} [f(x) \\cdot g(x)]$?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "C"
+            },
+            {
+              "letter": "B",
+              "text": "Not C"
+            },
+            {
+              "letter": "C",
+              "text": "If $\\lim_{x\\to a} f(x) = 4$ and $\\lim_{x option C"
+            },
+            {
+              "letter": "D",
+              "text": "If $\\lim_{x\\to a} f(x) = 4$ and $\\lim_{x option D"
+            }
+          ],
+          "correct_answer": "C",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 4,
+          "question_text": "Which technique is most appropriate to evaluate $\\lim_{x\\to 2} \\frac{x^2 - 4}{x - 2}$?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "B"
+            },
+            {
+              "letter": "B",
+              "text": "Not B"
+            },
+            {
+              "letter": "C",
+              "text": "Which technique is most appropriate to e option C"
+            },
+            {
+              "letter": "D",
+              "text": "Which technique is most appropriate to e option D"
+            }
+          ],
+          "correct_answer": "B",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 5,
+          "question_text": "What is the value of $\\lim_{x\\to \\infty} \\frac{3x^2 + 5}{x^2 - 1}$?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "B"
+            },
+            {
+              "letter": "B",
+              "text": "Not B"
+            },
+            {
+              "letter": "C",
+              "text": "What is the value of $\\lim_{x\\to \\infty} option C"
+            },
+            {
+              "letter": "D",
+              "text": "What is the value of $\\lim_{x\\to \\infty} option D"
+            }
+          ],
+          "correct_answer": "B",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 6,
+          "question_text": "A function $f$ is continuous at $x=a$ if:",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "D"
+            },
+            {
+              "letter": "B",
+              "text": "Not D"
+            },
+            {
+              "letter": "C",
+              "text": "A function $f$ is continuous at $x=a$ if option C"
+            },
+            {
+              "letter": "D",
+              "text": "A function $f$ is continuous at $x=a$ if option D"
+            }
+          ],
+          "correct_answer": "D",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 7,
+          "question_text": "The function $f(x) = 1/x$ has what type of discontinuity at $x=0$?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "C"
+            },
+            {
+              "letter": "B",
+              "text": "Not C"
+            },
+            {
+              "letter": "C",
+              "text": "The function $f(x) = 1/x$ has what type  option C"
+            },
+            {
+              "letter": "D",
+              "text": "The function $f(x) = 1/x$ has what type  option D"
+            }
+          ],
+          "correct_answer": "C",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 8,
+          "question_text": "Using the IVT, which conclusion can be drawn about $f(x) = x^3 - x - 1$ on $[1, 2]$?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "B"
+            },
+            {
+              "letter": "B",
+              "text": "Not B"
+            },
+            {
+              "letter": "C",
+              "text": "Using the IVT, which conclusion can be d option C"
+            },
+            {
+              "letter": "D",
+              "text": "Using the IVT, which conclusion can be d option D"
+            }
+          ],
+          "correct_answer": "B",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 9,
+          "question_text": "What is $\\lim_{x\\to 2^-} \\frac{|x - 2|}{x - 2}$?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "B"
+            },
+            {
+              "letter": "B",
+              "text": "Not B"
+            },
+            {
+              "letter": "C",
+              "text": "What is $\\lim_{x\\to 2^-} \\frac{|x - 2|}{ option C"
+            },
+            {
+              "letter": "D",
+              "text": "What is $\\lim_{x\\to 2^-} \\frac{|x - 2|}{ option D"
+            }
+          ],
+          "correct_answer": "B",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 10,
+          "question_text": "What is the derivative of $f(x) = x^5$?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "B"
+            },
+            {
+              "letter": "B",
+              "text": "Not B"
+            },
+            {
+              "letter": "C",
+              "text": "What is the derivative of $f(x) = x^5$? option C"
+            },
+            {
+              "letter": "D",
+              "text": "What is the derivative of $f(x) = x^5$? option D"
+            }
+          ],
+          "correct_answer": "B",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 11,
+          "question_text": "The derivative of a product $f(x)g(x)$ is:",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "B"
+            },
+            {
+              "letter": "B",
+              "text": "Not B"
+            },
+            {
+              "letter": "C",
+              "text": "The derivative of a product $f(x)g(x)$ i option C"
+            },
+            {
+              "letter": "D",
+              "text": "The derivative of a product $f(x)g(x)$ i option D"
+            }
+          ],
+          "correct_answer": "B",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 12,
+          "question_text": "If $y = \\sin(x^3)$, what is $dy/dx$ by the Chain Rule?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "B"
+            },
+            {
+              "letter": "B",
+              "text": "Not B"
+            },
+            {
+              "letter": "C",
+              "text": "If $y = \\sin(x^3)$, what is $dy/dx$ by t option C"
+            },
+            {
+              "letter": "D",
+              "text": "If $y = \\sin(x^3)$, what is $dy/dx$ by t option D"
+            }
+          ],
+          "correct_answer": "B",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 13,
+          "question_text": "What is $d/dx [\\ln(x)]$?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "B"
+            },
+            {
+              "letter": "B",
+              "text": "Not B"
+            },
+            {
+              "letter": "C",
+              "text": "What is $d/dx [\\ln(x)]$? option C"
+            },
+            {
+              "letter": "D",
+              "text": "What is $d/dx [\\ln(x)]$? option D"
+            }
+          ],
+          "correct_answer": "B",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 14,
+          "question_text": "What is the derivative of $\\cos(x)$?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "B"
+            },
+            {
+              "letter": "B",
+              "text": "Not B"
+            },
+            {
+              "letter": "C",
+              "text": "What is the derivative of $\\cos(x)$? option C"
+            },
+            {
+              "letter": "D",
+              "text": "What is the derivative of $\\cos(x)$? option D"
+            }
+          ],
+          "correct_answer": "B",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 15,
+          "question_text": "What is the second derivative of $f(x) = x^4$?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "B"
+            },
+            {
+              "letter": "B",
+              "text": "Not B"
+            },
+            {
+              "letter": "C",
+              "text": "What is the second derivative of $f(x) = option C"
+            },
+            {
+              "letter": "D",
+              "text": "What is the second derivative of $f(x) = option D"
+            }
+          ],
+          "correct_answer": "B",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 16,
+          "question_text": "The second derivative $f''(x)$ measures:",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "B"
+            },
+            {
+              "letter": "B",
+              "text": "Not B"
+            },
+            {
+              "letter": "C",
+              "text": "The second derivative $f''(x)$ measures: option C"
+            },
+            {
+              "letter": "D",
+              "text": "The second derivative $f''(x)$ measures: option D"
+            }
+          ],
+          "correct_answer": "B",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 17,
+          "question_text": "If $f'(c)=0$ and $f''(c)> 0$, then $f$ has a:",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "B"
+            },
+            {
+              "letter": "B",
+              "text": "Not B"
+            },
+            {
+              "letter": "C",
+              "text": "If $f'(c)=0$ and $f''(c)> 0$, then $f$ h option C"
+            },
+            {
+              "letter": "D",
+              "text": "If $f'(c)=0$ and $f''(c)> 0$, then $f$ h option D"
+            }
+          ],
+          "correct_answer": "B",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 18,
+          "question_text": "Rolle's Theorem requires which of the following conditions?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "C"
+            },
+            {
+              "letter": "B",
+              "text": "Not C"
+            },
+            {
+              "letter": "C",
+              "text": "Rolle's Theorem requires which of the fo option C"
+            },
+            {
+              "letter": "D",
+              "text": "Rolle's Theorem requires which of the fo option D"
+            }
+          ],
+          "correct_answer": "C",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 19,
+          "question_text": "On a curve, where $f'(x) > 0$, the function is:",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "C"
+            },
+            {
+              "letter": "B",
+              "text": "Not C"
+            },
+            {
+              "letter": "C",
+              "text": "On a curve, where $f'(x) > 0$, the funct option C"
+            },
+            {
+              "letter": "D",
+              "text": "On a curve, where $f'(x) > 0$, the funct option D"
+            }
+          ],
+          "correct_answer": "C",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 20,
+          "question_text": "What is $\\int x^3 dx$?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "B"
+            },
+            {
+              "letter": "B",
+              "text": "Not B"
+            },
+            {
+              "letter": "C",
+              "text": "What is $\\int x^3 dx$? option C"
+            },
+            {
+              "letter": "D",
+              "text": "What is $\\int x^3 dx$? option D"
+            }
+          ],
+          "correct_answer": "B",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 21,
+          "question_text": "Why is the constant of integration $C$ included in indefinite integrals?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "B"
+            },
+            {
+              "letter": "B",
+              "text": "Not B"
+            },
+            {
+              "letter": "C",
+              "text": "Why is the constant of integration $C$ i option C"
+            },
+            {
+              "letter": "D",
+              "text": "Why is the constant of integration $C$ i option D"
+            }
+          ],
+          "correct_answer": "B",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 22,
+          "question_text": "The Fundamental Theorem of Calculus Part 1 states that if $F(x) = \\int_{a}^{x} f(t) dt$, then:",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "B"
+            },
+            {
+              "letter": "B",
+              "text": "Not B"
+            },
+            {
+              "letter": "C",
+              "text": "The Fundamental Theorem of Calculus Part option C"
+            },
+            {
+              "letter": "D",
+              "text": "The Fundamental Theorem of Calculus Part option D"
+            }
+          ],
+          "correct_answer": "B",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 23,
+          "question_text": "Geometrically, $\\int_{a}^{b} f(x) dx$ represents:",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "B"
+            },
+            {
+              "letter": "B",
+              "text": "Not B"
+            },
+            {
+              "letter": "C",
+              "text": "Geometrically, $\\int_{a}^{b} f(x) dx$ re option C"
+            },
+            {
+              "letter": "D",
+              "text": "Geometrically, $\\int_{a}^{b} f(x) dx$ re option D"
+            }
+          ],
+          "correct_answer": "B",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 24,
+          "question_text": "If $f(x) \\ge 0$ on $[a, b]$, then $\\int_{a}^{b} f(x) dx$ is:",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "C"
+            },
+            {
+              "letter": "B",
+              "text": "Not C"
+            },
+            {
+              "letter": "C",
+              "text": "If $f(x) \\ge 0$ on $[a, b]$, then $\\int_ option C"
+            },
+            {
+              "letter": "D",
+              "text": "If $f(x) \\ge 0$ on $[a, b]$, then $\\int_ option D"
+            }
+          ],
+          "correct_answer": "C",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 25,
+          "question_text": "To evaluate $\\int x e^x dx$, the best technique is:",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "B"
+            },
+            {
+              "letter": "B",
+              "text": "Not B"
+            },
+            {
+              "letter": "C",
+              "text": "To evaluate $\\int x e^x dx$, the best te option C"
+            },
+            {
+              "letter": "D",
+              "text": "To evaluate $\\int x e^x dx$, the best te option D"
+            }
+          ],
+          "correct_answer": "B",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 26,
+          "question_text": "Using substitution $u = 1 + x^2$, evaluate $\\int \\frac{2x}{1+x^2} dx$.",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "B"
+            },
+            {
+              "letter": "B",
+              "text": "Not B"
+            },
+            {
+              "letter": "C",
+              "text": "Using substitution $u = 1 + x^2$, evalua option C"
+            },
+            {
+              "letter": "D",
+              "text": "Using substitution $u = 1 + x^2$, evalua option D"
+            }
+          ],
+          "correct_answer": "B",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 27,
+          "question_text": "The area between two curves $f(x)$ and $g(x)$ where $f(x) \\ge g(x)$ on $[a, b]$ is:",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "D"
+            },
+            {
+              "letter": "B",
+              "text": "Not D"
+            },
+            {
+              "letter": "C",
+              "text": "The area between two curves $f(x)$ and $ option C"
+            },
+            {
+              "letter": "D",
+              "text": "The area between two curves $f(x)$ and $ option D"
+            }
+          ],
+          "correct_answer": "D",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 28,
+          "question_text": "The disk method for volumes of revolution uses which formula?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "B"
+            },
+            {
+              "letter": "B",
+              "text": "Not B"
+            },
+            {
+              "letter": "C",
+              "text": "The disk method for volumes of revolutio option C"
+            },
+            {
+              "letter": "D",
+              "text": "The disk method for volumes of revolutio option D"
+            }
+          ],
+          "correct_answer": "B",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 29,
+          "question_text": "Work done by a force $F(x)$ from $x=a$ to $x=b$ is defined as:",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "C"
+            },
+            {
+              "letter": "B",
+              "text": "Not C"
+            },
+            {
+              "letter": "C",
+              "text": "Work done by a force $F(x)$ from $x=a$ t option C"
+            },
+            {
+              "letter": "D",
+              "text": "Work done by a force $F(x)$ from $x=a$ t option D"
+            }
+          ],
+          "correct_answer": "C",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 30,
+          "question_text": "If $s(t) = t^3 - 6t^2 + 9t$, at what time(s) is the particle at rest?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "C"
+            },
+            {
+              "letter": "B",
+              "text": "Not C"
+            },
+            {
+              "letter": "C",
+              "text": "If $s(t) = t^3 - 6t^2 + 9t$, at what tim option C"
+            },
+            {
+              "letter": "D",
+              "text": "If $s(t) = t^3 - 6t^2 + 9t$, at what tim option D"
+            }
+          ],
+          "correct_answer": "C",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        }
+      ]
+    }
+  ],
+  "document_hash": "0aec4d579df843bc72ba631494c9be478d6d0c72481c4b43891b825befd02353"
+}

@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "document_type": "cheatsheet",
+  "generated_at": "2026-04-11T11:44:45.515866+00:00",
+  "title": "Intro to Mathematical Proof Strategies I (CSM 165)",
+  "course": "Discrete Mathematics",
+  "level": "Intermediate",
+  "metadata": {
+    "purpose": "Rapid revision and recall",
+    "exam_context": "",
+    "topics": []
+  },
+  "sections": [
+    {
+      "section_title": "Quick Reference",
+      "section_type": "formulas",
+      "entries": [
+        {
+          "label": "Core Idea",
+          "content": "CSM 165: Discrete Mathematics Intro to Mathematical Proof Strategies I Kwame Atta Gyamfi (PhD) Dept.ofMathematics KNUST February 16, 2026 Summary of topics 1 Statements of Mathematical Results 2 Trivial and Vacuous Proof"
+        },
+        {
+          "label": "Revision Cue",
+          "content": "Focus on the main terms, steps, and examples from the source."
+        },
+        {
+          "label": "Application",
+          "content": "Apply this concept using a simple practice example."
+        },
+        {
+          "label": "Application",
+          "content": "Apply this concept using a simple practice example."
+        }
+      ]
+    }
+  ],
+  "document_hash": "b8470b5af0ac39a56f84b153833491fd9eb4ddde611fa4e7a41bccb23a4943d7"
+}

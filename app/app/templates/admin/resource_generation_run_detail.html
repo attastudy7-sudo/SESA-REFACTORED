@@ -1,0 +1,91 @@
+{% extends "admin/base.html" %}
+
+{% block extra_css %}{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin/resource_generation_run_detail.css') }}">{%  endblock %}
+{% block admin_title %}Run {{ run_id }}{% endblock %}
+{% block admin_content %}
+
+<div class="adm-header">
+  <div class="adm-header-left">
+    <div class="adm-header-icon"><i class="fas fa-chart-line"></i></div>
+    <div>
+      <p class="adm-header-title">Run {{ run_id }}</p>
+      <p class="adm-header-sub">Detailed analytics and job outcomes for this generation run.</p>
+    </div>
+  </div>
+  <div class="adm-header-actions">
+    <a href="{{ url_for('admin.resource_generation_runs') }}" class="adm-btn adm-btn--secondary">
+      <i class="fas fa-arrow-left"></i> Runs
+    </a>
+    <a href="{{ url_for('admin.resource_generation_jobs') }}" class="adm-btn adm-btn--secondary">
+      <i class="fas fa-list-check"></i> Jobs
+    </a>
+  </div>
+</div>
+
+<div class="adm-card">
+  <p class="adm-card-title"><i class="fas fa-microscope"></i> Analytics</p>
+  <div class="rg-stats-grid">
+    <div><strong>Total:</strong> {{ analytics.total }}</div>
+    <div><strong>Posted:</strong> {{ analytics.posted }}</div>
+    <div><strong>Failed:</strong> {{ analytics.failed }}</div>
+    <div><strong>Pending:</strong> {{ analytics.pending }}</div>
+    <div><strong>Generating:</strong> {{ analytics.generating }}</div>
+    <div><strong>Cancelled:</strong> {{ analytics.cancelled }}</div>
+    <div><strong>Subjects:</strong> {{ analytics.subjects_count }}</div>
+    <div><strong>Programmes:</strong> {{ analytics.programmes_count }}</div>
+    <div><strong>Avg Attempts:</strong> {{ analytics.avg_attempts }}</div>
+    <div><strong>Started:</strong> {{ analytics.started_at.strftime('%Y-%m-%d %H:%M') if analytics.started_at else '—' }}</div>
+    <div><strong>Last Updated:</strong> {{ analytics.last_updated.strftime('%Y-%m-%d %H:%M') if analytics.last_updated else '—' }}</div>
+  </div>
+</div>
+
+<div class="adm-card">
+  <p class="adm-card-title"><i class="fas fa-table"></i> Jobs In This Run</p>
+  <div class="rg-table-wrap">
+    <table class="rg-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Topic</th>
+          <th>Subject</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Attempts</th>
+          <th>Updated</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for job in jobs %}
+        <tr>
+          <td>{{ job.id }}</td>
+          <td>{{ job.topic }}</td>
+          <td>{{ job.subject_slug }}</td>
+          <td>{{ job.content_type }}</td>
+          <td>{{ job.status }}</td>
+          <td>{{ job.attempts }}</td>
+          <td>{{ job.updated_at.strftime('%Y-%m-%d %H:%M') if job.updated_at else '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="adm-card">
+  <p class="adm-card-title"><i class="fas fa-triangle-exclamation"></i> Top Failures</p>
+  {% if failure_topics %}
+    <div class="rg-failure-list">
+      {% for item in failure_topics %}
+      <div class="rg-failure-item">
+        <div><strong>{{ item.topic }}</strong> · {{ item.subject }} · {{ item.content_type }}</div>
+        <div class="rg-failure-error">{{ item.error }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="rg-empty">No failures in this run.</p>
+  {% endif %}
+</div>
+
+{% endblock %}

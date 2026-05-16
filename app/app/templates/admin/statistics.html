@@ -1,0 +1,198 @@
+{% extends "admin/base.html" %}
+
+{% block extra_css %}{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin/statistics.css') }}">{%  endblock %}
+{% block admin_title %}Statistics{% endblock %}
+{% block admin_content %}
+
+<div class="adm-header">
+    <div class="adm-header-left">
+        <div class="adm-header-icon"><i class="fas fa-chart-column"></i></div>
+        <div>
+            <p class="adm-header-title">Statistics & Analytics</p>
+            <p class="adm-header-sub">Platform overview</p>
+        </div>
+    </div>
+</div>
+
+{# ── Headline stats ── #}
+<div class="adm-stats">
+    <div class="adm-stat">
+        <div class="adm-stat-icon adm-stat-icon--blue"><i class="fas fa-users"></i></div>
+        <div>
+            <p class="adm-stat-num">{{ total_users }}</p>
+            <p class="adm-stat-label">Total Users</p>
+            <p class="adm-stat-sub">{{ active_users }} active · {{ inactive_users }} inactive</p>
+        </div>
+    </div>
+    <div class="adm-stat">
+        <div class="adm-stat-icon adm-stat-icon--green"><i class="fas fa-file-lines"></i></div>
+        <div>
+            <p class="adm-stat-num">{{ total_posts }}</p>
+            <p class="adm-stat-label">Total Posts</p>
+            <p class="adm-stat-sub">{{ posts_with_documents }} with documents</p>
+        </div>
+    </div>
+    <div class="adm-stat">
+        <div class="adm-stat-icon adm-stat-icon--rose"><i class="fas fa-heart"></i></div>
+        <div>
+            <p class="adm-stat-num">{{ total_likes }}</p>
+            <p class="adm-stat-label">Total Likes</p>
+        </div>
+    </div>
+    <div class="adm-stat">
+        <div class="adm-stat-icon adm-stat-icon--amber"><i class="fas fa-comments"></i></div>
+        <div>
+            <p class="adm-stat-num">{{ total_comments }}</p>
+            <p class="adm-stat-label">Total Comments</p>
+        </div>
+    </div>
+</div>
+
+{# ── Leaderboard grid ── #}
+<div class="adm-two-col">
+
+    {# Most liked posts #}
+    <div class="adm-card">
+        <p class="adm-card-title"><i class="fas fa-heart"></i> Most Liked Posts</p>
+        {% if most_liked %}
+        <div class="stat-list">
+            {% for post, likes in most_liked %}
+            <div class="stat-row">
+                <span class="stat-rank">{{ loop.index }}</span>
+                <div class="stat-info">
+                    <a href="{{ url_for('posts.view', post_id=post.id) }}"
+                       class="stat-name" target="_blank">
+                        {{ post.title[:45] }}{% if post.title|length > 45 %}…{% endif %}
+                    </a>
+                    <span class="stat-sub">by {{ post.author.username }}</span>
+                </div>
+                <span class="adm-pill adm-pill--rose">
+                    <i class="fas fa-heart"></i> {{ likes }}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="stat-empty">No liked posts yet.</p>
+        {% endif %}
+    </div>
+
+    {# Most downloaded posts #}
+        {# Removed most downloaded posts section #}
+
+    {# Most active users #}
+    <div class="adm-card">
+        <p class="adm-card-title"><i class="fas fa-pen-to-square"></i> Most Active Users</p>
+        {% if most_active %}
+        <div class="stat-list">
+            {% for user, post_count in most_active %}
+            <div class="stat-row">
+                <span class="stat-rank">{{ loop.index }}</span>
+                <div style="display:flex;align-items:center;gap:.5rem;flex:1;min-width:0">
+                    <img src="{{ user.profile_picture_url }}" alt="{{ user.username }}"
+                         style="width:26px;height:26px;border-radius:50%;object-fit:cover;border:1.5px solid var(--border);flex-shrink:0">
+                    <div class="stat-info">
+                        <a href="{{ url_for('users.profile', username=user.username) }}"
+                           class="stat-name" target="_blank">{{ user.username }}</a>
+                        <span class="stat-sub">{{ user.nickname or '—' }}</span>
+                    </div>
+                </div>
+                <span class="adm-pill adm-pill--green">
+                    <i class="fas fa-file-lines"></i> {{ post_count }} posts
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="stat-empty">No posts yet.</p>
+        {% endif %}
+    </div>
+
+    {# Most followed users #}
+    <div class="adm-card">
+        <p class="adm-card-title"><i class="fas fa-user-plus"></i> Most Followed Users</p>
+        {% if most_followed %}
+        <div class="stat-list">
+            {% for user, follower_count in most_followed %}
+            <div class="stat-row">
+                <span class="stat-rank">{{ loop.index }}</span>
+                <div style="display:flex;align-items:center;gap:.5rem;flex:1;min-width:0">
+                    <img src="{{ user.profile_picture_url }}" alt="{{ user.username }}"
+                         style="width:26px;height:26px;border-radius:50%;object-fit:cover;border:1.5px solid var(--border);flex-shrink:0">
+                    <div class="stat-info">
+                        <a href="{{ url_for('users.profile', username=user.username) }}"
+                           class="stat-name" target="_blank">{{ user.username }}</a>
+                        <span class="stat-sub">{{ user.nickname or '—' }}</span>
+                    </div>
+                </div>
+                <span class="adm-pill adm-pill--purple">
+                    <i class="fas fa-users"></i> {{ follower_count }}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="stat-empty">No follows yet.</p>
+        {% endif %}
+    </div>
+
+</div>
+
+{# ── Quiz leaderboard — full width ── #}
+<div class="adm-card">
+    <p class="adm-card-title"><i class="fas fa-graduation-cap"></i> Highest Average Quiz Score <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:.7rem;color:var(--text-muted)">(min. 3 attempts)</span></p>
+    {% if top_quiz %}
+    <div class="stat-list">
+        {% for user, avg_score, attempts in top_quiz %}
+        <div class="stat-row">
+            <span class="stat-rank {% if loop.index == 1 %}stat-rank--gold{% elif loop.index == 2 %}stat-rank--silver{% elif loop.index == 3 %}stat-rank--bronze{% endif %}">
+                {% if loop.index <= 3 %}<i class="fas fa-trophy"></i>{% else %}{{ loop.index }}{% endif %}
+            </span>
+            <div style="display:flex;align-items:center;gap:.5rem;flex:1;min-width:0">
+                <img src="{{ user.profile_picture_url }}" alt="{{ user.username }}"
+                     style="width:26px;height:26px;border-radius:50%;object-fit:cover;border:1.5px solid var(--border);flex-shrink:0">
+                <div class="stat-info">
+                    <a href="{{ url_for('users.profile', username=user.username) }}"
+                       class="stat-name" target="_blank">{{ user.username }}</a>
+                    <span class="stat-sub">{{ attempts }} attempt{{ 's' if attempts != 1 }} · XP {{ user.xp_points }}</span>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:.5rem">
+                <div class="score-bar-wrap">
+                    <div class="score-bar" style="width:{{ avg_score }}%"></div>
+                </div>
+                <span class="adm-pill adm-pill--amber" style="min-width:52px;justify-content:center">
+                    {{ '%.1f'|format(avg_score) }}%
+                </span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="stat-empty">Not enough quiz data yet (need at least 3 attempts per user).</p>
+    {% endif %}
+</div>
+
+{# ── Posts by subject ── #}
+<div class="adm-card">
+    <p class="adm-card-title"><i class="fas fa-folder"></i> Posts by Subject</p>
+    {% set total_posts_nonzero = [subjects_stats | sum(attribute='post_count'), 1] | max %}
+    <div style="display:flex;flex-direction:column;gap:.875rem">
+        {% for s in subjects_stats | sort(attribute='post_count', reverse=True) %}
+        {% if s.post_count > 0 %}
+        <div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem">
+                <span style="font-size:.82rem;font-weight:600;color:{{ s.color }}">{{ s.name }}</span>
+                <span style="font-size:.73rem;color:var(--text-muted);font-weight:600">{{ s.post_count }} posts</span>
+            </div>
+            <div style="height:6px;background:var(--bg-hover);border-radius:99px;overflow:hidden">
+                <div style="height:100%;width:{{ (s.post_count / total_posts_nonzero * 100) }}%;background:{{ s.color }};border-radius:99px;transition:width .4s ease"></div>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

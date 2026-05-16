@@ -1,0 +1,280 @@
+{
+  "schema_version": "1.0",
+  "document_type": "quiz",
+  "generated_at": "2026-04-09T23:19:08.944447+00:00",
+  "title": "Series and Sequence: Introduction to Pure Mathematics",
+  "course": "Pure Mathematics",
+  "level": "Intermediate",
+  "type": "Self-Assessment Quiz",
+  "instructions": [
+    "Read each question carefully and choose the best answer."
+  ],
+  "metadata": {
+    "time": "30 minutes",
+    "total_marks": 10,
+    "total_questions": 10
+  },
+  "sections": [
+    {
+      "section_letter": "A",
+      "section_title": "Multiple Choice",
+      "question_type": "multiple_choice",
+      "questions_count": 10,
+      "marks_per_question": 1.0,
+      "total_section_marks": 10,
+      "questions": [
+        {
+          "question_number": 1,
+          "question_text": "What is the primary difference between a sequence and a series?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "A sequence is a set of numbers in order; a series is the sum of those numbers."
+            },
+            {
+              "letter": "B",
+              "text": "A sequence is infinite; a series is always finite."
+            },
+            {
+              "letter": "C",
+              "text": "A sequence uses multiplication; a series uses addition."
+            },
+            {
+              "letter": "D",
+              "text": "There is no difference; the terms are interchangeable."
+            }
+          ],
+          "correct_answer": "A",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 2,
+          "question_text": "In an Arithmetic Progression (AP), what does the variable 'd' represent?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "The first term"
+            },
+            {
+              "letter": "B",
+              "text": "The number of terms"
+            },
+            {
+              "letter": "C",
+              "text": "The common difference"
+            },
+            {
+              "letter": "D",
+              "text": "The last term"
+            }
+          ],
+          "correct_answer": "C",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 3,
+          "question_text": "Which formula is used to find the nth term (Un) of an Arithmetic Progression?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Un = a + nd"
+            },
+            {
+              "letter": "B",
+              "text": "Un = a + (n-1)d"
+            },
+            {
+              "letter": "C",
+              "text": "Un = ar^(n-1)"
+            },
+            {
+              "letter": "D",
+              "text": "Un = a + (n+1)d"
+            }
+          ],
+          "correct_answer": "B",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 4,
+          "question_text": "Find the 11th term of the sequence: 4, 9, 14, 19...",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "49"
+            },
+            {
+              "letter": "B",
+              "text": "54"
+            },
+            {
+              "letter": "C",
+              "text": "59"
+            },
+            {
+              "letter": "D",
+              "text": "64"
+            }
+          ],
+          "correct_answer": "B",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 5,
+          "question_text": "Which formula for the sum of an AP is most efficient when only the first term (a) and last term (l) are known?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Sn = n/2 [2a + (n-1)d]"
+            },
+            {
+              "letter": "B",
+              "text": "Sn = n/2 (a + l)"
+            },
+            {
+              "letter": "C",
+              "text": "Sn = a(1 - r^n) / (1 - r)"
+            },
+            {
+              "letter": "D",
+              "text": "Sn = a / (1 - r)"
+            }
+          ],
+          "correct_answer": "B",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 6,
+          "question_text": "In a Geometric Progression (GP), how is the common ratio (r) calculated?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "r = Un - Un-1"
+            },
+            {
+              "letter": "B",
+              "text": "r = Un + Un-1"
+            },
+            {
+              "letter": "C",
+              "text": "r = Un / Un-1"
+            },
+            {
+              "letter": "D",
+              "text": "r = a + (n-1)d"
+            }
+          ],
+          "correct_answer": "C",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 7,
+          "question_text": "What is the nth term formula for a Geometric Progression?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Un = a + (n-1)d"
+            },
+            {
+              "letter": "B",
+              "text": "Un = ar^n"
+            },
+            {
+              "letter": "C",
+              "text": "Un = ar^(n-1)"
+            },
+            {
+              "letter": "D",
+              "text": "Un = a(r-1)^n"
+            }
+          ],
+          "correct_answer": "C",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 8,
+          "question_text": "Under what condition can the sum to infinity (S\u221e) of a GP be calculated?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "When r > 1"
+            },
+            {
+              "letter": "B",
+              "text": "When r = 1"
+            },
+            {
+              "letter": "C",
+              "text": "When |r| < 1"
+            },
+            {
+              "letter": "D",
+              "text": "When n is a finite number"
+            }
+          ],
+          "correct_answer": "C",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 9,
+          "question_text": "Calculate the sum to infinity of the series: 7/10 + 7/100 + 7/1000 + ...",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "7/10"
+            },
+            {
+              "letter": "B",
+              "text": "7/9"
+            },
+            {
+              "letter": "C",
+              "text": "1"
+            },
+            {
+              "letter": "D",
+              "text": "0.77"
+            }
+          ],
+          "correct_answer": "B",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        },
+        {
+          "question_number": 10,
+          "question_text": "If a machine's value depreciates by a fixed percentage each year, which progression model should be used?",
+          "marks": 1,
+          "options": [
+            {
+              "letter": "A",
+              "text": "Arithmetic Progression"
+            },
+            {
+              "letter": "B",
+              "text": "Linear Progression"
+            },
+            {
+              "letter": "C",
+              "text": "Geometric Progression"
+            },
+            {
+              "letter": "D",
+              "text": "Infinite Arithmetic Series"
+            }
+          ],
+          "correct_answer": "C",
+          "explanation": "This answer follows directly from the source material and reinforces the core concept."
+        }
+      ]
+    }
+  ],
+  "document_hash": "579e2d9dd110cd60388141d48c607b88a5c681375914f76823c803d6d8cbf2ec"
+}

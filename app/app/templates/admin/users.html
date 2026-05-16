@@ -1,0 +1,161 @@
+{% extends "admin/base.html" %}
+
+{% block extra_css %}{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin/users.css') }}">{%  endblock %}
+{% block admin_title %}Users{% endblock %}
+{% block admin_content %}
+
+<div class="adm-header">
+    <div class="adm-header-left">
+        <div class="adm-header-icon"><i class="fas fa-users"></i></div>
+        <div>
+            <p class="adm-header-title">Manage Users</p>
+            <p class="adm-header-sub">{{ users.total }} user{{ 's' if users.total != 1 }}</p>
+        </div>
+    </div>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% for category, message in messages %}
+<div class="adm-flash adm-flash--{{ category }}">
+    <i class="fas fa-{% if category=='success' %}check-circle{% elif category=='danger' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+    {{ message }}
+</div>
+{% endfor %}
+{% endwith %}
+
+<div class="adm-search-wrap">
+    <form method="get" style="display:flex;align-items:center;gap:.75rem;flex:1;flex-wrap:wrap">
+        <div class="adm-search-input-wrap">
+            <i class="fas fa-search adm-search-icon"></i>
+            <input type="text" name="search" value="{{ search }}" class="adm-search-input"
+                   placeholder="Search by username, email or name…">
+        </div>
+        <button type="submit" class="adm-btn adm-btn--primary">Search</button>
+        {% if search %}
+        <a href="{{ url_for('admin.users') }}" class="adm-btn adm-btn--secondary">Clear</a>
+        {% endif %}
+    </form>
+</div>
+
+{% if users.items %}
+<div class="au-list">
+    {% for user in users.items %}
+    <div class="au-row {% if not user.is_active %}au-row--inactive{% endif %}">
+
+        {# ── Avatar with live status dot ── #}
+        <div class="au-avatar-wrap">
+            <img src="{{ user.profile_picture_url }}" alt="{{ user.username }}" class="au-avatar">
+            <span class="au-dot {% if user.is_active %}au-dot--on{% else %}au-dot--off{% endif %}"
+                  title="{{ 'Active' if user.is_active else 'Inactive' }}"></span>
+        </div>
+
+        {# ── Identity + meta ── #}
+        <div class="au-body">
+            <div class="au-name-row">
+                <span class="au-username">{{ user.username }}</span>
+                {% if user.is_admin %}
+                    <span class="au-badge au-badge--admin">Admin</span>
+                {% endif %}
+                {% if user.subscription_tier == 'premium' %}
+                    <span class="au-badge au-badge--premium">Premium</span>
+                {% elif user.can_access_all_content %}
+                    <span class="au-badge au-badge--access">All Access</span>
+                {% else %}
+                    <span class="au-badge au-badge--free">Free</span>
+                {% endif %}
+            </div>
+
+            {% if user.nickname %}
+            <div class="au-fullname">{{ user.nickname }}</div>
+            {% endif %}
+
+            <div class="au-email"><i class="fas fa-envelope"></i> {{ user.email }}</div>
+
+            <div class="au-chips">
+                {% if user.school %}
+                <span class="au-chip au-chip--school"><i class="fas fa-university"></i> {{ user.school }}</span>
+                {% endif %}
+                {% if user.programme %}
+                <span class="au-chip au-chip--prog"><i class="fas fa-graduation-cap"></i> {{ user.programme }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        {# ── Stats ── #}
+        <div class="au-stats">
+            <div class="au-stat">
+                <span class="au-stat-val"><i class="fas fa-star au-xp-icon"></i>{{ user.xp_points }}</span>
+                <span class="au-stat-lbl">XP</span>
+            </div>
+            <div class="au-stat">
+                <span class="au-stat-val">Lv {{ user.xp_level }}</span>
+                <span class="au-stat-lbl">Level</span>
+            </div>
+            <div class="au-stat">
+                <span class="au-stat-val">{{ user.created_at.strftime('%b %y') }}</span>
+                <span class="au-stat-lbl">Joined</span>
+            </div>
+        </div>
+
+        {# ── Actions ── #}
+        <div class="au-actions">
+            <a href="{{ url_for('users.profile', username=user.username) }}"
+               class="adm-btn adm-btn--secondary adm-btn--sm au-action-btn" target="_blank" title="View profile">
+                <i class="fas fa-eye"></i><span class="au-lbl"> View</span>
+            </a>
+            {% if user.id != current_user.id %}
+            <form action="{{ url_for('admin.toggle_user_active', user_id=user.id) }}" method="post" style="display:contents">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit"
+                        class="adm-btn adm-btn--sm au-action-btn {% if user.is_active %}adm-btn--warning{% else %}adm-btn--success{% endif %}"
+                        title="{{ 'Deactivate' if user.is_active else 'Activate' }}">
+                    <i class="fas fa-{% if user.is_active %}ban{% else %}check{% endif %}"></i><span class="au-lbl"> {{ 'Deactivate' if user.is_active else 'Activate' }}</span>
+                </button>
+            </form>
+            <form action="{{ url_for('admin.toggle_premium_access', user_id=user.id) }}" method="post" style="display:contents">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="adm-btn adm-btn--sm adm-btn--secondary au-action-btn"
+                        title="{{ 'Revoke all-access' if user.can_access_all_content else 'Grant all-access' }}">
+                    <i class="fas fa-{% if user.can_access_all_content %}lock{% else %}unlock{% endif %}"></i><span class="au-lbl"> {{ 'Revoke' if user.can_access_all_content else 'Grant' }}</span>
+                </button>
+            </form>
+            <form action="{{ url_for('admin.delete_user', user_id=user.id) }}" method="post" style="display:contents"
+                  onsubmit="return confirm('Permanently delete {{ user.username }}? This cannot be undone.')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="adm-btn adm-btn--danger adm-btn--sm au-action-btn" title="Delete">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </form>
+            {% endif %}
+        </div>
+
+    </div>
+    {% endfor %}
+</div>
+
+{% if users.pages > 1 %}
+<div class="adm-pagination">
+    {% if users.has_prev %}
+    <a href="{{ url_for('admin.users', page=users.prev_num, search=search) }}" class="adm-page-btn">
+        <i class="fas fa-chevron-left"></i> Prev
+    </a>
+    {% endif %}
+    <span class="adm-page-info">Page {{ users.page }} of {{ users.pages }}</span>
+    {% if users.has_next %}
+    <a href="{{ url_for('admin.users', page=users.next_num, search=search) }}" class="adm-page-btn">
+        Next <i class="fas fa-chevron-right"></i>
+    </a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% else %}
+<div class="adm-empty">
+    <i class="fas fa-users"></i>
+    <p>{% if search %}No users found matching "{{ search }}".{% else %}No users yet.{% endif %}</p>
+    {% if search %}<a href="{{ url_for('admin.users') }}" class="adm-btn adm-btn--secondary">Clear search</a>{% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

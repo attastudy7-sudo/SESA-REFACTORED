@@ -1,0 +1,164 @@
+
+    @font-face { font-display:swap;font-family:'Nunito';font-style:normal;font-weight:700;src:url('/static/fonts/nunito-v32-latin-700.woff2') format('woff2'); }
+    @font-face { font-display:swap;font-family:'Nunito';font-style:normal;font-weight:800;src:url('/static/fonts/nunito-v32-latin-800.woff2') format('woff2'); }
+    @font-face { font-display:swap;font-family:'Nunito';font-style:normal;font-weight:900;src:url('/static/fonts/nunito-v32-latin-900.woff2') format('woff2'); }
+    @font-face { font-display:swap;font-family:'DM Sans';font-style:normal;font-weight:400;src:url('/static/fonts/dm-sans-v17-latin-regular.woff2') format('woff2'); }
+    @font-face { font-display:swap;font-family:'DM Sans';font-style:normal;font-weight:600;src:url('/static/fonts/dm-sans-v17-latin-600.woff2') format('woff2'); }
+
+    *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+
+    :root {
+      --primary:        #2563eb;
+      --brand-gradient: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+      --bg-main:        #f8fafc;
+      --bg-card:        #ffffff;
+      --bg-secondary:   #f1f5f9;
+      --border:         #e2e8f0;
+      --text-primary:   #0f172a;
+      --text-secondary: #64748b;
+      --text-muted:     #94a3b8;
+      --font-display:   'Nunito', sans-serif;
+      --font-body:      'DM Sans', sans-serif;
+      --nav-h:          62px;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg-main);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+    }
+
+
+
+    /* soft radial blobs */
+    .blob { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; }
+    .blob-tr { width:560px;height:560px;top:-180px;right:-180px;
+               background:radial-gradient(circle,rgba(37,99,235,0.07) 0%,transparent 65%); }
+    .blob-bl { width:480px;height:480px;bottom:-160px;left:-140px;
+               background:radial-gradient(circle,rgba(6,182,212,0.06) 0%,transparent 65%); }
+
+    /* ── NAV ── */
+    .error-nav {
+      position: relative; z-index: 10;
+      height: var(--nav-h);
+      display: flex; align-items: center;
+      padding: 0 1.5rem;
+      background: rgba(255,255,255,0.82);
+      backdrop-filter: blur(18px) saturate(180%);
+      -webkit-backdrop-filter: blur(18px) saturate(180%);
+      border-bottom: 1px solid rgba(37,99,235,0.10);
+      box-shadow: 0 1px 0 rgba(37,99,235,0.07), 0 4px 24px rgba(37,99,235,0.06);
+    }
+    .nav-logo { display:flex; align-items:center; gap:0.4rem; text-decoration:none; }
+    .nav-logo img { width:32px; height:32px; object-fit:contain; display:block; }
+     .nav-logo-name {
+       font-family: var(--font-display);
+       font-size: 1.35rem; font-weight: 900;
+       letter-spacing: -0.04em; line-height: 1;
+       color: var(--primary);
+     }
+
+    /* ── SCENE ── */
+    .scene {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      min-height: calc(100vh - var(--nav-h));
+      padding: 3rem 1.5rem;
+      text-align: center;
+    }
+
+  
+    /* ── ERROR CODE ── */
+     .error-code {
+       font-family: var(--font-display);
+       font-weight: 900;
+       font-size: clamp(5.5rem, 20vw, 10rem);
+       line-height: 1; letter-spacing: -0.04em;
+       color: var(--primary);
+       animation: up 0.6s cubic-bezier(0.22,1,0.36,1) both;
+     }
+
+.divider {
+       width: 48px; height: 3px; border-radius: 99px;
+       background: var(--primary);
+       margin: 1.25rem auto 1.5rem; opacity: 0.4;
+       animation: up 0.6s 0.08s cubic-bezier(0.22,1,0.36,1) both;
+     }
+
+    .error-headline {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: clamp(1.3rem, 3.5vw, 1.75rem);
+      letter-spacing: -0.025em;
+      color: var(--text-primary);
+      animation: up 0.6s 0.14s cubic-bezier(0.22,1,0.36,1) both;
+    }
+
+    .error-sub {
+      margin-top: 0.75rem;
+      font-size: 1rem; font-weight: 400;
+      color: var(--text-secondary);
+      max-width: 380px; line-height: 1.7;
+      animation: up 0.6s 0.2s cubic-bezier(0.22,1,0.36,1) both;
+    }
+
+    /* ── BUTTONS ── */
+    .actions {
+      display: flex; gap: 0.75rem;
+      margin-top: 2.25rem;
+      flex-wrap: wrap; justify-content: center;
+      animation: up 0.6s 0.28s cubic-bezier(0.22,1,0.36,1) both;
+    }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.65rem 1.4rem;
+      border-radius: 10px;
+      font-family: var(--font-body);
+      font-size: 0.9rem; font-weight: 600;
+      text-decoration: none; border: none; cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease, background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+    }
+    .btn:hover  { transform: translateY(-2px); }
+    .btn:active { transform: translateY(0); }
+
+     .btn-primary {
+       background: var(--primary);
+       color: #fff;
+       box-shadow: 0 4px 16px rgba(37,99,235,0.28);
+     }
+    .btn-primary:hover { opacity: 0.93; box-shadow: 0 6px 22px rgba(37,99,235,0.38); }
+
+    .btn-ghost {
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      border: 1.5px solid var(--border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .btn-ghost:hover {
+      color: var(--primary);
+      border-color: rgba(37,99,235,0.35);
+      background: rgba(37,99,235,0.03);
+    }
+
+    /* ── BREADCRUMB ── */
+    .breadcrumb {
+      margin-top: 3rem;
+      display: flex; align-items: center; gap: 0.4rem;
+      font-size: 0.75rem; color: var(--text-muted);
+      animation: up 0.6s 0.38s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    .breadcrumb i { font-size: 0.45rem; opacity: 0.4; }
+
+    @keyframes up {
+      from { opacity:0; transform:translateY(18px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    @media (max-width: 480px) {
+      .actions { flex-direction:column; align-items:stretch; width:100%; max-width:280px; }
+      .btn { justify-content:center; }
+    }
+  

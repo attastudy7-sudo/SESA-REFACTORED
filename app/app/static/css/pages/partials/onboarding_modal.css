@@ -1,0 +1,220 @@
+
+.ob-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  /* Remove or reduce blur to prevent hiding modal */
+  backdrop-filter: blur(0px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: obOverlayFade 0.3s ease;
+}
+@keyframes obOverlayFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.ob-modal-card {
+  width: 100%;
+  max-width: 440px;
+  background: #1e1f2e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 2rem;
+  position: relative;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  animation: obCardSlide 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  /* Remove any blur or overlay from modal itself */
+  backdrop-filter: none !important;
+  background-clip: border-box;
+}
+@keyframes obCardSlide {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.ob-modal-header {
+  margin-bottom: 2rem;
+  position: relative;
+}
+.ob-close-btn {
+  position: absolute;
+  top: -1rem;
+  right: -1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: none;
+  color: #94a3b8;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.ob-close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+.ob-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.ob-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2563eb, #06b6d4);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.ob-modal-body {
+  min-height: 280px;
+}
+.ob-step-panel {
+  display: none;
+}
+.ob-step-panel.active {
+  display: block;
+  animation: obStepFade 0.4s ease;
+}
+@keyframes obStepFade {
+  from { opacity: 0; transform: translateX(10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Reuse existing premium input styles but adjusted for modal */
+.ob-step-icon { font-size: 2.5rem; margin-bottom: 1rem; display: block; }
+.ob-step-title { font-size: 1.5rem; font-weight: 800; color: #fff; margin: 0 0 0.5rem; line-height: 1.2; }
+.ob-step-desc { font-size: 0.9rem; color: #94a3b8; margin: 0 0 1.5rem; }
+.ob-input-group { position: relative; margin-bottom: 1.5rem; }
+.ob-input {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  color: #fff;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.2s;
+}
+.ob-input:focus { border-color: #3b82f6; background: rgba(255, 255, 255, 0.05); }
+.ob-input-prefix { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: #64748b; font-weight: 600; }
+.ob-input--prefixed { padding-left: 2rem; }
+.ob-select { appearance: none; cursor: pointer; }
+.ob-next-btn {
+  width: 100%;
+  padding: 0.85rem;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center; justify-content: center; gap: 0.5rem;
+}
+.ob-next-btn:hover { background: #1d4ed8; transform: translateY(-1px); }
+.ob-finish-btn { background: linear-gradient(135deg, #2563eb, #06b6d4); }
+.ob-skip-btn, .ob-back-btn {
+  padding: 0.5rem; background: none; border: none;
+  color: #64748b; font-size: 0.8rem; font-weight: 600; cursor: pointer;
+  transition: color 0.2s;
+  display: flex; align-items: center; gap: 0.35rem;
+}
+.ob-skip-btn:hover, .ob-back-btn:hover { color: #94a3b8; }
+.ob-step-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1.25rem;
+}
+.ob-lookup-results {
+  position: absolute;
+  top: 100%; left: 0; right: 0;
+  background: #1e1f2e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  margin-top: 0.5rem;
+  max-height: 180px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+.ob-lookup-item {
+  padding: 0.75rem 1rem;
+  color: #fff;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.ob-lookup-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.ob-lookup-item.highlight {
+  background: #2563eb;
+}
+.ob-lookup-loader {
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+.ob-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: ob-spin 0.8s linear infinite;
+}
+@keyframes ob-spin {
+  to { transform: rotate(360deg); }
+}
+.ob-lookup-empty {
+  padding: 1rem;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+/* ── MOBILE OVERRIDES FOR ONBOARDING MODAL ── */
+@media (max-width: 640px) {
+  .ob-modal-overlay {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+  .ob-modal-card {
+    max-width: 100% !important;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 24px 24px 0 0 !important;
+    margin: 0;
+    animation: obCardSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .ob-modal-body {
+    min-height: auto !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .ob-modal-card {
+    padding: 1.5rem 1.25rem !important;
+  }
+  .ob-input {
+    font-size: 16px !important;
+  }
+}
+
+@keyframes obCardSlideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}

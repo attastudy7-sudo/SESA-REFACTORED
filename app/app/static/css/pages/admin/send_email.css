@@ -1,0 +1,82 @@
+
+/* ── Toggle group ── */
+.toggle-group {
+    display: flex; gap: .4rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: .25rem;
+    margin-bottom: 1rem;
+}
+.toggle-btn {
+    flex: 1; padding: .5rem .75rem;
+    border: none; border-radius: 7px;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: var(--font-body);
+    font-size: .8rem; font-weight: 700;
+    cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
+    transition: all .15s;
+}
+.toggle-btn i { font-size: .72rem; }
+.toggle-btn:hover { background: var(--bg-hover); color: var(--text-secondary); }
+.toggle-btn.active { background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(37,99,235,.3); }
+
+/* ── User select panel ── */
+.user-select-wrapper {
+    display: none;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: .5rem;
+}
+.user-select-wrapper.visible { display: block; }
+
+.select-all-row {
+    display: flex; align-items: center; gap: .6rem;
+    padding: .6rem .875rem;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    font-size: .8rem; font-weight: 700;
+    color: var(--text-secondary);
+    cursor: pointer;
+    user-select: none;
+    transition: background .15s;
+}
+.select-all-row:hover { background: var(--bg-hover); }
+
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .8rem;
+}
+.user-table thead tr {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+}
+.user-table th {
+    padding: .5rem .875rem;
+    font-size: .65rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .06em;
+    color: var(--text-muted);
+    text-align: left;
+}
+.user-table td {
+    padding: .55rem .875rem;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
+}
+.user-table tbody tr:last-child td { border-bottom: none; }
+.user-table tbody tr:hover { background: var(--bg-hover); }
+.user-table td:first-child { width: 40px; }
+
+/* ── Checkbox style ── */
+.user-check {
+    width: 15px; height: 15px;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+
+/* ── Textarea height ── */
+textarea.adm-form-input { min-height: 180px; }

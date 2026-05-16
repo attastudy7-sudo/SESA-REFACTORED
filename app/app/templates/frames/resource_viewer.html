@@ -1,0 +1,3 @@
+<turbo-frame id="main-content" data-shell-content="1" class="main-content{% if show_desktop_side_nav and request.cookies.get('knowly-nav-expanded') == 'true' %} nav-expanded{% endif %}">
+    {% include 'partials/_resource_viewer_content.html' %}
+</turbo-frame>

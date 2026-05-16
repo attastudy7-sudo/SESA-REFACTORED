@@ -1,0 +1,162 @@
+{% extends "admin/base.html" %}
+
+{% block extra_css %}{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin/dashboard.css') }}">{%  endblock %}
+{% block admin_title %}Dashboard{% endblock %}
+{% block admin_content %}
+
+{# ── Page header ── #}
+<div class="adm-header">
+  <div class="adm-header-left">
+    <div class="adm-header-icon"><i class="fas fa-gauge-high"></i></div>
+    <div>
+      <p class="adm-header-title">Admin Dashboard</p>
+      <p class="adm-header-sub">Manage your educational platform</p>
+    </div>
+  </div>
+  <div class="adm-header-actions">
+    <a href="{{ url_for('admin.moderation') }}" class="adm-btn adm-btn--primary">
+      <i class="fas fa-shield-alt"></i>
+      Moderation
+      {% if pending_count > 0 %}
+      <span class="dash-badge">{{ pending_count }}</span>
+      {% endif %}
+    </a>
+  </div>
+</div>
+
+{# ── Stat cards ── #}
+<div class="adm-stats">
+  <div class="adm-stat">
+    <div class="adm-stat-icon adm-stat-icon--blue"><i class="fas fa-users"></i></div>
+    <div>
+      <p class="adm-stat-num">{{ total_users }}</p>
+      <p class="adm-stat-label">Total Users</p>
+    </div>
+  </div>
+  <div class="adm-stat">
+    <div class="adm-stat-icon adm-stat-icon--green"><i class="fas fa-file-lines"></i></div>
+    <div>
+      <p class="adm-stat-num">{{ total_posts }}</p>
+      <p class="adm-stat-label">Total Posts</p>
+    </div>
+  </div>
+  <div class="adm-stat">
+    <div class="adm-stat-icon adm-stat-icon--amber"><i class="fas fa-layer-group"></i></div>
+    <div>
+      <p class="adm-stat-num">{{ total_subjects }}</p>
+      <p class="adm-stat-label">Subjects</p>
+    </div>
+  </div>
+  <div class="adm-stat">
+    <div class="adm-stat-icon adm-stat-icon--purple"><i class="fas fa-comments"></i></div>
+    <div>
+      <p class="adm-stat-num">{{ total_comments }}</p>
+      <p class="adm-stat-label">Comments</p>
+    </div>
+  </div>
+  <div class="adm-stat dash-stat--alert">
+    <div class="adm-stat-icon adm-stat-icon--rose"><i class="fas fa-clock"></i></div>
+    <div>
+      <p class="adm-stat-num">{{ pending_count }}</p>
+      <p class="adm-stat-label">Awaiting Review</p>
+    </div>
+  </div>
+</div>
+
+{# ── Quick actions ── #}
+<div class="adm-card">
+  <p class="adm-card-title"><i class="fas fa-bolt"></i> Quick Actions</p>
+  <div class="dash-actions-grid">
+    <a href="{{ url_for('admin.programmes') }}" class="dash-action-btn">
+      <i class="fas fa-layer-group"></i>
+      <span>Programmes</span>
+    </a>
+    <a href="{{ url_for('admin.subjects') }}" class="dash-action-btn">
+      <i class="fas fa-folder-open"></i>
+      <span>Subjects</span>
+    </a>
+    <a href="{{ url_for('admin.users') }}" class="dash-action-btn">
+      <i class="fas fa-users-gear"></i>
+      <span>Users</span>
+    </a>
+    <a href="{{ url_for('admin.posts') }}" class="dash-action-btn">
+      <i class="fas fa-pen-to-square"></i>
+      <span>Posts</span>
+    </a>
+    <a href="{{ url_for('admin.statistics') }}" class="dash-action-btn">
+      <i class="fas fa-chart-column"></i>
+      <span>Statistics</span>
+    </a>
+    <a href="{{ url_for('admin.resource_generation') }}" class="dash-action-btn">
+      <i class="fas fa-wand-magic-sparkles"></i>
+      <span>Bulk Generation</span>
+    </a>
+    <a href="{{ url_for('admin.moderation') }}" class="dash-action-btn dash-action-btn--alert">
+      <i class="fas fa-shield-alt"></i>
+      <span>Moderation</span>
+      {% if pending_count > 0 %}<span class="dash-badge">{{ pending_count }}</span>{% endif %}
+    </a>
+    <a href="{{ url_for('admin.send_email') }}" class="dash-action-btn">
+      <i class="fas fa-paper-plane"></i>
+      <span>Email Users</span>
+    </a>
+  </div>
+</div>
+
+{# ── Recent activity ── #}
+<div class="adm-two-col">
+
+  {# Recent Users #}
+  <div class="adm-card">
+    <div class="dash-card-head">
+      <p class="adm-card-title"><i class="fas fa-user-plus"></i> Recent Users</p>
+      <a href="{{ url_for('admin.users') }}" class="dash-see-all">See all <i class="fas fa-arrow-right"></i></a>
+    </div>
+    <div class="dash-list">
+      {% for user in recent_users %}
+      <div class="dash-row">
+        <img src="{{ user.profile_picture_url }}" alt="{{ user.username }}" class="dash-row-avatar">
+        <div class="dash-row-body">
+          <div class="dash-row-name">{{ user.nickname or user.username }}</div>
+          <div class="dash-row-sub">@{{ user.username }} · {{ user.created_at.strftime('%b %d, %Y') }}</div>
+        </div>
+        <a href="{{ url_for('users.profile', username=user.username) }}" class="adm-btn adm-btn--secondary adm-btn--sm" target="_blank">View</a>
+      </div>
+      {% else %}
+      <div class="dash-empty"><i class="fas fa-users"></i> No users yet.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  {# Recent Posts #}
+  <div class="adm-card">
+    <div class="dash-card-head">
+      <p class="adm-card-title"><i class="fas fa-file-lines"></i> Recent Posts</p>
+      <a href="{{ url_for('admin.posts') }}" class="dash-see-all">See all <i class="fas fa-arrow-right"></i></a>
+    </div>
+    <div class="dash-list">
+      {% for post in recent_posts %}
+      <div class="dash-row">
+        <div class="dash-row-icon">
+          <i class="fas fa-{% if post.content_type == 'quiz' %}circle-question{% elif post.content_type == 'cheatsheet' %}clone{% else %}sticky-note{% endif %}"></i>
+        </div>
+        <div class="dash-row-body">
+          <div class="dash-row-name">{{ post.title | truncate(42) }}</div>
+          <div class="dash-row-sub">by @{{ post.author.username }}
+            {% if post.status == 'pending' %}<span class="dash-status dash-status--amber">pending</span>
+            {% elif post.status == 'rejected' %}<span class="dash-status dash-status--red">rejected</span>
+            {% endif %}
+          </div>
+        </div>
+        <a href="{{ url_for('posts.view', post_id=post.id) }}" class="adm-btn adm-btn--secondary adm-btn--sm" target="_blank">View</a>
+      </div>
+      {% else %}
+      <div class="dash-empty"><i class="fas fa-file-lines"></i> No posts yet.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

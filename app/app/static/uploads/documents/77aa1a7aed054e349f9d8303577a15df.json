@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "document_type": "notes",
+  "generated_at": "2026-04-09T23:15:50.738918+00:00",
+  "title": "Sorting and Searching Algorithms",
+  "course": "Data Structures",
+  "level": "Intermediate",
+  "metadata": {
+    "estimated_read_time": "10 minutes",
+    "focus_areas": "",
+    "prerequisites": ""
+  },
+  "sections": [
+    {
+      "section_number": 1,
+      "section_title": "Sorting Fundamentals",
+      "section_type": "concepts",
+      "content": [
+        {
+          "block_type": "paragraph",
+          "text": "Selection sort functions by repeatedly finding the minimum element and moving it to the front. Insertion sort is adaptive, building the sorted sequence incrementally. Merge sort utilizes a divide-and-conquer strategy to ensure stable O(n log n) performance."
+        }
+      ]
+    },
+    {
+      "section_number": 2,
+      "section_title": "Advanced Sorting and Searching",
+      "section_type": "concepts",
+      "content": [
+        {
+          "block_type": "paragraph",
+          "text": "Quick sort is highly efficient in practice but its performance is sensitive to the pivot selection. Searching techniques include Linear Search (scanning every element) and Binary Search, which requires a pre-sorted array to achieve logarithmic time complexity."
+        }
+      ]
+    }
+  ],
+  "summary": [
+    "Review the section content and reinforce the core idea for retention.",
+    "Review the section content and reinforce the core idea for retention.",
+    "Review the section content and reinforce the core idea for retention."
+  ],
+  "document_hash": "2ddd85c905c8443eaf515d6111b6da9f420f6d035d0a9364a5484c87d22bc0b1"
+}

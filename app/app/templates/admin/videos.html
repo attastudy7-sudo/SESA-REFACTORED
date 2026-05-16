@@ -1,0 +1,78 @@
+{% extends "admin/base.html" %}
+{% block admin_title %}Video Lessons{% endblock %}
+
+{% block admin_content %}
+<div style="max-width:800px">
+
+  <h2 style="margin-bottom:1.25rem">🎬 Video Lessons</h2>
+
+  {# ── Add form ── #}
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:1.25rem;margin-bottom:1.75rem">
+    <h3 style="margin:0 0 1rem;font-size:.95rem">Add a YouTube Video</h3>
+    <form method="post" action="{{ url_for('admin.add_video') }}" style="display:flex;flex-wrap:wrap;gap:.65rem;align-items:flex-end">
+      <div style="flex:2;min-width:220px">
+        <label style="font-size:.75rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:.3rem">YouTube URL</label>
+        <input name="url" type="url" placeholder="https://www.youtube.com/watch?v=..." required
+               style="width:100%;padding:.5rem .75rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-hover);color:var(--text-primary);font-size:.85rem">
+      </div>
+      <div style="flex:1;min-width:160px">
+        <label style="font-size:.75rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:.3rem">Subject</label>
+        <select name="subject_id" required
+                style="width:100%;padding:.5rem .75rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-hover);color:var(--text-primary);font-size:.85rem">
+          <option value="">— pick subject —</option>
+          {% for s in subjects %}
+          <option value="{{ s.id }}">{{ s.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div style="width:90px">
+        <label style="font-size:.75rem;font-weight:600;color:var(--text-muted);display:block;margin-bottom:.3rem">XP reward</label>
+        <input name="xp_reward" type="number" value="10" min="0" max="200"
+               style="width:100%;padding:.5rem .75rem;border-radius:8px;border:1px solid var(--border);background:var(--bg-hover);color:var(--text-primary);font-size:.85rem">
+      </div>
+      <button type="submit"
+              style="padding:.52rem 1.1rem;border-radius:8px;background:linear-gradient(135deg,#2563eb,#06b6d4);color:#fff;font-weight:700;font-size:.85rem;border:none;cursor:pointer;white-space:nowrap">
+        + Add Video
+      </button>
+    </form>
+  </div>
+
+  {# ── Video list ── #}
+  {% if videos %}
+  <div style="display:flex;flex-direction:column;gap:.6rem">
+    {% for v in videos %}
+    <div style="display:flex;align-items:center;gap:.85rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:.75rem 1rem">
+      {% if v.thumbnail %}
+      <img src="{{ v.thumbnail }}" style="width:80px;height:45px;object-fit:cover;border-radius:6px;flex-shrink:0">
+      {% endif %}
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:.88rem;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ v.title }}</div>
+        <div style="font-size:.75rem;color:var(--text-muted)">{{ v.subject.name }} · {{ v.xp_reward }} XP · added {{ v.created_at.strftime('%b %d, %Y') }}</div>
+      </div>
+      <span style="padding:.2rem .55rem;border-radius:999px;font-size:.7rem;font-weight:700;
+            background:{{ 'rgba(34,197,94,.12)' if v.is_active else 'rgba(239,68,68,.1)' }};
+            color:{{ '#16a34a' if v.is_active else '#ef4444' }}">
+        {{ 'Active' if v.is_active else 'Hidden' }}
+      </span>
+      <a href="{{ v.youtube_url }}" target="_blank" rel="noopener"
+         style="font-size:.75rem;color:var(--primary);text-decoration:none;white-space:nowrap">▶ Preview</a>
+      <form method="post" action="{{ url_for('admin.toggle_video', video_id=v.id) }}" style="margin:0">
+        <button type="submit" style="padding:.3rem .65rem;border-radius:7px;border:1px solid var(--border);background:none;color:var(--text-muted);font-size:.75rem;cursor:pointer">
+          {{ 'Hide' if v.is_active else 'Show' }}
+        </button>
+      </form>
+      <form method="post" action="{{ url_for('admin.delete_video', video_id=v.id) }}" style="margin:0"
+            onsubmit="return confirm('Delete this video?')">
+        <button type="submit" style="padding:.3rem .65rem;border-radius:7px;border:1px solid rgba(239,68,68,.3);background:none;color:#ef4444;font-size:.75rem;cursor:pointer">
+          Delete
+        </button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p style="color:var(--text-muted);text-align:center;padding:2rem">No videos added yet.</p>
+  {% endif %}
+
+</div>
+{% endblock %}

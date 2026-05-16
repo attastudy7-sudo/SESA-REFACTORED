@@ -1,0 +1,106 @@
+{
+  "schema_version": "1.0",
+  "document_type": "cheatsheet",
+  "generated_at": "2026-04-09T23:42:31.704229+00:00",
+  "title": "Exponential and Logarithm Functions (MATH161)",
+  "course": "MA101 \u2013 Calculus I",
+  "level": "Intermediate",
+  "metadata": {
+    "purpose": "Rapid revision and recall",
+    "exam_context": "",
+    "topics": []
+  },
+  "sections": [
+    {
+      "section_title": "Core Definitions",
+      "section_type": "definitions",
+      "entries": [
+        {
+          "label": "Key Point",
+          "content": "Review this point.",
+          "notes": "",
+          "example": ""
+        },
+        {
+          "label": "Key Point",
+          "content": "Review this point.",
+          "notes": "",
+          "example": ""
+        },
+        {
+          "label": "Key Point",
+          "content": "Review this point.",
+          "notes": "",
+          "example": ""
+        }
+      ]
+    },
+    {
+      "section_title": "Logarithm Rules",
+      "section_type": "definitions",
+      "entries": [
+        {
+          "label": "Key Point",
+          "content": "Review this point.",
+          "notes": "",
+          "example": ""
+        },
+        {
+          "label": "Key Point",
+          "content": "Review this point.",
+          "notes": "",
+          "example": ""
+        },
+        {
+          "label": "Key Point",
+          "content": "Review this point.",
+          "notes": "",
+          "example": ""
+        }
+      ]
+    },
+    {
+      "section_title": "Common Values & Identities",
+      "section_type": "definitions",
+      "entries": [
+        {
+          "label": "Key Point",
+          "content": "Review this point.",
+          "notes": "",
+          "example": ""
+        },
+        {
+          "label": "Key Point",
+          "content": "Review this point.",
+          "notes": "",
+          "example": ""
+        },
+        {
+          "label": "Key Point",
+          "content": "Review this point.",
+          "notes": "",
+          "example": ""
+        }
+      ]
+    },
+    {
+      "section_title": "Solving Strategy",
+      "section_type": "definitions",
+      "entries": [
+        {
+          "label": "Key Point",
+          "content": "Review this point.",
+          "notes": "",
+          "example": ""
+        },
+        {
+          "label": "Key Point",
+          "content": "Review this point.",
+          "notes": "",
+          "example": ""
+        }
+      ]
+    }
+  ],
+  "document_hash": "4a55f6fce4eca8065098e390d96af389f3b4297b773146da2c47eb1f87a9edd6"
+}

@@ -1,0 +1,131 @@
+{
+  "schema_version": "1.0",
+  "document_type": "notes",
+  "generated_at": "2026-04-10T22:33:30.727598+00:00",
+  "title": "MATH171: Calculus I Practice Question Bank",
+  "course": "MA101 \u2013 Calculus I",
+  "level": "Intermediate",
+  "metadata": {
+    "estimated_read_time": "10 minutes",
+    "focus_areas": "",
+    "prerequisites": ""
+  },
+  "sections": [
+    {
+      "section_number": 1,
+      "section_title": "Limits and Continuity",
+      "section_type": "concepts",
+      "content": [
+        {
+          "block_type": "paragraph",
+          "label": "Limit Definition",
+          "text": "$\\lim_{x \\to a} f(x) = L$ means that $f(x)$ can be made arbitrarily close to $L$ by taking $x$ sufficiently close to $a$ (but $x \\neq a$)."
+        },
+        {
+          "block_type": "paragraph",
+          "label": "Intermediate Value Theorem (IVT)",
+          "text": "If $f$ is continuous on $[a, b]$ and $N$ is any value between $f(a)$ and $f(b)$, then there exists at least one $c \\in (a, b)$ such that $f(c) = N$."
+        },
+        {
+          "block_type": "paragraph",
+          "text": "A function is continuous at $a$ if $\\lim_{x \\to a} f(x) = f(a)$. Discontinuities can be removable, jump, or infinite."
+        },
+        {
+          "block_type": "paragraph",
+          "label": "Limit Laws",
+          "text": "$\\lim_{x \\to a} [f(x) \\cdot g(x)] = \\lim_{x \\to a} f(x) \\cdot \\lim_{x \\to a} g(x)$"
+        }
+      ]
+    },
+    {
+      "section_number": 2,
+      "section_title": "Differentiation Rules",
+      "section_type": "concepts",
+      "content": [
+        {
+          "block_type": "paragraph",
+          "label": "Power Rule",
+          "text": "$\\frac{d}{dx}[x^n] = nx^{n-1}$"
+        },
+        {
+          "block_type": "paragraph",
+          "label": "Product Rule",
+          "text": "$\\frac{d}{dx}[f(x)g(x)] = f'(x)g(x) + f(x)g'(x)$"
+        },
+        {
+          "block_type": "paragraph",
+          "label": "Quotient Rule",
+          "text": "$\\frac{d}{dx}[\\frac{f(x)}{g(x)}] = \\frac{f'(x)g(x) - f(x)g'(x)}{[g(x)]^2}$"
+        },
+        {
+          "block_type": "paragraph",
+          "label": "Chain Rule",
+          "text": "$\\frac{dy}{dx} = \\frac{dy}{du} \\cdot \\frac{du}{dx}$"
+        },
+        {
+          "block_type": "paragraph",
+          "text": "Differentiate $h(x) = \\frac{x^2+1}{x-3}$ using the Quotient Rule."
+        }
+      ]
+    },
+    {
+      "section_number": 3,
+      "section_title": "Applications of Derivatives",
+      "section_type": "concepts",
+      "content": [
+        {
+          "block_type": "paragraph",
+          "label": "Critical Points",
+          "text": "Points where $f'(x) = 0$ or $f'(x)$ is undefined. These are candidates for local extrema."
+        },
+        {
+          "block_type": "paragraph",
+          "label": "Second Derivative Test",
+          "text": "If $f'(c) = 0$ and $f''(c) > 0$, then $f$ has a local minimum at $c$. If $f''(c) < 0$, then $f$ has a local maximum at $c$."
+        },
+        {
+          "block_type": "paragraph",
+          "text": "The second derivative $f''(x)$ describes the concavity of the function."
+        },
+        {
+          "block_type": "paragraph",
+          "text": "Find the dimensions of a rectangular field with 400m fencing that maximizes area."
+        }
+      ]
+    },
+    {
+      "section_number": 4,
+      "section_title": "Integration Techniques",
+      "section_type": "concepts",
+      "content": [
+        {
+          "block_type": "paragraph",
+          "label": "Power Rule for Integration",
+          "text": "$\\int x^n dx = \\frac{x^{n+1}}{n+1} + C$ (for $n \\neq -1$)"
+        },
+        {
+          "block_type": "paragraph",
+          "label": "Integration by Parts",
+          "text": "$\\int u \\, dv = uv - \\int v \\, du$"
+        },
+        {
+          "block_type": "paragraph",
+          "label": "Substitution Method",
+          "text": "If $u = g(x)$, then $du = g'(x) dx$."
+        },
+        {
+          "block_type": "paragraph",
+          "text": "The definite integral $\\int_{a}^{b} f(x) dx$ represents the net signed area under the curve."
+        }
+      ]
+    }
+  ],
+  "summary": [
+    "Limits describe behavior near a point, not necessarily at the point itself.",
+    "Continuity requires the limit to exist, the function to be defined, and the two to be equal.",
+    "The Chain Rule is essential for differentiating composite functions.",
+    "Critical points are found where the first derivative is zero or undefined.",
+    "The Fundamental Theorem of Calculus links differentiation and integration as inverse operations."
+  ],
+  "document_hash": "64c5938f19d9911a8fa200d329477d2b6d9003a0b59fba6a19eebd0066021e3b"
+}

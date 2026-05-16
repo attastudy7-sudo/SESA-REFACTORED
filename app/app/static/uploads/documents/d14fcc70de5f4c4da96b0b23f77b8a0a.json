@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0",
+  "document_type": "notes",
+  "generated_at": "2026-04-09T23:19:09.078583+00:00",
+  "title": "Series and Sequence: Introduction to Pure Mathematics",
+  "course": "Pure Mathematics",
+  "level": "Intermediate",
+  "metadata": {
+    "estimated_read_time": "10 minutes",
+    "focus_areas": "",
+    "prerequisites": ""
+  },
+  "sections": [
+    {
+      "section_number": 1,
+      "section_title": "Fundamental Definitions",
+      "section_type": "concepts",
+      "content": [
+        {
+          "block_type": "paragraph",
+          "text": "A Sequence is an ordered set of numbers following a specific rule. A Series is the sum of the terms of a sequence. Series are classified as Finite (stops after n terms) or Infinite (continues indefinitely)."
+        }
+      ]
+    },
+    {
+      "section_number": 2,
+      "section_title": "Arithmetic Progression (AP)",
+      "section_type": "concepts",
+      "content": [
+        {
+          "block_type": "paragraph",
+          "text": "Also known as a Linear Sequence. Each term differs from the previous by a constant 'd' (common difference). The general term is Un = a + (n-1)d. The sum of the first n terms (Sn) can be found using Sn = n/2 [2a + (n-1)d] or Sn = n/2 (a + l)."
+        }
+      ]
+    },
+    {
+      "section_number": 3,
+      "section_title": "Geometric Progression (GP)",
+      "section_type": "concepts",
+      "content": [
+        {
+          "block_type": "paragraph",
+          "text": "Also known as an Exponential Sequence. Each term is obtained by multiplying the preceding term by a constant 'r' (common ratio). The general term is Un = ar^(n-1). Summation depends on the value of r: if r < 1, use Sn = a(1 - r^n)/(1 - r); if r > 1, use Sn = a(r^n - 1)/(r - 1)."
+        }
+      ]
+    },
+    {
+      "section_number": 4,
+      "section_title": "Sum to Infinity",
+      "section_type": "concepts",
+      "content": [
+        {
+          "block_type": "paragraph",
+          "text": "For a GP where the common ratio |r| < 1, the terms get progressively smaller, approaching zero. The sum of all terms in such an infinite sequence is given by S\u221e = a / (1 - r)."
+        }
+      ]
+    },
+    {
+      "section_number": 5,
+      "section_title": "Practical Applications",
+      "section_type": "concepts",
+      "content": [
+        {
+          "block_type": "paragraph",
+          "text": "AP is used for constant growth scenarios (e.g., annual salary raises of a fixed dollar amount). GP is used for percentage-based changes (e.g., depreciation of machinery or population growth)."
+        }
+      ]
+    }
+  ],
+  "summary": [
+    "Review the section content and reinforce the core idea for retention.",
+    "Review the section content and reinforce the core idea for retention.",
+    "Review the section content and reinforce the core idea for retention."
+  ],
+  "document_hash": "113ab95b32f7a85dba364c76a0d78c5e933119ac2058d7826e1fe14426ae76d8"
+}

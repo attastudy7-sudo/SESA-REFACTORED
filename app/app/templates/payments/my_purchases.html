@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/payments/my_purchases.css') }}">{%  endblock %}
+
+{% block content %}
+<div class="purchases-container">
+
+    <div class="purchases-header">
+        <div class="header-icon">
+            <i class="fas fa-receipt"></i>
+        </div>
+        <div>
+            <h1>My Purchases</h1>
+            <p>Documents you have bought and have full access to</p>
+        </div>
+    </div>
+
+    {% if purchases %}
+    <div class="purchases-list">
+        {% for purchase in purchases %}
+        <div class="purchase-card">
+            <div class="purchase-icon">
+                <i class="fas fa-file-{{ purchase.document.file_type }}"></i>
+            </div>
+            <div class="purchase-info">
+                <h3 class="purchase-doc-name">{{ purchase.document.original_filename }}</h3>
+                <div class="purchase-meta">
+                    <span><i class="fas fa-calendar-alt"></i> {{ purchase.purchased_at.strftime('%b %d, %Y') }}</span>
+                    <span><i class="fas fa-credit-card"></i> {{ purchase.payment_method | title }}</span>
+                    <span><i class="fas fa-receipt"></i> GHS {{ "%.2f"|format(purchase.amount_paid) }}</span>
+                </div>
+            </div>
+            <div class="purchase-actions">
+                {% if purchase.document.post %}
+                <a href="{{ url_for('posts.view', post_id=purchase.document.post.id) }}" class="btn-access">
+                    <i class="fas fa-eye"></i> View
+                </a>
+                {% endif %}
+                <a href="{{ url_for('posts.download_document', document_id=purchase.document.id) }}" class="btn-download">
+                    <i class="fas fa-download"></i> Download
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="empty-purchases">
+        <div class="empty-icon"><i class="fas fa-shopping-bag"></i></div>
+        <h2>No purchases yet</h2>
+        <p>When you buy a document it will appear here with a direct download link.</p>
+        <a href="{{ url_for('main.search') }}" class="btn-explore">
+            <i class="fas fa-compass"></i> Browse Documents
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

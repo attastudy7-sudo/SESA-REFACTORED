@@ -1,0 +1,347 @@
+
+/* ======================================================
+   EDIT PROFILE PAGE  —  scoped to .ep-* prefix
+   Inherits CSS variables defined in style.css:
+     --bg-card, --bg-main, --bg-secondary,
+     --text-primary, --text-secondary, --text-muted,
+     --border, --spacing-*, --font-display, --font-body
+   ====================================================== */
+
+.ep-wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: var(--spacing-lg) var(--spacing-md);
+}
+
+/* ── Header ── */
+.ep-header {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg,
+    rgba(102,126,234,.08) 0%,
+    rgba(118,75,162,.08) 100%);
+  border: 1px solid rgba(102,126,234,.15);
+  border-radius: 18px;
+  margin-bottom: 1.5rem;
+}
+
+.ep-header-icon {
+  width: 54px; height: 54px;
+  background: linear-gradient(135deg, #2563eb, #06b6d4);
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; color: #fff;
+  flex-shrink: 0;
+}
+
+.ep-title {
+  margin: 0 0 .2rem;
+  font-family: var(--font-display, 'Nunito', sans-serif);
+  font-size: 1.6rem; font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.ep-subtitle {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: .9rem;
+  display: flex; align-items: center; gap: .4rem;
+}
+.ep-subtitle i { color: #6366f1; font-size: .85rem; }
+
+/* ── Card ── */
+.ep-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06);
+}
+
+/* ── Avatar section ── */
+.ep-avatar-section { margin-bottom: 1.75rem; }
+
+.ep-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.25rem;
+  background: linear-gradient(135deg,
+    rgba(102,126,234,.05) 0%,
+    rgba(118,75,162,.05) 100%);
+  border: 1px solid rgba(102,126,234,.10);
+  border-radius: 14px;
+  margin-bottom: 1rem;
+}
+
+.ep-avatar-wrap { position: relative; flex-shrink: 0; }
+
+.ep-avatar {
+  width: 88px; height: 88px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--bg-card);
+  box-shadow: 0 4px 12px rgba(0,0,0,.12);
+  display: block;
+}
+
+.ep-avatar-badge {
+  position: absolute; bottom: 0; right: 0;
+  width: 28px; height: 28px;
+  background: #6366f1;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: .75rem;
+  border: 2.5px solid var(--bg-card);
+}
+
+.ep-avatar-label {
+  margin: 0 0 .3rem;
+  font-size: 1rem; font-weight: 700;
+  color: var(--text-primary);
+}
+
+.ep-avatar-hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: .825rem;
+}
+
+/* ── File upload ── */
+.ep-file-wrap { position: relative; }
+
+.ep-file-input {
+  position: absolute;
+  width: 1px; height: 1px;
+  opacity: 0; overflow: hidden;
+}
+
+.ep-file-label {
+  display: flex;
+  align-items: center; justify-content: center;
+  gap: .625rem;
+  padding: .875rem 1.25rem;
+  background: var(--bg-secondary);
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: .9rem; font-weight: 600;
+  color: var(--text-secondary);
+  transition: all .2s ease;
+}
+.ep-file-label:hover {
+  border-color: #6366f1;
+  background: rgba(99,102,241,.05);
+  color: #6366f1;
+}
+
+/* ── Form fields ── */
+/* NOTE: .ep-field has NO position:relative — that was what
+   caused the mobile overlay/hamburger to break on this page.
+   Only .ep-field--dropdown gets it, scoped tightly. */
+.ep-field {
+  margin-bottom: 1.5rem;
+}
+
+.ep-field--dropdown {
+  position: relative;
+}
+
+.ep-label {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-weight: 700;
+  font-size: .95rem;
+  color: var(--text-primary);
+  margin-bottom: .625rem;
+}
+.ep-label i {
+  color: #6366f1; font-size: .875rem;
+  width: 14px; text-align: center;
+}
+
+.ep-xp-badge {
+  margin-left: auto;
+  display: inline-flex; align-items: center;
+  padding: .18rem .55rem;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  font-size: .675rem; font-weight: 700;
+  border-radius: 20px;
+}
+
+.ep-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: .8rem 1rem;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  font-size: .95rem;
+  font-family: var(--font-body, 'DM Sans', sans-serif);
+  background: var(--bg-main);
+  color: var(--text-primary);
+  transition: border-color .2s, box-shadow .2s;
+  outline: none;
+}
+.ep-input::placeholder { color: var(--text-muted); }
+.ep-input:focus {
+  border-color: rgba(99,102,241,.55);
+  box-shadow: 0 0 0 3px rgba(99,102,241,.10);
+  background: var(--bg-card);
+}
+
+.ep-textarea {
+  resize: vertical;
+  min-height: 110px;
+  line-height: 1.6;
+}
+
+.ep-counter {
+  text-align: right;
+  margin-top: .35rem;
+  font-size: .8rem;
+  color: var(--text-muted);
+}
+#ep-bio-count { font-weight: 700; color: #6366f1; }
+#ep-bio-count.ep-warn { color: #ef4444; }
+
+/* ── Autocomplete dropdown ── */
+/* z-index: 50 — sits above page content but WELL below
+   the top nav (z:200) and mobile drawer (z:300) */
+.ep-dropdown {
+  position: absolute;
+  top: 100%; left: 0; right: 0;
+  z-index: 50;
+  background: var(--bg-card);
+  border: 1.5px solid rgba(99,102,241,.25);
+  border-radius: 12px;
+  max-height: 210px;
+  overflow-y: auto;
+  display: none;
+  box-shadow: 0 8px 24px rgba(0,0,0,.10);
+  margin-top: 4px;
+}
+.ep-dropdown.open { display: block; }
+
+.ep-dropdown-item {
+  padding: .6rem 1rem;
+  font-size: .875rem;
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: background .12s;
+}
+.ep-dropdown-item:hover {
+  background: rgba(99,102,241,.08);
+  color: #6366f1;
+}
+
+/* ── Validation error ── */
+.ep-error {
+  display: flex; align-items: center; gap: .35rem;
+  margin-top: .4rem;
+  color: #ef4444;
+  font-size: .825rem; font-weight: 500;
+}
+
+/* ── Divider ── */
+.ep-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+  margin: 1.75rem 0;
+}
+
+/* ── Action buttons ── */
+.ep-actions {
+  display: flex;
+  gap: .875rem;
+  justify-content: flex-end;
+}
+
+.ep-btn {
+  display: inline-flex; align-items: center;
+  gap: .5rem;
+  padding: .75rem 1.5rem;
+  border-radius: 12px;
+  font-family: var(--font-body, 'DM Sans', sans-serif);
+  font-size: .9rem; font-weight: 700;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+.ep-btn--primary {
+  background: linear-gradient(135deg, #2563eb, #06b6d4);
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(37,99,235,.28);
+}
+.ep-btn--primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 16px rgba(37,99,235,.38);
+  color: #fff;
+}
+
+.ep-btn--ghost {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1.5px solid var(--border);
+}
+.ep-btn--ghost:hover {
+  border-color: var(--text-muted);
+  background: var(--bg-main);
+  color: var(--text-primary);
+}
+
+/* ── Dark mode ── */
+[data-theme="dark"] .ep-header {
+  background: linear-gradient(135deg,
+    rgba(99,102,241,.10) 0%,
+    rgba(139,92,246,.10) 100%);
+  border-color: rgba(99,102,241,.20);
+}
+[data-theme="dark"] .ep-card {
+  box-shadow: 0 2px 16px rgba(0,0,0,.25);
+}
+[data-theme="dark"] .ep-avatar-row {
+  background: rgba(99,102,241,.08);
+  border-color: rgba(99,102,241,.15);
+}
+[data-theme="dark"] .ep-input {
+  background: var(--bg-secondary);
+}
+[data-theme="dark"] .ep-input:focus {
+  background: var(--bg-card);
+}
+[data-theme="dark"] .ep-dropdown {
+  border-color: rgba(99,102,241,.30);
+}
+[data-theme="dark"] .ep-dropdown-item:hover {
+  background: rgba(99,102,241,.12);
+}
+[data-theme="dark"] .ep-file-label {
+  background: var(--bg-secondary);
+}
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  /* Extra bottom padding so content isn't hidden behind the bottom nav */
+  .ep-wrap  { padding: 1rem .875rem 5rem; }
+  .ep-card  { padding: 1.25rem; border-radius: 16px; }
+  .ep-header { padding: 1rem 1.125rem; border-radius: 14px; gap: 1rem; }
+  .ep-header-icon { width: 46px; height: 46px; font-size: 1.25rem; border-radius: 12px; }
+  .ep-title { font-size: 1.35rem; }
+  .ep-avatar-row { flex-direction: column; text-align: center; }
+  .ep-avatar { width: 80px; height: 80px; }
+  .ep-actions { flex-direction: column-reverse; }
+  .ep-btn { width: 100%; justify-content: center; }
+}
+
+@media (max-width: 480px) {
+  .ep-header-icon { width: 42px; height: 42px; font-size: 1.1rem; }
+  .ep-title { font-size: 1.2rem; }
+  .ep-card { padding: 1rem; }
+}

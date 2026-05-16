@@ -1,0 +1,204 @@
+<div class="home-wrap">
+
+  {# ── SEARCH BAR ── #}
+  <div class="srch-bar-wrap">
+    {# Submits to current page — each search page uses the same partial #}
+  <form method="get" id="searchForm">
+      <input type="hidden" name="type" id="typeHidden" value="{{ content_type }}">
+      <input type="hidden" name="subject" id="subjectHidden" value="{{ subject_id or '' }}">
+      <div class="srch-bar" id="searchWrap">
+        <i class="fas fa-search srch-icon"></i>
+        <input type="text" name="q" value="{{ query }}" placeholder="Search posts, users…"
+               id="searchInput" autofocus autocomplete="off" class="srch-input">
+         {% if query %}
+         <a href="{{ request.path }}" class="srch-clear">
+           <i class="fas fa-times"></i>
+         </a>
+         {% endif %}
+        <button type="submit" class="srch-btn" id="srchBtn" onmousedown="srchSpinner()" ontouchstart="srchSpinner()">
+          <i class="fas fa-arrow-right srch-btn-arrow"></i>
+          <svg class="srch-ring" viewBox="0 0 38 38" aria-hidden="true">
+            <defs>
+              <linearGradient id="srchGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#ffffff"/>
+                <stop offset="100%" stop-color="rgba(255,255,255,.25)"/>
+              </linearGradient>
+            </defs>
+            <circle cx="19" cy="19" r="14" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="2.5"/>
+            <circle cx="19" cy="19" r="14" fill="none" stroke="url(#srchGrad)" stroke-width="2.5"
+              stroke-dasharray="88" stroke-dashoffset="66"
+              stroke-linecap="round" transform="rotate(-90 19 19)"/>
+          </svg>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  {% if query %}
+
+  {# ── RESULT SUMMARY ── #}
+  <p class="srch-summary">
+    {% if total_results == 0 %}
+      No results for <strong>{{ query }}</strong>
+    {% else %}
+      <strong>{{ total_results }}</strong> result{% if total_results != 1 %}s{% endif %}
+      {% if not is_pack_search %}
+        —
+        {% if users %}{{ users|length }} people{% endif %}
+        {% if users and topic_cards %}, {% endif %}
+        {% if topic_cards %}{{ topic_cards|length }} posts{% endif %}
+      {% endif %}
+    {% endif %}
+  </p>
+
+  {# ── FILTERS PANEL ── #}
+  <div class="srch-filters home-panel">
+
+    {% if not is_pack_search %}
+    <div class="srch-filter-row">
+      <span class="srch-filter-label">Type</span>
+      <div class="srch-chips">
+        <button onclick="srchGo('type','')" class="chip {% if not content_type %}chip-active{% endif %}">All</button>
+        <button onclick="srchGo('type','notes')" class="chip {% if content_type=='notes' %}chip-active{% endif %}" style="--cc:#10b981">
+          <i class="fas fa-sticky-note"></i> Notes
+        </button>
+        <button onclick="srchGo('type','quiz')" class="chip {% if content_type=='quiz' %}chip-active{% endif %}" style="--cc:#8b5cf6">
+          <i class="fas fa-brain"></i> Quizzes
+        </button>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if subjects %}
+    <div class="srch-filter-row srch-filter-row--sep">
+      <span class="srch-filter-label">Subject</span>
+      <div class="srch-chips">
+        <button onclick="srchGo('subject',0)" class="chip {% if not subject_id %}chip-active{% endif %}">All</button>
+        {% for s in subjects %}
+        <button onclick="srchGo('subject',{{ s.id }})" class="chip {% if subject_id == s.id %}chip-active{% endif %}" style="--cc:{{ s.color }}">
+          <i class="fas fa-{{ s.icon }}"></i> {{ s.name }}
+        </button>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
+  {# ── PEOPLE ── #}
+  {% if users %}
+  <div class="srch-section">
+    <div class="home-panel">
+      <div class="panel-head">
+        <div class="panel-head-left">
+          <div class="panel-icon panel-icon-lib">
+            <i class="fas fa-users"></i>
+          </div>
+          <div>
+            <h2>People</h2>
+            <p>{{ users|length }} result{% if users|length != 1 %}s{% endif %}</p>
+          </div>
+        </div>
+      </div>
+      <div class="srch-user-list">
+        {% for user in users %}
+        <a href="{{ url_for('users.profile', username=user.username) }}" class="srch-user-row">
+          <img src="{{ user.profile_picture_url }}" alt="{{ user.username }}" class="srch-avatar">
+          <div class="srch-user-info">
+            <span class="srch-user-name">{{ user.nickname or user.username }}</span>
+            <span class="srch-user-meta">
+              @{{ user.username }}{% if user.programme %} · {{ user.programme }}{% endif %}
+            </span>
+          </div>
+          <div class="srch-user-stats">
+            <span><i class="fas fa-file-alt"></i> {{ user.posts.count() }}</span>
+            <span><i class="fas fa-users"></i> {{ user.followers_count() }}</span>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  {# ── POSTS ── #}
+  {% if topic_cards %}
+  <div class="srch-section">
+    <div class="home-panel">
+      <div class="panel-head">
+        <div class="panel-head-left">
+          <div class="panel-icon panel-icon-fire">
+            <i class="fas fa-file-alt"></i>
+          </div>
+          <div>
+            <h2>Topic Bundles</h2>
+            <p>{{ topic_cards|length }} result{% if topic_cards|length != 1 %}s{% endif %}</p>
+          </div>
+        </div>
+      </div>
+      <div class="db-card-grid">
+        {% for bundle in topic_cards %}
+          {% set next_url = url_for('main.study_room_topic', subject_slug=bundle.subject.slug, topic_key=bundle.topic_key) %}
+          {% include '_pack_card.html' %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  {# ── NO RESULTS ── #}
+  {% if not users and not topic_cards %}
+<div class="ms-empty">
+  <p class="ms-empty-text">No results found. <a href="{{ url_for('main.index') }}" class="ms-empty-link">Back to home</a></p>
+</div>
+  {% endif %}
+
+  {% else %}
+
+  {# ── EMPTY STATE ── #}
+  <div class="panel-empty" style="padding:4rem 1rem;text-align:center;">
+    <i class="fas fa-search" style="font-size:2.5rem;opacity:.15;display:block;margin-bottom:.875rem;"></i>
+    <p style="color:var(--text-muted,#64748b);font-size:.9rem;max-width:280px;margin:0 auto;line-height:1.6;">
+      Search for posts, notes, quizzes or people.
+    </p>
+  </div>
+
+  {% endif %}
+
+</div>
+
+<script>
+// Spinner: triggered on mousedown/touchstart so it paints BEFORE navigation
+function srchSpinner() {
+  const btn = document.getElementById('srchBtn');
+  if (btn) btn.classList.add('srch-btn--spin');
+}
+
+// Also trigger spinner on keyboard submit (Enter key)
+(function() {
+    const form = document.getElementById('searchForm');
+    if (form) {
+        form.addEventListener('submit', function () {
+            srchSpinner();
+        });
+    }
+
+    const input = document.getElementById('searchInput');
+    if (input) {
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') srchSpinner();
+        });
+    }
+})();
+
+// Filter helpers: show spinner then submit
+function srchGo(field, val) {
+  srchSpinner();
+  if (field === 'type') document.getElementById('typeHidden').value = val;
+  if (field === 'subject') document.getElementById('subjectHidden').value = val || '';
+  setTimeout(function() {
+    const form = document.getElementById('searchForm');
+    if (form) form.submit();
+  }, 80);
+}
+</script>

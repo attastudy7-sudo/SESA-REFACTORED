@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Search {% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components/pack_card.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/users/search.css') }}">
+{% endblock %}
+
+{% block content %}
+    {% include 'partials/_search_content.html' %}
+{% endblock %}

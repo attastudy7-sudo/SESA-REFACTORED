@@ -1,0 +1,245 @@
+
+/* MY PURCHASES - Dark/Light Mode with IBM Plex Sans */
+:root { --brand: #3B82F6; --brand-dark: #2563EB; }
+
+.purchases-container { 
+    max-width: 760px; 
+    margin: 0 auto; 
+    padding: var(--spacing-lg, 24px) var(--spacing-md, 16px); 
+}
+
+.purchases-header { 
+    display: flex; 
+    align-items: center; 
+    gap: 1.1rem; 
+    padding: 1.25rem; 
+    margin-bottom: 1.5rem; 
+    background: var(--brand-bg, rgba(59,130,246,.06)); 
+    border: 1px solid var(--brand-border, rgba(59,130,246,.15)); 
+    border-radius: 14px; 
+}
+
+[data-theme="dark"] .purchases-header {
+    background: rgba(59, 130, 246, 0.08);
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+.header-icon { 
+    width: 50px; 
+    height: 50px; 
+    flex-shrink: 0; 
+    background: var(--brand); 
+    border-radius: 12px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-size: 1.375rem; 
+    color: #fff; 
+}
+
+.purchases-header h1 { 
+    margin: 0 0 .175rem; 
+    font-size: 1.375rem; 
+    font-weight: 800; 
+    color: var(--text-primary, #1e293b); 
+    font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+[data-theme="dark"] .purchases-header h1 {
+    color: #f0ede8;
+}
+
+.purchases-header p { 
+    margin: 0; 
+    color: var(--text-muted, #64748b); 
+    font-size: .85rem;
+    font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+[data-theme="dark"] .purchases-header p {
+    color: #9da3b4;
+}
+
+.purchases-list { display: flex; flex-direction: column; gap: .875rem; }
+
+.purchase-card { 
+    display: flex; 
+    align-items: center; 
+    gap: 1.1rem; 
+    padding: 1.1rem 1.375rem; 
+    background: var(--bg-card, #fff); 
+    border-radius: 12px; 
+    border: 1px solid var(--border, #e2e8f0); 
+    transition: box-shadow .2s, transform .2s; 
+}
+
+[data-theme="dark"] .purchase-card {
+    background: #181b24;
+    border-color: #282d3a;
+}
+
+.purchase-card:hover { 
+    box-shadow: 0 3px 14px rgba(0,0,0,.07); 
+    transform: translateY(-1px); 
+}
+
+[data-theme="dark"] .purchase-card:hover {
+    box-shadow: 0 3px 14px rgba(0,0,0,0.3);
+}
+
+.purchase-icon { 
+    width: 46px; 
+    height: 46px; 
+    flex-shrink: 0; 
+    background: var(--brand); 
+    border-radius: 10px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-size: 1.25rem; 
+    color: #fff; 
+}
+
+.purchase-info { flex: 1; min-width: 0; }
+
+.purchase-doc-name { 
+    font-size: .95rem; 
+    font-weight: 700; 
+    color: var(--text-primary, #1e293b); 
+    margin: 0 0 .35rem; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+[data-theme="dark"] .purchase-doc-name {
+    color: #f0ede8;
+}
+
+.purchase-meta { 
+    display: flex; 
+    flex-wrap: wrap; 
+    gap: .625rem; 
+    font-size: .775rem; 
+    color: var(--text-muted, #64748b); 
+    font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+[data-theme="dark"] .purchase-meta {
+    color: #9da3b4;
+}
+
+.purchase-meta i { color: var(--brand); margin-right: .2rem; }
+
+.purchase-actions { display: flex; gap: .45rem; flex-shrink: 0; }
+
+.btn-access, .btn-download {
+    display: inline-flex; 
+    align-items: center; 
+    gap: .35rem;
+    padding: .45rem .875rem; 
+    border-radius: 8px;
+    font-size: .825rem; 
+    font-weight: 600; 
+    text-decoration: none; 
+    transition: all .2s;
+    font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.btn-access { 
+    background: rgba(59,130,246,.1); 
+    color: var(--brand); 
+    border: 1px solid rgba(59,130,246,.25); 
+}
+
+[data-theme="dark"] .btn-access {
+    background: rgba(99, 102, 241, 0.15);
+    color: #6366f1;
+    border-color: rgba(99, 102, 241, 0.3);
+}
+
+.btn-access:hover { background: var(--brand); color: #fff; }
+
+.btn-download { 
+    background: var(--brand); 
+    color: #fff; 
+    border: none; 
+    box-shadow: 0 2px 6px rgba(59,130,246,.3); 
+}
+
+.btn-download:hover { 
+    background: var(--brand-dark); 
+    transform: translateY(-1px); 
+    box-shadow: 0 3px 10px rgba(59,130,246,.4); 
+}
+
+.empty-purchases { 
+    text-align: center; 
+    padding: 3.5rem 2rem; 
+    background: var(--bg-card, #fff); 
+    border-radius: 14px; 
+    border: 1px solid var(--border, #e2e8f0); 
+}
+
+[data-theme="dark"] .empty-purchases {
+    background: #181b24;
+    border-color: #282d3a;
+}
+
+.empty-icon { 
+    font-size: 3.5rem; 
+    color: var(--text-muted, #64748b); 
+    margin-bottom: 1.1rem; 
+    opacity: .35; 
+}
+
+.empty-purchases h2 { 
+    font-size: 1.25rem; 
+    font-weight: 800; 
+    color: var(--text-primary, #1e293b); 
+    margin-bottom: .4rem; 
+    font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+[data-theme="dark"] .empty-purchases h2 {
+    color: #f0ede8;
+}
+
+.empty-purchases p { 
+    color: var(--text-muted, #64748b); 
+    font-size: .9rem; 
+    margin-bottom: 1.375rem; 
+    font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+[data-theme="dark"] .empty-purchases p {
+    color: #9da3b4;
+}
+
+.btn-explore { 
+    display: inline-flex; 
+    align-items: center; 
+    gap: .45rem; 
+    padding: .7rem 1.375rem; 
+    border-radius: 10px; 
+    background: var(--brand); 
+    color: #fff; 
+    text-decoration: none; 
+    font-weight: 600; 
+    font-size: .9rem; 
+    box-shadow: 0 3px 10px rgba(59,130,246,.3); 
+    transition: all .2s; 
+    font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.btn-explore:hover { 
+    background: var(--brand-dark); 
+    transform: translateY(-1px); 
+}
+
+@media (max-width: 600px) {
+    .purchase-card { flex-wrap: wrap; }
+    .purchase-actions { width: 100%; }
+    .btn-access, .btn-download { flex: 1; justify-content: center; }
+}

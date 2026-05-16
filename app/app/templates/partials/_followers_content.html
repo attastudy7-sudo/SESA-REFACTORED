@@ -1,0 +1,101 @@
+<div class="uf-wrap">
+
+  {# ── BACK ── #}
+  <a href="{{ url_for('users.profile', username=user.username) }}" class="uf-back" data-knowly-back="1" data-back-fallback="{{ url_for('users.profile', username=user.username) }}">
+    <span class="uf-back-icon"><i class="fas fa-arrow-left"></i></span>
+    <span>Back</span>
+  </a>
+
+  {# ── HEADER ── #}
+  <div class="uf-header">
+    <div class="uf-header-icon">
+      <i class="fas fa-users"></i>
+    </div>
+    <div>
+      <h1 class="uf-title">Followers</h1>
+      <p class="uf-subtitle">
+        {% if followers.total %}{{ followers.total }} follower{{ 's' if followers.total != 1 }}{% else %}No followers yet{% endif %}
+      </p>
+    </div>
+  </div>
+
+  {# ── LIST ── #}
+  {% if followers.items %}
+  <div class="lib-section-panel">
+    {% for u in followers.items %}
+    <div class="uf-row">
+      <a href="{{ url_for('users.profile', username=u.username) }}" class="uf-avatar-wrap">
+        <img src="{{ u.profile_picture_url }}" alt="{{ u.username }}" class="uf-avatar"
+             onerror="this.src='{{ url_for('static', filename='uploads/profiles/default.jpg') }}'">
+      </a>
+      <div class="uf-info">
+        <a href="{{ url_for('users.profile', username=u.username) }}" class="uf-name">
+          {{ u.nickname or u.username }}
+        </a>
+        <span class="uf-username">@{{ u.username }}</span>
+        {% if u.bio %}
+        <span class="uf-bio">{{ u.bio[:80] }}{% if u.bio|length > 80 %}…{% endif %}</span>
+        {% endif %}
+        <div class="uf-stats">
+          <span><i class="fas fa-file-alt"></i> {{ u.posts.count() }}</span>
+          <span><i class="fas fa-users"></i> {{ u.followers_count() }}</span>
+        </div>
+      </div>
+      {% if current_user.is_authenticated and current_user.id != u.id %}
+      <div class="uf-action">
+        {% if current_user.is_following(u) %}
+        <form action="{{ url_for('users.unfollow', username=u.username) }}" method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="uf-btn uf-btn-secondary">
+            <i class="fas fa-user-minus"></i><span class="uf-btn-label"> Unfollow</span>
+          </button>
+        </form>
+        {% else %}
+        <form action="{{ url_for('users.follow', username=u.username) }}" method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="uf-btn uf-btn-primary">
+            <i class="fas fa-user-plus"></i><span class="uf-btn-label"> Follow</span>
+          </button>
+        </form>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  {# ── PAGINATION ── #}
+  {% if followers.has_prev or followers.has_next %}
+  <div class="uf-pagination">
+    {% if followers.has_prev %}
+    <a href="{{ url_for('users.followers', username=user.username, page=followers.prev_num) }}" class="uf-page-btn">
+      <i class="fas fa-chevron-left"></i> Previous
+    </a>
+    {% endif %}
+    <span class="uf-page-info">{{ followers.page }} / {{ followers.pages }}</span>
+    {% if followers.has_next %}
+    <a href="{{ url_for('users.followers', username=user.username, page=followers.next_num) }}" class="uf-page-btn">
+      Next <i class="fas fa-chevron-right"></i>
+    </a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% else %}
+  {# ── EMPTY ── #}
+  <div class="uf-empty">
+    <i class="fas fa-user-slash uf-empty-icon"></i>
+    <h2>No followers yet</h2>
+    <p>{{ user.username }} doesn't have any followers yet.</p>
+    {% if current_user.is_authenticated and current_user.id != user.id and not current_user.is_following(user) %}
+    <form action="{{ url_for('users.follow', username=user.username) }}" method="post" style="margin-top:1.25rem">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="uf-btn uf-btn-primary">
+        <i class="fas fa-user-plus"></i> Be the first to follow
+      </button>
+    </form>
+    {% endif %}
+  </div>
+  {% endif %}
+
+</div>

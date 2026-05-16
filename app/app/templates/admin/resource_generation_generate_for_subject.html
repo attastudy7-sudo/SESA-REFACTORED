@@ -1,0 +1,154 @@
+{% extends "admin/base.html" %}
+
+{% block extra_css %}{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin/resource_generation_generate_for_subject.css') }}">{%  endblock %}
+{% block admin_title %}Generate For Subject{% endblock %}
+{% block admin_content %}
+
+<div class="adm-header">
+  <div class="adm-header-left">
+    <div class="adm-header-icon"><i class="fas fa-magic"></i></div>
+    <div>
+      <p class="adm-header-title">Generate For Subject</p>
+      <p class="adm-header-sub">Queue many jobs for one subject with AI-generated topics.</p>
+    </div>
+  </div>
+  <div class="adm-header-actions">
+    <a href="{{ url_for('admin.resource_generation') }}" class="adm-btn adm-btn--secondary">
+      <i class="fas fa-arrow-left"></i> Back
+    </a>
+  </div>
+</div>
+
+<div class="adm-card rg-shell">
+  <form method="POST" class="rg-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div class="rg-panel">
+      <p class="rg-panel-title">Subject Scope</p>
+      <div class="rg-grid rg-grid--scope">
+        <label class="rg-field rg-field--subject">
+          <span>Subject</span>
+          <select name="subject_id" required>
+            <option value="">Select subject</option>
+            {% for s in subjects %}
+            <option value="{{ s.id }}" {% if form_defaults.subject_id == s.id %}selected{% endif %}>{{ s.name }} ({{ s.slug }})</option>
+            {% endfor %}
+          </select>
+        </label>
+
+        <label class="rg-field rg-field--programme">
+          <span>Programme (optional)</span>
+          <select name="programme_id">
+            <option value="">Auto from subject</option>
+            {% for p in programmes %}
+            <option value="{{ p.id }}" {% if form_defaults.programme_id == p.id %}selected{% endif %}>{{ p.name }} ({{ p.slug }})</option>
+            {% endfor %}
+          </select>
+        </label>
+
+        <label class="rg-field rg-field--level">
+          <span>Level</span>
+          <select name="level">
+            <option value="Beginner" {% if form_defaults.level == 'Beginner' %}selected{% endif %}>Beginner</option>
+            <option value="Elementary" {% if form_defaults.level == 'Elementary' %}selected{% endif %}>Elementary</option>
+            <option value="Intermediate" {% if form_defaults.level == 'Intermediate' %}selected{% endif %}>Intermediate</option>
+            <option value="Advanced" {% if form_defaults.level == 'Advanced' %}selected{% endif %}>Advanced</option>
+          </select>
+        </label>
+
+        <label class="rg-field rg-field--year">
+          <span>Year (optional)</span>
+          <select name="year">
+            <option value="" {% if not form_defaults.year %}selected{% endif %}>Any</option>
+            <option value="1" {% if form_defaults.year == 1 %}selected{% endif %}>Year 1</option>
+            <option value="2" {% if form_defaults.year == 2 %}selected{% endif %}>Year 2</option>
+            <option value="3" {% if form_defaults.year == 3 %}selected{% endif %}>Year 3</option>
+            <option value="4" {% if form_defaults.year == 4 %}selected{% endif %}>Year 4</option>
+          </select>
+        </label>
+
+        <label class="rg-field rg-field--semester">
+          <span>Semester (optional)</span>
+          <select name="semester">
+            <option value="" {% if not form_defaults.semester %}selected{% endif %}>Both</option>
+            <option value="1" {% if form_defaults.semester == 1 %}selected{% endif %}>Semester 1</option>
+            <option value="2" {% if form_defaults.semester == 2 %}selected{% endif %}>Semester 2</option>
+          </select>
+        </label>
+      </div>
+    </div>
+
+    <div class="rg-fixed-types" role="note" aria-label="Fixed content types">
+      <span class="rg-fixed-label">Always queues:</span>
+      <span class="rg-type-pill">Notes</span>
+      <span class="rg-type-pill">Quiz</span>
+      <span class="rg-type-pill">Cheatsheet</span>
+    </div>
+
+    <div class="rg-panel rg-panel--compact">
+      <div class="rg-panel-head">
+        <p class="rg-panel-title">Topic Source</p>
+        <span
+          class="rg-info-badge"
+          title="Keep auto mode on for KnowlyGen-style topic discovery. Turn off auto mode only when supplying manual topics."
+          aria-label="Topic source info"
+        >
+          <i class="fas fa-circle-info"></i>
+        </span>
+      </div>
+      <div class="rg-grid rg-grid--topics">
+        <label class="rg-field rg-field--auto-topic">
+          <span>Mode</span>
+          <span class="rg-inline-check">
+            <input type="checkbox" name="auto_topics" value="1" {% if form_defaults.auto_topics %}checked{% endif %}>
+            <span>Auto-generate topics with AI</span>
+          </span>
+        </label>
+        <label class="rg-field rg-field--topic-count">
+          <span>Topics Per Type</span>
+          <input type="number" name="topics_per_type" min="1" max="6" value="{{ form_defaults.topics_per_type }}">
+        </label>
+      </div>
+    </div>
+
+    <div class="rg-panel">
+      <p class="rg-panel-title">Manual Topics</p>
+      <textarea name="topics" rows="7" placeholder="Integration by Parts&#10;Laplace Transform&#10;Probability Distributions">{{ form_defaults.topics_raw }}</textarea>
+      <p class="rg-help">Used only when auto generation is off.</p>
+    </div>
+
+    <div class="rg-actions">
+      <button class="adm-btn adm-btn--secondary" type="submit" name="action" value="preview">
+        <i class="fas fa-lightbulb"></i> Preview AI Topics
+      </button>
+      <button class="adm-btn adm-btn--primary" type="submit" name="action" value="queue">
+        <i class="fas fa-play"></i> Queue Subject Jobs
+      </button>
+      <a href="{{ url_for('admin.resource_generation_jobs') }}" class="adm-btn adm-btn--secondary">View Queue</a>
+    </div>
+  </form>
+</div>
+
+{% if preview_topics %}
+<div class="adm-card">
+  <p class="adm-card-title"><i class="fas fa-list"></i> Topic Preview</p>
+  <p class="rg-help">These are the topics that will be queued when you click Queue Subject Jobs.</p>
+  <div class="rg-preview-grid">
+    {% for content_type, topics in preview_topics.items() %}
+    <div class="rg-preview-col">
+      <p class="rg-preview-title">{{ content_type|capitalize }} ({{ topics|length }})</p>
+      <ul class="rg-preview-list">
+        {% for topic in topics %}
+        <li>{{ topic }}</li>
+        {% else %}
+        <li class="rg-preview-empty">No topics generated.</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
