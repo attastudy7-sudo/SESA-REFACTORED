@@ -16,7 +16,7 @@
 {% include 'main/_pub_nav.html' %}
 
 <!-- ═══ HERO ═══ -->
-<section class="pub-section pub-section--dark grain" style="min-height:100vh;display:flex;align-items:center;padding-top:64px;padding-bottom:64px;box-sizing:border-box;">
+<section class="pub-section pub-section--dark grain" style="padding-top:100px;padding-bottom:80px;">
   <div class="s-wrap" style="width:100%;">
     <div class="contact-hero-grid">
       <div class="anim-in">
@@ -33,93 +33,41 @@
         </div>
       </div>
       <div class="anim-in-2">
-        <div class="contact-img-wrap">
-          <img src="{{ url_for('static', filename='images/SESA.png') }}" alt="Ghanaian students" onerror="this.parentElement.style.background='var(--mg)'">
-          <div class="contact-img-label">
-            <p>Digital Quietude</p>
-            <span>Focus · Clarity · Growth</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══ INQUIRY FORM ═══ -->
-<section class="pub-section pub-section--dark grain">
-  <div class="s-wrap">
-    <div style="text-align:center;margin-bottom:48px;">
-      <h2 class="s-h2 s-h2--light">Administrative Inquiry</h2>
-      <p style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(197,160,89,.7);">For School Leaders &amp; Institutional Partners</p>
-    </div>
-    <div class="inquiry-form-wrap">
-      <form method="POST" action="#">
-        <div class="form-row">
-          <div class="form-field">
-            <label for="admin-name">Administrator Name</label>
-            <input type="text" id="admin-name" name="admin_name" placeholder="Dr. Kwame Mensah" required>
-          </div>
-          <div class="form-field">
-            <label for="institution">Educational Institution</label>
-            <input type="text" id="institution" name="institution" placeholder="Accra Elite Academy" required>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-field">
-            <label for="email">Official Email</label>
-            <input type="email" id="email" name="email" placeholder="admin@school.edu.gh" required>
-          </div>
-          <div class="form-field">
-            <label for="inquiry-type">Nature of Inquiry</label>
-            <select id="inquiry-type" name="inquiry_type">
-              <option>Standardized Assessment Setup</option>
-              <option>Platform Integration</option>
-              <option>Strategic Partnership</option>
-              <option>Curatorial Support</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-field" style="margin-bottom:36px;">
-          <label for="context">Institutional Context</label>
-          <textarea id="context" name="context" placeholder="Please share your specific academic goals..." rows="4"></textarea>
-        </div>
-        <button type="submit" class="btn-forest" style="width:100%;justify-content:center;letter-spacing:.08em;text-transform:uppercase;font-size:.82rem;">
-          Submit Inquiry <i class="fa-solid fa-arrow-right"></i>
-        </button>
-      </form>
-    </div>
-  </div>
-</section>
-
-<!-- ═══ CONTACT DETAILS ═══ -->
-<section class="pub-section">
-  <div class="s-wrap">
-    <div class="contact-details-grid">
-      <div class="contact-info">
-        <div style="width:56px;height:56px;background:rgba(197,160,89,.1);border-radius:16px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
-          <i class="fa-solid fa-location-dot" style="color:var(--g);font-size:1.4rem;"></i>
-        </div>
-        <h3>Curatorial Office</h3>
-        <div style="width:48px;height:2px;background:linear-gradient(90deg,var(--g),transparent);margin:12px 0 16px;"></div>
-        <address>FOPA Dilligent Consult<br>No. 45 Heritage Plaza<br>Cantonments, Accra, Ghana</address>
-        <a href="tel:+233200000000"><i class="fa-solid fa-phone"></i> +233 20 000 0000</a>
-        <a href="mailto:curator@fopaconsult.com"><i class="fa-solid fa-envelope"></i> curator@fopaconsult.com</a>
-      </div>
-      <div>
-        <div class="trust-cards">
-          <div class="trust-card">
-            <div class="trust-card-icon"><i class="fa-solid fa-circle-check"></i></div>
-            <h4>Academic Integrity</h4>
-            <p>Our framework is built upon the highest standards of Ghanaian educational excellence, ensuring every assessment is fair, transparent, and rigorous.</p>
-          </div>
-          <div class="trust-card">
-            <div class="trust-card-icon"><i class="fa-solid fa-star"></i></div>
-            <h4>Scholarly Support</h4>
-            <p>Beyond technical help, our curators offer pedagogical insights to help school leaders interpret data for real-world student improvement.</p>
-          </div>
-          <div class="trust-banner">
-            <p>Supporting 500+ Institutions</p>
-          </div>
+        <div class="inquiry-form-wrap">
+          <form method="POST" action="#">
+            <div class="form-row">
+              <div class="form-field">
+                <label for="admin-name">Name</label>
+                <input type="text" id="admin-name" name="admin_name" placeholder="Dr. Kwame Mensah" required>
+              </div>
+              <div class="form-field">
+                <label for="institution">Institution</label>
+                <input type="text" id="institution" name="institution" placeholder="Accra Elite Academy" required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-field">
+                <label for="email">Official Email</label>
+                <input type="email" id="email" name="email" placeholder="admin@school.edu.gh" required>
+              </div>
+              <div class="form-field">
+                <label for="inquiry-type">Nature of Inquiry</label>
+                <select id="inquiry-type" name="inquiry_type">
+                  <option>Standardized Assessment Setup</option>
+                  <option>Platform Integration</option>
+                  <option>Strategic Partnership</option>
+                  <option>Curatorial Support</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-field" style="margin-bottom:36px;">
+              <label for="context">Message</label>
+              <textarea id="context" name="context" placeholder="Please share your thoughts..." rows="4"></textarea>
+            </div>
+            <button type="submit" class="btn-forest" style="width:100%;justify-content:center;letter-spacing:.08em;text-transform:uppercase;font-size:.82rem;">
+              Submit Inquiry <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </form>
         </div>
       </div>
     </div>
@@ -156,10 +104,8 @@
 <style>
   @media (max-width: 768px) {
     .contact-hero-grid { grid-template-columns: 1fr !important; }
-    .contact-details-grid { grid-template-columns: 1fr !important; }
-    .contact-img-wrap { display: none; }
+    .inquiry-form-wrap { max-width: 100%; }
     div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
-    .trust-cards { grid-template-columns: 1fr !important; }
     .form-row { grid-template-columns: 1fr !important; }
   }
 </style>

@@ -3,13 +3,257 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>About Us – FOPA Dilligent Consult | FOPA Dilligent Consult</title>
-  <meta name="description" content="At FOPA Dilligent Consult, we go beyond academic rigour. We are architects of wellbeing, committed to the holistic growth of every student.">
+  <title>About Us – FOPA Dilligent Consult | SESA</title>
+  <meta name="description" content="FOPA Dilligent Consult is a Ghanaian-led research organisation dedicated to understanding and supporting the emotional wellbeing of students through SESA.">
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <meta name="theme-color" content="#022818">
   {% include 'main/_pub_styles.html' %}
+  <style>
+    /* ══ ABOUT PAGE — INCREASED SIDE PADDING ══ */
+    @media (min-width: 901px) {
+      .pub-section { padding-left: 80px; padding-right: 80px; }
+      .s-wrap { max-width: 1120px; }
+    }
+
+    /* ══ ABOUT PAGE — HERO IMAGE ON MOBILE ══ */
+    @media (max-width: 900px) {
+      .page-hero-img { display: block !important; order: 2; margin-top: 40px; }
+      .page-hero-img .page-hero-frame { max-height: 320px; aspect-ratio: 16/9; border-radius: 14px; transform: none !important; box-shadow: 0 20px 40px rgba(0,0,0,.3); }
+      .page-hero-img .page-hero-frame img { aspect-ratio: 16/9; object-fit: cover; }
+      .page-hero-inner { gap: 0; }
+    }
+
+    /* ══ ABOUT PAGE — STORY GRID ══ */
+    .about-story-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+    }
+    @media (max-width: 900px) {
+      .about-story-grid { grid-template-columns: 1fr; gap: 40px; }
+      .about-story-img { order: -1; }
+    }
+
+    /* ══ ABOUT PAGE — PROBLEM SECTION STATS ══ */
+    .about-stats {
+      display: flex;
+      gap: 48px;
+      flex-wrap: wrap;
+      margin-top: 48px;
+    }
+    .about-stat { text-align: center; }
+    .about-stat strong {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--g);
+      display: block;
+      margin-bottom: 4px;
+    }
+    .about-stat span {
+      font-size: .72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: rgba(2,40,24,.5);
+    }
+
+    /* ══ ABOUT PAGE — PULL QUOTE ══ */
+    .about-pull-quote {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 1.1rem;
+      color: var(--mg);
+      line-height: 1.7;
+      max-width: 560px;
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(2,40,24,.1);
+    }
+    .about-pull-quote cite {
+      display: block;
+      font-size: .8rem;
+      font-style: normal;
+      font-weight: 700;
+      color: var(--f);
+      margin-top: 12px;
+    }
+
+    /* ══ ABOUT PAGE — EVIDENCE SECTION ══ */
+    .evidence-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: start;
+      margin-top: 48px;
+    }
+    @media (max-width: 900px) { .evidence-layout { grid-template-columns: 1fr; gap: 40px; } }
+    .evidence-stat-block {
+      padding: 40px;
+      background: var(--g);
+      border-radius: 16px;
+      color: var(--iv);
+    }
+    .evidence-stat-block .evidence-number {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.4rem, 5vw, 3.6rem);
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .evidence-stat-block .evidence-desc {
+      font-size: .9rem;
+      opacity: .8;
+      line-height: 1.6;
+    }
+    .evidence-stat-block .evidence-cite {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(250,250,243,.15);
+      font-size: .75rem;
+      opacity: .5;
+      font-style: italic;
+    }
+    .evidence-details {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+    .evidence-detail {
+      padding-bottom: 28px;
+      border-bottom: 1px solid rgba(2,40,24,.08);
+    }
+    .evidence-detail:last-child { border-bottom: none; padding-bottom: 0; }
+    .evidence-detail h4 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--f);
+      margin-bottom: 8px;
+    }
+    .evidence-detail p {
+      font-size: .875rem;
+      color: var(--mg);
+      line-height: 1.7;
+    }
+    .evidence-detail .evidence-tag {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: .72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--g);
+      background: rgba(2,40,24,.06);
+      padding: 4px 10px;
+      border-radius: 4px;
+    }
+
+    /* ══ ABOUT PAGE — APPROACH SECTION ══ */
+    .approach-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: start;
+      margin-top: 48px;
+    }
+    @media (max-width: 900px) {
+      .approach-grid { grid-template-columns: 1fr; gap: 40px; }
+      .approach-img { order: -1; }
+    }
+    .approach-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .approach-item {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 20px;
+      padding: 28px 0;
+      border-bottom: 1px solid rgba(2,40,24,.08);
+    }
+    .approach-item:last-child { border-bottom: none; }
+    .approach-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--g);
+      opacity: .3;
+      line-height: 1;
+      padding-top: 2px;
+    }
+    .approach-item h4 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--f);
+      margin-bottom: 6px;
+    }
+    .approach-item p {
+      font-size: .9rem;
+      color: var(--mg);
+      line-height: 1.7;
+    }
+    .approach-img {
+      position: sticky;
+      top: 120px;
+    }
+
+    /* ══ ABOUT PAGE — SDG SECTION ══ */
+    .sdg-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+    }
+    @media (max-width: 900px) { .sdg-grid { grid-template-columns: 1fr; gap: 40px; } }
+    .sdg-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(197,160,89,.12);
+      border: 1px solid rgba(197,160,89,.25);
+      border-radius: 12px;
+      padding: 12px 20px;
+      margin-bottom: 24px;
+    }
+    .sdg-badge .sdg-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--g);
+    }
+    .sdg-badge .sdg-text {
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--f);
+    }
+    .sdg-badge .sdg-sub {
+      font-size: .72rem;
+      color: var(--mg);
+      display: block;
+    }
+
+    /* ══ ABOUT PAGE — DIMENSION GRID (PLAIN VARIANT) ══ */
+    .about-dims { margin-top: 48px; }
+    .about-dims-note {
+      margin-top: 32px;
+      padding: 20px 24px;
+      background: var(--sl);
+      border-radius: 12px;
+    }
+    .about-dims-note p {
+      font-size: .875rem;
+      color: var(--mg);
+      line-height: 1.7;
+    }
+    .about-dims-note strong { color: var(--f); }
+
+  </style>
 </head>
 <body>
 
@@ -20,21 +264,21 @@
   <div class="page-hero-orb" style="width:600px;height:600px;top:-200px;right:-150px;"></div>
   <div class="page-hero-inner">
     <div class="anim-in">
-      <span class="s-eyebrow s-eyebrow--left">Institutional Trust</span>
+      <span class="s-eyebrow s-eyebrow--left">FOPA Dilligent Consult</span>
       <h1>Nurturing the <em>Ghanaian Child</em> with Excellence.</h1>
-      <p>At FOPA Dilligent Consult, we go beyond academic rigour. We are architects of wellbeing, committed to the holistic growth of every student in alignment with national standards.</p>
+      <p>A Ghanaian-led research organisation dedicated to understanding and supporting the emotional wellbeing of students in primary, junior, and senior high schools.</p>
       <div style="display:flex;align-items:center;gap:16px;margin-top:32px;">
         <div style="display:flex;">
           {% for i in range(3) %}
           <div style="width:44px;height:44px;border-radius:50%;background:var(--mg);border:2px solid rgba(250,250,243,.3);margin-left:{% if i > 0 %}-12px{% else %}0{% endif %};"></div>
           {% endfor %}
         </div>
-        <span style="font-size:.85rem;color:rgba(250,250,243,.6);font-style:italic;">Trusted by 500+ Educators</span>
+        <span style="font-size:.85rem;color:rgba(250,250,243,.6);font-style:italic;">Trusted by Educators Across Ghana</span>
       </div>
     </div>
     <div class="page-hero-img anim-in-2">
       <div class="page-hero-frame" style="border: 4px solid rgba(197,160,89,.2); position:relative;">
-        <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="FOPA Dilligent Consult classroom" onerror="this.parentElement.style.background='var(--mg)'">
+        <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="FOPA Dilligent Consult" onerror="this.parentElement.style.background='var(--mg)'">
         <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(2,40,24,.6) 0%, transparent 60%);"></div>
         <div style="position:absolute;bottom:24px;left:24px;right:24px;">
           <p style="font-family:'Playfair Display',serif;font-style:italic;color:var(--iv);font-size:.95rem;line-height:1.6;">"Education is the most powerful weapon which you can use to change the world."</p>
@@ -44,90 +288,208 @@
   </div>
 </section>
 
-<!-- ═══ OUR JOURNEY ═══ -->
-<section class="pub-section pub-section--mid">
+<!-- ═══ THE PROBLEM ═══ -->
+<section class="pub-section" data-reveal>
   <div class="s-wrap">
-    <div style="text-align:center;margin-bottom:48px;">
-      <h2 class="s-h2">Our Journey</h2>
-      <div class="s-rule"></div>
+    <span class="s-eyebrow s-eyebrow--left">Why We Exist</span>
+    <h2 class="s-h2 s-h2--left" style="margin-bottom:20px;">The Silent Crisis in Ghana's Classrooms</h2>
+    <p class="s-sub s-sub--left" style="max-width:600px; margin: 0;">Across Ghana, students navigate anxiety, depression, and social isolation largely unseen. Traditional academic assessments measure what students know — but not how they feel. Without data on emotional wellbeing, schools cannot intervene early, and students silently disengage.</p>
+    <div class="about-stats">
+      <div class="about-stat">
+        <strong data-count="2500" data-suffix="+">0</strong>
+        <span>Students Surveyed</span>
+      </div>
+      <div class="about-stat">
+        <strong data-count="6" data-suffix="">0</strong>
+        <span>Dimensions Measured</span>
+      </div>
+      <div class="about-stat">
+        <strong data-count="6" data-suffix="+">0</strong>
+        <span>Years of Research</span>
+      </div>
     </div>
-    <div class="journey-grid">
-      <!-- Heritage card -->
-      <div class="journey-card journey-card--heritage">
-        <h3 style="font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--g);margin-bottom:12px;">Rooted in Heritage</h3>
-        <p style="color:rgba(250,250,243,.8);font-size:.9rem;line-height:1.75;max-width:520px;">Founded in the heart of Ghana, SESA emerged from a vision to harmonize traditional educational values with modern wellbeing assessments. We believe every student's story deserves to be heard and nurtured.</p>
+  </div>
+</section>
+
+<!-- ═══ THE EVIDENCE ═══ -->
+<section class="pub-section pub-section--alt" data-reveal>
+  <div class="s-wrap">
+    <span class="s-eyebrow s-eyebrow--left">The Evidence</span>
+    <h2 class="s-h2 s-h2--left" style="margin-bottom:12px;">What Research Tells Us</h2>
+    <p class="s-sub s-sub--left" style="max-width:560px; margin: 0;">Social-emotional learning works. Peer-reviewed studies in Ghanaian schools show measurable improvements across wellbeing, engagement, and mental health.</p>
+    <div class="evidence-layout">
+      <div class="evidence-stat-block">
+        <div class="evidence-number" data-count="42" data-prefix="+" data-suffix="%">0</div>
+        <div class="evidence-desc">Wellbeing improvement in students exposed to SEL-integrated assessment, with gains across emotional, social, and psychological domains.</div>
+        <div class="evidence-cite">Scientific Reports, 2025 · 360 students across 6 schools</div>
       </div>
-      <!-- Community card -->
-      <div class="journey-card journey-card--community">
-        <div style="width:56px;height:56px;background:rgba(197,160,89,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
-          <i class="fa-solid fa-people-group" style="color:var(--g);font-size:1.4rem;"></i>
+      <div class="evidence-details">
+        <div class="evidence-detail">
+          <h4>Reduced Distress</h4>
+          <p>SEL-integrated assessment significantly reduced symptoms of stress, anxiety, and depression — with medium-to-large effect sizes (Cohen's d = 0.52).</p>
+          <span class="evidence-tag" data-count="37" data-prefix="-" data-suffix="% emotional distress">0</span>
         </div>
-        <h3 style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;color:var(--f);margin-bottom:8px;">Community Driven</h3>
-        <p style="font-size:.82rem;color:var(--mg);line-height:1.65;">Built by educators, for educators, ensuring our tools meet real-world classroom needs.</p>
-      </div>
-      <!-- Kente card -->
-      <div class="journey-card journey-card--kente">
-        <img src="{{ url_for('static', filename='images/SESA.png') }}" alt="SESA in schools" onerror="this.style.display='none'">
-      </div>
-      <!-- Vision card -->
-      <div class="journey-card journey-card--vision">
-        <div style="flex-shrink:0;">
-          <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="Students learning" style="width:120px;height:120px;border-radius:12px;object-fit:cover;border:2px solid rgba(197,160,89,.15);" onerror="this.style.display='none'">
+        <div class="evidence-detail">
+          <h4>Higher Engagement</h4>
+          <p>Students in SEL environments demonstrated higher cognitive, behavioural, and emotional engagement — with gains in teacher-pupil relationships and peer collaboration.</p>
+          <span class="evidence-tag" data-count="61" data-prefix="+" data-suffix="% academic engagement">0</span>
         </div>
-        <div>
-          <h3 style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--f);margin-bottom:12px;">The SESA Vision</h3>
-          <p style="font-size:.875rem;color:var(--mg);line-height:1.7;">To create an academic ecosystem where the mental and emotional health of a student is treated with the same priority as their mathematical proficiency.</p>
-          <a href="{{ url_for('main.assessment_details') }}" style="display:inline-flex;align-items:center;gap:8px;color:var(--g);font-weight:700;font-size:.85rem;margin-top:16px;">Learn about our values <i class="fa-solid fa-arrow-right fa-xs"></i></a>
+        <div class="evidence-detail">
+          <h4>Stronger Resilience</h4>
+          <p>Resilience moderated the relationship between SEL and mental health — students with higher resilience showed stronger protection against emotional distress.</p>
+          <span class="evidence-tag" data-count="49" data-prefix="+" data-suffix="% resilience scores">0</span>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ═══ POLICY ALIGNMENT ═══ -->
-<section class="pub-section">
+<!-- ═══ OUR STORY ═══ -->
+<section class="pub-section pub-section--mid" data-reveal>
   <div class="s-wrap">
-    <div class="policy-grid">
-      <div>
-        <h2 class="s-h2 s-h2--left" style="margin-bottom:20px;">Policy Alignment &amp; Authority</h2>
-        <p style="font-family:'Playfair Display',serif;font-style:italic;color:var(--mg);font-size:.95rem;line-height:1.7;border-left:4px solid var(--g);padding-left:20px;margin-bottom:40px;">"Health and wellbeing are the bedrock upon which all academic success is built."</p>
-        <div style="display:flex;flex-direction:column;gap:28px;margin-bottom:36px;">
-          <div class="policy-item">
-            <div class="policy-icon policy-icon--forest"><i class="fa-solid fa-shield-halved"></i></div>
-            <div>
-              <h4>GES School Health Policy</h4>
-              <p>Our assessment frameworks are strictly aligned with the Ghana Education Service (GES) School Health Policy, ensuring compliance and safety at every touchpoint.</p>
-            </div>
-          </div>
-          <div class="policy-item">
-            <div class="policy-icon policy-icon--gold"><i class="fa-solid fa-gavel"></i></div>
-            <div>
-              <h4>Institutional Integrity</h4>
-              <p>We operate with transparent data protocols that respect the privacy of Ghanaian families and the autonomy of educational institutions.</p>
-            </div>
-          </div>
-        </div>
-        <div style="background:var(--sl);border-radius:14px;padding:24px 28px;display:flex;align-items:center;justify-content:space-between;border:1px solid rgba(197,160,89,.15);">
-          <div>
-            <p style="font-size:.68rem;text-transform:uppercase;letter-spacing:.14em;color:var(--g);font-weight:700;margin-bottom:4px;">Authenticated Partner</p>
-            <!-- <p style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--f);">Ministry of Education Standard</p> -->
-          </div>
-          <div style="display:flex;gap:12px;opacity:.4;">
-            <i class="fa-solid fa-shield-heart" style="font-size:2rem;color:var(--f);"></i>
-            <i class="fa-solid fa-landmark" style="font-size:2rem;color:var(--f);"></i>
-          </div>
+    <span class="s-eyebrow s-eyebrow--left">Our Story</span>
+    <h2 class="s-h2 s-h2--left" style="margin-bottom:40px;">From Research to Action</h2>
+    <div class="about-story-grid">
+      <div class="about-story-img">
+        <div class="page-hero-frame" style="border: 3px solid rgba(197,160,89,.12); box-shadow: 0 24px 60px rgba(2,40,24,.15); aspect-ratio: 4/3; background: var(--mg);">
+          <img src="{{ url_for('static', filename='images/hero_jhs.jpg') }}" alt="Students in a Ghanaian classroom" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">
         </div>
       </div>
       <div>
-        <div style="background:var(--sl);border-radius:20px;padding:32px;border:1px solid rgba(197,160,89,.15);">
-          <div style="border-radius:16px;overflow:hidden;border:4px solid var(--iv);box-shadow:0 24px 60px rgba(2,40,24,.15);aspect-ratio:4/3;background:var(--mg);margin-bottom:32px;">
-            <img src="{{ url_for('static', filename='images/hero_jhs1.jpg') }}" alt="Schools supported" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">
+        <p style="font-size:.95rem; color: var(--f); line-height:1.8; margin-bottom:20px;">FOPA Dilligent Consult was born from a simple observation: Ghanaian schools have the infrastructure to teach, but not the tools to listen. Our founder, Dr. Felix Oppusu Paapa Agyiri, spent years researching curriculum alignment and student support services before recognising that emotional wellbeing was the missing piece.</p>
+        <p style="font-size:.95rem; color: var(--f); line-height:1.8; margin-bottom:0;">What began as academic research — surveying students in the Kwahu East District — evolved into SESA: a validated assessment instrument designed specifically for the Ghanaian school context.</p>
+        <div class="about-pull-quote">
+          "We don't just assess students. We give schools the language to understand what their students are feeling."
+          <cite>Dr. Felix Oppusu Paapa Agyiri, Founder</cite>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ OUR APPROACH ═══ -->
+<section class="pub-section" data-reveal>
+  <div class="s-wrap">
+    <span class="s-eyebrow s-eyebrow--left">How It Works</span>
+    <h2 class="s-h2 s-h2--left" style="margin-bottom:12px;">Our Approach</h2>
+    <p class="s-sub s-sub--left" style="max-width:560px; margin: 0;">SESA is not a one-size-fits-all tool. It's a structured, culturally grounded process designed for the Ghanaian classroom.</p>
+    <div class="approach-grid">
+      <div class="approach-list">
+        <div class="approach-item">
+          <div class="approach-num">01</div>
+          <div>
+            <h4>Assess</h4>
+            <p>Students complete a validated questionnaire measuring emotional wellbeing across six dimensions — in under 20 minutes.</p>
           </div>
-          <div class="stats-row">
-            <div class="stat-item"><strong>98%</strong><span>Policy Accuracy</span></div>
-            <div class="stat-item"><strong>15k+</strong><span>Lives Impacted</span></div>
-            <div class="stat-item"><strong>100+</strong><span>Schools</span></div>
+        </div>
+        <div class="approach-item">
+          <div class="approach-num">02</div>
+          <div>
+            <h4>Analyse</h4>
+            <p>Results are scored and contextualised against GES benchmarks, giving schools a clear picture of where students stand.</p>
           </div>
+        </div>
+        <div class="approach-item">
+          <div class="approach-num">03</div>
+          <div>
+            <h4>Recommend</h4>
+            <p>Schools receive targeted action plans — specific, practical steps to improve emotional support where it's needed most.</p>
+          </div>
+        </div>
+        <div class="approach-item">
+          <div class="approach-num">04</div>
+          <div>
+            <h4>Support</h4>
+            <p>FOPA provides ongoing consultation to help schools implement changes, train staff, and track progress over time.</p>
+          </div>
+        </div>
+      </div>
+      <div class="approach-img">
+        <div class="page-hero-frame" style="border: 3px solid rgba(197,160,89,.12); box-shadow: 0 24px 60px rgba(2,40,24,.15); aspect-ratio: 4/3; background: var(--mg);">
+          <img src="{{ url_for('static', filename='images/hero_uni.jpg') }}" alt="University students in Ghana" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ WHAT WE DO (DIMENSIONS) ═══ -->
+<section class="pub-section pub-section--alt" data-reveal>
+  <div class="s-wrap">
+    <span class="s-eyebrow s-eyebrow--left">Our Methodology</span>
+    <h2 class="s-h2 s-h2--left" style="margin-bottom:12px;">What SESA Measures</h2>
+    <p class="s-sub s-sub--left" style="max-width:560px; margin: 0;">SESA evaluates student emotional wellbeing across six validated dimensions — giving schools a complete picture of their students' emotional landscape.</p>
+    <div class="about-dims">
+      <div class="dims-grid" data-reveal-stagger>
+        <div class="dim-card dim-card--plain" data-child>
+          <div class="dim-card-body">
+            <div class="dim-num">01</div>
+            <h4>Cognitive Resilience</h4>
+            <p>The ability to manage stress and bounce back from academic setbacks and life challenges.</p>
+          </div>
+        </div>
+        <div class="dim-card dim-card--plain" data-child>
+          <div class="dim-card-body">
+            <div class="dim-num">02</div>
+            <h4>Relational Trust</h4>
+            <p>The quality of peer-to-peer and student-teacher connections within the school ecosystem.</p>
+          </div>
+        </div>
+        <div class="dim-card dim-card--plain" data-child>
+          <div class="dim-card-body">
+            <div class="dim-num">03</div>
+            <h4>Emotional Autonomy</h4>
+            <p>The student's capacity for independent emotional regulation and self-awareness.</p>
+          </div>
+        </div>
+        <div class="dim-card dim-card--plain" data-child>
+          <div class="dim-card-body">
+            <div class="dim-num">04</div>
+            <h4>Sense of Belonging</h4>
+            <p>The student's perception of value and integration within the school culture.</p>
+          </div>
+        </div>
+        <div class="dim-card dim-card--plain" data-child>
+          <div class="dim-card-body">
+            <div class="dim-num">05</div>
+            <h4>Behavioural Safety</h4>
+            <p>Environments free from bullying, social exclusion, and physical threats.</p>
+          </div>
+        </div>
+        <div class="dim-card dim-card--plain" data-child>
+          <div class="dim-card-body">
+            <div class="dim-num">06</div>
+            <h4>Future Orientation</h4>
+            <p>Long-term motivation, positive academic aspirations, and future goal setting.</p>
+          </div>
+        </div>
+      </div>
+      <div class="about-dims-note">
+        <p><strong>GES Aligned.</strong> Every instrument is validated for the Ghanaian educational context and aligned with the Ghana Education Service School Health Policy.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SDG ALIGNMENT ═══ -->
+<section class="pub-section" data-reveal>
+  <div class="s-wrap">
+    <div class="sdg-grid">
+      <div>
+        <div class="sdg-badge">
+          <span class="sdg-number">4.7</span>
+          <div>
+            <span class="sdg-text">UN Sustainable Development Goal</span>
+            <span class="sdg-sub">Education for sustainable development and global citizenship</span>
+          </div>
+        </div>
+        <h2 class="s-h2 s-h2--left" style="margin-bottom:16px;">Aligned with Global Standards</h2>
+        <p style="font-size:.95rem; color: var(--f); line-height:1.8; margin-bottom:16px;">SESA directly supports SDG Target 4.7 — which calls for education that promotes human rights, peace, global citizenship, and sustainable development. By measuring emotional wellbeing, we help schools nurture the whole child, not just academic performance.</p>
+        <p style="font-size:.95rem; color: var(--f); line-height:1.8; margin-bottom:0;">Our methodology draws from CASEL's framework (Collaborative for Academic, Social, and Emotional Learning) — the global gold standard for SEL — while being specifically adapted for Ghana's cultural and educational context.</p>
+      </div>
+      <div>
+        <div class="page-hero-frame" style="border: 3px solid rgba(197,160,89,.12); box-shadow: 0 24px 60px rgba(2,40,24,.15); aspect-ratio: 4/3; background: var(--mg);">
+          <img src="{{ url_for('static', filename='images/hero_shs.jpg') }}" alt="Senior high school students in Ghana" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">
         </div>
       </div>
     </div>
@@ -135,11 +497,11 @@
 </section>
 
 <!-- ═══ CURATOR'S INSET ═══ -->
-<section class="pub-section pub-section--dark grain">
+<section class="pub-section pub-section--dark grain" data-reveal>
   <div class="s-wrap">
     <div class="curator-inset">
       <div class="curator-inset-img">
-        <img src="{{ url_for('static', filename='images/felix.jpeg') }}" alt="Academic curator" onerror="this.style.display='none'">
+        <img src="{{ url_for('static', filename='images/felix.jpeg') }}" alt="Dr. Felix Oppusu Paapa Agyiri" onerror="this.style.display='none'">
       </div>
       <div class="curator-inset-quote">
         <i class="fa-solid fa-quote-left"></i>
@@ -148,7 +510,7 @@
           <div class="curator-avatar">FOPA</div>
           <div>
             <strong>Felix Oppusu Paapa Agyiri</strong>
-            <span>Doctor of Social Studies</span>
+            <span>PhD · Educational Sociologist</span>
           </div>
         </div>
       </div>
@@ -157,18 +519,80 @@
 </section>
 
 <!-- ═══ CTA ═══ -->
-<section class="pub-section" style="text-align:center;">
+<section class="pub-section" style="text-align:center;" data-reveal>
   <div class="s-wrap">
-    <h2 class="s-h2">Begin the Assessment Journey</h2>
-    <p class="s-sub">Align your institution with the gold standard of student wellbeing. Join FOPA Dilligent Consult today.</p>
+    <h2 class="s-h2">Partner With Us</h2>
+    <p class="s-sub">Whether you're a school administrator, guidance counsellor, or education official — SESA gives you the data to support every student.</p>
     <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:32px;">
-      <a href="{{ url_for('auth.school_signup') }}" class="btn-forest">Start Your Application</a>
-      <a href="{{ url_for('main.assessment_details') }}" class="btn-outline-dark">Learn About Our Methodology</a>
+      <a href="{{ url_for('auth.school_signup') }}" class="btn-forest">Register Your School</a>
+      <a href="{{ url_for('main.school_guide') }}" class="btn-outline-dark">Read the School Guide</a>
     </div>
   </div>
 </section>
 
 {% include 'main/_pub_footer.html' %}
+
+<script>
+  /* ── SCROLL REVEAL ── Intersection Observer */
+  (function(){
+    var els = document.querySelectorAll('[data-reveal], [data-reveal-stagger]');
+    if (!els.length) return;
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+    els.forEach(function(el) { observer.observe(el); });
+  })();
+
+  /* ── COUNT-UP ANIMATION ── */
+  (function(){
+    var counters = document.querySelectorAll('[data-count]');
+    if (!counters.length) return;
+
+    function animateCount(el) {
+      var target = parseInt(el.getAttribute('data-count'), 10);
+      var prefix = el.getAttribute('data-prefix') || '';
+      var suffix = el.getAttribute('data-suffix') || '';
+      var duration = 1800;
+      var start = 0;
+      var startTime = null;
+
+      function easeOutExpo(t) {
+        return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+      }
+
+      function step(timestamp) {
+        if (!startTime) startTime = timestamp;
+        var progress = Math.min((timestamp - startTime) / duration, 1);
+        var eased = easeOutExpo(progress);
+        var current = Math.floor(eased * target);
+        el.textContent = prefix + current.toLocaleString() + suffix;
+        if (progress < 1) {
+          requestAnimationFrame(step);
+        } else {
+          el.textContent = prefix + target.toLocaleString() + suffix;
+        }
+      }
+
+      requestAnimationFrame(step);
+    }
+
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          animateCount(entry.target);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.2, rootMargin: '0px 0px -60px 0px' });
+
+    counters.forEach(function(el) { observer.observe(el); });
+  })();
+</script>
 
 </body>
 </html>

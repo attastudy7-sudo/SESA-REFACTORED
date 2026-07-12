@@ -190,9 +190,6 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
   from { opacity: 0; transform: translateY(5px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-@media (prefers-reduced-motion: reduce) {
-  .app-layout > main { animation: none; }
-}
 /* Hero pages pull up into the navbar zone — hero itself adds the offset via padding */
 .has-page-hero .app-layout > main { padding-top: 0; }
 
@@ -929,7 +926,7 @@ input:-webkit-autofill:active {
   width: 42%;
   flex-shrink: 0;
   background: #022818;
-  padding: 56px 48px;
+  padding: 56px 48px ;
   display: flex;
   flex-direction: column;
   justify-content: space-between;

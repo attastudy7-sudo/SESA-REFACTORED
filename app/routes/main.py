@@ -318,6 +318,7 @@ def school_dashboard(school_id):
                           .all())
 
     from app.services.payment_service import is_test_mode
+    base_url = current_app.config.get('APP_BASE_URL') or request.host_url.rstrip('/')
     return render_template(
         'main/school_dashboard.html',
         coverage_counts=coverage_counts,
@@ -335,6 +336,7 @@ def school_dashboard(school_id):
         subscription_amount=current_app.config.get('SUBSCRIPTION_AMOUNT', 10000),
         subscription_currency=current_app.config.get('SUBSCRIPTION_CURRENCY', 'GHS'),
         unclaimed_students=unclaimed_students,
+        base_url=base_url,
     )
 
 @main_bp.route('/school/<int:school_id>/claim-codes/print')

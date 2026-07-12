@@ -21,6 +21,139 @@
   <meta name="apple-mobile-web-app-title" content="SESA">
   <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/static/sw.js');}</script>
   {% include 'main/_pub_styles.html' %}
+  <style>
+    /* ══ LANDING PAGE — SCROLL REVEAL ══ */
+
+    /* ── Base reveal (section-level) ── */
+    [data-reveal] {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.8s ease-out-expo,
+                  transform 0.8s ease-out-expo;
+    }
+    [data-reveal].visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── Staggered children ── */
+    [data-reveal-stagger] > [data-child] {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.7s ease-out-expo,
+                  transform 0.7s ease-out-expo;
+      transition-delay: calc(var(--r-delay, 0ms));
+    }
+    [data-reveal-stagger].visible > [data-child] {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── Dim cards — stagger delays ── */
+    .dims-grid > .dim-card:nth-child(1) { --r-delay: 0ms; }
+    .dims-grid > .dim-card:nth-child(2) { --r-delay: 80ms; }
+    .dims-grid > .dim-card:nth-child(3) { --r-delay: 160ms; }
+    .dims-grid > .dim-card:nth-child(4) { --r-delay: 240ms; }
+    .dims-grid > .dim-card:nth-child(5) { --r-delay: 320ms; }
+    .dims-grid > .dim-card:nth-child(6) { --r-delay: 400ms; }
+    @media (min-width: 901px) {
+      .dims-grid > .dim-card:nth-child(4) { --r-delay: 400ms; }
+      .dims-grid > .dim-card:nth-child(5) { --r-delay: 480ms; }
+      .dims-grid > .dim-card:nth-child(6) { --r-delay: 560ms; }
+    }
+
+    /* ── Hero entrance — text from left, image from right ── */
+    @keyframes heroSlideLeft {
+      from { opacity: 0; transform: translateX(-50px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes heroSlideRight {
+      from { opacity: 0; transform: translateX(50px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .hero-section {
+      overflow: visible !important;
+    }
+    .hero-eyebrow {
+      animation-name: heroSlideLeft !important;
+      animation-duration: 0.9s !important;
+      animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1) !important;
+      animation-delay: 0.15s !important;
+      animation-fill-mode: both !important;
+    }
+    .hero-title {
+      animation-name: heroSlideLeft !important;
+      animation-duration: 0.9s !important;
+      animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1) !important;
+      animation-delay: 0.3s !important;
+      animation-fill-mode: both !important;
+    }
+    .hero-subtitle {
+      animation-name: heroSlideLeft !important;
+      animation-duration: 0.9s !important;
+      animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1) !important;
+      animation-delay: 0.45s !important;
+      animation-fill-mode: both !important;
+    }
+    .hero-btns {
+      animation-name: heroSlideLeft !important;
+      animation-duration: 0.9s !important;
+      animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1) !important;
+      animation-delay: 0.6s !important;
+      animation-fill-mode: both !important;
+    }
+    .hero-img-col {
+      animation-name: heroSlideRight !important;
+      animation-duration: 1s !important;
+      animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1) !important;
+      animation-delay: 0.3s !important;
+      animation-fill-mode: both !important;
+    }
+
+    /* ── Nav tweak for hero scrolled state ── */
+    .pub-nav.transparent.scrolled {
+      background: var(--f) !important;
+      box-shadow: 0 2px 28px rgba(2,40,24,.35);
+    }
+
+    /* ── Guide CTA box ── */
+    .guide-cta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      background: var(--iv);
+      border: 2px solid rgba(197,160,89,.2);
+      border-radius: 12px;
+      padding: 28px 32px;
+      box-shadow: 0 4px 20px rgba(2,40,24,.05);
+    }
+    .guide-cta-label {
+      font-size: .72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--gd);
+      display: block;
+      margin-bottom: 6px;
+    }
+    .guide-cta h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--f);
+      margin-bottom: 6px;
+    }
+    .guide-cta p {
+      font-size: .875rem;
+      color: var(--mg);
+      line-height: 1.65;
+      max-width: 480px;
+      margin: 0;
+    }
+
+  </style>
 </head>
 <body data-hero="dark">
 
@@ -33,10 +166,10 @@
   <div class="hero-inner">
 
     <!-- ── LEFT: static text — never moves, never animates ── -->
-    <div class="anim-in">
+    <div>
       <span class="hero-eyebrow">FOPA Dilligent Consult · Ghana</span>
       <h1 class="hero-title">Supporting Student<br><em>Emotional Wellbeing</em></h1>
-      <p class="hero-subtitle">The Social Emotional Students' Audit (SESA) helps Ghana schools identify, understand, and support the mental and emotional health of their students — early and effectively. GES School Health Policy aligned.</p>
+      <p class="hero-subtitle">A GES-aligned assessment system that helps Ghana schools identify and support students' emotional wellbeing — before struggles become crises.</p>
       <div class="hero-btns">
 <a href="{{ url_for('auth.school_signup') }}" class="btn-gold">Register My School</a>
         <a href="{{ url_for('auth.login') }}" class="btn-outline-light">Take the Assessment</a>
@@ -44,7 +177,7 @@
     </div>
 
     <!-- ── RIGHT: image column — only this part changes ── -->
-    <div class="hero-img-col anim-in-2">
+    <div class="hero-img-col">
       <div class="hero-img-wrap">
 
         <!-- Image frames — only one visible at a time, no layout shift -->
@@ -100,10 +233,7 @@
     </div>
 
   </div>
-  <a href="#why" class="scroll-indicator" aria-label="Scroll down">
-  <i class="fa-solid fa-chevron-down"></i>
-</a>
-</header>
+  </header>
 
 <style>
 /* ── Image panels — stacked inside fixed-size frame, crossfade only ── */
@@ -173,7 +303,7 @@
 </script>
 
 <!-- ═══ GES STRIP ═══ -->
-<div class="ges-strip">
+<div class="ges-strip" data-reveal>
   <div class="ges-strip-inner">
     <div class="ges-left">
       <div class="ges-icon"><i class="fa-solid fa-shield-halved"></i></div>
@@ -190,26 +320,25 @@
 </div>
 
 <!-- ═══ INVISIBLE BARRIERS ═══ -->
-<section class="pub-section" id="why">
+<section class="pub-section" id="why" data-reveal>
   <div class="s-wrap">
-    <span class="s-eyebrow">Why it matters</span>
-    <h2 class="s-h2">The Invisible Barriers to Learning</h2>
-    <p class="s-sub">Traditional academic assessments often miss the emotional silent struggles that prevent students from reaching their full potential.</p>
-    <div class="s-rule"></div>
-    <div class="barriers-grid">
-      <div class="barrier-card">
+    <span class="s-eyebrow s-eyebrow--left">Why it matters</span>
+    <h2 class="s-h2 s-h2--left">The Invisible Barriers to Learning</h2>
+    <p class="s-sub s-sub--left" style="max-width:520px; margin:0 0 48px;">Traditional academic assessments often miss the emotional silent struggles that prevent students from reaching their full potential.</p>
+    <div class="barriers-grid" data-reveal-stagger>
+      <div class="barrier-card" data-child style="--r-delay:0ms">
         <div class="barrier-icon"><i class="fa-solid fa-brain"></i></div>
         <h4>Silent Anxiety</h4>
         <p>Identifying students who struggle with persistent worry that impairs focus and academic performance.</p>
         <a href="{{ url_for('main.assessment_details') }}" class="barrier-link">Explore Details <i class="fa-solid fa-arrow-right fa-xs"></i></a>
       </div>
-      <div class="barrier-card">
+      <div class="barrier-card" data-child style="--r-delay:100ms">
         <div class="barrier-icon"><i class="fa-solid fa-face-sad-tear"></i></div>
         <h4>Hidden Depression</h4>
         <p>Early detection of depressive symptoms that affect social integration and classroom attendance.</p>
         <a href="{{ url_for('main.assessment_details') }}" class="barrier-link">Explore Details <i class="fa-solid fa-arrow-right fa-xs"></i></a>
       </div>
-      <div class="barrier-card">
+      <div class="barrier-card" data-child style="--r-delay:200ms">
         <div class="barrier-icon"><i class="fa-solid fa-arrows-spin"></i></div>
         <h4>Compulsive Patterns</h4>
         <p>Supporting schools in identifying OCD tendencies and intrusive thought patterns disrupting classroom participation.</p>
@@ -220,26 +349,26 @@
 </section>
 
 <!-- ═══ COMPREHENSIVE SCREENING (dark) ═══ -->
-<section class="pub-section pub-section--dark grain" id="features">
+<section class="pub-section pub-section--dark grain" id="features" data-reveal>
   <div class="s-wrap">
     <div class="screening-grid">
-      <div class="screening-features">
-        <div class="screening-card">
+      <div class="screening-features" data-reveal-stagger>
+        <div class="screening-card" data-child style="--r-delay:0ms">
           <i class="fa-solid fa-chart-line"></i>
           <h5>School Dashboard</h5>
           <p>Real-time aggregate data for school leaders and child psychologists.</p>
         </div>
-        <div class="screening-card">
+        <div class="screening-card" data-child style="--r-delay:100ms">
           <i class="fa-solid fa-triangle-exclamation"></i>
           <h5>At-Risk Alerts</h5>
           <p>Instant notifications for high-severity emotional indicators requiring attention.</p>
         </div>
-        <div class="screening-card">
+        <div class="screening-card" data-child style="--r-delay:200ms">
           <i class="fa-solid fa-lock"></i>
           <h5>Validated Tools</h5>
           <p>Instruments rigorously tested and calibrated for the Ghanaian school context.</p>
         </div>
-        <div class="screening-card">
+        <div class="screening-card" data-child style="--r-delay:300ms">
           <i class="fa-solid fa-folder-open"></i>
           <h5>Student Portfolios</h5>
           <p>Secure long-term tracking of student well-being trends through their years.</p>
@@ -260,19 +389,19 @@
 </section>
 
 <!-- ═══ 6 DIMENSIONS ═══ -->
-<section class="pub-section pub-section--alt" id="dimensions">
+<section class="pub-section pub-section--alt" id="dimensions" data-reveal>
   <div class="s-wrap">
     <div class="dims-header">
       <div>
         <span class="s-eyebrow s-eyebrow--left">The Diagnostic Suite</span>
         <h2 class="s-h2 s-h2--left" style="margin-bottom:12px;">6 Dimensions of Emotional Safety</h2>
         <p class="s-sub s-sub--left" style="max-width:460px;">Our audit structure categorises emotional well-being into distinct analytical pathways, providing a holistic view of the school's climate.</p>
+        <div class="dims-seal"><i class="fa-solid fa-award"></i> Validated Instrument Seal</div>
       </div>
-      <div class="dims-seal"><i class="fa-solid fa-award"></i> Validated Instrument Seal</div>
     </div>
-    <div class="dims-grid">
+    <div class="dims-grid" data-reveal-stagger>
 
-      <div class="dim-card">
+      <div class="dim-card" data-child>
         <!-- REPLACE src: app/static/images/dim_resilience.png -->
         <div class="dim-card-img">
           <img src="{{ url_for('static', filename='images/dim_resilience.png') }}" alt="Cognitive Resilience" onerror="this.parentElement.style.background='var(--surface-low)'">
@@ -284,7 +413,7 @@
         </div>
       </div>
 
-      <div class="dim-card">
+      <div class="dim-card" data-child>
         <!-- REPLACE src: app/static/images/dim_trust.png -->
         <div class="dim-card-img">
           <img src="{{ url_for('static', filename='images/dim_trust.png') }}" alt="Relational Trust" onerror="this.parentElement.style.background='var(--surface-low)'">
@@ -296,7 +425,7 @@
         </div>
       </div>
 
-      <div class="dim-card">
+      <div class="dim-card" data-child>
         <!-- REPLACE src: app/static/images/dim_autonomy.png -->
         <div class="dim-card-img">
           <img src="{{ url_for('static', filename='images/dim_autonomy.png') }}" alt="Emotional Autonomy" onerror="this.parentElement.style.background='var(--surface-low)'">
@@ -308,7 +437,7 @@
         </div>
       </div>
 
-      <div class="dim-card">
+      <div class="dim-card" data-child>
         <!-- REPLACE src: app/static/images/dim_belonging.png -->
         <div class="dim-card-img">
           <img src="{{ url_for('static', filename='images/dim_belonging.png') }}" alt="Sense of Belonging" onerror="this.parentElement.style.background='var(--surface-low)'">
@@ -320,7 +449,7 @@
         </div>
       </div>
 
-      <div class="dim-card">
+      <div class="dim-card" data-child>
         <!-- REPLACE src: app/static/images/dim_safety.png -->
         <div class="dim-card-img">
           <img src="{{ url_for('static', filename='images/dim_safety.png') }}" alt="Behavioural Safety" onerror="this.parentElement.style.background='var(--surface-low)'">
@@ -332,7 +461,7 @@
         </div>
       </div>
 
-      <div class="dim-card">
+      <div class="dim-card" data-child>
         <!-- REPLACE src: app/static/images/dim_future.png -->
         <div class="dim-card-img">
           <img src="{{ url_for('static', filename='images/dim_future.png') }}" alt="Future Orientation" onerror="this.parentElement.style.background='var(--surface-low)'">
@@ -349,8 +478,7 @@
 </section>
 
 <!-- ═══ BOTTOM CTA ═══ -->
-<section class="bottom-cta grain">
-  <div class="bottom-cta-orb"></div>
+<section class="bottom-cta grain" data-reveal>
   <div class="bottom-cta-badge"><i class="fa-solid fa-circle-check"></i> GES Aligned</div>
   <h2>Every Student Deserves to Be Understood</h2>
   <p>Ghana's schools are full of students silently struggling. SESA gives your school the tools to see what grades can't show — and act before it's too late.</p>
@@ -360,20 +488,42 @@
   </div>
 </section>
 
-<section class="pub-section pub-section--alt">
+<section class="pub-section pub-section--alt" data-reveal>
   <div class="s-wrap">
-    <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:24px; background:var(--iv); border-left:4px solid var(--gd); border-radius:0 12px 12px 0; padding:28px 32px; box-shadow:0 4px 20px rgba(2,40,24,.06);">
-      <div>
-        <span style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.12em; color:var(--gd); display:block; margin-bottom:6px;">New to SESA?</span>
-        <h3 style="font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:700; color:var(--f); margin-bottom:6px;">Start with the School Guide</h3>
-        <p style="font-size:0.875rem; color:var(--mg); line-height:1.65; max-width:480px; margin:0;">A step-by-step guide to registering your school, uploading students, and running your first assessments.</p>
+    <div class="guide-cta">
+      <div class="guide-cta-copy">
+        <span class="guide-cta-label">New to SESA?</span>
+        <h3>Start with the School Guide</h3>
+        <p>A step-by-step guide to registering your school, uploading students, and running your first assessments.</p>
       </div>
-      <a href="{{ url_for('main.school_guide') }}" class="btn-outline-dark" style="flex-shrink:0; white-space:nowrap;">Read the School Guide →</a>
+      <a href="{{ url_for('main.school_guide') }}" class="btn-outline-dark">Read the School Guide →</a>
     </div>
   </div>
 </section>
 
 {% include 'main/_pub_footer.html' %}
+
+<script>
+  /* ── SCROLL REVEAL ── Intersection Observer */
+  (function(){
+    const els = document.querySelectorAll('[data-reveal], [data-reveal-stagger]');
+    if (!els.length) return;
+
+    const observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, {
+      threshold: 0.15,
+      rootMargin: '0px 0px -40px 0px'
+    });
+
+    els.forEach(function(el) { observer.observe(el); });
+  })();
+</script>
 
 </body>
 </html>
