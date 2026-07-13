@@ -418,7 +418,24 @@
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 24px;
+  position: relative;
 }
+.sd-chart-empty {
+  display: none;
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  background: var(--sd-bg);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--sd-gray);
+  font-family: var(--sd-font);
+  font-size: 0.88rem;
+  z-index: 2;
+}
+.sd-chart-empty.visible { display: flex; }
 .sd-chart-wrapper { flex: 1; min-width: 0; }
 .sd-chart-legend {
   display: flex;
@@ -629,15 +646,13 @@
   padding: 20px 16px;
   text-decoration: none;
   transition: transform 0.15s, box-shadow 0.15s;
+  background: var(--sd-white);
+  border: 1px solid var(--sd-border);
 }
 .sd-vital-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.06);
 }
-.sd-vital-card--green  { background: var(--sd-green-light); }
-.sd-vital-card--gold   { background: var(--sd-gold-light); }
-.sd-vital-card--red    { background: var(--sd-red); }
-.sd-vital-card--teal   { background: var(--sd-teal); }
 .sd-vital-card__icon {
   margin-bottom: 12px;
 }
@@ -661,11 +676,6 @@
   font-size: 13px;
   color: var(--sd-gray);
 }
-.sd-vital-card--green .sd-vital-card__value { color: #065f46; }
-.sd-vital-card--gold .sd-vital-card__value  { color: #92400e; }
-.sd-vital-card--red .sd-vital-card__value   { color: #991b1b; }
-.sd-vital-card--teal .sd-vital-card__value  { color: #155e75; }
-
 /* ── Diagnostic / Results Table ─────────────────────────────────────── */
 .sd-table {
   width: 100%;

@@ -50,6 +50,7 @@
   var periodBtn        = $('#sdPeriodBtn');
   var periodDropdown   = $('#sdPeriodDropdown');
   var chartTitle       = $('#sdChartTitle');
+  var chartEmpty       = $('#sdChartEmpty');
   var profileDropdown  = $('#sdProfileDropdown');
 
   /* ---------- chart state ---------- */
@@ -111,6 +112,10 @@
      CHART INIT FUNCTIONS (all lazy)
      ========================================================== */
 
+  function setChartEmpty(empty) {
+    if (chartEmpty) chartEmpty.classList.toggle('visible', empty);
+  }
+
   /* --- donut --- */
   function initDonutChart() {
     var canvas = $('#dashDonut');
@@ -122,8 +127,12 @@
     var colours = labels.map(function (l) { return STAGE_COLOURS[l] || COLORS.muted; });
 
     if (labels.length === 0) {
-      labels = ['No data']; values = [1]; colours = [COLORS.border];
+      setChartEmpty(true);
+      var legendEl = $('#sdDonutLegend');
+      if (legendEl) legendEl.innerHTML = '';
+      return;
     }
+    setChartEmpty(false);
 
     donutChart = new Chart(canvas.getContext('2d'), {
       type: 'doughnut',
@@ -174,8 +183,10 @@
     var values = Object.values(DATA.coverage);
 
     if (labels.length === 0) {
-      labels = ['No data']; values = [0];
+      setChartEmpty(true);
+      return;
     }
+    setChartEmpty(false);
 
     barChart = new Chart(canvas.getContext('2d'), {
       type: 'bar',
@@ -217,21 +228,11 @@
     var arr = monthlyDictToArray(DATA.monthly);
 
     if (arr.length === 0) {
-      lineChart = new Chart(canvas.getContext('2d'), {
-        type: 'line',
-        data: { labels: [], datasets: [] },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: { enabled: false }
-          }
-        }
-      });
+      setChartEmpty(true);
       updateLineLegend([]);
       return;
     }
+    setChartEmpty(false);
 
     var labels = arr.map(function (d) { return d.label; });
     var values = arr.map(function (d) { return d.value; });
@@ -476,7 +477,7 @@
     /* show loading */
     studentList.innerHTML = '<div class="sd-student-list__empty"><div class="sd-spinner"></div>Loading…</div>';
 
-    var url = DATA.studentsUrl + '&tab=' + encodeURIComponent(tab);
+    var url = DATA.studentsUrl + '?tab=' + encodeURIComponent(tab);
 
     fetch(url, {
       headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -1046,6 +1047,9 @@
 
     /* init default chart (line is active by default) */
     initLineChart();
+
+    /* load sidebar students on page load */
+    fetchSidebarStudents(currentTab);
   }
 
   /* run on DOM ready */
