@@ -231,11 +231,9 @@ def school_dashboard(school_id):
     now = datetime.now(timezone.utc)
 
     # ── Paginated student list ──────────────────────────────────────────────
-    student_page = request.args.get('student_page', 1, type=int)
     accounts_q = (Accounts.query
                   .filter_by(school_id=school.id)
                   .order_by(Accounts.fname))
-    students_pagination = accounts_q.paginate(page=student_page, per_page=20, error_out=False)
 
     # Scalar counts for stat cards — no full table load
     total_students = accounts_q.count()
@@ -254,6 +252,23 @@ def school_dashboard(school_id):
     # ── Stage distribution — configurable period ────────────────────────────
     # period = 'month' | 'term' | 'year' | 'all'
     period = request.args.get('period', 'month')
+
+    def _apply_period(query):
+        if period == 'month':
+            return query.filter(
+                func.extract('month', TestResult.taken_at) == now.month,
+                func.extract('year',  TestResult.taken_at) == now.year,
+            )
+        elif period == 'term':
+            term_start_month = ((now.month - 1) // 4) * 4 + 1
+            term_start = datetime(now.year, term_start_month, 1, tzinfo=timezone.utc)
+            return query.filter(TestResult.taken_at >= term_start)
+        elif period == 'year':
+            return query.filter(func.extract('year', TestResult.taken_at) == now.year)
+        return query  # 'all'
+
+    school_account_ids = db.session.query(Accounts.id).filter_by(school_id=school_id)
+
     stage_q = (
         db.session.query(
             func.coalesce(TestResult.stage, 'Unknown').label('stage'),
@@ -262,24 +277,56 @@ def school_dashboard(school_id):
         .join(Accounts, Accounts.id == TestResult.user_id)
         .filter(Accounts.school_id == school.id)
     )
-    if period == 'month':
-        stage_q = stage_q.filter(
-            func.extract('month', TestResult.taken_at) == now.month,
-            func.extract('year',  TestResult.taken_at) == now.year,
-        )
-    elif period == 'term':
-        # Ghanaian school terms: Jan–Apr, May–Aug, Sep–Dec
-        term_start_month = ((now.month - 1) // 4) * 4 + 1
-        term_start = datetime(now.year, term_start_month, 1, tzinfo=timezone.utc)
-        stage_q = stage_q.filter(TestResult.taken_at >= term_start)
-    elif period == 'year':
-        stage_q = stage_q.filter(
-            func.extract('year', TestResult.taken_at) == now.year,
-        )
-    # 'all' — no date filter
-
+    stage_q = _apply_period(stage_q)
     stage_rows = stage_q.group_by(func.coalesce(TestResult.stage, 'Unknown')).all()
     stage_counts = {row.stage.strip().title(): row.count for row in stage_rows}
+
+    # If selected period has no data, fall back to 'all'
+    if not stage_counts and period != 'all':
+        period = 'all'
+        stage_q_all = (
+            db.session.query(
+                func.coalesce(TestResult.stage, 'Unknown').label('stage'),
+                func.count(TestResult.id).label('count'),
+            )
+            .join(Accounts, Accounts.id == TestResult.user_id)
+            .filter(Accounts.school_id == school.id)
+        )
+        stage_rows = stage_q_all.group_by(func.coalesce(TestResult.stage, 'Unknown')).all()
+        stage_counts = {row.stage.strip().title(): row.count for row in stage_rows}
+
+    # ── Coverage by test type (period-filtered) ─────────────────────────────
+    coverage_counts = {}
+    for tt in current_app.config.get('TEST_TYPES', []):
+        q = (
+            db.session.query(func.count(func.distinct(TestResult.user_id)))
+            .filter(TestResult.user_id.in_(school_account_ids))
+            .filter(TestResult.test_type == tt)
+        )
+        q = _apply_period(q)
+        coverage_counts[tt] = q.scalar() or 0
+
+    # ── Monthly trend (last 6 months, always all-time window) ───────────────
+    six_months_ago = datetime(now.year, now.month, 1, tzinfo=timezone.utc)
+    for _ in range(5):
+        if six_months_ago.month == 1:
+            six_months_ago = datetime(six_months_ago.year - 1, 12, 1, tzinfo=timezone.utc)
+        else:
+            six_months_ago = datetime(six_months_ago.year, six_months_ago.month - 1, 1, tzinfo=timezone.utc)
+
+    trend_rows = (
+        db.session.query(
+            func.strftime('%Y-%m', TestResult.taken_at).label('ym'),
+            func.count(TestResult.id).label('count'),
+        )
+        .join(Accounts, Accounts.id == TestResult.user_id)
+        .filter(Accounts.school_id == school.id)
+        .filter(TestResult.taken_at >= six_months_ago)
+        .group_by('ym')
+        .order_by('ym')
+        .all()
+    )
+    monthly_trends = {row.ym: row.count for row in trend_rows}
 
     # ── Paginated recent results ────────────────────────────────────────────
     results_page = request.args.get('results_page', 1, type=int)
@@ -293,29 +340,15 @@ def school_dashboard(school_id):
 
     from app.models.account import Accounts as _Acc
     counsellors = _Acc.query.filter_by(school_id=school.id, is_counsellor=True).all()
-    
-    coverage_counts = {
-        tt: db.session.query(func.count(func.distinct(TestResult.user_id)))
-            .filter(TestResult.user_id.in_(
-                db.session.query(Accounts.id).filter_by(school_id=school_id)
-            ))
-            .filter(TestResult.test_type == tt)
-            .scalar() or 0
-        for tt in current_app.config.get('TEST_TYPES', [])
-    }
 
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         from flask import jsonify
         return jsonify({
             'stage_counts': stage_counts,
             'coverage_counts': coverage_counts,
+            'monthly_trends': monthly_trends,
             'period': period,
         })
-
-    unclaimed_students = (Accounts.query
-                          .filter_by(school_id=school.id, is_claimed=False)
-                          .order_by(Accounts.fname)
-                          .all())
 
     from app.services.payment_service import is_test_mode
     base_url = current_app.config.get('APP_BASE_URL') or request.host_url.rstrip('/')
@@ -328,16 +361,172 @@ def school_dashboard(school_id):
         total_results=total_results,
         at_risk_count=at_risk_count,
         stage_counts=stage_counts,
+        monthly_trends=monthly_trends,
         period=period,
         upload_enabled=school.upload_enabled,
-        now=now,
         test_mode=is_test_mode(),
         paystack_public_key=current_app.config.get('PAYSTACK_PUBLIC_KEY', ''),
         subscription_amount=current_app.config.get('SUBSCRIPTION_AMOUNT', 10000),
         subscription_currency=current_app.config.get('SUBSCRIPTION_CURRENCY', 'GHS'),
-        unclaimed_students=unclaimed_students,
         base_url=base_url,
+        results_pagination=results_pagination,
+        now=datetime.utcnow(),
     )
+
+
+@main_bp.route('/school/<int:school_id>/dashboard/students')
+@school_login_required
+def dashboard_students_json(school_id):
+    """JSON endpoint for sidebar student list, filtered by tab."""
+    from flask import jsonify
+    school = _get_school_from_session()
+    if not school or school.id != school_id:
+        return jsonify({'students': [], 'total': 0}), 403
+
+    tab = request.args.get('tab', 'dashboard')
+    now = datetime.now(timezone.utc)
+
+    accounts_q = Accounts.query.filter_by(school_id=school.id)
+
+    if tab == 'at_risk':
+        at_risk_ids = (
+            db.session.query(TestResult.user_id)
+            .join(Accounts, Accounts.id == TestResult.user_id)
+            .filter(
+                Accounts.school_id == school.id,
+                TestResult.stage.in_(['Elevated Stage', 'Clinical Stage']),
+            )
+            .distinct()
+            .subquery()
+        )
+        students = accounts_q.filter(Accounts.id.in_(db.session.query(at_risk_ids.c.user_id))).order_by(Accounts.fname).all()
+    elif tab == 'results':
+        tested_ids = (
+            db.session.query(TestResult.user_id)
+            .join(Accounts, Accounts.id == TestResult.user_id)
+            .filter(Accounts.school_id == school.id)
+            .distinct()
+            .subquery()
+        )
+        students = accounts_q.filter(Accounts.id.in_(db.session.query(tested_ids.c.user_id))).order_by(Accounts.fname).all()
+    else:
+        students = accounts_q.order_by(Accounts.fname).all()
+
+    stage_colors = {
+        'normal': 'green', 'mild': 'yellow', 'elevated': 'orange',
+        'moderate': 'orange', 'clinical': 'red',
+    }
+
+    def get_stage(student):
+        latest = (
+            TestResult.query
+            .filter_by(user_id=student.id)
+            .order_by(TestResult.taken_at.desc())
+            .first()
+        )
+        if not latest or not latest.stage:
+            return None, 'gray'
+        stage = latest.stage.strip().title()
+        color = 'gray'
+        for k, v in stage_colors.items():
+            if k in stage.lower():
+                color = v
+                break
+        return stage, color
+
+    result = []
+    for s in students:
+        stage, color = get_stage(s)
+        result.append({
+            'id': s.id,
+            'name': f'{s.fname} {s.lname}',
+            'class': s.class_group or '',
+            'stage': stage,
+            'color': color,
+        })
+
+    return jsonify({'students': result, 'total': len(result), 'tab': tab})
+
+
+@main_bp.route('/school/<int:school_id>/dashboard/student/<int:student_id>')
+@school_login_required
+def dashboard_student_detail(school_id, student_id):
+    """JSON endpoint for a single student's analytics."""
+    from flask import jsonify
+    school = _get_school_from_session()
+    if not school or school.id != school_id:
+        return jsonify({'error': 'Not authorised'}), 403
+
+    student = Accounts.query.filter_by(id=student_id, school_id=school.id).first()
+    if not student:
+        return jsonify({'error': 'Student not found'}), 404
+
+    results = (
+        TestResult.query
+        .filter_by(user_id=student.id)
+        .order_by(TestResult.taken_at.desc())
+        .all()
+    )
+
+    # Stage distribution across all their tests
+    stage_dist = {}
+    for r in results:
+        s = (r.stage or 'Unknown').strip().title()
+        stage_dist[s] = stage_dist.get(s, 0) + 1
+
+    # Coverage by test type
+    coverage = {}
+    for r in results:
+        tt = r.test_type or 'Unknown'
+        if tt not in coverage:
+            coverage[tt] = {'total': 0, 'latest_stage': None, 'latest_date': None}
+        coverage[tt]['total'] += 1
+        if coverage[tt]['latest_date'] is None or r.taken_at > coverage[tt]['latest_date']:
+            coverage[tt]['latest_stage'] = (r.stage or 'Unknown').strip().title()
+            coverage[tt]['latest_date'] = r.taken_at.isoformat() if r.taken_at else None
+
+    # Latest result
+    latest = results[0] if results else None
+
+    # Monthly progress data
+    from app.services.test_service import get_monthly_averages
+    monthly_data = get_monthly_averages(results)
+
+    return jsonify({
+        'student': {
+            'id': student.id,
+            'name': f'{student.fname} {student.lname}',
+            'class': student.class_group or '—',
+            'gender': student.gender or '—',
+            'level': student.level or '—',
+            'username': student.username or '',
+            'is_claimed': student.is_claimed,
+            'consent_given': student.consent_given,
+            'last_login': student.last_login.isoformat() if student.last_login else None,
+        },
+        'total_results': len(results),
+        'stage_distribution': stage_dist,
+        'coverage': coverage,
+        'latest_result': {
+            'test_type': latest.test_type,
+            'score': latest.score,
+            'max_score': latest.max_score,
+            'stage': (latest.stage or 'Unknown').strip().title(),
+            'taken_at': latest.taken_at.isoformat() if latest.taken_at else None,
+        } if latest else None,
+        'results': [
+            {
+                'test_type': r.test_type,
+                'score': r.score,
+                'max_score': r.max_score,
+                'stage': (r.stage or 'Unknown').strip().title(),
+                'taken_at': r.taken_at.strftime('%b %d, %Y') if r.taken_at else '—',
+            }
+            for r in results[:20]
+        ],
+        'monthly_data': monthly_data,
+    })
+
 
 @main_bp.route('/school/<int:school_id>/claim-codes/print')
 @school_login_required
@@ -356,6 +545,23 @@ def print_claim_codes(school_id):
     
     base = current_app.config.get('APP_BASE_URL') or request.host_url.rstrip('/')
     claim_url = f"{base}/claim"
+    
+    if request.args.get('_json'):
+        from flask import jsonify
+        return jsonify({
+            'school_name': school.school_name,
+            'claim_url': claim_url,
+            'total': len(unclaimed),
+            'students': [
+                {
+                    'name': f'{s.fname} {s.lname}',
+                    'username': s.username or '',
+                    'class_group': s.class_group or '',
+                    'claim_code': s.claim_code_plain or '——',
+                }
+                for s in unclaimed
+            ],
+        })
     
     return render_template('auth/claim_codes_print.html', school=school, unclaimed=unclaimed, claim_url=claim_url)
 
@@ -693,32 +899,48 @@ def test_activate_upload(school_id):
     return redirect(url_for('main.school_dashboard', school_id=school_id))
 
 
-@main_bp.route('/school/<int:school_id>/students')
+@main_bp.route('/school/<int:school_id>/verify-payment', methods=['POST'])
 @school_login_required
-@subscription_required
-def school_students(school_id):
+def verify_subscription_payment(school_id):
     school = _get_school_from_session()
-    if current_user.is_authenticated and current_user.is_super_admin:
-        abort(403)
-    elif school and school.id == school_id:
-        pass
-    else:
+    if not school or school.id != school_id:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+
+    data = request.get_json(silent=True) or {}
+    reference = data.get('reference')
+    if not reference:
+        return jsonify({'success': False, 'error': 'Missing reference'}), 400
+
+    try:
+        import requests as http_requests
+        secret = current_app.config.get('PAYSTACK_SECRET_KEY', '')
+        resp = http_requests.get(
+            f'https://api.paystack.co/transaction/verify/{reference}',
+            headers={'Authorization': f'Bearer {secret}'},
+            timeout=15,
+        )
+        body = resp.json()
+        if body.get('status') and body.get('data', {}).get('status') == 'success':
+            from datetime import timedelta
+            school.subscription_expires = datetime.now(timezone.utc) + timedelta(days=365)
+            db.session.commit()
+            return jsonify({'success': True, 'message': 'Payment verified'})
+        return jsonify({'success': False, 'error': 'Payment not successful'}), 400
+    except Exception as exc:
+        current_app.logger.error(f'Paystack verify error: {exc}')
+        return jsonify({'success': False, 'error': 'Verification failed'}), 500
+
+
+@main_bp.route('/school/<int:school_id>/settings')
+@school_login_required
+def school_settings(school_id):
+    school = _get_school_from_session()
+    if not school or school.id != school_id:
         flash('Please log in as a school administrator.', 'warning')
         return redirect(url_for('auth.school_login'))
+    flash('Settings page coming soon.', 'info')
+    return redirect(url_for('main.school_dashboard', school_id=school_id))
 
-    accounts_q = (Accounts.query
-                  .filter_by(school_id=school.id)
-                  .order_by(Accounts.fname))
-    total_students = accounts_q.count()
-    student_page = request.args.get('student_page', 1, type=int)
-    students_pagination = accounts_q.paginate(page=student_page, per_page=25, error_out=False)
-
-    return render_template(
-        'main/school_students.html',
-        school=school,
-        students_pagination=students_pagination,
-        total_students=total_students,
-    )
 
 
 @main_bp.route('/school/<int:school_id>/results')

@@ -176,7 +176,7 @@
     <a href="{{ url_for('main.school_dashboard', school_id=session.get('school_id')) }}" class="tab-item {% if request.endpoint == 'main.school_dashboard' %}active{% endif %}">
       <i class="fa-solid fa-gauge tab-icon"></i><span class="tab-label">Dashboard</span>
     </a>
-    <a href="{{ url_for('main.school_students', school_id=session.get('school_id')) }}" class="tab-item {% if request.endpoint == 'main.school_students' %}active{% endif %}">
+    <a href="{{ url_for('main.school_dashboard', school_id=session.get('school_id')) }}" class="tab-item">
       <i class="fa-solid fa-users tab-icon"></i><span class="tab-label">Students</span>
     </a>
     <a href="{{ url_for('main.school_results', school_id=session.get('school_id')) }}" class="tab-item {% if request.endpoint == 'main.school_results' %}active{% endif %}">

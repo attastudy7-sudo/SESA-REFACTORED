@@ -8,7 +8,7 @@
 
 {% block drawer_links %}
   <a href="{{ url_for('main.school_dashboard', school_id=school.id) }}">Dashboard</a>
-  <a href="{{ url_for('main.school_students', school_id=school.id) }}">Students</a>
+  <a href="{{ url_for('main.school_dashboard', school_id=school.id) }}">Students</a>
   <a href="{{ url_for('main.school_results', school_id=school.id) }}">Results</a>
   <a href="{{ url_for('main.school_results', school_id=school.id, tab='at_risk') }}"><i class="fa-solid fa-triangle-exclamation" style="color:var(--gold-500); margin-right:6px;"></i>At Risk</a>
   <a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a>
@@ -142,8 +142,8 @@
      class="tab-item {% if request.endpoint == 'main.school_dashboard' %}active{% endif %}">
     <i class="fa-solid fa-gauge tab-icon"></i><span class="tab-label">Dashboard</span>
   </a>
-  <a href="{{ url_for('main.school_students', school_id=school_id) }}"
-     class="tab-item {% if request.endpoint == 'main.school_students' %}active{% endif %}">
+  <a href="{{ url_for('main.school_dashboard', school_id=school_id) }}"
+     class="tab-item">
     <i class="fa-solid fa-users tab-icon"></i><span class="tab-label">Students</span>
   </a>
   <a href="{{ url_for('main.school_results', school_id=school_id) }}"
