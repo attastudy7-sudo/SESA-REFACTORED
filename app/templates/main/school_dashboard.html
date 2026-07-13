@@ -36,11 +36,7 @@
   <nav class="sd-topnav">
     <div class="sd-topnav__logo">
       <div class="sd-topnav__brand">
-        <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
-          <rect x="2" y="2" width="28" height="28" rx="8" fill="#4a7c59"/>
-          <path d="M16 7L8 11v6c0 5.523 3.402 10.712 8 12 4.598-1.288 8-6.477 8-12v-6l-8-4z" stroke="white" stroke-width="1.5" fill="none"/>
-          <path d="M12 15.5l2.5 2.5 4-5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+        <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="SESA" width="32" height="32">
         {{ school.school_name }}
       </div>
     </div>
@@ -147,10 +143,10 @@
           </div>
           <div>
             <span class="sd-banner__title sd-banner__title--onboard">Welcome to {{ school.school_name }}'s dashboard.</span>
-            <span class="sd-banner__text sd-banner__text--onboard">Start by uploading a results spreadsheet.</span>
+            <span class="sd-banner__text sd-banner__text--onboard">Start by uploading a student spreadsheet.</span>
           </div>
           {% if upload_enabled %}
-          <button class="sd-btn-gold" id="bannerUploadBtn" style="margin-left:auto;">Upload Results</button>
+          <button class="sd-btn-gold" id="bannerUploadBtn" style="margin-left:auto;">Upload Students</button>
           {% endif %}
         </div>
         {% endif %}
@@ -354,7 +350,7 @@
         <div class="sd-action-list">
           {% if upload_enabled %}
           <button class="sd-action-list__item" id="uploadBtn">
-            <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload Results</span>
+            <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload Students</span>
             <span class="sd-action-list__arrow">→</span>
           </button>
           {% endif %}
@@ -406,7 +402,7 @@
   <div class="sd-modal-overlay" id="uploadModalOverlay">
     <div class="sd-modal">
       <div class="sd-modal__top">
-        <h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Upload Results</h3>
+        <h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Upload Students</h3>
         <button class="sd-modal__close" id="uploadModalClose">&times;</button>
       </div>
       <div class="sd-modal__body">

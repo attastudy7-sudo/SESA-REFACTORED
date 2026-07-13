@@ -508,7 +508,7 @@
   border-bottom: none;
 }
 .sd-detail-card { padding: 28px; margin-top: 0; }
-.sd-detail-identity { flex: 1; min-width: 0; }
+.sd-detail-identity { flex: 1; min-width: 0; margin-bottom: 15px; }
 .sd-detail-name {
   font-family: var(--sd-font);
   font-size: 22px;

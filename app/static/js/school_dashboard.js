@@ -301,18 +301,13 @@
     if (!canvas) return;
     if (progressChart) { progressChart.destroy(); progressChart = null; }
 
+    var emptyEl = $('#sdStudentChartEmpty');
+
     if (!monthlyData || monthlyData.length === 0) {
-      progressChart = new Chart(canvas.getContext('2d'), {
-        type: 'line',
-        data: { labels: [], datasets: [] },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false }, tooltip: { enabled: false } }
-        }
-      });
+      if (emptyEl) emptyEl.classList.add('visible');
       return;
     }
+    if (emptyEl) emptyEl.classList.remove('visible');
 
     var labels = monthlyData.map(function (d) { return d.label; });
     var values = monthlyData.map(function (d) { return d.average; });
@@ -495,17 +490,12 @@
       studentList.innerHTML = students.map(function (s) {
         var name = s.name || '';
         var initials = name.split(' ').map(function (w) { return w[0] || ''; }).join('').substring(0, 2).toUpperCase();
-        var stageText = s.stage || 'Unknown';
-        var stageClass = 'sd-badge--' + (stageText || 'unknown').toLowerCase().replace(' stage', '').replace(/\s+/g, '-');
         var avatarColor = s.color || 'gray';
         return '<div class="sd-student-item" data-student-id="' + s.id + '">' +
           '<div class="sd-student-item__avatar sd-student-item__avatar--' + avatarColor + '">' + escHtml(initials) + '</div>' +
           '<div class="sd-student-item__info">' +
             '<div class="sd-student-item__name">' + escHtml(name) + '</div>' +
-            '<div class="sd-student-item__meta">' +
-              '<span class="sd-badge ' + stageClass + '">' + escHtml(stageText) + '</span>' +
-              (s.class ? '<span style="margin-left:6px;font-size:0.75rem;color:#999;">' + escHtml(s.class) + '</span>' : '') +
-            '</div>' +
+            (s.class ? '<div class="sd-student-item__meta">' + escHtml(s.class) + '</div>' : '') +
           '</div>' +
         '</div>';
       }).join('');
@@ -604,6 +594,10 @@
           '</div>' +
         '</div>' +
         '<div class="sd-chart-section sd-chart-section--student">' +
+          '<div class="sd-chart-empty" id="sdStudentChartEmpty">' +
+            '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="15" x2="21" y2="15"/><polyline points="8 12 11 9 14 12 17 7"/></svg>' +
+            '<span>No chart data yet</span>' +
+          '</div>' +
           '<div class="sd-progress-hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> Monthly progress — lower % is better</div>' +
           '<div class="sd-chart-wrapper" style="height:220px;">' +
             '<canvas id="sdProgressCanvas"></canvas>' +
