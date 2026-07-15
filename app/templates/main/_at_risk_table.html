@@ -2,30 +2,39 @@
 {% set clinical_count = at_risk | selectattr('0.stage', 'equalto', 'Clinical Stage') | list | length %}
 {% set elevated_count = at_risk | selectattr('0.stage', 'equalto', 'Elevated Stage') | list | length %}
 
-<div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:24px;">
-  <div style="background:#fef2f2; border:1px solid #fca5a5; border-radius:10px; padding:12px 20px; text-align:center; min-width:0; flex:1 1 120px;">
-    <div style="font-size:1.8rem; font-weight:800; color:#b91c1c;">{{ at_risk_pagination.total }}</div>
-    <div style="font-size:0.78rem; color:#7f1d1d; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Total Flagged</div>
+<div class="sd-at-risk-summary">
+  <div class="sd-at-risk-stat sd-at-risk-stat--red">
+    <div class="sd-at-risk-stat__value">{{ at_risk | length }}</div>
+    <div class="sd-at-risk-stat__label">Total Flagged</div>
   </div>
-  <div style="background:#fef2f2; border:1px solid #fca5a5; border-radius:10px; padding:12px 20px; text-align:center; min-width:0; flex:1 1 120px;">
-    <div style="font-size:1.8rem; font-weight:800; color:#b91c1c;">{{ clinical_count }}</div>
-    <div style="font-size:0.78rem; color:#7f1d1d; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Clinical Stage</div>
+  <div class="sd-at-risk-stat sd-at-risk-stat--red">
+    <div class="sd-at-risk-stat__value">{{ clinical_count }}</div>
+    <div class="sd-at-risk-stat__label">Clinical Stage</div>
   </div>
-  <div style="background:#fffbeb; border:1px solid #fcd34d; border-radius:10px; padding:12px 20px; text-align:center; min-width:0; flex:1 1 120px;">
-    <div style="font-size:1.8rem; font-weight:800; color:#b45309;">{{ elevated_count }}</div>
-    <div style="font-size:0.78rem; color:#78350f; font-weight:600; text-transform:uppercase; letter-spacing:.04em;">Elevated Stage</div>
+  <div class="sd-at-risk-stat sd-at-risk-stat--amber">
+    <div class="sd-at-risk-stat__value">{{ elevated_count }}</div>
+    <div class="sd-at-risk-stat__label">Elevated Stage</div>
   </div>
 </div>
 
 {% if clinical_count > 0 %}
-<div style="background:#fef2f2; border-left:4px solid #ef4444; padding:12px 16px; border-radius:8px; margin-bottom:24px; font-size:0.88rem; color:#7f1d1d;">
-  <strong>Action required:</strong> {{ clinical_count }} student{{ 's' if clinical_count != 1 }} at Clinical Stage should be referred to a counsellor immediately.
+<div class="sd-at-risk-alert">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+  <span><strong>Action required:</strong> {{ clinical_count }} student{{ 's' if clinical_count != 1 }} at Clinical Stage should be referred to a counsellor immediately.</span>
 </div>
 {% endif %}
 
-<div class="card">
-  <div class="table-wrapper">
-    <table class="table">
+<div class="sd-card" style="padding:0;">
+  <div class="sd-card__header" style="padding:16px 20px; border-bottom:1px solid var(--sd-border);">
+    <div class="sd-card__title">At-Risk Students</div>
+    <div class="sd-filter-pills" id="sdAtRiskFilters">
+      <button class="sd-filter-pill sd-filter-pill--active" data-stage-filter="all">All <span class="sd-filter-pill__count">{{ at_risk | length }}</span></button>
+      <button class="sd-filter-pill" data-stage-filter="Clinical Stage">Clinical <span class="sd-filter-pill__count">{{ clinical_count }}</span></button>
+      <button class="sd-filter-pill" data-stage-filter="Elevated Stage">Elevated <span class="sd-filter-pill__count">{{ elevated_count }}</span></button>
+    </div>
+  </div>
+  <div class="sd-at-risk-scroll">
+    <table class="sd-table">
       <thead>
         <tr>
           <th>Student</th>
@@ -37,45 +46,34 @@
       </thead>
       <tbody>
         {% for result, student in at_risk %}
-        <tr style="{% if result.stage == 'Clinical Stage' %}background:#fff5f5;{% endif %}">
-          <td data-label="Student">
+        <tr data-stage="{{ result.stage }}" style="{% if result.stage == 'Clinical Stage' %}background:oklch(0.97 0.01 25);{% endif %}">
+          <td>
             <strong>{{ student.fname }} {{ student.lname }}</strong>
-            <br><small style="color:var(--gray-500);">@{{ student.username }}</small>
           </td>
-          <td data-label="Class">{{ student.class_group or '—' }}</td>
-          <td data-label="Assessment" style="font-size:0.85rem;">{{ result.test_type }}</td>
-          <td data-label="Stage">
-            <span class="badge {% if result.stage == 'Clinical Stage' %}stage-clinical{% else %}stage-elevated{% endif %}">
+          <td>{{ student.class_group or '—' }}</td>
+          <td style="font-size:0.85rem;">{{ result.test_type }}</td>
+          <td>
+            <span class="sd-badge {% if result.stage == 'Clinical Stage' %}sd-badge--clinical{% else %}sd-badge--elevated{% endif %}">
               {{ result.stage }}
             </span>
           </td>
-          <td data-label="Date" style="color:var(--gray-500); font-size:0.82rem; white-space:nowrap;">{{ result.taken_at.strftime('%d %b %Y') }}</td>
+          <td style="color:var(--sd-gray); font-size:0.82rem; white-space:nowrap;">{{ result.taken_at.strftime('%d %b %Y') }}</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
-  {% if at_risk_pagination and at_risk_pagination.pages > 1 %}
-  <div style="display:flex; justify-content:center; align-items:center; gap:8px; padding:16px; border-top:1px solid var(--gray-100);">
-    {% if at_risk_pagination.has_prev %}
-      <a data-page="{{ at_risk_pagination.prev_num }}" href="#"
-         style="padding:6px 14px; border-radius:6px; background:var(--ivory); color:var(--green-800); text-decoration:none; font-size:0.85rem; font-weight:600;">← Prev</a>
-    {% endif %}
-    <span style="font-size:0.82rem; color:var(--gray-500);">Page {{ at_risk_pagination.page }} of {{ at_risk_pagination.pages }}</span>
-    {% if at_risk_pagination.has_next %}
-      <a data-page="{{ at_risk_pagination.next_num }}" href="#"
-         style="padding:6px 14px; border-radius:6px; background:var(--ivory); color:var(--green-800); text-decoration:none; font-size:0.85rem; font-weight:600;">Next →</a>
-    {% endif %}
-  </div>
-  {% endif %}
 </div>
 
 {% else %}
-<div class="card" style="text-align:center; padding:3rem 2rem;">
-  <div class="empty-state">
-    <div class="empty-state-icon"><i class="fa-solid fa-circle-check" style="color:var(--green-500);"></i></div>
-    <h3 style="color:var(--green-800); margin-bottom:0.5rem;">No students at elevated risk</h3>
-    <p>No students are currently at Elevated or Clinical stage.</p>
+<div class="sd-card sd-at-risk-empty">
+  <div class="sd-at-risk-empty__icon">
+    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
+      <path d="M8 12l3 3 5-5"/>
+    </svg>
   </div>
+  <h3 class="sd-at-risk-empty__title">No students at risk</h3>
+  <p class="sd-at-risk-empty__desc">All students are currently at Normal or Mild stage. Keep monitoring by uploading new assessments regularly.</p>
 </div>
 {% endif %}

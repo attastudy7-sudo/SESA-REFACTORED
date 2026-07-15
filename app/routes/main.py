@@ -1004,8 +1004,7 @@ def school_results(school_id):
             db.case((TestResult.stage == 'Clinical Stage', 0), else_=1),
             TestResult.taken_at.desc(),
         )
-        at_risk_pagination = at_risk_q.paginate(page=page, per_page=25, error_out=False)
-        at_risk = at_risk_pagination.items
+        at_risk = at_risk_q.all()
     else:
         results_q = (
             TestResult.query
@@ -1026,7 +1025,6 @@ def school_results(school_id):
         results_pagination=results_pagination,
         total_results=total_results,
         at_risk=at_risk,
-        at_risk_pagination=at_risk_pagination,
     )
 
     if request.args.get('_fragment'):

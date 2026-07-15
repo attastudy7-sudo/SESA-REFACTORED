@@ -77,13 +77,18 @@
   };
 
   var STAGE_COLOURS = {
-    'Normal':       COLORS.green,
-    'Mild':         COLORS.gold,
-    'Elevated':     '#e67e22',
-    'Clinical':     COLORS.red,
-    'At Risk':      COLORS.red,
+    'Normal':       '#22c55e',
+    'Mild':         '#f59e0b',
+    'Elevated':     '#f97316',
+    'Clinical':     '#ef4444',
+    'At Risk':      '#ef4444',
     'Unknown':      COLORS.muted
   };
+
+  function stageColour(label) {
+    var key = label.replace(/\s*Stage$/i, '');
+    return STAGE_COLOURS[key] || COLORS.muted;
+  }
 
   /* ==========================================================
      MONTHLY DICT → CHART HELPER
@@ -124,7 +129,7 @@
 
     var labels = Object.keys(DATA.stage);
     var values = Object.values(DATA.stage);
-    var colours = labels.map(function (l) { return STAGE_COLOURS[l] || COLORS.muted; });
+    var colours = labels.map(function (l) { return stageColour(l); });
 
     if (labels.length === 0) {
       setChartEmpty(true);
@@ -143,7 +148,7 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        cutout: '65%',
+        cutout: '72%',
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -261,7 +266,6 @@
         plugins: { legend: { display: false } },
         scales: {
           y: {
-            reverse: true,
             beginAtZero: true,
             max: 100,
             grid: { color: COLORS.border },
@@ -295,7 +299,33 @@
     if (monthsEl) monthsEl.textContent = values ? values.length : 0;
   }
 
-  /* --- student progress chart (reversed Y — monthlyData from student detail IS [{month,label,average}]) --- */
+  /* --- compute status summary from monthly average values (lower % = better) --- */
+  function computeStudentStatus(values) {
+    if (!values || values.length === 0) {
+      return { label: 'No Data', cls: '', trend: '', delta: 0, avg: 0, latest: 0 };
+    }
+    var avg = Math.round(values.reduce(function (a, b) { return a + b; }, 0) / values.length);
+    var latest = values[values.length - 1];
+    var delta = latest - avg;
+
+    /* status from average */
+    var label, cls;
+    if (avg <= 20)      { label = 'Excellent'; cls = 'sd-badge--normal'; }
+    else if (avg <= 40) { label = 'Good';      cls = 'sd-badge--normal'; }
+    else if (avg <= 60) { label = 'Moderate';   cls = 'sd-badge--mild'; }
+    else if (avg <= 80) { label = 'Needs Attention'; cls = 'sd-badge--elevated'; }
+    else                { label = 'Critical';   cls = 'sd-badge--clinical'; }
+
+    /* trend from latest vs average */
+    var trend, arrow;
+    if (delta < -3)      { trend = 'Improving'; arrow = '&#9660;'; }
+    else if (delta > 3)  { trend = 'Worsening'; arrow = '&#9650;'; }
+    else                 { trend = 'Stable';    arrow = '&#8212;'; }
+
+    return { label: label, cls: cls, trend: trend, arrow: arrow, delta: Math.abs(delta), avg: avg, latest: latest };
+  }
+
+  /* --- student progress chart (monthlyData from student detail IS [{month,label,average}]) --- */
   function initProgressChart(monthlyData) {
     var canvas = $('#sdProgressCanvas');
     if (!canvas) return;
@@ -325,31 +355,46 @@
           tension: 0.3,
           pointBackgroundColor: segmentColours,
           pointRadius: 5,
-          pointHoverRadius: 7
+          pointHoverRadius: 7,
+          borderWidth: 2
         }]
       },
       options: {
         responsive: true,
-        maintainAspectRatio: false,
+        maintainAspectRatio: true,
+        aspectRatio: 2.2,
         plugins: { legend: { display: false } },
         scales: {
           y: {
-            reverse: true,
             beginAtZero: true,
             max: 100,
             grid: { color: COLORS.border },
+            border: { display: false },
             ticks: {
-              font: { family: 'Manrope' },
+              font: { family: 'Manrope', size: 12 },
+              color: '#707070',
               callback: function (v) { return v + '%'; }
             }
           },
           x: {
             grid: { display: false },
-            ticks: { font: { family: 'Manrope' } }
+            border: { display: false },
+            ticks: { font: { family: 'Manrope', size: 12 }, color: '#707070' }
           }
         }
       }
     });
+
+    /* populate side legend */
+    var status = computeStudentStatus(values);
+    var statusEl = $('#sdStudentStatus');
+    var latestEl = $('#sdStudentLatest');
+    var avgEl = $('#sdStudentAvg');
+    var trendEl = $('#sdStudentTrend');
+    if (statusEl) statusEl.innerHTML = '<span class="sd-badge ' + status.cls + '">' + status.label + '</span>';
+    if (latestEl) latestEl.textContent = status.latest + '%';
+    if (avgEl) avgEl.textContent = status.avg + '%';
+    if (trendEl) trendEl.innerHTML = '<span class="sd-legend-summary__arrow">' + status.arrow + '</span> ' + status.trend + (status.delta ? ' (' + status.delta + '%)' : '');
   }
 
   /* ==========================================================
@@ -515,6 +560,9 @@
      STUDENT DETAIL
      ========================================================== */
   function selectStudent(studentId) {
+    /* mark currentTab away from at-risk/results so re-clicking the nav re-fetches */
+    currentTab = 'student-detail';
+
     /* highlight active in sidebar */
     $$('.sd-student-item', studentList).forEach(function (item) {
       item.classList.toggle('sd-student-item--active', item.dataset.studentId == studentId);
@@ -552,7 +600,7 @@
       return '<div class="sd-detail-stage-row">' +
         '<span class="sd-badge sd-badge--' + key.toLowerCase().replace(' stage', '').replace(/\s+/g, '-') + '">' + escHtml(key) + '</span>' +
         '<span style="flex:1;margin:0 8px;height:6px;background:#e8e8e8;border-radius:3px;overflow:hidden;">' +
-          '<span style="display:block;height:100%;width:' + pct + '%;background:' + (STAGE_COLOURS[key] || COLORS.muted) + ';border-radius:3px;"></span>' +
+          '<span style="display:block;height:100%;width:' + pct + '%;background:' + stageColour(key) + ';border-radius:3px;"></span>' +
         '</span>' +
         '<span>' + count + ' (' + pct + '%)</span>' +
       '</div>';
@@ -566,7 +614,6 @@
       return '<div class="sd-detail-coverage-row">' +
         '<span>' + escHtml(key) + '</span>' +
         '<span style="font-weight:600;">' + (count || 0) + ' tests' +
-          (latestStage ? ' <span style="font-weight:400;font-size:0.75rem;color:#999;">(' + escHtml(latestStage) + ')</span>' : '') +
         '</span>' +
       '</div>';
     }).join('');
@@ -598,9 +645,26 @@
             '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="15" x2="21" y2="15"/><polyline points="8 12 11 9 14 12 17 7"/></svg>' +
             '<span>No chart data yet</span>' +
           '</div>' +
-          '<div class="sd-progress-hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> Monthly progress — lower % is better</div>' +
-          '<div class="sd-chart-wrapper" style="height:220px;">' +
+          '<div class="sd-chart-wrapper">' +
+            '<div class="sd-chart-header">' +
+              '<span class="sd-inner-title">Monthly Progress</span>' +
+              '<span class="sd-progress-hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> Lower % is better</span>' +
+            '</div>' +
             '<canvas id="sdProgressCanvas"></canvas>' +
+          '</div>' +
+          '<div class="sd-legend sd-legend--student" id="sdStudentLegend">' +
+            '<div class="sd-legend-summary__row">' +
+              '<span class="sd-legend-summary__label">Latest</span>' +
+              '<span class="sd-legend-summary__value" id="sdStudentLatest">—</span>' +
+            '</div>' +
+            '<div class="sd-legend-divider"></div>' +
+            '<div class="sd-legend-summary__row">' +
+              '<span class="sd-legend-summary__label">Average</span>' +
+              '<span class="sd-legend-summary__value" id="sdStudentAvg">—</span>' +
+            '</div>' +
+            '<div class="sd-legend-divider"></div>' +
+            '<div class="sd-legend-summary__trend" id="sdStudentTrend"></div>' +
+            '<div class="sd-legend-summary__status" id="sdStudentStatus"></div>' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -661,7 +725,7 @@
   function fetchAtRiskFragment() {
     mainContent.innerHTML = '<div style="text-align:center;padding:48px;color:#999;"><div class="sd-spinner"></div>Loading at-risk students…</div>';
 
-    var url = '/school/' + DATA.schoolId + '?tab=at_risk&_fragment=1';
+    var url = '/school/' + DATA.schoolId + '/results?tab=at_risk&_fragment=1';
 
     fetch(url, {
       headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -671,13 +735,37 @@
       if (html && html.trim().length > 10) {
         mainContent.innerHTML = html;
         initAtRiskCardLink();
+        bindAtRiskFilters();
       } else {
-        mainContent.innerHTML = '<div class="sd-card" style="text-align:center;padding:48px;color:#999;">No at-risk students found <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>';
+        mainContent.innerHTML = '<div class="sd-card sd-at-risk-empty">' +
+          '<div class="sd-at-risk-empty__icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M8 12l3 3 5-5"/></svg></div>' +
+          '<h3 class="sd-at-risk-empty__title">No students at risk</h3>' +
+          '<p class="sd-at-risk-empty__desc">All students are currently at Normal or Mild stage. Keep monitoring by uploading new assessments regularly.</p>' +
+        '</div>';
       }
     })
     .catch(function (err) {
       console.error('At-risk fetch failed:', err);
       mainContent.innerHTML = '<div class="sd-card" style="text-align:center;padding:48px;color:#999;">Failed to load at-risk data</div>';
+    });
+  }
+
+  function bindAtRiskFilters() {
+    var pills = $$('#sdAtRiskFilters .sd-filter-pill');
+    pills.forEach(function (pill) {
+      pill.onclick = function () {
+        pills.forEach(function (p) { p.classList.remove('sd-filter-pill--active'); });
+        pill.classList.add('sd-filter-pill--active');
+        var filter = pill.dataset.stageFilter;
+        var rows = $$('#sdAtRiskFilters').length ? $$('.sd-at-risk-scroll tbody tr') : [];
+        rows.forEach(function (row) {
+          if (filter === 'all' || row.dataset.stage === filter) {
+            row.style.display = '';
+          } else {
+            row.style.display = 'none';
+          }
+        });
+      };
     });
   }
 
@@ -689,11 +777,7 @@
         if (tab) switchTab(tab);
       };
     });
-    var riskBanner = $('#sdRiskBanner');
-    if (riskBanner) {
-      riskBanner.style.cursor = 'pointer';
-      riskBanner.onclick = function () { switchTab('at-risk'); };
-    }
+
   }
 
   /* ==========================================================
@@ -714,8 +798,10 @@
      ========================================================== */
   function openClaimCodes() {
     var grid = $('#sdClaimGrid');
+    var header = $('#sdClaimHeader');
+    var urlCode = $('#sdClaimUrlCode');
     openOverlay('sdClaimModalOverlay');
-    if (grid) grid.innerHTML = '<div style="text-align:center;padding:24px;color:#999;">Loading claim codes…</div>';
+    if (grid) grid.innerHTML = '<div style="text-align:center;padding:24px;color:#999;"><div class="sd-spinner"></div>Loading claim codes…</div>';
 
     fetch(DATA.claimCodesUrl, {
       headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -723,25 +809,42 @@
     .then(function (res) { return res.json(); })
     .then(function (data) {
       var students = data.students || [];
+      var schoolName = data.school_name || '';
+      var claimUrl = data.claim_url || '';
+
+      if (urlCode) urlCode.textContent = claimUrl;
+
       if (students.length === 0) {
-        if (grid) grid.innerHTML = '<div style="text-align:center;padding:24px;color:#999;">No unclaimed codes</div>';
+        if (header) header.innerHTML =
+          '<div class="sd-cc-header__icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>' +
+          '<div class="sd-cc-header__text">' +
+            '<div class="sd-cc-header__name">' + escHtml(schoolName) + '</div>' +
+            '<div class="sd-cc-header__count sd-cc-header__count--done">All accounts activated</div>' +
+          '</div>';
+        if (grid) grid.innerHTML = '';
         return;
       }
+
+      if (header) header.innerHTML =
+        '<div class="sd-cc-header__icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>' +
+        '<div class="sd-cc-header__text">' +
+          '<div class="sd-cc-header__name">' + escHtml(schoolName) + '</div>' +
+          '<div class="sd-cc-header__count">' + students.length + ' unclaimed account' + (students.length !== 1 ? 's' : '') + '</div>' +
+        '</div>';
+
       if (grid) {
         grid.innerHTML = students.map(function (s) {
-          /* route returns flat "name" field */
           var code = s.claim_code || '——';
           var name = s.name || 'Unnamed';
+          var meta = (s.username ? '@' + escHtml(s.username) : '') + (s.class_group ? ' · ' + escHtml(s.class_group) : '');
           return '<div class="sd-cc-slip">' +
-            '<div class="sd-cc-slip__header">' +
-              '<div class="sd-cc-slip__label">Student</div>' +
-              '<div class="sd-cc-slip__name">' + escHtml(name) + '</div>' +
-              '<div class="sd-cc-slip__meta">' + escHtml(s.class_group || '') + '</div>' +
-            '</div>' +
-            '<div class="sd-cc-slip__divider"></div>' +
+            '<div class="sd-cc-slip__school">' + escHtml(schoolName) + '</div>' +
+            '<div class="sd-cc-slip__name">' + escHtml(name) + '</div>' +
+            (meta ? '<div class="sd-cc-slip__meta">' + meta + '</div>' : '') +
+            '<hr class="sd-cc-slip__divider">' +
             '<div class="sd-cc-slip__code-label">Claim Code</div>' +
             '<div class="sd-cc-slip__code">' + escHtml(code) + '</div>' +
-            '<div class="sd-cc-slip__url">' + escHtml(data.claim_url || '') + '</div>' +
+            '<div class="sd-cc-slip__url">Go to <strong>' + escHtml(claimUrl) + '</strong> and enter this code.</div>' +
           '</div>';
         }).join('');
       }
@@ -872,6 +975,7 @@
      PROFILE DROPDOWN
      ========================================================== */
   function toggleProfileDropdown(e) {
+    if (e.target.closest('.sd-profile-dropdown')) return;
     e.stopPropagation();
     var dd = profileDropdown ? $('.sd-profile-dropdown', profileDropdown) : null;
     if (dd) dd.classList.toggle('open');
@@ -964,9 +1068,7 @@
 
     /* upload */
     var uploadBtn = $('#uploadBtn');
-    var bannerUploadBtn = $('#bannerUploadBtn');
     if (uploadBtn) uploadBtn.onclick = openUploadModal;
-    if (bannerUploadBtn) bannerUploadBtn.onclick = openUploadModal;
 
     var uploadModalClose = $('#uploadModalClose');
     if (uploadModalClose) uploadModalClose.onclick = closeUploadModal;
@@ -1029,7 +1131,7 @@
     var payBtn = $('#sdPayBtn');
     if (payBtn) payBtn.onclick = initPaystack;
 
-    /* at-risk card + banner */
+    /* at-risk card */
     initAtRiskCardLink();
   }
 

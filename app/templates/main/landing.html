@@ -124,10 +124,10 @@
       justify-content: space-between;
       gap: 24px;
       background: var(--iv);
-      border: 2px solid rgba(197,160,89,.2);
-      border-radius: 12px;
+      border-left: 4px solid var(--gd);
+      border-radius: 0 12px 12px 0;
       padding: 28px 32px;
-      box-shadow: 0 4px 20px rgba(2,40,24,.05);
+      box-shadow: 0 4px 20px rgba(2,40,24,.06);
     }
     .guide-cta-label {
       font-size: .72rem;
@@ -479,6 +479,7 @@
 
 <!-- ═══ BOTTOM CTA ═══ -->
 <section class="bottom-cta grain" data-reveal>
+  <div class="bottom-cta-orb"></div>
   <div class="bottom-cta-badge"><i class="fa-solid fa-circle-check"></i> GES Aligned</div>
   <h2>Every Student Deserves to Be Understood</h2>
   <p>Ghana's schools are full of students silently struggling. SESA gives your school the tools to see what grades can't show — and act before it's too late.</p>
@@ -491,12 +492,12 @@
 <section class="pub-section pub-section--alt" data-reveal>
   <div class="s-wrap">
     <div class="guide-cta">
-      <div class="guide-cta-copy">
+      <div>
         <span class="guide-cta-label">New to SESA?</span>
         <h3>Start with the School Guide</h3>
         <p>A step-by-step guide to registering your school, uploading students, and running your first assessments.</p>
       </div>
-      <a href="{{ url_for('main.school_guide') }}" class="btn-outline-dark">Read the School Guide →</a>
+      <a href="{{ url_for('main.school_guide') }}" class="btn-outline-dark" style="flex-shrink:0; white-space:nowrap;">Read the School Guide →</a>
     </div>
   </div>
 </section>

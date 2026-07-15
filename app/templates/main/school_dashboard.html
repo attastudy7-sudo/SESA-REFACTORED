@@ -115,42 +115,6 @@
 
     <div class="sd-main">
       <div id="sdMainContent">
-        {% if at_risk_count is defined and at_risk_count is not none and at_risk_count|default(0,true)|int > 0 %}
-        <div class="sd-banner sd-banner--risk" id="sdRiskBanner">
-          <div class="sd-banner__icon sd-banner__icon--risk">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-              <line x1="12" y1="9" x2="12" y2="13"/>
-              <line x1="12" y1="17" x2="12.01" y2="17"/>
-            </svg>
-          </div>
-          <div>
-            <span class="sd-banner__title sd-banner__title--risk">{{ at_risk_count }} student{{ 's' if at_risk_count|default(0,true)|int > 1 }} flagged At Risk</span>
-            <span class="sd-banner__text sd-banner__text--risk">— requires immediate attention</span>
-          </div>
-        </div>
-        {% endif %}
-        {% if total_results|int == 0 %}
-        <div class="sd-banner sd-banner--onboard" id="sdOnboardBanner">
-          <div class="sd-banner__icon sd-banner__icon--onboard">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 8h1a4 4 0 010 8h-1"/>
-              <path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/>
-              <line x1="6" y1="1" x2="6" y2="4"/>
-              <line x1="10" y1="1" x2="10" y2="4"/>
-              <line x1="14" y1="1" x2="14" y2="4"/>
-            </svg>
-          </div>
-          <div>
-            <span class="sd-banner__title sd-banner__title--onboard">Welcome to {{ school.school_name }}'s dashboard.</span>
-            <span class="sd-banner__text sd-banner__text--onboard">Start by uploading a student spreadsheet.</span>
-          </div>
-          {% if upload_enabled %}
-          <button class="sd-btn-gold" id="bannerUploadBtn" style="margin-left:auto;">Upload Students</button>
-          {% endif %}
-        </div>
-        {% endif %}
-
         <div class="sd-card">
           <div class="sd-card__header">
             <div class="sd-card__title" id="sdChartTitle">Monthly Trends</div>
@@ -375,10 +339,13 @@
           <code id="sdRegLink">{{ base_url }}/register/{{ school.access_code }}</code>
           <button class="sd-reg-copy-btn" id="sdCopyLink">Copy</button>
         </div>
-        <span class="sd-badge-active">Active</span>
       </div>
 
       <div class="sd-payment-card">
+        <div class="sd-payment-card__status">
+          <span class="sd-payment-card__status-label">Subscription</span>
+          <span class="sd-badge-active">Active</span>
+        </div>
         <div class="sd-payment-card__hero">
           <h3>Upgrade to Premium</h3>
           <p>Unlock all features for your school</p>
@@ -418,7 +385,7 @@
           </div>
           <div>
             <h4>How to upload</h4>
-            <p>Upload an Excel (.xlsx) file with columns: student name, assessment type, score, and date. Max 1000 rows.</p>
+            <p>Upload an Excel file with student names, assessment type, score, and date. <a href="{{ url_for('main.school_guide', school_id=school.id) }}" target="_blank" style="color:var(--sd-green-dark);font-weight:600;">See full guide →</a></p>
           </div>
         </div>
         <div class="sd-upload-zone" id="uploadZone">
@@ -444,10 +411,13 @@
         <button class="sd-modal__close" id="sdClaimModalClose">&times;</button>
       </div>
       <div class="sd-modal__body">
-        <div class="sd-cc-url-bar">
-          <span class="sd-cc-url-bar__label">Registration URL</span>
-          <code class="sd-cc-url-bar__code" id="sdClaimUrlCode">{{ base_url }}/register/{{ school.access_code }}</code>
-          <button class="sd-cc-url-bar__copy" id="sdClaimCopyBtn">Copy</button>
+        <div class="sd-cc-header" id="sdClaimHeader"></div>
+        <div class="sd-cc-copy-row">
+          <span class="sd-cc-copy-row__label">Share this link with students to claim their account</span>
+          <div class="sd-cc-copy-row__url-wrap">
+            <code class="sd-cc-copy-row__url" id="sdClaimUrlCode"></code>
+            <button class="sd-cc-copy-row__btn" id="sdClaimCopyBtn">Copy</button>
+          </div>
         </div>
         <div class="sd-cc-grid" id="sdClaimGrid"></div>
       </div>
