@@ -1053,6 +1053,7 @@
 
   /* Drawer overlay */
   .guide-drawer-overlay {
+    display: block;
     position: fixed;
     inset: 0;
     top: 56px;
@@ -1186,6 +1187,13 @@
   });
 
   overlay.addEventListener('click', closeDrawer);
+
+  // Close drawer when clicking anywhere outside the sidebar or hamburger
+  document.addEventListener('click', function(e) {
+    if (!sidebar.classList.contains('is-open')) return;
+    if (sidebar.contains(e.target) || hamburger.contains(e.target)) return;
+    closeDrawer();
+  });
 
   // Close drawer on Escape key
   document.addEventListener('keydown', function(e) {
