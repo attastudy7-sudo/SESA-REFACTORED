@@ -50,7 +50,7 @@
         </svg>
         Dashboard
       </button>
-      <button class="sd-nav-link" data-tab="students">
+      <button class="sd-nav-link" data-tab="students" {% if not school.upload_enabled %}data-locked="true"{% endif %}>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
           <circle cx="9" cy="7" r="4"/>
@@ -59,7 +59,7 @@
         </svg>
         Students
       </button>
-      <button class="sd-nav-link" data-tab="results">
+      <button class="sd-nav-link" data-tab="results" {% if not school.upload_enabled %}data-locked="true"{% endif %}>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="4" y="2" width="16" height="20" rx="2"/>
           <line x1="8" y1="8" x2="16" y2="8"/>
@@ -68,7 +68,7 @@
         </svg>
         Results
       </button>
-      <button class="sd-nav-link" data-tab="at-risk">
+      <button class="sd-nav-link" data-tab="at-risk" {% if not school.upload_enabled %}data-locked="true"{% endif %}>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
           <line x1="12" y1="9" x2="12" y2="13"/>
@@ -312,12 +312,10 @@
 
       <div class="sd-action-card">
         <div class="sd-action-list">
-          {% if upload_enabled %}
           <button class="sd-action-list__item" id="uploadBtn">
             <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload Students</span>
             <span class="sd-action-list__arrow">→</span>
           </button>
-          {% endif %}
           <button class="sd-action-list__item" id="sdClaimCodesBtn">
             <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><path d="M2 9a3 3 0 010-6h20a3 3 0 010 6"/><path d="M2 15a3 3 0 000 6h20a3 3 0 000-6"/><line x1="12" y1="3" x2="12" y2="21"/></svg>Print Claim Codes</span>
             <span class="sd-action-list__arrow">→</span>
@@ -333,13 +331,31 @@
         </div>
       </div>
 
-      <div class="sd-action-card">
-        <img class="sd-reg-qr" src="{{ url_for('qr.school_qr_png', school_id=school.id) }}" alt="School QR Code">
-        <div class="sd-reg-link-row">
-          <code id="sdRegLink">{{ base_url }}/register/{{ school.access_code }}</code>
-          <button class="sd-reg-copy-btn" id="sdCopyLink">Copy</button>
+      {% if school.upload_enabled %}
+        {% if school.access_code %}
+        <div class="sd-action-card">
+          <img class="sd-reg-qr" src="{{ url_for('qr.school_qr_png', school_id=school.id) }}" alt="School QR Code">
+          <div class="sd-reg-link-row">
+            <code id="sdRegLink">{{ base_url }}/join?code={{ school.access_code }}</code>
+            <button class="sd-reg-copy-btn" id="sdCopyLink">Copy</button>
+          </div>
         </div>
-      </div>
+        {% else %}
+        <div class="sd-action-card sd-action-card--prompt">
+          <div class="sd-reg-prompt">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+            <div>
+              <div class="sd-reg-prompt__title">Student registration</div>
+              <div class="sd-reg-prompt__desc">Generate a link and QR code for students to claim their accounts.</div>
+            </div>
+          </div>
+          <form method="POST" action="{{ url_for('main.generate_access_code', school_id=school.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="sd-btn-solid">Generate Code</button>
+          </form>
+        </div>
+        {% endif %}
+      {% endif %}
 
       <div class="sd-payment-card">
         <div class="sd-payment-card__status">
@@ -385,7 +401,7 @@
           </div>
           <div>
             <h4>How to upload</h4>
-            <p>Upload an Excel file with student names, assessment type, score, and date. <a href="{{ url_for('main.school_guide', school_id=school.id) }}" target="_blank" style="color:var(--sd-green-dark);font-weight:600;">See full guide →</a></p>
+            <p>Upload an Excel file with student details <a href="{{ url_for('main.school_guide', school_id=school.id) }}" target="_blank" style="color:var(--sd-green-dark);font-weight:600;">See full guide →</a></p>
           </div>
         </div>
         <div class="sd-upload-zone" id="uploadZone">

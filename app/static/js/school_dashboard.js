@@ -492,6 +492,8 @@
 
   function switchTab(tab) {
     if (tab === currentTab) return;
+    var targetBtn = $('.sd-nav-link[data-tab="' + tab + '"]');
+    if (targetBtn && targetBtn.dataset.locked) return;
     currentTab = tab;
 
     /* update nav link active states */
@@ -515,7 +517,7 @@
     if (!studentList) return;
 
     /* show loading */
-    studentList.innerHTML = '<div class="sd-student-list__empty"><div class="sd-spinner"></div>Loading…</div>';
+    studentList.innerHTML = '<div class="sd-loading"><div class="sd-spinner"></div>Loading…</div>';
 
     var url = DATA.studentsUrl + '?tab=' + encodeURIComponent(tab);
 
@@ -723,7 +725,7 @@
      AT-RISK FRAGMENT
      ========================================================== */
   function fetchAtRiskFragment() {
-    mainContent.innerHTML = '<div style="text-align:center;padding:48px;color:#999;"><div class="sd-spinner"></div>Loading at-risk students…</div>';
+    mainContent.innerHTML = '<div class="sd-loading"><div class="sd-spinner"></div>Loading at-risk students…</div>';
 
     var url = '/school/' + DATA.schoolId + '/results?tab=at_risk&_fragment=1';
 
@@ -801,7 +803,7 @@
     var header = $('#sdClaimHeader');
     var urlCode = $('#sdClaimUrlCode');
     openOverlay('sdClaimModalOverlay');
-    if (grid) grid.innerHTML = '<div style="text-align:center;padding:24px;color:#999;"><div class="sd-spinner"></div>Loading claim codes…</div>';
+    if (grid) grid.innerHTML = '<div class="sd-loading"><div class="sd-spinner"></div>Loading claim codes…</div>';
 
     fetch(DATA.claimCodesUrl, {
       headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -815,13 +817,28 @@
       if (urlCode) urlCode.textContent = claimUrl;
 
       if (students.length === 0) {
-        if (header) header.innerHTML =
-          '<div class="sd-cc-header__icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>' +
-          '<div class="sd-cc-header__text">' +
-            '<div class="sd-cc-header__name">' + escHtml(schoolName) + '</div>' +
-            '<div class="sd-cc-header__count sd-cc-header__count--done">All accounts activated</div>' +
+        if (header) header.innerHTML = '';
+        if (urlCode) urlCode.textContent = '';
+        var copyRow = $('.sd-cc-copy-row');
+        if (copyRow) copyRow.style.display = 'none';
+        if (grid) grid.innerHTML =
+          '<div class="sd-cc-empty">' +
+            '<div class="sd-cc-empty__icon">' +
+              '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
+                '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>' +
+                '<polyline points="14 2 14 8 20 8"/>' +
+                '<line x1="16" y1="13" x2="8" y2="13"/>' +
+                '<line x1="16" y1="17" x2="8" y2="17"/>' +
+                '<polyline points="10 9 9 9 8 9"/>' +
+              '</svg>' +
+            '</div>' +
+            '<div class="sd-cc-empty__title">No students uploaded yet</div>' +
+            '<div class="sd-cc-empty__desc">Upload students first to generate claim codes for them.</div>' +
+            '<button class="sd-btn-solid" onclick="closeOverlay(\'sdClaimModalOverlay\');uploadOrToast();">' +
+              '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>' +
+              'Upload Students' +
+            '</button>' +
           '</div>';
-        if (grid) grid.innerHTML = '';
         return;
       }
 
@@ -831,6 +848,9 @@
           '<div class="sd-cc-header__name">' + escHtml(schoolName) + '</div>' +
           '<div class="sd-cc-header__count">' + students.length + ' unclaimed account' + (students.length !== 1 ? 's' : '') + '</div>' +
         '</div>';
+
+      var copyRow2 = $('.sd-cc-copy-row');
+      if (copyRow2) copyRow2.style.display = '';
 
       if (grid) {
         grid.innerHTML = students.map(function (s) {
@@ -851,7 +871,7 @@
     })
     .catch(function (err) {
       console.error('Claim codes fetch failed:', err);
-      if (grid) grid.innerHTML = '<div style="text-align:center;padding:24px;color:#d35400;">Failed to load claim codes</div>';
+      if (grid) grid.innerHTML = '<div class="sd-loading" style="color:#d35400;">Failed to load claim codes</div>';
     });
   }
 
@@ -860,6 +880,34 @@
      ========================================================== */
   function openUploadModal() {
     openOverlay('uploadModalOverlay');
+  }
+
+  function showSubscriptionToast() {
+    var stack = document.querySelector('.flash-stack');
+    if (!stack) {
+      stack = document.createElement('div');
+      stack.className = 'flash-stack';
+      stack.setAttribute('role', 'status');
+      stack.setAttribute('aria-live', 'polite');
+      document.body.appendChild(stack);
+    }
+    var toast = document.createElement('div');
+    toast.className = 'flash-toast warning';
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = '<span>Upload is available with an active subscription. Click <strong>Get Started</strong> to subscribe.</span>';
+    stack.appendChild(toast);
+    toast.addEventListener('click', function () {
+      toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(40px)';
+      setTimeout(function () { toast.remove(); }, 400);
+    });
+    setTimeout(function () {
+      toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(40px)';
+      setTimeout(function () { toast.remove(); }, 400);
+    }, 5000);
   }
 
   function closeUploadModal() {
@@ -1068,7 +1116,13 @@
 
     /* upload */
     var uploadBtn = $('#uploadBtn');
-    if (uploadBtn) uploadBtn.onclick = openUploadModal;
+    if (uploadBtn) uploadBtn.onclick = function () {
+      if (DATA.uploadEnabled) {
+        openUploadModal();
+      } else {
+        showSubscriptionToast();
+      }
+    };
 
     var uploadModalClose = $('#uploadModalClose');
     if (uploadModalClose) uploadModalClose.onclick = closeUploadModal;
@@ -1141,11 +1195,77 @@
   function init() {
     bindEvents();
 
+    /* dashboard-wide empty state for brand-new schools */
+    if (DATA.totalStudents === 0 && DATA.totalResults === 0) {
+      showDashboardEmpty();
+      fetchSidebarStudents(currentTab);
+      return;
+    }
+
     /* init default chart (line is active by default) */
     initLineChart();
 
     /* load sidebar students on page load */
     fetchSidebarStudents(currentTab);
+  }
+
+  function getStarted() {
+    if (DATA.uploadEnabled) {
+      openUploadModal();
+    } else {
+      initPaystack();
+    }
+  }
+  window.getStarted = getStarted;
+
+  function uploadOrToast() {
+    if (DATA.uploadEnabled) {
+      openUploadModal();
+    } else {
+      showSubscriptionToast();
+    }
+  }
+  window.uploadOrToast = uploadOrToast;
+
+  function showDashboardEmpty() {
+    if (!mainContent) return;
+
+    if (DATA.uploadEnabled) {
+      mainContent.innerHTML =
+        '<div class="sd-dashboard-empty">' +
+          '<div class="sd-dashboard-empty__icon">' +
+            '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
+              '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>' +
+              '<polyline points="14 2 14 8 20 8"/>' +
+              '<line x1="16" y1="13" x2="8" y2="13"/>' +
+              '<line x1="16" y1="17" x2="8" y2="17"/>' +
+              '<polyline points="10 9 9 9 8 9"/>' +
+            '</svg>' +
+          '</div>' +
+          '<h2 class="sd-dashboard-empty__title">Welcome to your dashboard</h2>' +
+          '<p class="sd-dashboard-empty__desc">Upload your first batch of students to see insights, trends, and at-risk students here.</p>' +
+          '<button class="sd-btn-solid" onclick="getStarted()">' +
+            '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>' +
+            'Upload Students' +
+          '</button>' +
+        '</div>';
+    } else {
+      mainContent.innerHTML =
+        '<div class="sd-dashboard-empty">' +
+          '<div class="sd-dashboard-empty__icon sd-dashboard-empty__icon--gold">' +
+            '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
+              '<circle cx="12" cy="8" r="7"/>' +
+              '<polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>' +
+            '</svg>' +
+          '</div>' +
+          '<h2 class="sd-dashboard-empty__title">Welcome to your dashboard</h2>' +
+          '<p class="sd-dashboard-empty__desc">Set up your school to start tracking student wellbeing.</p>' +
+          '<button class="sd-btn-solid" onclick="getStarted()">' +
+            'Get Started' +
+            '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:6px;"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>' +
+          '</button>' +
+        '</div>';
+    }
   }
 
   /* run on DOM ready */

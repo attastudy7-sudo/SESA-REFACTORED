@@ -103,6 +103,11 @@
   color: var(--sd-white);
 }
 .sd-nav-link--active:hover { background: var(--sd-green); }
+.sd-nav-link[data-locked] {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
 .sd-nav-link svg {
   width: 18px;
   height: 18px;
@@ -885,12 +890,62 @@
   text-align: center;
 }
 .sd-btn-outline:hover { background: var(--sd-bg); }
+.sd-btn-solid {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  border-radius: 99px;
+  border: none;
+  font-family: var(--sd-font);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--sd-green-dark);
+  cursor: pointer;
+  transition: background 0.15s;
+  text-decoration: none;
+  text-align: center;
+  white-space: nowrap;
+}
+.sd-btn-solid:hover { background: #1a5c3a; }
 
 /* Lab / Action Card */
 .sd-action-card {
   background: var(--sd-white);
   border-radius: 16px;
   padding: 20px;
+}
+.sd-action-card--prompt {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.sd-reg-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.sd-reg-prompt svg {
+  flex-shrink: 0;
+  color: var(--sd-gray);
+  margin-top: 2px;
+}
+.sd-reg-prompt__title {
+  font-family: var(--sd-font);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--sd-navy);
+  margin-bottom: 4px;
+}
+.sd-reg-prompt__desc {
+  font-family: var(--sd-font);
+  font-size: 0.78rem;
+  color: var(--sd-gray);
+  line-height: 1.5;
 }
 .sd-action-list { display: flex; flex-direction: column; gap: 2px; }
 .sd-action-list__item {
@@ -1220,6 +1275,41 @@
   gap: 14px;
   justify-items: center;
 }
+.sd-cc-grid .sd-loading { grid-column: 1 / -1; }
+.sd-cc-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 40px 20px;
+  grid-column: 1 / -1;
+}
+.sd-cc-empty__icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--sd-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  color: var(--sd-gray);
+}
+.sd-cc-empty__title {
+  font-family: var(--sd-font);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--sd-navy);
+  margin-bottom: 6px;
+}
+.sd-cc-empty__desc {
+  font-family: var(--sd-font);
+  font-size: 0.85rem;
+  color: var(--sd-gray);
+  line-height: 1.6;
+  max-width: 300px;
+  margin-bottom: 20px;
+}
 .sd-cc-slip {
   background: var(--sd-white);
   border: 1.5px solid var(--sd-border);
@@ -1488,6 +1578,48 @@
   line-height: 1.6;
 }
 
+/* ── Dashboard Empty State ─────────────────────────────────────────── */
+.sd-dashboard-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px 24px;
+  min-height: 340px;
+  grid-column: 1 / -1;
+}
+.sd-dashboard-empty__icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--sd-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  color: var(--sd-green-dark);
+}
+.sd-dashboard-empty__icon--gold {
+  color: #b8860b;
+  background: #fdf6e3;
+}
+.sd-dashboard-empty__title {
+  font-family: var(--sd-font);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--sd-navy);
+  margin: 0 0 8px;
+}
+.sd-dashboard-empty__desc {
+  font-family: var(--sd-font);
+  font-size: 0.88rem;
+  color: var(--sd-gray);
+  max-width: 380px;
+  line-height: 1.6;
+  margin: 0 0 24px;
+}
+
 /* ── Pagination ─────────────────────────────────────────────────────── */
 .sd-pagination {
   display: flex;
@@ -1566,6 +1698,23 @@
   vertical-align: middle;
 }
 @keyframes sd-spin { to { transform: rotate(360deg); } }
+.sd-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: var(--sd-gray);
+  font-family: var(--sd-font);
+  font-size: 0.85rem;
+  text-align: center;
+}
+.sd-loading .sd-spinner {
+  margin: 0 0 12px;
+  width: 28px;
+  height: 28px;
+  border-width: 2.5px;
+}
 
 @media (max-width: 400px) {
   .sd-vitals-grid { grid-template-columns: 1fr; }

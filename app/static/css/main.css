@@ -1994,8 +1994,6 @@ input:-webkit-autofill:active {
 /* Section wrapper */
 .guide-section {
   background: var(--white);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
   padding: 32px;
   margin-bottom: 32px;
   scroll-margin-top: 80px;
