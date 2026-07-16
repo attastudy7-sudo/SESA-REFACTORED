@@ -7,24 +7,33 @@ Create Date: 2026-03-20 02:09:34.150171
 """
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy import inspect
 
 
-# revision identifiers, used by Alembic.
 revision = '0928baad00b7'
 down_revision = 'a85b73caaa24'
 branch_labels = None
 depends_on = None
 
+
+def _column_exists(table, column):
+    return column in [c['name'] for c in inspect(op.get_bind()).get_columns(table)]
+
+
 def upgrade():
     with op.batch_alter_table('accounts', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('school_name', sa.String(length=200), nullable=True))
-        batch_op.drop_column('level')
+        if not _column_exists('accounts', 'school_name'):
+            batch_op.add_column(sa.Column('school_name', sa.String(length=200), nullable=True))
+        if _column_exists('accounts', 'level'):
+            batch_op.drop_column('level')
 
 
 def downgrade():
     with op.batch_alter_table('accounts', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('level', sa.String(length=50), nullable=True))
-        batch_op.drop_column('school_name')
+        if not _column_exists('accounts', 'level'):
+            batch_op.add_column(sa.Column('level', sa.String(length=50), nullable=True))
+        if _column_exists('accounts', 'school_name'):
+            batch_op.drop_column('school_name')
 
         
     op.create_table('_alembic_tmp_accounts',

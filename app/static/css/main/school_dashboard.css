@@ -65,6 +65,27 @@
   height: 32px;
   border-radius: 8px;
 }
+.sd-topnav__left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.sd-hamburger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: none;
+  border-radius: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.sd-hamburger:hover { background: var(--sd-bg); }
+.sd-hamburger svg { stroke: var(--sd-navy); }
 .sd-topnav__brand {
   font-family: var(--sd-font);
   font-size: 20px;
@@ -74,6 +95,13 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
+}
+.sd-topnav__school-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 .sd-topnav__menu {
   display: flex;
@@ -165,6 +193,7 @@
   padding: 6px 10px;
   border-radius: 10px;
   transition: background 0.15s;
+  position: relative;
 }
 .sd-topnav__user:hover { background: var(--sd-bg); }
 
@@ -301,6 +330,11 @@
 .sd-student-item__avatar--orange { background: #ffedd5; color: #9a3412; }
 .sd-student-item__avatar--red    { background: #fee2e2; color: #991b1b; }
 .sd-student-item__avatar--gray   { background: #f3f4f6; color: #6b7280; }
+
+/* ── Sidebar Overlay (mobile) ─────────────────────────────────────── */
+.sd-sidebar-overlay {
+  display: none;
+}
 
 /* ── Main Content ───────────────────────────────────────────────────── */
 .sd-main {
@@ -1652,38 +1686,114 @@
   .sd-layout { grid-template-columns: 252px 1fr; }
   .sd-profile-panel { display: none; }
 }
+
 @media (max-width: 768px) {
+  /* Hamburger */
+  .sd-hamburger { display: flex; }
+
+  /* Topnav */
+  .sd-topnav { padding: 0 16px; height: 56px; }
   .sd-topnav__menu { display: none; }
-  .sd-layout { grid-template-columns: 1fr; }
+  .sd-topnav__school-name { font-size: 16px; max-width: 140px; }
+  .sd-topnav__brand img { width: 28px; height: 28px; }
+
+  /* Layout */
+  .sd-layout { grid-template-columns: 1fr; height: auto; min-height: calc(100vh - 56px); }
+
+  /* Sidebar becomes drawer */
   .sd-sidebar {
     position: fixed;
-    left: -280px;
-    top: 64px;
+    left: 0;
+    top: 56px;
     bottom: 0;
     width: 280px;
     z-index: 200;
-    transition: left 0.25s ease;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
     box-shadow: none;
+    background: var(--sd-white);
   }
   .sd-sidebar.open {
-    left: 0;
-    box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+    transform: translateX(0);
+    box-shadow: 0px 0 24px rgba(0, 0, 0, 0.12);
   }
-  .sd-main { padding: 16px; padding-bottom: 80px; }
+
+  /* Sidebar overlay */
+  .sd-sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    top: 56px;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 199;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .sd-sidebar-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Main content */
+  .sd-main { padding: 16px; }
+  #sdMainContent { gap: 16px; }
+
+  /* Card */
+  .sd-card { padding: 16px; border-radius: 12px; }
+  .sd-card__title { font-size: 18px; }
+  .sd-card__header { flex-wrap: wrap; }
+  .sd-card__filters { flex-wrap: wrap; gap: 6px; }
+
+  /* Vitals grid */
   .sd-vitals-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .sd-vital-card { padding: 14px 12px; }
+  .sd-vital-card__icon svg { width: 36px; height: 36px; }
   .sd-vital-card__value { font-size: 1.5rem; }
-  .sd-chart-section { flex-direction: column; }
+
+  /* Chart */
+  .sd-chart-section { padding: 14px; }
   .sd-chart-legend { flex-direction: row; flex-wrap: wrap; gap: 12px; min-width: 0; }
   .sd-legend-item { padding: 4px 0; }
-  .sd-profile-panel { display: none; }
-  .sd-card { padding: 16px; }
-  .sd-detail-grid { grid-template-columns: 1fr; }
-  .sd-detail-progress-card .sd-card__header { flex-direction: column; }
-  .sd-chart-section--student { flex-direction: column; padding: 0 20px; }
-  .sd-legend--student { min-width: 0; padding-left: 0; flex-direction: row; flex-wrap: wrap; gap: 8px 20px; padding-top: 12px; }
-  .sd-legend-summary__row { flex: 0 0 auto; }
+
+  /* Table */
+  .sd-results-scroll { max-height: 320px; }
   .sd-table { font-size: 13px; }
   .sd-table thead th, .sd-table tbody td { padding: 10px 12px; }
+
+  /* Profile dropdown */
+  .sd-topnav__userinfo { display: none; }
+  .sd-topnav__chevron { display: none; }
+  .sd-topnav__avatar { width: 34px; height: 34px; font-size: 0.75rem; }
+  .sd-topnav__user { padding: 4px; }
+
+  /* Profile panel */
+  .sd-profile-panel { display: none; }
+
+  /* Detail grid */
+  .sd-detail-grid { grid-template-columns: 1fr; }
+  .sd-detail-progress-card .sd-card__header { flex-direction: column; }
+  .sd-chart-section--student { flex-direction: column; padding: 0 16px; }
+  .sd-legend--student { min-width: 0; padding-left: 0; flex-direction: row; flex-wrap: wrap; gap: 8px 20px; padding-top: 12px; }
+  .sd-legend-summary__row { flex: 0 0 auto; }
+
+  /* Modal */
+  .sd-modal { margin: 16px; max-height: calc(100vh - 32px); }
+
+  .sd-chart-view--active {display: flex; flex-direction: column; gap: 12px;}
+}
+
+@media (max-width: 480px) {
+  .sd-topnav__school-name { max-width: 100px; font-size: 14px; }
+  .sd-vitals-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .sd-vital-card { padding: 12px 10px; }
+  .sd-vital-card__icon svg { width: 32px; height: 32px; }
+  .sd-vital-card__name { font-size: 12px; }
+  .sd-vital-card__value { font-size: 1.3rem; }
+  .sd-card__filters { gap: 4px; }
+  .sd-period-btn { font-size: 12px; padding: 5px 10px; }
 }
 /* ── Spinner ─────────────────────────────────────────────────────── */
 .sd-spinner {

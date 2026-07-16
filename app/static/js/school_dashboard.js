@@ -1268,6 +1268,34 @@
     }
   }
 
+  /* ── Mobile sidebar drawer ── */
+  var hamburger = document.getElementById('sdHamburger');
+  var sidebarOverlay = document.getElementById('sdSidebarOverlay');
+
+  function openSidebar() {
+    sidebar.classList.add('open');
+    sidebarOverlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeSidebar() {
+    sidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  if (hamburger) {
+    hamburger.addEventListener('click', function() {
+      if (sidebar.classList.contains('open')) closeSidebar();
+      else openSidebar();
+    });
+  }
+  if (sidebarOverlay) {
+    sidebarOverlay.addEventListener('click', closeSidebar);
+  }
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeSidebar();
+  });
+
   /* run on DOM ready */
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

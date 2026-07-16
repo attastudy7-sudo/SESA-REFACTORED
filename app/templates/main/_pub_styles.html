@@ -229,11 +229,9 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
   position: relative; z-index: 2;
 }
 @media (max-width: 900px) {
-  .hero-inner { grid-template-columns: 1fr; gap: 40px; }
+  .hero-inner { grid-template-columns: 1fr; gap: 0; }
   .hero-section { padding: 100px 20px 60px; }
-  .hero-img-col { order: 2; }
-  .hero-img-frame { max-height: 320px; aspect-ratio: 16/9; transform: none; }
-  .hero-img-wrap { max-width: 480px; margin: 0 auto; }
+  .hero-img-col { display: none; }
 }
 .hero-eyebrow {
   display: inline-block; background: transparent; color: var(--g);

@@ -7,7 +7,7 @@ Create Date: 2026-03-12 23:50:37.148131
 """
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy import inspect, text
+from sqlalchemy import inspect
 
 
 revision = '4838ee558eeb'
@@ -17,37 +17,25 @@ depends_on = None
 
 
 def index_exists(name):
-    conn = op.get_bind()
-    result = conn.execute(text(
-        "SELECT 1 FROM pg_indexes WHERE indexname = :name"
-    ), {"name": name})
-    return result.fetchone() is not None
+    inspector = inspect(op.get_bind())
+    for table in inspector.get_table_names():
+        for idx in inspector.get_indexes(table):
+            if idx['name'] == name:
+                return True
+    return False
 
 
 def column_exists(table, column):
-    conn = op.get_bind()
-    result = conn.execute(text(
-        "SELECT 1 FROM information_schema.columns "
-        "WHERE table_name = :t AND column_name = :c"
-    ), {"t": table, "c": column})
-    return result.fetchone() is not None
-
-
-def constraint_exists(name):
-    conn = op.get_bind()
-    result = conn.execute(text(
-        "SELECT 1 FROM pg_constraint WHERE conname = :name"
-    ), {"name": name})
-    return result.fetchone() is not None
+    inspector = inspect(op.get_bind())
+    return column in [c['name'] for c in inspector.get_columns(table)]
 
 
 def upgrade():
-    # accounts — add is_counsellor only if missing
+    # accounts — add missing columns
     if not column_exists('accounts', 'is_counsellor'):
-        op.add_column('accounts', sa.Column('is_counsellor', sa.Boolean(), server_default='false', nullable=False))
-
-    op.alter_column('accounts', 'email', existing_type=sa.VARCHAR(length=100), type_=sa.String(length=120), existing_nullable=False)
-    op.alter_column('accounts', 'password', existing_type=sa.VARCHAR(length=200), type_=sa.String(length=256), existing_nullable=False)
+        op.add_column('accounts', sa.Column('is_counsellor', sa.Boolean(), server_default='0', nullable=False))
+    if not column_exists('accounts', 'phone'):
+        op.add_column('accounts', sa.Column('phone', sa.String(length=20), nullable=True))
 
     if not index_exists('ix_accounts_email'):
         op.create_index('ix_accounts_email', 'accounts', ['email'], unique=True)
@@ -60,14 +48,18 @@ def upgrade():
     if not index_exists('ix_question_test_type'):
         op.create_index('ix_question_test_type', 'question', ['test_type'], unique=False)
 
-    # school
-    op.alter_column('school', 'email', existing_type=sa.VARCHAR(length=50), type_=sa.String(length=120), existing_nullable=True)
+    # school — add missing columns
+    if not column_exists('school', 'phone'):
+        op.add_column('school', sa.Column('phone', sa.String(length=20), nullable=True))
+    if not column_exists('school', 'access_code'):
+        op.add_column('school', sa.Column('access_code', sa.String(length=8), nullable=True))
+    if not column_exists('school', 'qr_token'):
+        op.add_column('school', sa.Column('qr_token', sa.String(length=64), nullable=True))
+
     if not index_exists('ix_school_access_code'):
         op.create_index('ix_school_access_code', 'school', ['access_code'], unique=True)
     if not index_exists('ix_school_qr_token'):
         op.create_index('ix_school_qr_token', 'school', ['qr_token'], unique=True)
-    if not constraint_exists('uq_school_school_name'):
-        op.create_unique_constraint('uq_school_school_name', 'school', ['school_name'])
 
     # test_results
     if not index_exists('ix_test_results_stage'):
@@ -85,14 +77,16 @@ def downgrade():
     op.drop_index('ix_test_results_test_type', table_name='test_results')
     op.drop_index('ix_test_results_taken_at', table_name='test_results')
     op.drop_index('ix_test_results_stage', table_name='test_results')
-    op.drop_constraint('uq_school_school_name', 'school', type_='unique')
     op.drop_index('ix_school_qr_token', table_name='school')
     op.drop_index('ix_school_access_code', table_name='school')
-    op.alter_column('school', 'email', existing_type=sa.String(length=120), type_=sa.VARCHAR(length=50), existing_nullable=True)
+    with op.batch_alter_table('school') as batch_op:
+        batch_op.drop_column('qr_token')
+        batch_op.drop_column('access_code')
+        batch_op.drop_column('phone')
     op.drop_index('ix_question_test_type', table_name='question')
     op.drop_index('ix_accounts_username', table_name='accounts')
     op.drop_index('ix_accounts_school_id', table_name='accounts')
     op.drop_index('ix_accounts_email', table_name='accounts')
-    op.alter_column('accounts', 'password', existing_type=sa.String(length=256), type_=sa.VARCHAR(length=200), existing_nullable=False)
-    op.alter_column('accounts', 'email', existing_type=sa.String(length=120), type_=sa.VARCHAR(length=100), existing_nullable=False)
-    op.drop_column('accounts', 'is_counsellor')
+    with op.batch_alter_table('accounts') as batch_op:
+        batch_op.drop_column('phone')
+        batch_op.drop_column('is_counsellor')

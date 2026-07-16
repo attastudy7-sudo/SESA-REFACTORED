@@ -34,10 +34,17 @@
   </div>
 
   <nav class="sd-topnav">
-    <div class="sd-topnav__logo">
+    <div class="sd-topnav__left">
+      <button class="sd-hamburger" id="sdHamburger" aria-label="Open menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
       <div class="sd-topnav__brand">
         <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="SESA" width="32" height="32">
-        {{ school.school_name }}
+        <span class="sd-topnav__school-name">{{ school.school_name }}</span>
       </div>
     </div>
     <div class="sd-topnav__menu">
@@ -112,6 +119,8 @@
         <div class="sd-student-list__empty" id="sdEmptySidebar">Select a tab to load students</div>
       </div>
     </aside>
+
+    <div class="sd-sidebar-overlay" id="sdSidebarOverlay"></div>
 
     <div class="sd-main">
       <div id="sdMainContent">

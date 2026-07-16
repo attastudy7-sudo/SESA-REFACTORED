@@ -314,9 +314,15 @@ def school_dashboard(school_id):
         else:
             six_months_ago = datetime(six_months_ago.year, six_months_ago.month - 1, 1, tzinfo=timezone.utc)
 
+    dialect = db.engine.dialect.name
+    month_expr = (
+        func.to_char(TestResult.taken_at, 'YYYY-MM')
+        if dialect == 'postgresql'
+        else func.strftime('%Y-%m', TestResult.taken_at)
+    )
     trend_rows = (
         db.session.query(
-            func.strftime('%Y-%m', TestResult.taken_at).label('ym'),
+            month_expr.label('ym'),
             func.count(TestResult.id).label('count'),
         )
         .join(Accounts, Accounts.id == TestResult.user_id)
