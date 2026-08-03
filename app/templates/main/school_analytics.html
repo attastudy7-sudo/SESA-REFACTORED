@@ -47,7 +47,7 @@
     </div>
     
     <!-- Overall Average Card -->
-    <div class="card" style="margin-bottom: 28px; background: linear-gradient(135deg, var(--green-800), var(--green-700));">
+    <div class="card" style="margin-bottom: 28px; background: var(--green-700);">
       <div class="card-body" style="text-align: center; color: #fff; padding: 32px;">
         <h3 style="font-family: var(--font-display); font-size: 1.1rem; margin-bottom: 16px; color: var(--gold-200);">Overall School Average</h3>
         <div style="display: flex; align-items: center; justify-content: center; gap: 24px; flex-wrap: wrap;">
@@ -91,6 +91,19 @@
   if (!ctx) return;
   
   const data = {{ monthly_data | tojson }};
+
+  function areaFill(color) {
+    return function (context) {
+      const chartArea = context.chart.chartArea;
+      if (!chartArea) return color + '20';
+      const g = context.chart.ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+      g.addColorStop(0, color + '52');
+      g.addColorStop(0.55, color + '1a');
+      g.addColorStop(1, color + '00');
+      return g;
+    };
+  }
+
   new Chart(ctx, {
     type: 'line',
     data: {
@@ -100,37 +113,45 @@
         data: data.map(d => d.average),
         segment: {
           borderColor: function(ctx) {
-            return ctx.p1.parsed.y <= ctx.p0.parsed.y ? '#3d8b58' : '#dc2626';
+            return ctx.p1.parsed.y >= ctx.p0.parsed.y ? '#3d8b58' : '#dc2626';
           }
         },
         borderColor: '#3d8b58',
-        backgroundColor: 'transparent',
-        fill: false,
-        tension: 0.3,
+        backgroundColor: areaFill('#3d8b58'),
+        fill: true,
+        tension: 0.4,
+        borderWidth: 2,
+        borderCapStyle: 'round',
         pointBackgroundColor: data.map(function(d, i, arr) {
           if (i === 0) return '#3d8b58';
-          return d.average <= arr[i - 1].average ? '#3d8b58' : '#dc2626';
+          return d.average >= arr[i - 1].average ? '#3d8b58' : '#dc2626';
         }),
-        pointRadius: 5,
-        pointHoverRadius: 7,
-        borderWidth: 2.5
+        pointBorderColor: '#ffffff',
+        pointRadius: 4,
+        pointHoverRadius: 6
       }]
     },
     options: {
       responsive: true,
       scales: {
         y: {
-          reverse: true,
+          reverse: false,
           min: 0,
           max: 100,
-          title: { display: true, text: 'Distress Level (lower on chart = better)' },
+          grid: { color: 'rgba(0,0,0,0.06)', drawTicks: false },
+          border: { display: false },
+          title: { display: true, text: 'Score Level (higher on chart = better)' },
           ticks: {
             callback: function(value) {
-              if (value === 0) return '0% ← better';
-              if (value === 100) return '100% ← concern';
+              if (value === 0) return '0% ← concern';
+              if (value === 100) return '100% ← better';
               return value + '%';
             }
           }
+        },
+        x: {
+          grid: { display: false },
+          border: { display: false }
         }
       },
       plugins: {

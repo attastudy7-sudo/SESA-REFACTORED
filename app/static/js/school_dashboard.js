@@ -35,14 +35,23 @@
     testMode:         node.dataset.testMode === 'true',
     verifyUrl:        node.dataset.verifyUrl,
     studentsUrl:      node.dataset.studentsUrl,
+    classesUrl:       node.dataset.classesUrl,
     claimCodesUrl:    node.dataset.claimCodesUrl
   };
+
+  function getCSRF() {
+    var meta = document.querySelector('meta[name="csrf-token"]');
+    return meta ? meta.getAttribute('content') : '';
+  }
 
   /* ---------- DOM refs ---------- */
   var sidebar          = $('#sdSidebar');
   var studentList      = $('#sdStudentList');
   var emptySidebar     = $('#sdEmptySidebar');
   var sidebarCount     = $('#sdSidebarCount');
+  var sidebarFilterWrap = $('#sdSidebarFilter');
+  var sidebarFilter     = $('#sdClassFilter');
+  var chartClassFilter  = $('#sdChartClassFilter');
   var mainContent      = $('#sdMainContent');
   var graphToggle      = $('#sdGraphToggle');
   var graphBtn         = $('#sdGraphBtn');
@@ -58,31 +67,62 @@
   var barChart     = null;
   var lineChart    = null;
   var progressChart = null;
+  var resultsDonutChart = null;
+  var resultsBarChart = null;
+  var resultsLineChart = null;
+  var resultsChartType = 'line';
   var activeGraph  = 'line';
   var currentStudentData = null;
+  var currentClassFilter = '';
+  var lastStudentTotal = 0;
+  var prevClassFilter = '';
+  var cachedClasses = [];
+  var SEARCH_OPTION = '__search';
+  var resultsTab = 'results';
+  var resultsClassFilter = '';
+  var riskClassFilter = '';
 
   /* save the default mainContent HTML for restore */
   var savedMainHTML = mainContent ? mainContent.innerHTML : '';
 
-  /* ---------- chart colours ---------- */
+  /* ---------- chart colours (single source of truth: CSS variables) ---------- */
+  function cssVar(name, fallback) {
+    var v = getComputedStyle(document.documentElement).getPropertyValue(name);
+    return (v && v.trim()) ? v.trim() : fallback;
+  }
+
   var COLORS = {
-    green:  '#4a7c59',
-    gold:   '#c09526',
+    green:  cssVar('--sd-green', '#4a7c59'),
+    gold:   cssVar('--sd-gold', '#c9921a'),
     teal:   '#2a7a7a',
-    red:    '#d35400',
-    muted:  '#95a5a6',
-    bg:     '#f6f6f6',
-    border: '#e8e8e8',
+    red:    cssVar('--sd-stage-clinical', '#d64541'),
+    muted:  cssVar('--sd-stage-unknown', '#98a1a8'),
+    bg:     cssVar('--sd-bg', '#f6f6f6'),
+    border: cssVar('--sd-border', '#ededed'),
+    text:   cssVar('--sd-gray', '#707070'),
     white:  '#ffffff'
   };
 
+  /* spline-area fill: strongest right under the line, fading to transparent at the bottom (CanvasJS-style shaded volume) */
+  function areaFill(color) {
+    return function (context) {
+      var chartArea = context.chart.chartArea;
+      if (!chartArea) return color + '20';
+      var g = context.chart.ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+      g.addColorStop(0, color + '52');
+      g.addColorStop(0.55, color + '1a');
+      g.addColorStop(1, color + '00');
+      return g;
+    };
+  }
+
   var STAGE_COLOURS = {
-    'Normal':       '#22c55e',
-    'Mild':         '#f59e0b',
-    'Elevated':     '#f97316',
-    'Clinical':     '#ef4444',
-    'At Risk':      '#ef4444',
-    'Unknown':      COLORS.muted
+    'Normal':   cssVar('--sd-stage-normal', '#2f9e5f'),
+    'Mild':     cssVar('--sd-stage-mild', '#d9a11b'),
+    'Elevated': cssVar('--sd-stage-elevated', '#e07b2a'),
+    'Clinical': cssVar('--sd-stage-clinical', '#d64541'),
+    'At Risk':  cssVar('--sd-stage-clinical', '#d64541'),
+    'Unknown':  COLORS.muted
   };
 
   function stageColour(label) {
@@ -252,12 +292,15 @@
         datasets: [{
           data: values,
           borderColor: COLORS.green,
-          backgroundColor: COLORS.green + '20',
+          backgroundColor: areaFill(COLORS.green),
           fill: true,
-          tension: 0.3,
+          tension: 0.4,
+          borderWidth: 2,
+          borderCapStyle: 'round',
           pointBackgroundColor: segmentColours,
-          pointRadius: 5,
-          pointHoverRadius: 7
+          pointBorderColor: '#ffffff',
+          pointRadius: 4,
+          pointHoverRadius: 6
         }]
       },
       options: {
@@ -268,15 +311,18 @@
           y: {
             beginAtZero: true,
             max: 100,
-            grid: { color: COLORS.border },
+            grid: { color: 'rgba(0,0,0,0.06)', drawTicks: false },
+            border: { display: false },
             ticks: {
-              font: { family: 'Manrope' },
+              font: { family: 'Manrope', size: 11 },
+              color: COLORS.text,
               callback: function (v) { return v + '%'; }
             }
           },
           x: {
             grid: { display: false },
-            ticks: { font: { family: 'Manrope' } }
+            border: { display: false },
+            ticks: { font: { family: 'Manrope', size: 11 }, color: COLORS.text }
           }
         }
       }
@@ -299,7 +345,7 @@
     if (monthsEl) monthsEl.textContent = values ? values.length : 0;
   }
 
-  /* --- compute status summary from monthly average values (lower % = better) --- */
+  /* --- compute status summary from monthly average values (higher % = better) --- */
   function computeStudentStatus(values) {
     if (!values || values.length === 0) {
       return { label: 'No Data', cls: '', trend: '', delta: 0, avg: 0, latest: 0 };
@@ -310,16 +356,16 @@
 
     /* status from average */
     var label, cls;
-    if (avg <= 20)      { label = 'Excellent'; cls = 'sd-badge--normal'; }
-    else if (avg <= 40) { label = 'Good';      cls = 'sd-badge--normal'; }
-    else if (avg <= 60) { label = 'Moderate';   cls = 'sd-badge--mild'; }
-    else if (avg <= 80) { label = 'Needs Attention'; cls = 'sd-badge--elevated'; }
+    if (avg >= 80)      { label = 'Excellent'; cls = 'sd-badge--normal'; }
+    else if (avg >= 60) { label = 'Good';      cls = 'sd-badge--normal'; }
+    else if (avg >= 40) { label = 'Moderate';   cls = 'sd-badge--mild'; }
+    else if (avg >= 20) { label = 'Needs Attention'; cls = 'sd-badge--elevated'; }
     else                { label = 'Critical';   cls = 'sd-badge--clinical'; }
 
     /* trend from latest vs average */
     var trend, arrow;
-    if (delta < -3)      { trend = 'Improving'; arrow = '&#9660;'; }
-    else if (delta > 3)  { trend = 'Worsening'; arrow = '&#9650;'; }
+    if (delta > 3)       { trend = 'Improving'; arrow = '&#9650;'; }
+    else if (delta < -3) { trend = 'Worsening'; arrow = '&#9660;'; }
     else                 { trend = 'Stable';    arrow = '&#8212;'; }
 
     return { label: label, cls: cls, trend: trend, arrow: arrow, delta: Math.abs(delta), avg: avg, latest: latest };
@@ -341,7 +387,8 @@
 
     var labels = monthlyData.map(function (d) { return d.label; });
     var values = monthlyData.map(function (d) { return d.average; });
-    var segmentColours = values.map(function (v) { return v <= 30 ? COLORS.green : COLORS.red; });
+    /* colour segments: green where avg >= 70, red where avg < 70 */
+    var segmentColours = values.map(function (v) { return v >= 70 ? COLORS.green : COLORS.red; });
 
     progressChart = new Chart(canvas.getContext('2d'), {
       type: 'line',
@@ -350,13 +397,15 @@
         datasets: [{
           data: values,
           borderColor: COLORS.green,
-          backgroundColor: COLORS.green + '20',
+          backgroundColor: areaFill(COLORS.green),
           fill: true,
-          tension: 0.3,
+          tension: 0.4,
+          borderWidth: 2,
+          borderCapStyle: 'round',
           pointBackgroundColor: segmentColours,
-          pointRadius: 5,
-          pointHoverRadius: 7,
-          borderWidth: 2
+          pointBorderColor: '#ffffff',
+          pointRadius: 4,
+          pointHoverRadius: 6
         }]
       },
       options: {
@@ -368,18 +417,18 @@
           y: {
             beginAtZero: true,
             max: 100,
-            grid: { color: COLORS.border },
+            grid: { color: 'rgba(0,0,0,0.06)', drawTicks: false },
             border: { display: false },
             ticks: {
               font: { family: 'Manrope', size: 12 },
-              color: '#707070',
+              color: COLORS.text,
               callback: function (v) { return v + '%'; }
             }
           },
           x: {
             grid: { display: false },
             border: { display: false },
-            ticks: { font: { family: 'Manrope', size: 12 }, color: '#707070' }
+            ticks: { font: { family: 'Manrope', size: 12 }, color: COLORS.text }
           }
         }
       }
@@ -394,7 +443,7 @@
     if (statusEl) statusEl.innerHTML = '<span class="sd-badge ' + status.cls + '">' + status.label + '</span>';
     if (latestEl) latestEl.textContent = status.latest + '%';
     if (avgEl) avgEl.textContent = status.avg + '%';
-    if (trendEl) trendEl.innerHTML = '<span class="sd-legend-summary__arrow">' + status.arrow + '</span> ' + status.trend + (status.delta ? ' (' + status.delta + '%)' : '');
+    if (trendEl) trendEl.innerHTML = '<span class="sd-legend-summary__arrow">' + status.arrow + '</span> ' + status.trend + (status.delta ? ' (' + status.delta.toFixed(2) + '%)' : '');
   }
 
   /* ==========================================================
@@ -408,7 +457,8 @@
 
     /* update dropdown button label */
     if (graphBtn) {
-      graphBtn.childNodes[graphBtn.childNodes.length - 1].textContent = ' ' + (GRAPH_LABELS[type] || 'Dashboard');
+      var lbl = $('.sd-period-btn__label', graphBtn);
+      if (lbl) lbl.textContent = GRAPH_LABELS[type] || 'Dashboard';
     }
 
     /* update dropdown active option */
@@ -437,12 +487,22 @@
      ========================================================== */
   var PERIOD_LABELS = { all: 'All Time', week: 'This Week', month: 'This Month', term: 'This Term', year: 'This Year' };
 
+  /* Single place to flip a dropdown's state: aria-expanded, chevron, .open */
+  function setDropdownState(btn, dd, open) {
+    if (btn) {
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      btn.classList.toggle('sd-period-btn--open', open);
+    }
+    if (dd) dd.classList.toggle('open', open);
+  }
+
   function togglePeriodDropdown() {
-    if (periodDropdown) periodDropdown.classList.toggle('open');
+    var open = periodDropdown ? !periodDropdown.classList.contains('open') : false;
+    setDropdownState(periodBtn, periodDropdown, open);
   }
 
   function closePeriodDropdown() {
-    if (periodDropdown) periodDropdown.classList.remove('open');
+    setDropdownState(periodBtn, periodDropdown, false);
   }
 
   function selectPeriod(period) {
@@ -456,7 +516,8 @@
 
     /* update button text */
     if (periodBtn) {
-      periodBtn.childNodes[periodBtn.childNodes.length - 1].textContent = ' ' + (PERIOD_LABELS[period] || 'All Time');
+      var lbl = $('.sd-period-btn__label', periodBtn);
+      if (lbl) lbl.textContent = PERIOD_LABELS[period] || 'All Time';
     }
 
     fetchPeriod(period);
@@ -504,9 +565,13 @@
     /* fetch sidebar students */
     fetchSidebarStudents(tab);
 
-    /* if at-risk tab, fetch fragment and swap mainContent */
+    /* if at-risk/results/classes tab, fetch fragment and swap mainContent */
     if (tab === 'at-risk') {
       fetchAtRiskFragment();
+    } else if (tab === 'results') {
+      fetchResultsFragment();
+    } else if (tab === 'classes') {
+      fetchClasses();
     } else {
       /* restore default panel */
       restoreDefaultPanel();
@@ -519,7 +584,8 @@
     /* show loading */
     studentList.innerHTML = '<div class="sd-loading"><div class="sd-spinner"></div>Loading…</div>';
 
-    var url = DATA.studentsUrl + '?tab=' + encodeURIComponent(tab);
+    var url = DATA.studentsUrl + '?tab=' + encodeURIComponent(tab) +
+      (currentClassFilter ? '&class_id=' + encodeURIComponent(currentClassFilter) : '');
 
     fetch(url, {
       headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -527,10 +593,11 @@
     .then(function (res) { return res.json(); })
     .then(function (data) {
       var students = data.students || [];
+      lastStudentTotal = data.total || students.length;
       if (sidebarCount) sidebarCount.textContent = data.total || students.length;
 
       if (students.length === 0) {
-        studentList.innerHTML = '<div class="sd-student-list__empty"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto 6px;"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>No students found</div>';
+        studentList.innerHTML = '<div class="sd-student-list__empty"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto 6px;"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>No students found</div>';
         return;
       }
 
@@ -538,7 +605,7 @@
         var name = s.name || '';
         var initials = name.split(' ').map(function (w) { return w[0] || ''; }).join('').substring(0, 2).toUpperCase();
         var avatarColor = s.color || 'gray';
-        return '<div class="sd-student-item" data-student-id="' + s.id + '">' +
+        return '<div class="sd-student-item" data-student-id="' + s.id + '" data-student-name="' + escHtml(name) + '">' +
           '<div class="sd-student-item__avatar sd-student-item__avatar--' + avatarColor + '">' + escHtml(initials) + '</div>' +
           '<div class="sd-student-item__info">' +
             '<div class="sd-student-item__name">' + escHtml(name) + '</div>' +
@@ -551,11 +618,55 @@
       if (tab === 'students' && students.length > 0) {
         selectStudent(students[0].id);
       }
+
+      /* re-apply any active search after a fresh render */
+      applyStudentSearch();
     })
     .catch(function (err) {
       console.error('Sidebar fetch failed:', err);
       studentList.innerHTML = '<div class="sd-student-list__empty">Failed to load students</div>';
     });
+  }
+
+  function applyStudentSearch() {
+    var search = $('#sdStudentSearch');
+    if (!search) return;
+    var q = search.value.trim().toLowerCase();
+    var items = $$('.sd-student-item', studentList);
+    var shown = 0;
+    items.forEach(function (item) {
+      var name = (item.dataset.studentName || '').toLowerCase();
+      var match = !q || name.indexOf(q) !== -1;
+      item.style.display = match ? '' : 'none';
+      if (match) shown++;
+    });
+    var noMatch = $('#sdStudentSearchEmpty', studentList);
+    if (!noMatch && items.length) {
+      noMatch = document.createElement('div');
+      noMatch.id = 'sdStudentSearchEmpty';
+      noMatch.className = 'sd-student-list__empty';
+      noMatch.textContent = 'No students match your search';
+      studentList.appendChild(noMatch);
+    }
+    if (noMatch) noMatch.style.display = (items.length && shown === 0) ? 'block' : 'none';
+    if (sidebarCount) {
+      sidebarCount.textContent = q ? shown + ' of ' + lastStudentTotal : lastStudentTotal;
+    }
+  }
+
+  function bindStudentSearch() {
+    var search = $('#sdStudentSearch');
+    if (!search) return;
+    search.addEventListener('input', applyStudentSearch);
+    search.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        exitSearchMode();
+        if (sidebarFilter) sidebarFilter.focus();
+      }
+    });
+    var close = $('#sdStudentSearchClose');
+    if (close) close.onclick = exitSearchMode;
   }
 
   /* ==========================================================
@@ -601,7 +712,7 @@
       var pct = stageTotal ? Math.round(count / stageTotal * 100) : 0;
       return '<div class="sd-detail-stage-row">' +
         '<span class="sd-badge sd-badge--' + key.toLowerCase().replace(' stage', '').replace(/\s+/g, '-') + '">' + escHtml(key) + '</span>' +
-        '<span style="flex:1;margin:0 8px;height:6px;background:#e8e8e8;border-radius:3px;overflow:hidden;">' +
+        '<span style="flex:1;margin:0 8px;height:6px;background:var(--sd-border);border-radius:3px;overflow:hidden;">' +
           '<span style="display:block;height:100%;width:' + pct + '%;background:' + stageColour(key) + ';border-radius:3px;"></span>' +
         '</span>' +
         '<span>' + count + ' (' + pct + '%)</span>' +
@@ -638,19 +749,19 @@
         '<div class="sd-detail-identity">' +
           '<div class="sd-detail-name">' + escHtml(s.name || '') + '</div>' +
           '<div class="sd-detail-meta">' +
-            escHtml(s.class || '') +
+            '<span class="sd-detail-class" id="sdStudentClassLabel">' + escHtml(s.class || 'Unassigned') + '</span>' +
             (s.gender && s.gender !== '—' ? ' · ' + escHtml(s.gender) : '') +
           '</div>' +
         '</div>' +
         '<div class="sd-chart-section sd-chart-section--student">' +
           '<div class="sd-chart-empty" id="sdStudentChartEmpty">' +
-            '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="15" x2="21" y2="15"/><polyline points="8 12 11 9 14 12 17 7"/></svg>' +
+            '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="15" x2="21" y2="15"/><polyline points="8 12 11 9 14 12 17 7"/></svg>' +
             '<span>No chart data yet</span>' +
           '</div>' +
           '<div class="sd-chart-wrapper">' +
             '<div class="sd-chart-header">' +
               '<span class="sd-inner-title">Monthly Progress</span>' +
-              '<span class="sd-progress-hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> Lower % is better</span>' +
+              '<span class="sd-progress-hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> Lower % is better</span>' +
             '</div>' +
             '<canvas id="sdProgressCanvas"></canvas>' +
           '</div>' +
@@ -676,18 +787,18 @@
         '<div class="sd-detail-grid">' +
           '<div class="sd-detail-section">' +
             '<div style="font-weight:700;font-size:0.85rem;margin-bottom:10px;">Stage Distribution</div>' +
-            (stageRows || '<div style="color:#999;font-size:0.85rem;">No data</div>') +
+            (stageRows || '<div style="color:var(--sd-gray-light);font-size:0.85rem;">No data</div>') +
           '</div>' +
           '<div class="sd-detail-section">' +
             '<div style="font-weight:700;font-size:0.85rem;margin-bottom:10px;">Assessment Coverage</div>' +
-            (coverageRows || '<div style="color:#999;font-size:0.85rem;">No data</div>') +
+            (coverageRows || '<div style="color:var(--sd-gray-light);font-size:0.85rem;">No data</div>') +
           '</div>' +
         '</div>' +
         '<div style="margin-top:16px;">' +
           '<div style="font-weight:700;font-size:0.85rem;margin-bottom:10px;">Test History (' + (data.total_results || results.length) + ')</div>' +
           '<div class="sd-results-scroll">' +
             '<table class="sd-table"><thead><tr><th>Type</th><th>Score</th><th>Stage</th><th>Date</th></tr></thead>' +
-            '<tbody>' + (resultRows || '<tr><td colspan="4" style="text-align:center;color:#999;">No results</td></tr>') + '</tbody></table>' +
+            '<tbody>' + (resultRows || '<tr><td colspan="4" style="text-align:center;color:var(--sd-gray-light);">No results</td></tr>') + '</tbody></table>' +
           '</div>' +
         '</div>' +
       '</div>';
@@ -709,25 +820,42 @@
       mainContent.innerHTML = savedMainHTML;
     }
 
+    /* elements inside mainContent were recreated — refresh cached refs */
+    refreshDomRefs();
+
+    /* apply the user's selected graph view to the restored markup */
+    $$('.sd-chart-view').forEach(function (v) {
+      v.classList.toggle('sd-chart-view--active', v.dataset.graph === activeGraph);
+    });
+    if (chartTitle) chartTitle.textContent = GRAPH_LABELS[activeGraph] || 'Dashboard';
+
     /* re-init active chart */
     if (activeGraph === 'donut') initDonutChart();
     if (activeGraph === 'bar') initBarChart();
     if (activeGraph === 'line') initLineChart();
 
-    /* re-bind graph toggle */
+    /* re-bind graph + period toggles */
     bindGraphToggle();
+    bindPeriodToggle();
 
-    /* init at-risk card links */
+    /* re-init at-risk card links + table sorting */
     initAtRiskCardLink();
+    bindTableSort();
+
+    /* chart-header class filter is inside re-rendered mainContent — repopulate + rebind */
+    populateChartClassFilter();
   }
 
   /* ==========================================================
      AT-RISK FRAGMENT
      ========================================================== */
-  function fetchAtRiskFragment() {
+  function fetchAtRiskFragment(classGroup) {
+    classGroup = (classGroup === undefined) ? riskClassFilter : classGroup;
+    riskClassFilter = classGroup;
     mainContent.innerHTML = '<div class="sd-loading"><div class="sd-spinner"></div>Loading at-risk students…</div>';
 
     var url = '/school/' + DATA.schoolId + '/results?tab=at_risk&_fragment=1';
+    if (classGroup) url += '&class_group=' + encodeURIComponent(classGroup);
 
     fetch(url, {
       headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -738,9 +866,10 @@
         mainContent.innerHTML = html;
         initAtRiskCardLink();
         bindAtRiskFilters();
+        bindTableSort();
       } else {
         mainContent.innerHTML = '<div class="sd-card sd-at-risk-empty">' +
-          '<div class="sd-at-risk-empty__icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M8 12l3 3 5-5"/></svg></div>' +
+          '<div class="sd-at-risk-empty__icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M8 12l3 3 5-5"/></svg></div>' +
           '<h3 class="sd-at-risk-empty__title">No students at risk</h3>' +
           '<p class="sd-at-risk-empty__desc">All students are currently at Normal or Mild stage. Keep monitoring by uploading new assessments regularly.</p>' +
         '</div>';
@@ -748,11 +877,290 @@
     })
     .catch(function (err) {
       console.error('At-risk fetch failed:', err);
-      mainContent.innerHTML = '<div class="sd-card" style="text-align:center;padding:48px;color:#999;">Failed to load at-risk data</div>';
+      mainContent.innerHTML = '<div class="sd-card" style="text-align:center;padding:48px;color:var(--sd-gray-light);">Failed to load at-risk data</div>';
     });
   }
 
+  /* ==========================================================
+     RESULTS FRAGMENT (full results in the Results tab)
+     ========================================================== */
+  function resultsFragmentUrl(tab, classGroup, page) {
+    var url = '/school/' + DATA.schoolId + '/results?tab=' + encodeURIComponent(tab) + '&_fragment=1&theme=sd';
+    if (classGroup) url += '&class_group=' + encodeURIComponent(classGroup);
+    if (page && page > 1) url += '&page=' + page;
+    return url;
+  }
+
+  function fetchResultsFragment(tab, classGroup, page) {
+    tab = tab || 'results';
+    classGroup = (classGroup === undefined) ? resultsClassFilter : classGroup;
+    page = page || 1;
+
+    mainContent.innerHTML = '<div class="sd-loading"><div class="sd-spinner"></div>Loading results…</div>';
+
+    fetch(resultsFragmentUrl(tab, classGroup, page), {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function (res) { return res.text(); })
+    .then(function (html) {
+      if (html && html.trim().length > 10) {
+        mainContent.innerHTML = html;
+        resultsTab = tab;
+        resultsClassFilter = classGroup;
+        bindResultsFragment();
+        bindTableSort();
+      } else {
+        mainContent.innerHTML = '<div class="sd-card" style="text-align:center;padding:48px;color:var(--sd-gray-light);">No results found</div>';
+      }
+    })
+    .catch(function (err) {
+      console.error('Results fetch failed:', err);
+      mainContent.innerHTML = '<div class="sd-card" style="text-align:center;padding:48px;color:var(--sd-gray-light);">Failed to load results</div>';
+    });
+  }
+
+  function initResultsDonutChart() {
+    var card = $('.sd-results-chart-card');
+    var canvas = $('#sdResultsDonut');
+    var legendEl = $('#sdResultsDonutLegend');
+    if (!card || !canvas || !legendEl) return;
+    if (resultsDonutChart) { resultsDonutChart.destroy(); resultsDonutChart = null; }
+
+    var data = [];
+    try {
+      data = card.dataset.chart ? JSON.parse(card.dataset.chart) : [];
+    } catch (e) {
+      data = [];
+    }
+
+    var labels = data.map(function (d) { return d.label; });
+    var values = data.map(function (d) { return d.value; });
+
+    if (labels.length === 0) {
+      legendEl.innerHTML = '<div class="sd-legend-item">No data</div>';
+      return;
+    }
+
+    var colours = labels.map(function (l) { return stageColour(l); });
+
+    resultsDonutChart = new Chart(canvas.getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: labels,
+        datasets: [{ data: values, backgroundColor: colours, borderWidth: 0 }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '72%',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function (ctx) {
+                var total = ctx.dataset.data.reduce(function (a, b) { return a + b; }, 0);
+                var pct = total ? Math.round(ctx.raw / total * 100) : 0;
+                return ctx.label + ': ' + ctx.raw + ' (' + pct + '%)';
+              }
+            }
+          }
+        }
+      }
+    });
+
+    var total = values.reduce(function (a, b) { return a + b; }, 0);
+    legendEl.innerHTML = labels.map(function (l, i) {
+      var pct = total ? Math.round(values[i] / total * 100) : 0;
+      return '<div class="sd-legend-item">' +
+        '<span class="sd-legend-dot" style="background:' + colours[i] + ';"></span>' +
+        '<span class="sd-legend-label">' + escHtml(l) + '</span>' +
+        '<span class="sd-legend-value">' + values[i] + ' (' + pct + '%)</span></div>';
+    }).join('');
+  }
+
+  function initResultsBarChart() {
+    var card = $('.sd-results-chart-card');
+    var canvas = $('#sdResultsBar');
+    if (!card || !canvas) return;
+    if (resultsBarChart) { resultsBarChart.destroy(); resultsBarChart = null; }
+
+    var data = {};
+    try {
+      data = card.dataset.coverage ? JSON.parse(card.dataset.coverage) : {};
+    } catch (e) {
+      data = {};
+    }
+
+    var labels = Object.keys(data);
+    var values = labels.map(function (k) { return data[k]; });
+
+    if (labels.length === 0 || values.every(function (v) { return v === 0; })) return;
+
+    resultsBarChart = new Chart(canvas.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: values,
+          backgroundColor: COLORS.green,
+          borderRadius: 6,
+          maxBarThickness: 36
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: {
+            beginAtZero: true,
+            grid: { color: COLORS.border },
+            ticks: { font: { family: 'Manrope' } }
+          },
+          y: {
+            grid: { display: false },
+            ticks: { font: { family: 'Manrope', weight: '600' } }
+          }
+        }
+      }
+    });
+  }
+
+  function initResultsLineChart() {
+    var card = $('.sd-results-chart-card');
+    var canvas = $('#sdResultsLine');
+    if (!card || !canvas) return;
+    if (resultsLineChart) { resultsLineChart.destroy(); resultsLineChart = null; }
+
+    var data = {};
+    try {
+      data = card.dataset.monthly ? JSON.parse(card.dataset.monthly) : {};
+    } catch (e) {
+      data = {};
+    }
+
+    var labels = Object.keys(data);
+    var values = labels.map(function (k) { return data[k]; });
+
+    var avgEl = $('#sdResultsLineAvg');
+    var monthsEl = $('#sdResultsLineMonths');
+    if (monthsEl) monthsEl.textContent = labels.length;
+    if (avgEl) {
+      var sum = values.reduce(function (a, b) { return a + b; }, 0);
+      avgEl.textContent = values.length ? Math.round(sum / values.length) : 0;
+    }
+
+    if (labels.length === 0 || values.every(function (v) { return v === 0; })) return;
+
+    resultsLineChart = new Chart(canvas.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: values,
+          borderColor: COLORS.green,
+          backgroundColor: areaFill(COLORS.green),
+          fill: true,
+          tension: 0.4,
+          borderWidth: 2,
+          borderCapStyle: 'round',
+          pointBackgroundColor: COLORS.green,
+          pointBorderColor: '#ffffff',
+          pointRadius: 4,
+          pointHoverRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(0,0,0,0.06)', drawTicks: false },
+            border: { display: false },
+            ticks: { font: { family: 'Manrope', size: 11 }, color: COLORS.text }
+          },
+          x: {
+            grid: { display: false },
+            border: { display: false },
+            ticks: { font: { family: 'Manrope', size: 11 }, color: COLORS.text }
+          }
+        }
+      }
+    });
+  }
+
+  var RESULTS_CHART_LABELS = { donut: 'Stage Distribution', bar: 'Assessment Coverage', line: 'Monthly Trends' };
+
+  function switchResultsChart(type) {
+    resultsChartType = type;
+
+    var btn = $('#sdResultsGraphBtn');
+    if (btn) {
+      var lbl = $('.sd-period-btn__label', btn);
+      if (lbl) lbl.textContent = RESULTS_CHART_LABELS[type] || 'Stage Distribution';
+    }
+
+    var dd = $('#sdResultsGraphDropdown');
+    if (dd) {
+      $$('.sd-period-option', dd).forEach(function (opt) {
+        opt.classList.toggle('sd-period-option--active', opt.dataset.resultsChart === type);
+      });
+    }
+
+    $$('#sdMainContent .sd-results-chart-view').forEach(function (v) {
+      v.classList.toggle('sd-chart-view--active', v.dataset.resultsChart === type);
+    });
+
+    if (type === 'donut') initResultsDonutChart();
+    if (type === 'bar') initResultsBarChart();
+    if (type === 'line') initResultsLineChart();
+  }
+
+  function bindResultsFragment() {
+    var filter = $('#sdResultsClassFilter');
+    if (filter) {
+      filter.onchange = function () {
+        fetchResultsFragment(resultsTab, filter.value, 1);
+      };
+    }
+
+    var rGraphBtn = $('#sdResultsGraphBtn');
+    var rGraphDropdown = $('#sdResultsGraphDropdown');
+    if (rGraphBtn && rGraphDropdown) {
+      rGraphBtn.onclick = function (e) {
+        e.stopPropagation();
+        setDropdownState(rGraphBtn, rGraphDropdown, !rGraphDropdown.classList.contains('open'));
+      };
+      $$('.sd-period-option', rGraphDropdown).forEach(function (opt) {
+        opt.onclick = function (e) {
+          e.stopPropagation();
+          switchResultsChart(opt.dataset.resultsChart);
+          setDropdownState(rGraphBtn, rGraphDropdown, false);
+        };
+      });
+    }
+
+    $$('#sdMainContent .sd-pagination__link').forEach(function (link) {
+      link.onclick = function (e) {
+        e.preventDefault();
+        fetchResultsFragment(resultsTab, resultsClassFilter, parseInt(link.dataset.page, 10));
+      };
+    });
+
+    switchResultsChart(resultsChartType);
+  }
+
   function bindAtRiskFilters() {
+    var classSelect = $('#sdRiskClassFilter');
+    if (classSelect) {
+      classSelect.onchange = function () {
+        fetchAtRiskFragment(classSelect.value);
+      };
+    }
+
     var pills = $$('#sdAtRiskFilters .sd-filter-pill');
     pills.forEach(function (pill) {
       pill.onclick = function () {
@@ -773,13 +1181,421 @@
 
   function initAtRiskCardLink() {
     $$('.sd-vital-card[data-tab]').forEach(function (card) {
-      card.style.cursor = 'pointer';
+      card.classList.add('sd-vital-card--link');
+      card.setAttribute('role', 'button');
+      card.setAttribute('tabindex', '0');
+      var nameEl = $('.sd-vital-card__name', card);
+      var name = nameEl ? nameEl.textContent.trim() : 'Dashboard';
+      card.setAttribute('aria-label', 'View ' + name);
       card.onclick = function () {
         var tab = card.dataset.tab;
         if (tab) switchTab(tab);
       };
+      card.onkeydown = function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          card.onclick();
+        }
+      };
     });
+  }
 
+  /* ==========================================================
+     CLASSES TAB
+     ========================================================== */
+  var currentClassId = null;
+
+  function classesApi(url, options) {
+    var opts = options || {};
+    opts.headers = opts.headers || {};
+    opts.headers['X-Requested-With'] = 'XMLHttpRequest';
+    if (opts.method && opts.method.toUpperCase() !== 'GET') {
+      opts.headers['X-CSRFToken'] = getCSRF();
+    }
+    if (opts.json) {
+      opts.headers['Content-Type'] = 'application/json';
+      opts.body = JSON.stringify(opts.json);
+      delete opts.json;
+    }
+    return fetch(url, opts).then(function (res) { return res.json(); });
+  }
+
+  function classLevelLabel(level) {
+    if (!level) return '';
+    return { jhs: 'JHS', shs: 'SHS', university: 'University' }[level] || level;
+  }
+
+  function classRiskLine(c) {
+    var parts = [];
+    if (c.clinical_count) {
+      parts.push('<span class="sd-class-card__risk-item"><i class="sd-class-card__risk-dot sd-class-card__risk-dot--clinical" aria-hidden="true"></i>' + c.clinical_count + ' clinical</span>');
+    }
+    if (c.elevated_count) {
+      parts.push('<span class="sd-class-card__risk-item"><i class="sd-class-card__risk-dot sd-class-card__risk-dot--elevated" aria-hidden="true"></i>' + c.elevated_count + ' elevated</span>');
+    }
+    if (parts.length) {
+      return '<div class="sd-class-card__risk">' + parts.join('') + '</div>';
+    }
+    return '<div class="sd-class-card__risk"><span class="sd-class-card__risk-none">No risk flagged</span></div>';
+  }
+
+  function renderClassCards(classes) {
+    if (!mainContent) return;
+    if (!classes || classes.length === 0) {
+      mainContent.innerHTML =
+        '<div class="sd-card">' +
+          '<div class="sd-classes-empty">' +
+            '<div class="sd-classes-empty__icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></div>' +
+            '<h3 class="sd-classes-empty__title">No classes yet</h3>' +
+            '<p class="sd-classes-empty__desc">Create a class to organise your students, then assign students during upload or from the student panel.</p>' +
+            '<button class="sd-btn-solid" id="sdCreateClassEmptyBtn">Create Class</button>' +
+          '</div>' +
+        '</div>';
+      var emptyBtn = $('#sdCreateClassEmptyBtn');
+      if (emptyBtn) emptyBtn.onclick = openClassModal;
+      return;
+    }
+
+    mainContent.innerHTML =
+      '<div class="sd-card">' +
+        '<div class="sd-card__header">' +
+          '<div class="sd-card__title">Classes</div>' +
+          '<div class="sd-class-toolbar">' +
+            '<span class="sd-class-toolbar__count" id="sdClassCount">' + classes.length + ' class' + (classes.length === 1 ? '' : 'es') + '</span>' +
+            '<div class="sd-class-search">' +
+              '<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' +
+              '<input type="search" id="sdClassSearch" placeholder="Search classes…" aria-label="Search classes">' +
+            '</div>' +
+            '<button class="sd-card__action" id="sdCreateClassBtn">' +
+              '<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:middle;margin-right:4px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+              'New Class' +
+            '</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="sd-class-grid">' +
+          classes.map(function (c) {
+            var level = classLevelLabel(c.level);
+            return '<div class="sd-class-card" data-class-id="' + c.id + '" data-class-name="' + escHtml(c.name) + '" data-class-level="' + escHtml(c.level || '') + '">' +
+              '<div class="sd-class-card__top">' +
+                '<div class="sd-class-card__icon"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></div>' +
+                '<div class="sd-class-card__meta">' +
+                  '<div class="sd-class-card__name">' + escHtml(c.name) + '</div>' +
+                  (level ? '<div class="sd-class-card__level">' + level + '</div>' : '') +
+                '</div>' +
+                '<div class="sd-class-menu">' +
+                  '<button type="button" class="sd-class-menu__trigger" data-action="menu" aria-label="Class actions" aria-haspopup="true" aria-expanded="false">' +
+                    '<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg>' +
+                  '</button>' +
+                  '<div class="sd-class-menu__dropdown" role="menu">' +
+                    '<button type="button" class="sd-class-menu__item" role="menuitem" data-action="view"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>View Students</button>' +
+                    '<button type="button" class="sd-class-menu__item" role="menuitem" data-action="add"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>Add Students</button>' +
+                    '<button type="button" class="sd-class-menu__item" role="menuitem" data-action="rename"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>Rename</button>' +
+                    '<button type="button" class="sd-class-menu__item sd-class-menu__item--danger" role="menuitem" data-action="delete"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>Delete</button>' +
+                  '</div>' +
+                '</div>' +
+              '</div>' +
+              '<div class="sd-class-card__count">' + (c.student_count || 0) + ' student' + ((c.student_count || 0) === 1 ? '' : 's') + (c.screened_count ? ' · ' + c.screened_count + ' screened' : '') + '</div>' +
+              classRiskLine(c) +
+            '</div>';
+          }).join('') +
+        '</div>' +
+        '<div class="sd-class-no-match" id="sdClassNoMatch" style="display:none;">No classes match your search.</div>' +
+      '</div>';
+
+    var createBtn = $('#sdCreateClassBtn');
+    if (createBtn) createBtn.onclick = openClassModal;
+
+    var search = $('#sdClassSearch');
+    if (search) {
+      search.addEventListener('input', function () {
+        var q = search.value.trim().toLowerCase();
+        var shown = 0;
+        $$('.sd-class-card').forEach(function (card) {
+          var match = !q || (card.dataset.className || '').toLowerCase().indexOf(q) !== -1;
+          card.style.display = match ? '' : 'none';
+          if (match) shown++;
+        });
+        var count = $('#sdClassCount');
+        if (count) count.textContent = shown + ' of ' + classes.length + ' class' + (classes.length === 1 ? '' : 'es');
+        var noMatch = $('#sdClassNoMatch');
+        if (noMatch) noMatch.style.display = shown ? 'none' : 'block';
+      });
+    }
+
+    $$('.sd-class-card').forEach(function (card) {
+      card.onclick = function (e) {
+        var menuEl = e.target.closest('.sd-class-menu');
+        if (menuEl) {
+          e.stopPropagation();
+          var trigger = e.target.closest('.sd-class-menu__trigger');
+          var item = e.target.closest('.sd-class-menu__item');
+          if (trigger) {
+            toggleClassMenu(menuEl);
+          } else if (item) {
+            closeClassMenus();
+            var action = item.dataset.action;
+            var cid = card.dataset.classId;
+            if (action === 'view') openClassDetail(cid);
+            else if (action === 'add') openAddStudents(cid, card.dataset.className);
+            else if (action === 'rename') openRenameModal(cid, card.dataset.className);
+            else if (action === 'delete') openDeleteModal(cid, card.dataset.className);
+          }
+          return;
+        }
+        openClassDetail(card.dataset.classId);
+      };
+      card.addEventListener('mouseleave', closeClassMenus);
+    });
+  }
+
+  function closeClassMenus() {
+    $$('.sd-class-menu--open').forEach(function (m) {
+      m.classList.remove('sd-class-menu--open');
+      var trig = $('.sd-class-menu__trigger', m);
+      if (trig) trig.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  function toggleClassMenu(menu) {
+    var isOpen = menu.classList.contains('sd-class-menu--open');
+    closeClassMenus();
+    if (!isOpen) {
+      menu.classList.add('sd-class-menu--open');
+      var trig = $('.sd-class-menu__trigger', menu);
+      if (trig) trig.setAttribute('aria-expanded', 'true');
+    }
+  }
+
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.sd-class-menu')) closeClassMenus();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeClassMenus();
+  });
+
+  function fetchClasses() {
+    if (mainContent) {
+      mainContent.innerHTML = '<div class="sd-loading"><div class="sd-spinner"></div>Loading classes…</div>';
+    }
+    currentClassId = null;
+    classesApi(DATA.classesUrl)
+      .then(function (data) {
+        if (data && data.error) {
+          mainContent.innerHTML = '<div class="sd-card" style="text-align:center;padding:48px;color:var(--sd-gray-light);">' + escHtml(data.error) + '</div>';
+          return;
+        }
+        renderClassCards(data.classes);
+      })
+      .catch(function (err) {
+        console.error('Classes fetch failed:', err);
+        mainContent.innerHTML = '<div class="sd-card" style="text-align:center;padding:48px;color:var(--sd-gray-light);">Failed to load classes</div>';
+      });
+  }
+
+  function openClassDetail(classId) {
+    currentClassId = classId;
+    if (mainContent) {
+      mainContent.innerHTML = '<div class="sd-loading"><div class="sd-spinner"></div>Loading class…</div>';
+    }
+    classesApi('/school/' + DATA.schoolId + '/dashboard/classes/' + classId)
+      .then(function (data) {
+        if (data && data.error) {
+          mainContent.innerHTML = '<div class="sd-card" style="text-align:center;padding:48px;color:var(--sd-gray-light);">' + escHtml(data.error) + '</div>';
+          return;
+        }
+        renderClassDetail(data);
+      })
+      .catch(function (err) {
+        console.error('Class detail fetch failed:', err);
+        mainContent.innerHTML = '<div class="sd-card" style="text-align:center;padding:48px;color:var(--sd-gray-light);">Failed to load class</div>';
+      });
+  }
+
+  function renderClassDetail(data) {
+    if (!mainContent) return;
+    var cls = data.class || {};
+    var students = data.students || [];
+
+    var rows = students.length
+      ? students.map(function (s) {
+          return '<tr><td>' + escHtml(s.name) + '</td></tr>';
+        }).join('')
+      : '<tr><td colspan="1" class="sd-results-empty" style="text-align:center;color:var(--sd-gray-light);">No students in this class yet</td></tr>';
+
+    mainContent.innerHTML =
+      '<div class="sd-card">' +
+        '<div class="sd-card__header">' +
+          '<button class="sd-card__action" id="sdClassBackBtn">' +
+            '<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><polyline points="15 18 9 12 15 6"/></svg>' +
+            'All Classes' +
+          '</button>' +
+          '<div class="sd-card__title">' + escHtml(cls.name || 'Class') + (cls.level ? ' · ' + classLevelLabel(cls.level) : '') + '</div>' +
+          '<button class="sd-card__action" id="sdClassAddFromDetailBtn">+ Add Students</button>' +
+        '</div>' +
+        '<div class="sd-results-scroll">' +
+          '<table class="sd-table"><thead><tr><th scope="col">Student</th></tr></thead>' +
+          '<tbody>' + rows + '</tbody></table>' +
+        '</div>' +
+      '</div>';
+
+    var back = $('#sdClassBackBtn');
+    if (back) back.onclick = fetchClasses;
+    var add = $('#sdClassAddFromDetailBtn');
+    if (add) add.onclick = function () { openAddStudents(cls.id, cls.name); };
+  }
+
+  function submitCreate() {
+    var nameInput = $('#sdClassName');
+    var levelInput = $('#sdClassLevel');
+    var name = nameInput ? nameInput.value.trim() : '';
+    if (!name) {
+      if (nameInput) nameInput.focus();
+      return;
+    }
+    classesApi(DATA.classesUrl + '/create', {
+      method: 'POST',
+      json: { name: name, level: levelInput ? levelInput.value : '' }
+    })
+    .then(function (data) {
+      if (data && data.error) {
+        alert(data.error);
+        return;
+      }
+      closeOverlay('sdClassModalOverlay');
+      fetchClasses();
+    })
+    .catch(function (err) { console.error('Class create failed:', err); });
+  }
+
+  function openClassModal() {
+    $('#sdClassName').value = '';
+    $('#sdClassLevel').value = '';
+    $('#sdClassModalTitle').textContent = 'New Class';
+    $('#sdClassSubmit').textContent = 'Create Class';
+    var levelRow = $('#sdClassLevelRow');
+    if (levelRow) levelRow.style.display = '';
+    var form = $('#sdClassForm');
+    if (form) form.onsubmit = function (e) {
+      e.preventDefault();
+      submitCreate();
+    };
+    openOverlay('sdClassModalOverlay');
+  }
+
+  function openRenameModal(classId, currentName) {
+    var title = $('#sdClassModalTitle');
+    var nameInput = $('#sdClassName');
+    var levelInput = $('#sdClassLevel');
+    var submit = $('#sdClassSubmit');
+    if (title) title.textContent = 'Rename Class';
+    if (nameInput) nameInput.value = currentName || '';
+    if (levelInput) levelInput.value = '';
+    if (submit) submit.textContent = 'Save Name';
+    var levelRow = $('#sdClassLevelRow');
+    if (levelRow) levelRow.style.display = 'none';
+    var form = $('#sdClassForm');
+    if (form) form.onsubmit = function (e) {
+      e.preventDefault();
+      submitRename(classId, nameInput ? nameInput.value : '');
+    };
+    openOverlay('sdClassModalOverlay');
+  }
+
+  function submitRename(classId, name) {
+    if (!name.trim()) return;
+    classesApi('/school/' + DATA.schoolId + '/dashboard/classes/' + classId + '/rename', {
+      method: 'POST',
+      json: { name: name }
+    })
+    .then(function (data) {
+      if (data && data.error) {
+        alert(data.error);
+        return;
+      }
+      closeOverlay('sdClassModalOverlay');
+      fetchClasses();
+    })
+    .catch(function (err) { console.error('Rename failed:', err); });
+  }
+
+  function openDeleteModal(classId, className) {
+    var nameEl = $('#sdClassDeleteName');
+    if (nameEl) nameEl.textContent = className || '';
+    openOverlay('sdClassDeleteOverlay');
+    var confirm = $('#sdClassDeleteConfirm');
+    if (confirm) confirm.onclick = function () { submitDelete(classId); };
+  }
+
+  function submitDelete(classId) {
+    classesApi('/school/' + DATA.schoolId + '/dashboard/classes/' + classId + '/delete', {
+      method: 'POST'
+    })
+    .then(function (data) {
+      if (data && data.error) {
+        alert(data.error);
+        return;
+      }
+      closeOverlay('sdClassDeleteOverlay');
+      fetchClasses();
+    })
+    .catch(function (err) { console.error('Delete failed:', err); });
+  }
+
+  function openAddStudents(classId, className) {
+    var titleEl = $('#sdClassAddTitle');
+    if (titleEl) titleEl.textContent = className || '';
+    var list = $('#sdClassAddList');
+    if (list) list.innerHTML = '<div class="sd-loading"><div class="sd-spinner"></div>Loading students…</div>';
+    openOverlay('sdClassAddOverlay');
+
+    classesApi('/school/' + DATA.schoolId + '/dashboard/classes/' + classId)
+      .then(function (data) {
+        var unassigned = (data && data.unassigned) || [];
+        if (list) {
+          if (unassigned.length === 0) {
+            list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--sd-gray-light);">All students are already assigned to a class.</div>';
+          } else {
+            list.innerHTML = unassigned.map(function (s) {
+              return '<label class="sd-class-add-row">' +
+                '<input type="checkbox" class="sd-class-add-check" value="' + s.id + '">' +
+                '<span>' + escHtml(s.name) + '</span>' +
+              '</label>';
+            }).join('');
+          }
+        }
+        var confirm = $('#sdClassAddConfirm');
+        if (confirm) confirm.onclick = function () { submitAddStudents(classId); };
+      })
+      .catch(function (err) {
+        console.error('Add-students load failed:', err);
+        if (list) list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--sd-gray-light);">Failed to load students</div>';
+      });
+  }
+
+  function submitAddStudents(classId) {
+    var checks = $$('.sd-class-add-check:checked');
+    if (checks.length === 0) {
+      alert('No students selected.');
+      return;
+    }
+    var ids = checks.map(function (c) { return parseInt(c.value, 10); });
+    classesApi('/school/' + DATA.schoolId + '/dashboard/classes/' + classId + '/add-students', {
+      method: 'POST',
+      json: { student_ids: ids }
+    })
+    .then(function (data) {
+      if (data && data.error) {
+        alert(data.error);
+        return;
+      }
+      closeOverlay('sdClassAddOverlay');
+      if (currentClassId == classId) {
+        openClassDetail(classId);
+      } else {
+        fetchClasses();
+      }
+    })
+    .catch(function (err) { console.error('Add students failed:', err); });
   }
 
   /* ==========================================================
@@ -871,7 +1687,7 @@
     })
     .catch(function (err) {
       console.error('Claim codes fetch failed:', err);
-      if (grid) grid.innerHTML = '<div class="sd-loading" style="color:#d35400;">Failed to load claim codes</div>';
+      if (grid) grid.innerHTML = '<div class="sd-loading" style="color:var(--sd-stage-clinical, #d64541);">Failed to load claim codes</div>';
     });
   }
 
@@ -879,6 +1695,7 @@
      UPLOAD MODAL
      ========================================================== */
   function openUploadModal() {
+    populateUploadClassDropdown();
     openOverlay('uploadModalOverlay');
   }
 
@@ -930,15 +1747,34 @@
     var formData = new FormData();
     formData.append('file', file);
 
-    var uploadUrl = '/school/' + DATA.schoolId + '/upload';
+    var classSelect = $('#uploadClassSelect');
+    var targetClass = classSelect ? classSelect.value : '';
+    if (targetClass) formData.append('target_class', targetClass);
+
+    var uploadUrl = '/school/' + DATA.schoolId + '/upload-students';
 
     fetch(uploadUrl, {
       method: 'POST',
       body: formData,
-      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': getCSRF() }
     })
-    .then(function (res) { return res.json(); })
+    .then(function (res) {
+      if (!res.ok) return res.json().catch(function () { return {}; }).then(function (d) {
+        d.__status = res.status;
+        return d;
+      });
+      return res.json();
+    })
     .then(function (data) {
+      if (data && data.__status >= 400) {
+        if (bar) bar.style.width = '0%';
+        if (status) status.textContent = data.error || 'Upload failed. Please try again.';
+        return;
+      }
+      if (data && data.redirect) {
+        location.href = data.redirect;
+        return;
+      }
       if (bar) bar.style.width = '100%';
       if (status) status.textContent = data.message || 'Upload complete!';
       setTimeout(function () { location.reload(); }, 1500);
@@ -948,6 +1784,35 @@
       if (status) status.textContent = 'Upload failed. Please try again.';
       if (bar) bar.style.width = '0%';
     });
+  }
+
+  function populateUploadClassDropdown() {
+    var select = $('#uploadClassSelect');
+    if (!select) return;
+    classesApi(DATA.classesUrl)
+      .then(function (data) {
+        var classes = (data && data.classes) || [];
+        var options = '<option value="">— Unassigned (use the class_group column if provided) —</option>';
+        if (classes.length === 0) {
+          options += '<option value="" disabled>No classes yet — create one in the Classes tab first</option>';
+        } else {
+          options += classes.map(function (c) {
+            return '<option value="' + c.id + '">' + escHtml(c.name) + '</option>';
+          }).join('');
+        }
+        select.innerHTML = options;
+
+        var noClassesRow = $('#uploadNoClassesRow');
+        if (noClassesRow) noClassesRow.style.display = classes.length === 0 ? '' : 'none';
+        var noClassesBtn = $('#uploadNoClassesBtn');
+        if (noClassesBtn) {
+          noClassesBtn.onclick = function () {
+            closeOverlay('uploadModalOverlay');
+            switchTab('classes');
+          };
+        }
+      })
+      .catch(function (err) { console.error('Class dropdown load failed:', err); });
   }
 
   /* ==========================================================
@@ -1026,7 +1891,44 @@
     if (e.target.closest('.sd-profile-dropdown')) return;
     e.stopPropagation();
     var dd = profileDropdown ? $('.sd-profile-dropdown', profileDropdown) : null;
-    if (dd) dd.classList.toggle('open');
+    if (dd) {
+      var open = dd.classList.toggle('open');
+      if (profileDropdown) {
+        profileDropdown.setAttribute('aria-expanded', open ? 'true' : 'false');
+        profileDropdown.classList.toggle('sd-topnav__user--open', open);
+      }
+    }
+  }
+
+  function closeProfileDropdown() {
+    var dd = profileDropdown ? $('.sd-profile-dropdown', profileDropdown) : null;
+    if (dd) dd.classList.remove('open');
+    if (profileDropdown) {
+      profileDropdown.setAttribute('aria-expanded', 'false');
+      profileDropdown.classList.remove('sd-topnav__user--open');
+    }
+  }
+
+  /* ==========================================================
+     DOM REFS (re-query after mainContent is re-rendered)
+     ========================================================== */
+  function refreshDomRefs() {
+    sidebar          = $('#sdSidebar');
+    studentList      = $('#sdStudentList');
+    emptySidebar     = $('#sdEmptySidebar');
+    sidebarCount     = $('#sdSidebarCount');
+    sidebarFilterWrap = $('#sdSidebarFilter');
+    sidebarFilter     = $('#sdClassFilter');
+    chartClassFilter  = $('#sdChartClassFilter');
+    mainContent      = $('#sdMainContent');
+    graphToggle      = $('#sdGraphToggle');
+    graphBtn         = $('#sdGraphBtn');
+    graphDropdown    = $('#sdGraphDropdown');
+    periodBtn        = $('#sdPeriodBtn');
+    periodDropdown   = $('#sdPeriodDropdown');
+    chartTitle       = $('#sdChartTitle');
+    chartEmpty       = $('#sdChartEmpty');
+    profileDropdown  = $('#sdProfileDropdown');
   }
 
   /* ==========================================================
@@ -1034,18 +1936,106 @@
      ========================================================== */
 
   function bindGraphToggle() {
-    if (graphBtn && graphDropdown) {
-      graphBtn.onclick = function (e) {
+    if (!graphBtn || !graphDropdown) return;
+    graphBtn.onclick = function (e) {
+      e.stopPropagation();
+      var willOpen = !graphDropdown.classList.contains('open');
+      setDropdownState(graphBtn, graphDropdown, willOpen);
+      setDropdownState(periodBtn, periodDropdown, false);
+    };
+    $$('.sd-period-option', graphDropdown).forEach(function (opt) {
+      opt.onclick = function (e) {
         e.stopPropagation();
-        graphDropdown.classList.toggle('open');
+        switchGraph(opt.dataset.graph);
+        setDropdownState(graphBtn, graphDropdown, false);
       };
-      $$('.sd-period-option', graphDropdown).forEach(function (opt) {
-        opt.onclick = function () {
-          switchGraph(opt.dataset.graph);
-          graphDropdown.classList.remove('open');
-        };
-      });
-    }
+    });
+  }
+
+  function bindPeriodToggle() {
+    if (!periodBtn || !periodDropdown) return;
+    periodBtn.onclick = function (e) {
+      e.stopPropagation();
+      var willOpen = !periodDropdown.classList.contains('open');
+      setDropdownState(periodBtn, periodDropdown, willOpen);
+      setDropdownState(graphBtn, graphDropdown, false);
+    };
+    $$('.sd-period-option', periodDropdown).forEach(function (opt) {
+      opt.onclick = function (e) {
+        e.stopPropagation();
+        selectPeriod(opt.dataset.period);
+      };
+    });
+  }
+
+  /* ==========================================================
+     SORTABLE TABLE
+     ========================================================== */
+  function parseDateCell(text) {
+    var m = String(text || '').trim().match(/^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})$/);
+    if (!m) return null;
+    var months = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
+    var mi = months[String(m[2]).toLowerCase().substring(0, 3)];
+    if (mi === undefined) return null;
+    return new Date(parseInt(m[3], 10), mi, parseInt(m[1], 10)).getTime();
+  }
+
+  function cellSortValue(td) {
+    var pct = $('.sd-score-cell__pct', td);
+    if (pct) return { v: parseFloat(pct.textContent) || 0, t: 'num' };
+    var text = (td.textContent || '').trim();
+    var num = parseFloat(String(text).replace(/,/g, ''));
+    if (!isNaN(num) && /^-?[\d.,\s]+%?$/.test(text)) return { v: num, t: 'num' };
+    var d = parseDateCell(text);
+    if (d !== null) return { v: d, t: 'date' };
+    return { v: text.toLowerCase(), t: 'str' };
+  }
+
+  function sortTable(th, index) {
+    var table = th.closest('table');
+    if (!table) return;
+    var tbody = table.querySelector('tbody');
+    if (!tbody) return;
+    var rows = Array.from(tbody.querySelectorAll('tr'));
+    if (rows.length <= 1) return;
+    if (rows.some(function (r) { return r.querySelector('td[colspan]'); })) return;
+
+    var headers = Array.from(table.querySelectorAll('thead th'));
+    var dir = th.getAttribute('aria-sort') === 'ascending' ? 'descending' : 'ascending';
+
+    var sortables = rows.map(function (row, i) {
+      var td = row.querySelectorAll('td')[index];
+      var sv = td ? cellSortValue(td) : { v: '', t: 'str' };
+      return { row: row, v: sv.v, t: sv.t, i: i };
+    });
+
+    sortables.sort(function (a, b) {
+      if (a.t === b.t && (a.t === 'num' || a.t === 'date')) return a.v - b.v;
+      var av = String(a.v);
+      var bv = String(b.v);
+      return av < bv ? -1 : av > bv ? 1 : a.i - b.i;
+    });
+
+    if (dir === 'descending') sortables.reverse();
+
+    sortables.forEach(function (s) { tbody.appendChild(s.row); });
+
+    headers.forEach(function (h) {
+      h.setAttribute('aria-sort', h === th ? dir : 'none');
+    });
+  }
+
+  function bindTableSort() {
+    $$('.sd-table[data-sortable] thead th').forEach(function (th, index) {
+      th.setAttribute('tabindex', '0');
+      th.setAttribute('aria-sort', 'none');
+      th.classList.add('sd-table__sortable');
+      var run = function () { sortTable(th, index); };
+      th.onclick = run;
+      th.onkeydown = function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); run(); }
+      };
+    });
   }
 
   function bindEvents() {
@@ -1054,38 +2044,29 @@
       btn.onclick = function () { switchTab(btn.dataset.tab); };
     });
 
-    /* graph toggle */
+    /* in-app tab actions (View all, Full Results, etc.) */
+    $$('.sd-card__action[data-tab], .sd-action-list__item[data-tab]').forEach(function (el) {
+      el.onclick = function () { switchTab(el.dataset.tab); };
+    });
+
+    /* graph + period toggles */
     bindGraphToggle();
+    bindPeriodToggle();
 
-    /* period dropdown — custom toggle */
-    if (periodBtn) {
-      periodBtn.onclick = function (e) {
-        e.stopPropagation();
-        togglePeriodDropdown();
-      };
-    }
-
-    /* period option clicks */
-    if (periodDropdown) {
-      $$('.sd-period-option', periodDropdown).forEach(function (opt) {
-        opt.onclick = function (e) {
-          e.stopPropagation();
-          selectPeriod(opt.dataset.period);
-        };
-      });
-    }
-
-    /* close period dropdown on outside click */
+    /* close dropdowns on outside click */
     document.addEventListener('click', function (e) {
-      if (periodDropdown && periodDropdown.classList.contains('open')) {
-        if (!periodDropdown.contains(e.target) && e.target !== periodBtn) {
-          closePeriodDropdown();
-        }
+      if (periodDropdown && periodDropdown.classList.contains('open') &&
+          !periodDropdown.contains(e.target) && e.target !== periodBtn) {
+        closePeriodDropdown();
       }
-      if (graphDropdown && graphDropdown.classList.contains('open')) {
-        if (!graphDropdown.contains(e.target) && e.target !== graphBtn) {
-          graphDropdown.classList.remove('open');
-        }
+      if (graphDropdown && graphDropdown.classList.contains('open') &&
+          !graphDropdown.contains(e.target) && e.target !== graphBtn) {
+        setDropdownState(graphBtn, graphDropdown, false);
+      }
+      var rBtn = $('#sdResultsGraphBtn');
+      var rDD = $('#sdResultsGraphDropdown');
+      if (rDD && rBtn && rDD.classList.contains('open') && !rDD.contains(e.target) && e.target !== rBtn) {
+        setDropdownState(rBtn, rDD, false);
       }
     });
 
@@ -1102,16 +2083,36 @@
     /* profile dropdown */
     if (profileDropdown) {
       profileDropdown.onclick = toggleProfileDropdown;
+      profileDropdown.onkeydown = function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleProfileDropdown(e);
+        }
+        if (e.key === 'Escape' && $('.sd-profile-dropdown', profileDropdown)) {
+          closeProfileDropdown();
+          profileDropdown.focus();
+        }
+      };
     }
 
     /* close profile dropdown on outside click */
     document.addEventListener('click', function (e) {
       var dd = profileDropdown ? $('.sd-profile-dropdown', profileDropdown) : null;
-      if (dd && dd.classList.contains('open')) {
-        if (!profileDropdown.contains(e.target)) {
-          dd.classList.remove('open');
-        }
+      if (dd && dd.classList.contains('open') && !profileDropdown.contains(e.target)) {
+        closeProfileDropdown();
       }
+    });
+
+    /* close all dropdowns on Escape */
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      if (periodDropdown && periodDropdown.classList.contains('open')) closePeriodDropdown();
+      if (graphDropdown && graphDropdown.classList.contains('open')) setDropdownState(graphBtn, graphDropdown, false);
+      var rBtn = $('#sdResultsGraphBtn');
+      var rDD = $('#sdResultsGraphDropdown');
+      if (rDD && rBtn && rDD.classList.contains('open')) setDropdownState(rBtn, rDD, false);
+      var pd = profileDropdown ? $('.sd-profile-dropdown', profileDropdown) : null;
+      if (pd && pd.classList.contains('open')) closeProfileDropdown();
     });
 
     /* upload */
@@ -1139,7 +2140,7 @@
     var uploadFile = $('#uploadFile');
     if (uploadZone && uploadFile) {
       uploadZone.onclick = function () { uploadFile.click(); };
-      uploadZone.ondragover = function (e) { e.preventDefault(); uploadZone.style.borderColor = '#4a7c59'; };
+      uploadZone.ondragover = function (e) { e.preventDefault(); uploadZone.style.borderColor = 'var(--sd-green)'; };
       uploadZone.ondragleave = function () { uploadZone.style.borderColor = ''; };
       uploadZone.ondrop = function (e) {
         e.preventDefault();
@@ -1154,7 +2155,6 @@
     /* claim codes */
     var claimBtn = $('#sdClaimCodesBtn');
     if (claimBtn) claimBtn.onclick = openClaimCodes;
-
     var claimModalClose = $('#sdClaimModalClose');
     if (claimModalClose) claimModalClose.onclick = function () { closeOverlay('sdClaimModalOverlay'); };
 
@@ -1177,6 +2177,55 @@
       }
     };
 
+    /* class modal bindings */
+    var classModalClose = $('#sdClassModalClose');
+    if (classModalClose) classModalClose.onclick = function () { closeOverlay('sdClassModalOverlay'); };
+
+    var classModalOverlay = $('#sdClassModalOverlay');
+    if (classModalOverlay) {
+      classModalOverlay.onclick = function (e) {
+        if (e.target === classModalOverlay) closeOverlay('sdClassModalOverlay');
+      };
+    }
+
+    var classForm = $('#sdClassForm');
+    if (classForm) classForm.onsubmit = function (e) {
+      e.preventDefault();
+      var submit = $('#sdClassSubmit');
+      if (submit && submit.textContent.trim() === 'Create Class') {
+        submitCreate();
+      } else {
+        var cid = classForm.dataset.classId;
+        if (cid) submitRename(parseInt(cid, 10), $('#sdClassName').value);
+      }
+    };
+
+    var classDeleteClose = $('#sdClassDeleteClose');
+    if (classDeleteClose) classDeleteClose.onclick = function () { closeOverlay('sdClassDeleteOverlay'); };
+
+    var classDeleteCancel = $('#sdClassDeleteCancel');
+    if (classDeleteCancel) classDeleteCancel.onclick = function () { closeOverlay('sdClassDeleteOverlay'); };
+
+    var classDeleteOverlay = $('#sdClassDeleteOverlay');
+    if (classDeleteOverlay) {
+      classDeleteOverlay.onclick = function (e) {
+        if (e.target === classDeleteOverlay) closeOverlay('sdClassDeleteOverlay');
+      };
+    }
+
+    var classAddClose = $('#sdClassAddClose');
+    if (classAddClose) classAddClose.onclick = function () { closeOverlay('sdClassAddOverlay'); };
+
+    var classAddCancel = $('#sdClassAddCancel');
+    if (classAddCancel) classAddCancel.onclick = function () { closeOverlay('sdClassAddOverlay'); };
+
+    var classAddOverlay = $('#sdClassAddOverlay');
+    if (classAddOverlay) {
+      classAddOverlay.onclick = function (e) {
+        if (e.target === classAddOverlay) closeOverlay('sdClassAddOverlay');
+      };
+    }
+
     /* copy link */
     var copyBtn = $('#sdCopyLink');
     if (copyBtn) copyBtn.onclick = copyRegLink;
@@ -1187,6 +2236,115 @@
 
     /* at-risk card */
     initAtRiskCardLink();
+
+    /* sortable tables (Recent Results + any data-sortable table) */
+    bindTableSort();
+  }
+
+  /* ==========================================================
+     CLASS FILTERS (sidebar + chart header stay in sync)
+     ========================================================== */
+  function fillClassSelects(classes) {
+    cachedClasses = classes;
+    if (sidebarFilter) {
+      sidebarFilter.innerHTML = '<option value="">All Classes</option>' +
+        classes.map(function (c) {
+          return '<option value="' + c.id + '">' + escHtml(c.name) + '</option>';
+        }).join('') +
+        '<option value="' + SEARCH_OPTION + '">Search students…</option>';
+      sidebarFilter.value = currentClassFilter;
+    }
+    if (chartClassFilter) {
+      chartClassFilter.innerHTML = '<option value="">All Classes</option>' +
+        classes.map(function (c) {
+          return '<option value="' + c.id + '">' + escHtml(c.name) + '</option>';
+        }).join('');
+      chartClassFilter.value = currentClassFilter;
+    }
+  }
+
+  function populateChartClassFilter() {
+    if (!chartClassFilter) return;
+    if (cachedClasses.length > 0) {
+      fillClassSelects(cachedClasses);
+    } else {
+      classesApi(DATA.classesUrl)
+        .then(function (data) {
+          fillClassSelects((data && data.classes) || []);
+        })
+        .catch(function (err) { console.error('Class filter load failed:', err); });
+    }
+    chartClassFilter.onchange = function () {
+      setClassFilter(chartClassFilter.value);
+    };
+  }
+
+  function setClassFilter(value) {
+    var v = value || '';
+    if (sidebarFilter && sidebarFilter.hidden) {
+      /* leaving search mode — apply the chosen class instead of restoring the stale one */
+      prevClassFilter = v;
+      exitSearchMode();
+      return;
+    }
+    currentClassFilter = v;
+    if (sidebarFilter) sidebarFilter.value = v;
+    if (chartClassFilter) chartClassFilter.value = v;
+    fetchSidebarStudents(currentTab);
+  }
+
+  function initSidebarFilter() {
+    if (!sidebarFilter) return;
+    sidebarFilter.onchange = function () {
+      if (sidebarFilter.value === SEARCH_OPTION) {
+        enterSearchMode();
+      } else {
+        setClassFilter(sidebarFilter.value);
+      }
+    };
+    populateChartClassFilter();
+    classesApi(DATA.classesUrl)
+      .then(function (data) {
+        fillClassSelects((data && data.classes) || []);
+      })
+      .catch(function (err) {
+        console.error('Class filter load failed:', err);
+        if (sidebarFilterWrap) sidebarFilterWrap.style.display = 'none';
+      });
+  }
+
+  function enterSearchMode() {
+    var searchWrap = $('#sdStudentSearchWrap');
+    var search = $('#sdStudentSearch');
+    prevClassFilter = currentClassFilter;
+    currentClassFilter = '';
+    sidebarFilter.value = '';
+    sidebarFilter.hidden = true;
+    if (chartClassFilter) chartClassFilter.value = '';
+    if (searchWrap) {
+      searchWrap.hidden = false;
+      requestAnimationFrame(function () {
+        searchWrap.classList.add('sd-student-search--open');
+      });
+    }
+    fetchSidebarStudents(currentTab);
+    if (search) search.focus();
+  }
+
+  function exitSearchMode() {
+    var searchWrap = $('#sdStudentSearchWrap');
+    var search = $('#sdStudentSearch');
+    if (search) search.value = '';
+    if (searchWrap) {
+      searchWrap.classList.remove('sd-student-search--open');
+      searchWrap.hidden = true;
+    }
+    sidebarFilter.hidden = false;
+    currentClassFilter = prevClassFilter || '';
+    prevClassFilter = '';
+    sidebarFilter.value = currentClassFilter;
+    if (chartClassFilter) chartClassFilter.value = currentClassFilter;
+    fetchSidebarStudents(currentTab);
   }
 
   /* ==========================================================
@@ -1194,6 +2352,8 @@
      ========================================================== */
   function init() {
     bindEvents();
+    initSidebarFilter();
+    bindStudentSearch();
 
     /* dashboard-wide empty state for brand-new schools */
     if (DATA.totalStudents === 0 && DATA.totalResults === 0) {

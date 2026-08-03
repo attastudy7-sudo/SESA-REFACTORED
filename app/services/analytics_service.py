@@ -9,6 +9,7 @@ from sqlalchemy import func
 from app.extensions import db
 from app.models.account import Accounts
 from app.models.test_result import TestResult
+from app.services.test_service import fill_monthly_gaps
 
 
 def get_school_analytics(school_id: int) -> dict:
@@ -103,6 +104,8 @@ def get_school_analytics(school_id: int) -> dict:
                 'label': label,
                 'average': avg,
             })
+
+    monthly_data = fill_monthly_gaps(monthly_data)
 
     return {
         'avg_score': avg_score,

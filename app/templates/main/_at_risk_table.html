@@ -1,63 +1,104 @@
 {% if at_risk %}
 {% set clinical_count = at_risk | selectattr('0.stage', 'equalto', 'Clinical Stage') | list | length %}
 {% set elevated_count = at_risk | selectattr('0.stage', 'equalto', 'Elevated Stage') | list | length %}
-
-<div class="sd-at-risk-summary">
-  <div class="sd-at-risk-stat sd-at-risk-stat--red">
-    <div class="sd-at-risk-stat__value">{{ at_risk | length }}</div>
-    <div class="sd-at-risk-stat__label">Total Flagged</div>
-  </div>
-  <div class="sd-at-risk-stat sd-at-risk-stat--red">
-    <div class="sd-at-risk-stat__value">{{ clinical_count }}</div>
-    <div class="sd-at-risk-stat__label">Clinical Stage</div>
-  </div>
-  <div class="sd-at-risk-stat sd-at-risk-stat--amber">
-    <div class="sd-at-risk-stat__value">{{ elevated_count }}</div>
-    <div class="sd-at-risk-stat__label">Elevated Stage</div>
-  </div>
-</div>
+{% set flagged_count = at_risk | length %}
 
 {% if clinical_count > 0 %}
-<div class="sd-at-risk-alert">
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-  <span><strong>Action required:</strong> {{ clinical_count }} student{{ 's' if clinical_count != 1 }} at Clinical Stage should be referred to a counsellor immediately.</span>
+<div class="sd-risk-alert" role="alert">
+  <div class="sd-risk-alert__icon">
+    <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+  </div>
+  <div class="sd-risk-alert__body">
+    <div class="sd-risk-alert__title">Action required</div>
+    <p class="sd-risk-alert__text"><strong>{{ clinical_count }}</strong> student{{ 's' if clinical_count != 1 }} at Clinical Stage should be referred to a counsellor immediately.</p>
+  </div>
 </div>
 {% endif %}
+<div class="sd-risk-summary" role="group" aria-label="At risk summary">
+  <div class="sd-risk-stat">
+    <div class="sd-risk-stat__icon">
+      <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </div>
+    <div class="sd-risk-stat__value">{{ flagged_count }}</div>
+    <div class="sd-risk-stat__label">Total flagged</div>
+    <div class="sd-risk-stat__sub">Elevated + Clinical</div>
+  </div>
+  <div class="sd-risk-stat sd-risk-stat--clinical">
+    <div class="sd-risk-stat__icon">
+      <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    </div>
+    <div class="sd-risk-stat__value">{{ clinical_count }}</div>
+    <div class="sd-risk-stat__label">Clinical stage</div>
+    <div class="sd-risk-stat__sub">Refer immediately</div>
+  </div>
+  <div class="sd-risk-stat sd-risk-stat--elevated">
+    <div class="sd-risk-stat__icon">
+      <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+    </div>
+    <div class="sd-risk-stat__value">{{ elevated_count }}</div>
+    <div class="sd-risk-stat__label">Elevated stage</div>
+    <div class="sd-risk-stat__sub">Needs monitoring</div>
+  </div>
+</div>
 
-<div class="sd-card" style="padding:0;">
-  <div class="sd-card__header" style="padding:16px 20px; border-bottom:1px solid var(--sd-border);">
-    <div class="sd-card__title">At-Risk Students</div>
-    <div class="sd-filter-pills" id="sdAtRiskFilters">
-      <button class="sd-filter-pill sd-filter-pill--active" data-stage-filter="all">All <span class="sd-filter-pill__count">{{ at_risk | length }}</span></button>
-      <button class="sd-filter-pill" data-stage-filter="Clinical Stage">Clinical <span class="sd-filter-pill__count">{{ clinical_count }}</span></button>
-      <button class="sd-filter-pill" data-stage-filter="Elevated Stage">Elevated <span class="sd-filter-pill__count">{{ elevated_count }}</span></button>
+<div class="sd-card sd-card--flush">
+  <div class="sd-card__header sd-card__header--table">
+    <div>
+      <div class="sd-card__title">At-Risk Students</div>
+      <div class="sd-card__sub">Latest result per student and assessment</div>
+    </div>
+    <div class="sd-card__filters">
+      <div class="sd-filter-pills" id="sdAtRiskFilters">
+        <button class="sd-filter-pill sd-filter-pill--active" data-stage-filter="all">All <span class="sd-filter-pill__count">{{ flagged_count }}</span></button>
+        <button class="sd-filter-pill" data-stage-filter="Clinical Stage">Clinical <span class="sd-filter-pill__count">{{ clinical_count }}</span></button>
+        <button class="sd-filter-pill" data-stage-filter="Elevated Stage">Elevated <span class="sd-filter-pill__count">{{ elevated_count }}</span></button>
+      </div>
+      {% if class_groups %}
+      <label class="sd-sr-only" for="sdRiskClassFilter">Filter at-risk students by class</label>
+      <select id="sdRiskClassFilter" class="sd-student-class-select">
+        <option value="">All Classes</option>
+        {% for cg in class_groups %}
+        <option value="{{ cg }}" {% if selected_class == cg %}selected{% endif %}>{{ cg }}</option>
+        {% endfor %}
+      </select>
+      {% endif %}
     </div>
   </div>
   <div class="sd-at-risk-scroll">
-    <table class="sd-table">
+    <table class="sd-table" data-sortable>
       <thead>
         <tr>
-          <th>Student</th>
-          <th>Class</th>
-          <th>Assessment</th>
-          <th>Stage</th>
-          <th>Date</th>
+          <th scope="col">Student</th>
+          <th scope="col">Class</th>
+          <th scope="col">Assessment</th>
+          <th scope="col">Score</th>
+          <th scope="col">Stage</th>
+          <th scope="col">Date</th>
         </tr>
       </thead>
       <tbody>
         {% for result, student in at_risk %}
-        <tr data-stage="{{ result.stage }}" style="{% if result.stage == 'Clinical Stage' %}background:oklch(0.97 0.01 25);{% endif %}">
-          <td>
-            <strong>{{ student.fname }} {{ student.lname }}</strong>
-          </td>
+        {% set pct = ((result.score / result.max_score) * 100)|round|int if result.max_score else 0 %}
+        {% set band = 'high' if pct >= 70 else ('mid' if pct >= 50 else 'low') %}
+        <tr data-stage="{{ result.stage }}" class="{% if result.stage == 'Clinical Stage' %}sd-table__row--clinical{% endif %}">
+          <td><strong>{{ student.fname }} {{ student.lname }}</strong></td>
           <td>{{ student.class_group or '—' }}</td>
-          <td style="font-size:0.85rem;">{{ result.test_type }}</td>
+          <td class="sd-table__muted">{{ result.test_type }}</td>
+          <td class="sd-score-cell">
+            <span class="sd-score-cell__top">
+              <span class="sd-score-cell__text">{{ result.score }}{% if result.max_score %}/{{ result.max_score }}{% endif %}</span>
+              <span class="sd-score-cell__pct sd-score-cell__pct--{{ band }}">{{ pct }}%</span>
+            </span>
+            <span class="sd-score-cell__bar">
+              <span class="sd-score-cell__bar-fill sd-score-cell__bar-fill--{{ band }}" style="width:{{ pct }}%;"></span>
+            </span>
+          </td>
           <td>
             <span class="sd-badge {% if result.stage == 'Clinical Stage' %}sd-badge--clinical{% else %}sd-badge--elevated{% endif %}">
               {{ result.stage }}
             </span>
           </td>
-          <td style="color:var(--sd-gray); font-size:0.82rem; white-space:nowrap;">{{ result.taken_at.strftime('%d %b %Y') }}</td>
+          <td class="sd-table__date">{{ result.taken_at.strftime('%d %b %Y') }}</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -68,7 +109,7 @@
 {% else %}
 <div class="sd-card sd-at-risk-empty">
   <div class="sd-at-risk-empty__icon">
-    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
       <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
       <path d="M8 12l3 3 5-5"/>
     </svg>

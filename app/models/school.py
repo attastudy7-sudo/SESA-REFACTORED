@@ -24,6 +24,13 @@ class School(db.Model):
         cascade='all, delete-orphan'
     )
 
+    classes = db.relationship(
+        'SchoolClass',
+        backref='school',
+        lazy='dynamic',
+        cascade='all, delete-orphan'
+    )
+
     # Self-registration fields (Group 1 — access code + QR onboarding)
     phone = db.Column(db.String(20), nullable=True)
     access_code = db.Column(db.String(8), nullable=True, unique=True, index=True)
@@ -39,6 +46,24 @@ class School(db.Model):
     @property
     def student_count(self):
         return self.accounts.count()
+
+    def get_or_create_class(self, name, level=None):
+        """Return the SchoolClass for `name` in this school, creating it if absent.
+
+        Must be called inside an active Flask request/app context so the session
+        is available. Commits nothing — the caller decides when to commit.
+        """
+        from app.models.school_class import SchoolClass
+        name = (name or '').strip()
+        if not name:
+            return None
+        cls = SchoolClass.query.filter_by(school_id=self.id, name=name).first()
+        if cls is None:
+            cls = SchoolClass(school_id=self.id, name=name, level=level)
+            db.session.add(cls)
+        elif level and not cls.level:
+            cls.level = level
+        return cls
 
     @property
     def subscription_active(self):

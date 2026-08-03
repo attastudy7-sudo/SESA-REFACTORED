@@ -28,6 +28,13 @@ class Accounts(UserMixin, db.Model):
     class_group = db.Column(db.String(50), nullable=True)   # e.g. "Form 2A", "JHS 3B"
     level = db.Column(db.String(20), nullable=True)          # jhs | shs | university
 
+    class_id = db.Column(
+        db.Integer,
+        db.ForeignKey('school_class.id', ondelete='SET NULL', name='fk_accounts_class_id'),
+        nullable=True,
+        index=True
+    )
+
     claim_code_hash  = db.Column(db.String(256), nullable=True)
     claim_code_plain = db.Column(db.String(20),  nullable=True)
     is_claimed       = db.Column(db.Boolean, default=True, nullable=False, server_default='1')

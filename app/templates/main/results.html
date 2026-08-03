@@ -342,8 +342,21 @@
   const scores = data.map(d => d.average);
   const segmentColors = scores.map(function(val, i) {
     if (i === 0) return '#3d8b58';
-    return scores[i] <= scores[i - 1] ? '#3d8b58' : '#dc2626';
+    return scores[i] >= scores[i - 1] ? '#3d8b58' : '#dc2626';
   });
+
+  function areaFill(color) {
+    return function (context) {
+      const chartArea = context.chart.chartArea;
+      if (!chartArea) return color + '20';
+      const g = context.chart.ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+      g.addColorStop(0, color + '52');
+      g.addColorStop(0.55, color + '1a');
+      g.addColorStop(1, color + '00');
+      return g;
+    };
+  }
+
   new Chart(ctx, {
     type: 'line',
     data: {
@@ -351,28 +364,31 @@
       datasets: [{
         label: 'Average Score (%)',
         data: scores,
-        segment: { borderColor: ctx => ctx.p1.parsed.y <= ctx.p0.parsed.y ? '#3d8b58' : '#dc2626' },
-        backgroundColor: 'transparent',
-        fill: false,
-        tension: 0.3,
+        segment: { borderColor: ctx => ctx.p1.parsed.y >= ctx.p0.parsed.y ? '#3d8b58' : '#dc2626' },
+        backgroundColor: areaFill('#3d8b58'),
+        fill: true,
+        tension: 0.4,
+        borderWidth: 2,
+        borderCapStyle: 'round',
         pointBackgroundColor: segmentColors,
-        pointRadius: 5,
-        pointHoverRadius: 7,
-        borderWidth: 2.5
+        pointBorderColor: '#ffffff',
+        pointRadius: 4,
+        pointHoverRadius: 6
       }]
     },
     options: {
       responsive: true,
       scales: {
         y: {
-          reverse: true, min: 0, max: 100,
-          grid: { color: 'rgba(0,0,0,0.04)' },
+          reverse: false, min: 0, max: 100,
+          grid: { color: 'rgba(0,0,0,0.04)', drawTicks: false },
+          border: { display: false },
           ticks: {
             font: { size: 11 },
-            callback: v => v === 0 ? '0% ← better' : v === 100 ? '100% ← concern' : v + '%'
+            callback: v => v === 0 ? '0% ← concern' : v === 100 ? '100% ← better' : v + '%'
           }
         },
-        x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+        x: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 11 } } }
       },
       plugins: {
         legend: { display: false },

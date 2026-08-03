@@ -8,6 +8,7 @@ from sqlalchemy import or_, func
 from app.extensions import db, csrf, limiter
 from app.models.account import Accounts
 from app.models.school import School
+from app.models.school_class import SchoolClass
 from app.models.test_result import TestResult
 from app.models.question import Question
 from flask import send_file
@@ -334,6 +335,19 @@ def school_dashboard(school_id):
     )
     monthly_trends = {row.ym: row.count for row in trend_rows}
 
+    # Fill every month in the rolling 6-month window (zero-count months included)
+    # so the trend line has continuous intermediate points for a smooth spline.
+    window_months = []
+    _ym = six_months_ago
+    _now_month = datetime(now.year, now.month, 1, tzinfo=timezone.utc)
+    while _ym <= _now_month:
+        window_months.append(_ym.strftime('%Y-%m'))
+        if _ym.month == 12:
+            _ym = _ym.replace(year=_ym.year + 1, month=1)
+        else:
+            _ym = _ym.replace(month=_ym.month + 1)
+    monthly_trends = {k: monthly_trends.get(k, 0) for k in window_months}
+
     # ── Paginated recent results ────────────────────────────────────────────
     results_page = request.args.get('results_page', 1, type=int)
     results_pagination = (
@@ -390,9 +404,12 @@ def dashboard_students_json(school_id):
         return jsonify({'students': [], 'total': 0}), 403
 
     tab = request.args.get('tab', 'dashboard')
+    class_id = request.args.get('class_id', type=int)
     now = datetime.now(timezone.utc)
 
     accounts_q = Accounts.query.filter_by(school_id=school.id)
+    if class_id:
+        accounts_q = accounts_q.filter(Accounts.class_id == class_id)
 
     if tab == 'at_risk':
         at_risk_ids = (
@@ -454,6 +471,303 @@ def dashboard_students_json(school_id):
     return jsonify({'students': result, 'total': len(result), 'tab': tab})
 
 
+@main_bp.route('/school/<int:school_id>/dashboard/classes')
+@school_login_required
+@subscription_required
+def dashboard_classes_json(school_id):
+    """JSON list of this school's classes with student counts."""
+    from flask import jsonify
+    school = _get_school_from_session()
+    if not school or school.id != school_id:
+        return jsonify({'error': 'Not authorised'}), 403
+
+    classes = (
+        SchoolClass.query
+        .filter_by(school_id=school.id)
+        .order_by(SchoolClass.name)
+        .all()
+    )
+    class_ids = [c.id for c in classes]
+    if not class_ids:
+        return jsonify({'classes': []})
+
+    # Latest stage per student per test type (same source as the At Risk tab).
+    latest_subq = (
+        db.session.query(
+            TestResult.user_id,
+            TestResult.test_type,
+            func.max(TestResult.taken_at).label('latest_at'),
+        )
+        .join(Accounts, Accounts.id == TestResult.user_id)
+        .filter(Accounts.school_id == school.id)
+        .group_by(TestResult.user_id, TestResult.test_type)
+        .subquery()
+    )
+    stage_rows = (
+        db.session.query(Accounts.class_id, TestResult.user_id, TestResult.stage)
+        .join(TestResult, TestResult.user_id == Accounts.id)
+        .join(
+            latest_subq,
+            (latest_subq.c.user_id == TestResult.user_id) &
+            (latest_subq.c.test_type == TestResult.test_type) &
+            (latest_subq.c.latest_at == TestResult.taken_at),
+        )
+        .filter(Accounts.school_id == school.id, Accounts.class_id.in_(class_ids))
+        .all()
+    )
+
+    users_by_class = {}
+    for cid, uid, stage in stage_rows:
+        users_by_class.setdefault(cid, {}).setdefault(uid, set()).add(stage or '')
+
+    screened = {cid: len(users) for cid, users in users_by_class.items()}
+    clinical = {
+        cid: sum(1 for stages in users.values() if 'Clinical Stage' in stages)
+        for cid, users in users_by_class.items()
+    }
+    elevated = {
+        cid: sum(
+            1 for stages in users.values()
+            if 'Elevated Stage' in stages and 'Clinical Stage' not in stages
+        )
+        for cid, users in users_by_class.items()
+    }
+
+    return jsonify({
+        'classes': [
+            {
+                'id': c.id,
+                'name': c.name,
+                'level': c.level or '',
+                'student_count': c.student_count,
+                'screened_count': screened.get(c.id, 0),
+                'clinical_count': clinical.get(c.id, 0),
+                'elevated_count': elevated.get(c.id, 0),
+            }
+            for c in classes
+        ]
+    })
+
+
+@main_bp.route('/school/<int:school_id>/dashboard/classes/create', methods=['POST'])
+@school_login_required
+@subscription_required
+def dashboard_class_create(school_id):
+    """Create a new class for this school."""
+    from flask import jsonify
+    from app.models.audit_log import audit
+    school = _get_school_from_session()
+    if not school or school.id != school_id:
+        return jsonify({'error': 'Not authorised'}), 403
+
+    data = request.get_json(silent=True) or {}
+    name = (data.get('name') or '').strip()
+    level = (data.get('level') or '').strip().lower()
+    if not name:
+        return jsonify({'error': 'Class name is required.'}), 400
+    if len(name) > 100:
+        return jsonify({'error': 'Class name is too long (max 100 characters).'}), 400
+    if level not in ('jhs', 'shs', 'university'):
+        level = None
+
+    existing = SchoolClass.query.filter_by(school_id=school.id, name=name).first()
+    if existing:
+        return jsonify({'error': f'A class named "{name}" already exists.'}), 400
+
+    cls = SchoolClass(school_id=school.id, name=name, level=level)
+    db.session.add(cls)
+    db.session.flush()
+    audit('CLASS_CREATED', school_id=school.id, target_id=cls.id,
+          ip_address=request.remote_addr, detail=name)
+    db.session.commit()
+
+    return jsonify({'success': True, 'class': {
+        'id': cls.id, 'name': cls.name, 'level': cls.level or '', 'student_count': 0,
+    }})
+
+
+@main_bp.route('/school/<int:school_id>/dashboard/classes/<int:class_id>/rename', methods=['POST'])
+@school_login_required
+@subscription_required
+def dashboard_class_rename(school_id, class_id):
+    """Rename a class and sync the denormalized class_group on its students."""
+    from flask import jsonify
+    from app.models.audit_log import audit
+    school = _get_school_from_session()
+    if not school or school.id != school_id:
+        return jsonify({'error': 'Not authorised'}), 403
+
+    cls = SchoolClass.query.filter_by(id=class_id, school_id=school.id).first()
+    if not cls:
+        return jsonify({'error': 'Class not found.'}), 404
+
+    name = (request.get_json(silent=True) or {}).get('name', '').strip()
+    if not name:
+        return jsonify({'error': 'Class name is required.'}), 400
+    if len(name) > 100:
+        return jsonify({'error': 'Class name is too long (max 100 characters).'}), 400
+
+    clash = SchoolClass.query.filter(
+        SchoolClass.school_id == school.id,
+        SchoolClass.name == name,
+        SchoolClass.id != class_id,
+    ).first()
+    if clash:
+        return jsonify({'error': f'A class named "{name}" already exists.'}), 400
+
+    old_name = cls.name
+    cls.name = name
+    for acc in cls.accounts.all():
+        acc.class_group = name
+    audit('CLASS_RENAMED', school_id=school.id, target_id=cls.id,
+          ip_address=request.remote_addr, detail=f'{old_name} -> {name}')
+    db.session.commit()
+
+    return jsonify({'success': True, 'name': name})
+
+
+@main_bp.route('/school/<int:school_id>/dashboard/classes/<int:class_id>/delete', methods=['POST'])
+@school_login_required
+@subscription_required
+def dashboard_class_delete(school_id, class_id):
+    """Delete a class, unassigning its students but keeping their accounts."""
+    from flask import jsonify
+    from app.models.audit_log import audit
+    school = _get_school_from_session()
+    if not school or school.id != school_id:
+        return jsonify({'error': 'Not authorised'}), 403
+
+    cls = SchoolClass.query.filter_by(id=class_id, school_id=school.id).first()
+    if not cls:
+        return jsonify({'error': 'Class not found.'}), 404
+
+    for acc in cls.accounts.all():
+        acc.class_id = None
+        acc.class_group = None
+    audit('CLASS_DELETED', school_id=school.id, target_id=cls.id,
+          ip_address=request.remote_addr, detail=cls.name)
+    db.session.delete(cls)
+    db.session.commit()
+
+    return jsonify({'success': True})
+
+
+@main_bp.route('/school/<int:school_id>/dashboard/classes/<int:class_id>')
+@school_login_required
+@subscription_required
+def dashboard_class_students(school_id, class_id):
+    """JSON: students in a class + unassigned students for the add-student picker."""
+    from flask import jsonify
+    school = _get_school_from_session()
+    if not school or school.id != school_id:
+        return jsonify({'error': 'Not authorised'}), 403
+
+    cls = SchoolClass.query.filter_by(id=class_id, school_id=school.id).first()
+    if not cls:
+        return jsonify({'error': 'Class not found.'}), 404
+
+    def _serialize(acc):
+        return {
+            'id': acc.id,
+            'name': f'{acc.fname} {acc.lname}',
+            'class': acc.class_group or '',
+        }
+
+    assigned = [ _serialize(a) for a in cls.accounts.order_by(Accounts.fname).all() ]
+    unassigned = [
+        _serialize(a)
+        for a in Accounts.query.filter_by(school_id=school.id, class_id=None).order_by(Accounts.fname).all()
+    ]
+
+    return jsonify({
+        'class': {'id': cls.id, 'name': cls.name, 'level': cls.level or ''},
+        'students': assigned,
+        'unassigned': unassigned,
+    })
+
+
+@main_bp.route('/school/<int:school_id>/dashboard/classes/<int:class_id>/add-students', methods=['POST'])
+@school_login_required
+@subscription_required
+def dashboard_class_add_students(school_id, class_id):
+    """Assign the given student ids to a class."""
+    from flask import jsonify
+    from app.models.audit_log import audit
+    school = _get_school_from_session()
+    if not school or school.id != school_id:
+        return jsonify({'error': 'Not authorised'}), 403
+
+    cls = SchoolClass.query.filter_by(id=class_id, school_id=school.id).first()
+    if not cls:
+        return jsonify({'error': 'Class not found.'}), 404
+
+    data = request.get_json(silent=True) or {}
+    ids = data.get('student_ids') or []
+    if not isinstance(ids, list) or not ids:
+        return jsonify({'error': 'No students selected.'}), 400
+
+    students = Accounts.query.filter(
+        Accounts.id.in_(ids),
+        Accounts.school_id == school.id,
+    ).all()
+    added = 0
+    for acc in students:
+        acc.class_id = cls.id
+        acc.class_group = cls.name
+        if not acc.level and cls.level:
+            acc.level = cls.level
+        added += 1
+
+    audit('CLASS_STUDENTS_ADDED', school_id=school.id, target_id=cls.id,
+          ip_address=request.remote_addr, detail=f'{added} student(s) added to {cls.name}')
+    db.session.commit()
+
+    return jsonify({'success': True, 'added': added, 'class_id': cls.id, 'name': cls.name})
+
+
+@main_bp.route('/school/<int:school_id>/dashboard/student/<int:student_id>/class', methods=['POST'])
+@school_login_required
+@subscription_required
+def dashboard_student_set_class(school_id, student_id):
+    """Set (or clear) a student's class from the student detail panel."""
+    from flask import jsonify
+    from app.models.audit_log import audit
+    school = _get_school_from_session()
+    if not school or school.id != school_id:
+        return jsonify({'error': 'Not authorised'}), 403
+
+    student = Accounts.query.filter_by(id=student_id, school_id=school.id).first()
+    if not student:
+        return jsonify({'error': 'Student not found.'}), 404
+
+    data = request.get_json(silent=True) or {}
+    class_id = data.get('class_id')
+    cls = None
+
+    if class_id:
+        try:
+            class_id = int(class_id)
+        except (TypeError, ValueError):
+            return jsonify({'error': 'Invalid class.'}), 400
+        cls = SchoolClass.query.filter_by(id=class_id, school_id=school.id).first()
+        if not cls:
+            return jsonify({'error': 'Class not found.'}), 404
+        student.class_id = cls.id
+        student.class_group = cls.name
+        if not student.level and cls.level:
+            student.level = cls.level
+    else:
+        student.class_id = None
+        student.class_group = None
+
+    audit('CLASS_STUDENT_UPDATED', school_id=school.id, target_id=student.id,
+          ip_address=request.remote_addr,
+          detail=f'{student.fname} {student.lname} -> {(cls.name if cls else "unassigned")}')
+    db.session.commit()
+
+    return jsonify({'success': True, 'class': student.class_group or ''})
+
+
 @main_bp.route('/school/<int:school_id>/dashboard/student/<int:student_id>')
 @school_login_required
 def dashboard_student_detail(school_id, student_id):
@@ -503,6 +817,7 @@ def dashboard_student_detail(school_id, student_id):
             'id': student.id,
             'name': f'{student.fname} {student.lname}',
             'class': student.class_group or '—',
+            'class_id': student.class_id,
             'gender': student.gender or '—',
             'level': student.level or '—',
             'username': student.username or '',
@@ -588,28 +903,46 @@ def upload_students(school_id):
     from datetime import date as _date
     from werkzeug.security import generate_password_hash
 
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+    def _respond(category, message, status=200):
+        """JSON for AJAX uploads, flash+redirect for plain form posts."""
+        if is_ajax:
+            if status >= 400:
+                return jsonify({'error': message}), status
+            return jsonify({'message': message}), status
+        flash(message, category)
+        return redirect(url_for('main.school_dashboard', school_id=school_id))
+
     school = _get_school_from_session()
     if not school or school.id != school_id:
         logger.warning('Bulk upload REJECTED | reason=not_authorised school_id=%s ip=%s', school_id, request.remote_addr)
-        flash('Not authorised.', 'error')
-        return redirect(url_for('auth.school_login'))
+        return _respond('error', 'Not authorised.', 403)
 
     if not school.upload_enabled:
         logger.warning('Bulk upload REJECTED | reason=upload_disabled school=%s ip=%s', school.school_name, request.remote_addr)
-        flash('Upload is not enabled. Please complete the subscription payment.', 'warning')
-        return redirect(url_for('main.school_dashboard', school_id=school_id))
+        return _respond('warning', 'Upload is not enabled. Please complete the subscription payment.', 403)
 
     file = request.files.get('file')
     if not file or file.filename == '':
         logger.warning('Bulk upload REJECTED | reason=no_file school=%s ip=%s', school.school_name, request.remote_addr)
-        flash('No file selected.', 'error')
-        return redirect(url_for('main.school_dashboard', school_id=school_id))
+        return _respond('error', 'No file selected.', 400)
 
     ext = file.filename.rsplit('.', 1)[-1].lower()
     if ext not in current_app.config.get('ALLOWED_UPLOAD_EXTENSIONS', {'xlsx', 'xls'}):
         logger.warning('Bulk upload REJECTED | reason=invalid_ext ext=%s school=%s ip=%s', ext, school.school_name, request.remote_addr)
-        flash('Invalid file type. Please upload an Excel file (.xlsx or .xls).', 'error')
-        return redirect(url_for('main.school_dashboard', school_id=school_id))
+        return _respond('error', 'Invalid file type. Please upload an Excel file (.xlsx or .xls).', 400)
+
+    # ── Resolve target class from the form dropdown (id or new class name) ──
+    target_class = (request.form.get('target_class') or '').strip()
+    fallback_class = None
+    if target_class:
+        if target_class.isdigit():
+            fallback_class = SchoolClass.query.filter_by(id=int(target_class), school_id=school.id).first()
+            if not fallback_class:
+                return _respond('error', 'Selected class not found. Please refresh and try again.', 400)
+        else:
+            fallback_class = school.get_or_create_class(target_class)
 
     school_code = _re.sub(r'[^a-z0-9]', '', school.school_name.lower())[:6] or 'sch'
 
@@ -626,22 +959,22 @@ def upload_students(school_id):
         missing = required - set(df.columns)
         if missing:
             logger.warning('Bulk upload REJECTED | reason=missing_columns missing=%s found=%s school=%s', missing, list(df.columns), school.school_name)
-            flash(
+            return _respond(
+                'error',
                 f'Missing required columns: {", ".join(sorted(missing))}. '
                 f'Required: first_name, last_name. '
                 f'Optional: student_id, class_group, level, gender, email.',
-                'error'
+                400,
             )
-            return redirect(url_for('main.school_dashboard', school_id=school_id))
 
         # ── Row limit ────────────────────────────────────────────────────────
         if len(df) > 1000:
-            flash(
+            return _respond(
+                'error',
                 f'File contains {len(df)} rows. Maximum allowed is 1,000 per upload. '
                 f'Please split the file and upload in batches.',
-                'error'
+                400,
             )
-            return redirect(url_for('main.school_dashboard', school_id=school_id))
 
         # ── Pre-load existing data into sets for fast in-memory lookup ───────
         existing_usernames = {
@@ -661,6 +994,20 @@ def upload_students(school_id):
         skipped    = 0
         duplicates = 0
         warnings   = []
+        class_cache = {}
+
+        def _resolve_class(name, level=None):
+            """Look up or create a SchoolClass by name (cached per upload)."""
+            if not name:
+                return None, None
+            key = name.strip().lower()
+            if key in class_cache:
+                cls = class_cache[key]
+            else:
+                cls = school.get_or_create_class(name)
+                class_cache[key] = cls
+            resolved_level = level or (cls.level if cls else None)
+            return cls, resolved_level
 
         for i, row in df.iterrows():
             fname = str(row.get('first_name', '')).strip()
@@ -699,6 +1046,9 @@ def upload_students(school_id):
 
             cg_raw = str(row.get('class_group', row.get('class', ''))).strip()
             class_group = cg_raw if cg_raw and cg_raw != 'nan' else None
+            # Excel class_group wins; the upload dropdown is the fallback.
+            if not class_group and fallback_class:
+                class_group = fallback_class.name
 
             gender_raw = str(row.get('gender', '')).strip().lower()
             gender = gender_raw if gender_raw in ('male', 'female', 'other') else None
@@ -715,6 +1065,9 @@ def upload_students(school_id):
                 except ValueError:
                     pass
 
+            cls, resolved_level = _resolve_class(class_group, level)
+            class_id = cls.id if cls else None
+
             claim_code = secrets.token_hex(3).upper()  # e.g. "A3F9B2"
 
             db.session.add(Accounts(
@@ -725,8 +1078,9 @@ def upload_students(school_id):
                 password=generate_password_hash(temp_password),
                 school_name=school.school_name,
                 gender=gender,
-                level=level,
+                level=resolved_level,
                 class_group=class_group,
+                class_id=class_id,
                 birthdate=birthdate,
                 school_id=school.id,
                 claim_code_plain=claim_code,
@@ -743,10 +1097,19 @@ def upload_students(school_id):
         )
 
         msg = f'Successfully created {created} student account(s).'
+        if class_cache and created:
+            msg += f' {len(class_cache)} class(es) matched or created.'
         if duplicates:
             msg += f' {duplicates} skipped (already exist in this school).'
         if skipped:
             msg += f' {skipped} skipped (missing name).'
+
+        if is_ajax:
+            resp = {'message': msg, 'created': created, 'skipped': skipped, 'duplicates': duplicates}
+            if warnings:
+                resp['warnings'] = warnings[:5]
+            return jsonify(resp), 200
+
         flash(msg, 'success')
 
         for w in warnings[:5]:
@@ -757,6 +1120,8 @@ def upload_students(school_id):
     except Exception as e:
         db.session.rollback()
         logger.error('Bulk upload error | school=%s error=%s', school.school_name, e)
+        if is_ajax:
+            return jsonify({'error': f'An error occurred while processing the file: {e}'}), 500
         flash(f'An error occurred while processing the file: {e}', 'error')
 
     return redirect(url_for('main.school_dashboard', school_id=school_id))
@@ -965,6 +1330,7 @@ def school_results(school_id):
     tab = request.args.get('tab', 'results')
     selected_class = request.args.get('class_group', '').strip()
     page = request.args.get('page', 1, type=int)
+    theme = request.args.get('theme', '')
 
     all_class_groups = sorted([
         row.class_group
@@ -977,6 +1343,21 @@ def school_results(school_id):
     total_results = 0
     at_risk = []
     at_risk_pagination = None
+    stage_totals = {}
+    chart_data = []
+    coverage_counts = {}
+    monthly_trends = {}
+    at_risk_count = (
+        TestResult.query
+        .join(Accounts, Accounts.id == TestResult.user_id)
+        .filter(
+            Accounts.school_id == school.id,
+            TestResult.stage.in_(['Elevated Stage', 'Clinical Stage']),
+        )
+    )
+    if selected_class:
+        at_risk_count = at_risk_count.filter(Accounts.class_group == selected_class)
+    at_risk_count = at_risk_count.count()
 
     if tab == 'at_risk':
         latest_subq = (
@@ -1023,6 +1404,71 @@ def school_results(school_id):
         total_results = results_q.count()
         results_pagination = results_q.paginate(page=page, per_page=25, error_out=False)
 
+        stage_q = (
+            db.session.query(
+                func.coalesce(TestResult.stage, 'Unknown').label('stage'),
+                func.count(TestResult.id).label('count'),
+            )
+            .join(Accounts, Accounts.id == TestResult.user_id)
+            .filter(Accounts.school_id == school.id)
+        )
+        if selected_class:
+            stage_q = stage_q.filter(Accounts.class_group == selected_class)
+        stage_totals = {row.stage: row.count for row in stage_q.group_by('stage').all()}
+
+        stage_order = ['Normal Stage', 'Mild Stage', 'Elevated Stage', 'Clinical Stage', 'Unknown']
+        chart_data = [
+            {'label': label, 'value': stage_totals[label]}
+            for label in stage_order
+            if stage_totals.get(label)
+        ]
+
+        # ── Coverage by test type (class-filtered) ─────────────────────
+        for tt in current_app.config.get('TEST_TYPES', []):
+            cq = (
+                db.session.query(func.count(func.distinct(TestResult.user_id)))
+                .join(Accounts, Accounts.id == TestResult.user_id)
+                .filter(Accounts.school_id == school.id)
+            )
+            if selected_class:
+                cq = cq.filter(Accounts.class_group == selected_class)
+            coverage_counts[tt] = cq.filter(TestResult.test_type == tt).scalar() or 0
+
+        # ── Monthly trend (last 6 months, class-filtered) ──────────────
+        now = datetime.now(timezone.utc)
+        six_months_ago = datetime(now.year, now.month, 1, tzinfo=timezone.utc)
+        for _ in range(5):
+            if six_months_ago.month == 1:
+                six_months_ago = datetime(six_months_ago.year - 1, 12, 1, tzinfo=timezone.utc)
+            else:
+                six_months_ago = datetime(six_months_ago.year, six_months_ago.month - 1, 1, tzinfo=timezone.utc)
+        dialect = db.engine.dialect.name
+        month_expr = (
+            func.to_char(TestResult.taken_at, 'YYYY-MM')
+            if dialect == 'postgresql'
+            else func.strftime('%Y-%m', TestResult.taken_at)
+        )
+        trend_q = (
+            db.session.query(month_expr.label('ym'), func.count(TestResult.id).label('count'))
+            .join(Accounts, Accounts.id == TestResult.user_id)
+            .filter(Accounts.school_id == school.id)
+            .filter(TestResult.taken_at >= six_months_ago)
+        )
+        if selected_class:
+            trend_q = trend_q.filter(Accounts.class_group == selected_class)
+        trend_rows = trend_q.group_by('ym').order_by('ym').all()
+        monthly_trends = {row.ym: row.count for row in trend_rows}
+        window_months = []
+        _ym = six_months_ago
+        _now_month = datetime(now.year, now.month, 1, tzinfo=timezone.utc)
+        while _ym <= _now_month:
+            window_months.append(_ym.strftime('%Y-%m'))
+            if _ym.month == 12:
+                _ym = _ym.replace(year=_ym.year + 1, month=1)
+            else:
+                _ym = _ym.replace(month=_ym.month + 1)
+        monthly_trends = {k: monthly_trends.get(k, 0) for k in window_months}
+
     ctx = dict(
         school=school,
         tab=tab,
@@ -1031,12 +1477,21 @@ def school_results(school_id):
         results_pagination=results_pagination,
         total_results=total_results,
         at_risk=at_risk,
+        at_risk_count=at_risk_count,
+        stage_totals=stage_totals,
+        chart_data=chart_data,
+        coverage_counts=coverage_counts,
+        monthly_trends=monthly_trends,
     )
 
     if request.args.get('_fragment'):
-        tpl = 'main/_at_risk_table.html' if tab == 'at_risk' else 'main/_results_table.html'
+        if theme == 'sd':
+            tpl = 'main/_sd_results_table.html'
+        elif tab == 'at_risk':
+            tpl = 'main/_at_risk_table.html'
+        else:
+            tpl = 'main/_results_table.html'
         return render_template(tpl, **ctx)
-
     return render_template('main/school_results.html', **ctx)
 
 
@@ -1122,6 +1577,13 @@ def join_with_code():
                     username = f"{base_uname}{suffix}"
                     suffix += 1
 
+                # Resolve/create the class so class_id stays in sync with class_group
+                cls = None
+                if class_group:
+                    cls = school.get_or_create_class(class_group, level)
+                    if cls.level and not level:
+                        level = cls.level
+
                 account = Accounts(
                     fname=fname,
                     lname=lname,
@@ -1129,6 +1591,7 @@ def join_with_code():
                     email=None,  # self-registration via access code — email not required
                     password=generate_password_hash(password),
                     class_group=class_group,
+                    class_id=cls.id if cls else None,
                     level=level,
                     school_id=school.id,
                     consent_given=True,

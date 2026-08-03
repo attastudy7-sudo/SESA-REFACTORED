@@ -11,9 +11,41 @@
   <meta name="theme-color" content="#022818">
   {% include 'main/_pub_styles.html' %}
 </head>
-<body>
+<body data-hero="dark">
 
 {% include 'main/_pub_nav.html' %}
+
+<!-- ═══ HERO ═══ -->
+<section class="pub-section pub-section--dark grain" style="min-height:100vh;display:flex;align-items:center;padding-top:64px;padding-bottom:64px;box-sizing:border-box;">
+  <div class="s-wrap" style="width:100%;">
+    <div style="display:grid;grid-template-columns:1fr 620px;gap:32px;align-items:center;">
+      <div class="anim-in">
+        
+        <h1 style="font-family:'Playfair Display',serif;font-size:clamp(2.8rem,4.5vw,4.5rem);font-weight:700;color:var(--iv);line-height:1.05;margin-bottom:24px;">The SESA <br><em style="color:var(--g);font-style:italic;font-weight:400;">Methodology</em></h1>
+        <p style="font-size:1.1rem;color:rgba(250,250,243,.75);line-height:1.8;max-width:560px;margin-bottom:36px;">A multi-dimensional clinical audit designed to identify emotional developmental patterns in Ghanaian students, ensuring every child feels safe, seen, and supported within their academic environment.</p>
+        <div class="method-badges-row">
+          <div class="method-badge-pill">
+            <div class="pill-icon"><i class="fa-solid fa-shield-halved"></i></div>
+            <span>Effectiveness Proven </span>
+          </div>
+          <div class="method-badge-pill">
+            <div class="pill-icon"><i class="fa-solid fa-stethoscope"></i></div>
+            <span>Clinical Precision</span>
+          </div>
+        </div>
+      </div>
+      <div class="anim-in-2 hero-method-img" style="position:relative;">
+        <div style="position:relative;border-radius:20px;overflow:hidden;border:2px solid rgba(250,250,243,.12);box-shadow:0 32px 80px rgba(0,0,0,.4);aspect-ratio:4/3;width:100%;min-height:400px;background:var(--mg);transform:rotate(-2deg);">
+          <img src="{{ url_for('static', filename='images/hero_smiles.jpg') }}" alt="Ghanaian student" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">
+          <div style="position:absolute;inset:0;background:rgba(2,40,24,.5);"></div>
+          <div style="position:absolute;bottom:28px;left:24px;right:24px;">
+            <p style="font-family:'Playfair Display',serif;font-style:italic;color:var(--iv);font-size:1rem;line-height:1.6;">"Rooted in Ghanaian Excellence, Focused on Emotional Growth."</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- ═══ 6 DIMENSIONS BENTO ═══ -->
 <section class="pub-section pub-section--alt">
@@ -105,7 +137,7 @@
     <div class="traffic-grid">
       <div>
         <h2 class="s-h2 s-h2--left" style="margin-bottom:16px;">The Traffic Light<br><em style="color:var(--g);font-style:italic;">Result Protocol</em></h2>
-        <p class="s-sub s-sub--left" style="margin-bottom:40px;">Our staged results system ensures clarity in intervention. Our proprietary algorithm analyses over 120 clinical data points to assign the correct safety tier instantly. Every assessment is categorised into one of four distinct stages, guiding educators and psychologists on the next steps.</p>
+        <p class="s-sub s-sub--left" style="margin-bottom:40px;">Our staged results system ensures clarity in intervention. Every assessment is categorised into one of four distinct stages, guiding educators and psychologists on the next steps.</p>
         <div class="traffic-stages">
           <div class="traffic-stage">
             <div class="stage-dot stage-dot--n">N</div>
@@ -142,7 +174,6 @@
           <div class="tl-housing">
             <div class="tl-bulb" id="tl-red"></div>
             <div class="tl-bulb" id="tl-yellow"></div>
-            <div class="tl-bulb" id="tl-orange"></div>
             <div class="tl-bulb" id="tl-green"></div>
           </div>
         </div>
@@ -150,6 +181,8 @@
           <div class="tl-insight-stage" id="tlStageLabel">Normal</div>
           <p id="tlInsightText">Optimal emotional health. Strong resilience and supportive networks detected.</p>
         </div>
+        <h3>Automated Tiering</h3>
+        <p>Our proprietary algorithm analyses over 120 clinical data points to assign the correct safety tier instantly.</p>
       </div>
 
       <style>
@@ -161,13 +194,12 @@
         .tl-bulb { width: 56px; height: 56px; border-radius: 50%; background: rgba(255,255,255,.07); transition: background .6s ease, box-shadow .6s ease; }
         .tl-bulb.on-green  { background: #10b981; box-shadow: 0 0 28px rgba(16,185,129,.65); }
         .tl-bulb.on-yellow { background: #f59e0b; box-shadow: 0 0 28px rgba(245,158,11,.65); }
-        .tl-bulb.on-orange { background: #f97316; box-shadow: 0 0 28px rgba(249,115,22,.65); }
         .tl-bulb.on-red    { background: #ef4444; box-shadow: 0 0 28px rgba(239,68,68,.65); }
         .tl-insight {
           background: var(--iv); border-radius: 12px; padding: 18px 20px;
           width: 100%; max-width: 280px;
-          border: 1px solid rgba(2,40,24,.08);
-          transition: border-color .6s ease, box-shadow .6s ease;
+          border-left: 4px solid #10b981;
+          transition: border-color .6s ease;
         }
         .tl-insight-stage {
           font-family: 'Playfair Display', serif; font-weight: 700;
@@ -187,9 +219,9 @@
       (function(){
         var stages = [
           {
-            bulb: 'red', label: 'Clinical',
-            color: '#ef4444',
-            text: 'Acute psychological distress. Immediate clinical referral and parental intervention required.'
+            bulb: 'green', label: 'Normal',
+            color: '#10b981',
+            text: 'Optimal emotional health. Strong resilience and supportive networks detected.'
           },
           {
             bulb: 'yellow', label: 'Mild',
@@ -197,14 +229,14 @@
             text: 'Transient stressors present. Standard pastoral monitoring and routine check-ins recommended.'
           },
           {
-            bulb: 'orange', label: 'Elevated',
+            bulb: 'yellow', label: 'Elevated',
             color: '#f97316',
             text: 'Significant distress markers identified. Tier-2 intervention and targeted counselling required.'
           },
           {
-            bulb: 'green', label: 'Normal',
-            color: '#10b981',
-            text: 'Optimal emotional health. Strong resilience and supportive networks detected.'
+            bulb: 'red', label: 'Clinical',
+            color: '#ef4444',
+            text: 'Acute psychological distress. Immediate clinical referral and parental intervention required.'
           }
         ];
         var i = 0;
@@ -213,14 +245,12 @@
           /* reset all bulbs */
           document.getElementById('tl-green').className  = 'tl-bulb';
           document.getElementById('tl-yellow').className = 'tl-bulb';
-          document.getElementById('tl-orange').className = 'tl-bulb';
           document.getElementById('tl-red').className    = 'tl-bulb';
           /* light the right one */
           document.getElementById('tl-' + s.bulb).className = 'tl-bulb on-' + s.bulb;
           /* update insight card */
           var insight = document.getElementById('tlInsight');
           insight.style.borderColor = s.color;
-          insight.style.boxShadow = '0 0 20px ' + s.color + '22';
           document.getElementById('tlStageLabel').textContent = s.label;
           document.getElementById('tlInsightText').textContent = s.text;
           i = (i + 1) % stages.length;
@@ -253,6 +283,7 @@
 
 <!-- ═══ BOTTOM CTA ═══ -->
 <section class="bottom-cta grain">
+  <div class="bottom-cta-orb"></div>
   <h2 style="font-family:'Playfair Display',serif;font-size:clamp(2rem,4vw,3rem);font-weight:700;color:var(--iv);margin-bottom:20px;line-height:1.2;position:relative;z-index:2;">Begin the Audit <em style="color:var(--g);font-style:italic;">Journey</em></h2>
   <p style="color:rgba(250,250,243,.75);font-size:1.05rem;max-width:540px;margin:0 auto 48px;line-height:1.75;position:relative;z-index:2;">Empower your institution with data-driven empathy. Contact our academic curators today to schedule a demo of the SESA Assessment Platform.</p>
   <div class="bottom-cta-btns">

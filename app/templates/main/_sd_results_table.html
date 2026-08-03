@@ -1,0 +1,110 @@
+{% if tab == 'at_risk' %}
+  {% include 'main/_at_risk_table.html' %}
+{% elif results_pagination and results_pagination.items %}
+<div class="sd-card sd-results-chart-card" data-chart='{{ chart_data | tojson }}' data-coverage='{{ coverage_counts | tojson }}' data-monthly='{{ monthly_trends | tojson }}'>
+  <div class="sd-results-chart-header">
+    <div class="sd-card__title">Results</div>
+    <div class="sd-card__filters">
+      <div class="sd-filter-group" id="sdResultsGraphToggle">
+        <button type="button" class="sd-period-btn" id="sdResultsGraphBtn" aria-haspopup="true" aria-expanded="false">
+          <span class="sd-period-btn__label">Monthly Trends</span>
+          <svg aria-hidden="true" class="sd-period-btn__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="sd-period-dropdown" id="sdResultsGraphDropdown" aria-label="Chart type">
+          <button type="button" class="sd-period-option sd-period-option--active" data-results-chart="line">Monthly Trends</button>
+          <button type="button" class="sd-period-option" data-results-chart="donut">Stage Distribution</button>
+          <button type="button" class="sd-period-option" data-results-chart="bar">Assessment Coverage</button>
+        </div>
+      </div>
+      {% if class_groups %}
+      <label class="sd-sr-only" for="sdResultsClassFilter">Filter results by class</label>
+      <select id="sdResultsClassFilter" class="sd-student-class-select">
+        <option value="">All Classes</option>
+        {% for cg in class_groups %}
+        <option value="{{ cg }}" {% if selected_class == cg %}selected{% endif %}>{{ cg }}</option>
+        {% endfor %}
+      </select>
+      {% endif %}
+    </div>
+  </div>
+  <div class="sd-chart-view sd-chart-view--active sd-results-chart-view" data-results-chart="line">
+    <div class="sd-chart-wrapper"><canvas id="sdResultsLine" role="img" aria-label="Monthly trend of results"></canvas></div>
+    <div class="sd-chart-summary">
+      <div class="sd-chart-summary__item">
+        <span class="sd-chart-summary__label">Avg tests / month</span>
+        <span class="sd-chart-summary__value" id="sdResultsLineAvg">—</span>
+      </div>
+      <div class="sd-chart-summary__item">
+        <span class="sd-chart-summary__label">Months tracked</span>
+        <span class="sd-chart-summary__value" id="sdResultsLineMonths">0</span>
+      </div>
+    </div>
+  </div>
+  <div class="sd-chart-view sd-results-chart-view" data-results-chart="donut">
+    <div class="sd-chart-wrapper"><canvas id="sdResultsDonut" role="img" aria-label="Stage distribution of results"></canvas></div>
+    <div class="sd-chart-legend" id="sdResultsDonutLegend"></div>
+  </div>
+  <div class="sd-chart-view sd-results-chart-view" data-results-chart="bar">
+    <div class="sd-chart-wrapper"><canvas id="sdResultsBar" role="img" aria-label="Assessment coverage of results"></canvas></div>
+  </div>
+</div>
+
+<div class="sd-card sd-results-card">
+  <div class="sd-results-scroll sd-results-scroll--fragment">
+    <table class="sd-table" data-sortable>
+      <thead>
+        <tr>
+          <th scope="col">Student</th>
+          <th scope="col">Class</th>
+          <th scope="col">Assessment</th>
+          <th scope="col">Score</th>
+          <th scope="col">Stage</th>
+          <th scope="col">Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in results_pagination.items %}
+        {% set pct = ((r.score / r.max_score) * 100)|round|int if r.max_score else 0 %}
+        {% set band = 'high' if pct >= 70 else ('mid' if pct >= 50 else 'low') %}
+        <tr>
+          <td><strong>{{ r.account.fname }} {{ r.account.lname }}</strong></td>
+          <td>{{ r.account.class_group or '—' }}</td>
+          <td class="sd-table__muted">{{ r.test_type }}</td>
+          <td class="sd-score-cell">
+            <span class="sd-score-cell__top">
+              <span class="sd-score-cell__text">{{ r.score }}{% if r.max_score %}/{{ r.max_score }}{% endif %}</span>
+              <span class="sd-score-cell__pct sd-score-cell__pct--{{ band }}">{{ pct }}%</span>
+            </span>
+            <span class="sd-score-cell__bar">
+              <span class="sd-score-cell__bar-fill sd-score-cell__bar-fill--{{ band }}" style="width:{{ pct }}%;"></span>
+            </span>
+          </td>
+          <td>
+            <span class="sd-badge sd-badge--{{ (r.stage or 'unknown')|lower|replace(' stage', '') }}">{{ r.stage or 'Unknown' }}</span>
+          </td>
+          <td class="sd-table__date">{{ r.taken_at.strftime('%d %b %Y') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if results_pagination.pages > 1 %}
+  <div class="sd-pagination">
+    {% if results_pagination.has_prev %}
+    <a class="sd-pagination__link" data-page="{{ results_pagination.prev_num }}" href="#">← Prev</a>
+    {% endif %}
+    <span class="sd-pagination__info">Page {{ results_pagination.page }} of {{ results_pagination.pages }}</span>
+    {% if results_pagination.has_next %}
+    <a class="sd-pagination__link" data-page="{{ results_pagination.next_num }}" href="#">Next →</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% else %}
+<div class="sd-card">
+  <div class="sd-results-empty">
+    <svg aria-hidden="true" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--sd-icon-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    <span>No assessment results yet.</span>
+  </div>
+</div>
+{% endif %}

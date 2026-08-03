@@ -31,7 +31,10 @@ def classify_score(test_type: str, score: int, max_score: int = None) -> dict:
     if max_score is None:
         q_count = Question.query.filter_by(test_type=test_type).count()
         max_score = q_count * 3
-    pct = round((score / max_score) * 100) if max_score > 0 else 0
+    raw_pct = round((score / max_score) * 100) if max_score > 0 else 0
+    # The stored scoring_ranges read high % as the most severe state. Score is
+    # inverted first so a LOW score maps to the worst stage and HIGH to the best.
+    pct = 100 - raw_pct
     best_match = None
     best_distance = float('inf')
     for r in assessment.scoring_ranges:
@@ -39,7 +42,7 @@ def classify_score(test_type: str, score: int, max_score: int = None) -> dict:
             return {
                 "stage": r["stage"],
                 "message": r["message"],
-                "score_range": f"{r['min']}% – {r['max']}%",
+                "score_range": f"{100 - r['max']}% – {100 - r['min']}%",
                 "color": STAGE_COLORS.get(r["stage"], "#555"),
             }
         # Track nearest range as fallback for gap/boundary edge cases
@@ -52,7 +55,7 @@ def classify_score(test_type: str, score: int, max_score: int = None) -> dict:
         return {
             "stage": best_match["stage"],
             "message": best_match["message"],
-            "score_range": f"{best_match['min']}% – {best_match['max']}%",
+            "score_range": f"{100 - best_match['max']}% – {100 - best_match['min']}%",
             "color": STAGE_COLORS.get(best_match["stage"], "#555"),
         }
     return {"stage": "Unknown", "message": "No result available.", "score_range": "—", "color": "#555"}
@@ -108,10 +111,56 @@ def get_monthly_averages(results: list) -> list:
             month_key   = r.taken_at.strftime("%Y-%m")
             month_label = r.taken_at.strftime("%b %Y")
             monthly_data[month_key].append({"percentage": (r.score / r.max_score) * 100, "label": month_label})
-    return [
+    entries = [
         {"month": k, "label": v[0]["label"], "average": round(sum(d["percentage"] for d in v) / len(v), 1)}
         for k, v in sorted(monthly_data.items())
     ]
+    return fill_monthly_gaps(entries)
+
+
+def fill_monthly_gaps(entries: list) -> list:
+    """
+    Expand a sparse list of {month, label, average} dicts into a continuous
+    month-by-month series between the first and last month present.
+
+    Months with no data are filled by carrying the last known average forward,
+    so chart splines get intermediate points to bend around instead of a
+    straight two-point line.
+    """
+    if not entries or len(entries) < 2:
+        return entries
+
+    try:
+        from datetime import datetime
+        months = [(datetime.strptime(e["month"], "%Y-%m"), e) for e in entries if e.get("month")]
+        if not months:
+            return entries
+        months.sort(key=lambda t: t[0])
+        first, last = months[0][0], months[-1][0]
+    except (ValueError, TypeError, KeyError):
+        return entries
+
+    by_month = {m.strftime("%Y-%m"): e for m, e in months}
+    filled = []
+    last_known = None
+    cursor = first
+    while cursor <= last:
+        key = cursor.strftime("%Y-%m")
+        if key in by_month:
+            last_known = by_month[key]
+        elif last_known is not None:
+            last_known = {
+                "month": key,
+                "label": cursor.strftime("%b %Y"),
+                "average": last_known["average"],
+            }
+        if last_known is not None:
+            filled.append(last_known)
+        if cursor.month == 12:
+            cursor = cursor.replace(year=cursor.year + 1, month=1)
+        else:
+            cursor = cursor.replace(month=cursor.month + 1)
+    return filled
 
 
 def get_school_monthly_averages(test_results: list) -> list:

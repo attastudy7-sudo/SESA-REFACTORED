@@ -2,21 +2,11 @@
 .gallery-skeleton {
   width: 100%;
   aspect-ratio: 1/1;
-  background: linear-gradient(90deg, #ececec 25%, #f5f5f5 37%, #ececec 63%);
-  background-size: 400% 100%;
-  animation: skeleton-loading 1.2s ease-in-out infinite;
+  background: #ececec;
   border-radius: 12px;
   display: block;
 }
 
-@keyframes skeleton-loading {
-  0% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0 50%;
-  }
-}
 /* ============================================================
    SESA Design System — Refined Organic Professional
    Fonts: Fraunces (display) + DM Sans (body)
@@ -348,7 +338,7 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
 
 /* ─── Page Context (greeting card above content) ────────── */
 .page-context {
-  background: linear-gradient(135deg, var(--green-900) 0%, var(--green-700) 60%, var(--green-800) 100%);
+  background: var(--green-800);
   border-radius: var(--radius-lg);
   padding: 24px 24px 20px;
   margin-top: 20px;
@@ -903,7 +893,7 @@ input:-webkit-autofill:active {
 /* ─── Progress Bar ───────────────────────────────────────── */
 .progress-wrap  { display:flex; align-items:center; gap:12px; margin-bottom:24px; }
 .progress-track { flex:1; height:8px; background:var(--gray-100); border-radius:var(--radius-full); overflow:hidden; }
-.progress-fill  { height:100%; background:linear-gradient(90deg,var(--green-500),var(--green-400)); border-radius:var(--radius-full); transition:width 0.4s ease; }
+.progress-fill  { height:100%; background:var(--green-500); border-radius:var(--radius-full); transition:width 0.4s ease; }
 .progress-label { font-size:0.82rem; font-weight:600; color:var(--green-600); min-width:40px; text-align:right; }
 
 /* ─── Auth Pages ─────────────────────────────────────────── */
@@ -1608,7 +1598,7 @@ input:-webkit-autofill:active {
 .landing-footer-col a:hover { color: #fff; }
 
 /* ─── Test / Quiz Pages ──────────────────────────────────── */
-.quiz-layout { min-height:100vh; background:linear-gradient(160deg,var(--green-800) 0%,var(--green-700) 35%,var(--ivory) 35%); padding:0; }
+.quiz-layout { min-height:100vh; background:var(--green-800); padding:0; }
 .quiz-header-bar { padding:20px 24px; display:flex; align-items:center; justify-content:space-between; }
 .quiz-header-bar .brand { display:flex; align-items:center; gap:10px; color:rgba(255,255,255,.9); }
 .quiz-header-bar .brand img  { width:32px; height:32px; border-radius:50%; }
@@ -1618,7 +1608,7 @@ input:-webkit-autofill:active {
 .quiz-card-wrapper { max-width:680px; margin:0 auto; padding:0 16px 60px; }
 @media (min-width:480px) { .quiz-card-wrapper { padding:0 20px 60px; } }
 .quiz-card     { background:var(--white); border-radius:var(--radius-xl); box-shadow:var(--shadow-xl); overflow:hidden; }
-.quiz-card-top { background:linear-gradient(135deg,#0f2d1e 0%,var(--green-700) 100%); padding:22px 20px 16px; color:#fff; }
+.quiz-card-top { background:var(--green-800); padding:22px 20px 16px; color:#fff; }
 @media (min-width:480px) { .quiz-card-top { padding:28px 32px 20px; } }
 .quiz-test-name  { font-size:0.78rem; font-weight:600; text-transform:uppercase; letter-spacing:.1em; color:var(--gold-200); margin-bottom:4px; }
 .quiz-q-counter  { font-family:var(--font-display); font-size:1.3rem; font-weight:600; margin-bottom:14px; }
@@ -1993,12 +1983,11 @@ input:-webkit-autofill:active {
 
 /* Section wrapper */
 .guide-section {
-  background: var(--white);
-  padding: 32px;
+  padding: 8px;
   margin-bottom: 32px;
   scroll-margin-top: 80px;
 }
-@media (max-width: 480px) { .guide-section { padding: 20px 16px; } }
+@media (max-width: 480px) { .guide-section { padding: 16px 10px; } }
 
 /* Section header with icon */
 .guide-section-header {
