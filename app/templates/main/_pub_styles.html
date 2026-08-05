@@ -73,9 +73,19 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
   font-weight: 700; font-size: .85rem;
   padding: 8px 20px; border-radius: 5px;
   transition: background .2s, transform .15s;
-  white-space: nowrap; margin-left: 8px;
+  white-space: nowrap;
 }
 .btn-nav-in:hover { background: var(--gd); color: #fff; transform: translateY(-1px); }
+.pub-nav-cta { display: flex; align-items: center; gap: 8px; margin-left: 8px; }
+.btn-nav-call {
+  background: transparent; color: var(--g);
+  font-weight: 700; font-size: .85rem;
+  padding: 8px 18px; border-radius: 5px;
+  border: 1px solid var(--g);
+  transition: background .2s, color .2s, transform .15s;
+  white-space: nowrap;
+}
+.btn-nav-call:hover { background: var(--g); color: var(--f); transform: translateY(-1px); }
 .pub-hamburger {
   display: none; flex-direction: column; gap: 5px;
   cursor: pointer; padding: 6px; border: none; background: none;
@@ -93,9 +103,10 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
 .pub-drawer a { color: rgba(250,250,243,.8); padding: 12px 16px; border-radius: 6px; font-size: .9rem; font-weight: 500; transition: background .15s, color .15s; display: block; }
 .pub-drawer a:hover { background: rgba(255,255,255,.05); color: var(--iv); }
 .pub-drawer .d-active { color: var(--g); font-weight: 700; }
+.pub-drawer .d-call { color: var(--g); font-weight: 700; }
 .pub-drawer .d-signin { color: var(--g); font-weight: 700; }
 @media (max-width: 768px) {
-  .pub-links, .btn-nav-in { display: none; }
+  .pub-links, .pub-nav-cta { display: none; }
   .pub-hamburger { display: flex; }
 }
 .dim-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
