@@ -242,13 +242,15 @@ def school_dashboard(school_id):
                      .join(Accounts, Accounts.id == TestResult.user_id)
                      .filter(Accounts.school_id == school.id)
                      .count())
-    at_risk_count = (TestResult.query
-                     .join(Accounts, Accounts.id == TestResult.user_id)
-                     .filter(
-                         Accounts.school_id == school.id,
-                         TestResult.stage.in_(['Elevated Stage', 'Clinical Stage']),
-                     )
-                     .count())
+    at_risk_count = (
+        db.session.query(func.count(func.distinct(TestResult.user_id)))
+        .join(Accounts, Accounts.id == TestResult.user_id)
+        .filter(
+            Accounts.school_id == school.id,
+            TestResult.stage.in_(['Elevated Stage', 'Clinical Stage']),
+        )
+        .scalar() or 0
+    )
 
     # ── Stage distribution — configurable period ────────────────────────────
     # period = 'month' | 'term' | 'year' | 'all'
@@ -863,6 +865,7 @@ def print_claim_codes(school_id):
         school = School.query.get_or_404(school_id)
         
     unclaimed = Accounts.query.filter_by(school_id=school.id, is_claimed=False).order_by(Accounts.fname).all()
+    total_students = Accounts.query.filter_by(school_id=school.id).count()
     
     base = current_app.config.get('APP_BASE_URL') or request.host_url.rstrip('/')
     claim_url = f"{base}/claim"
@@ -873,6 +876,7 @@ def print_claim_codes(school_id):
             'school_name': school.school_name,
             'claim_url': claim_url,
             'total': len(unclaimed),
+            'total_students': total_students,
             'students': [
                 {
                     'name': f'{s.fname} {s.lname}',
@@ -884,7 +888,7 @@ def print_claim_codes(school_id):
             ],
         })
     
-    return render_template('auth/claim_codes_print.html', school=school, unclaimed=unclaimed, claim_url=claim_url)
+    return render_template('auth/claim_codes_print.html', school=school, unclaimed=unclaimed, claim_url=claim_url, total_students=total_students)
 
 
 @main_bp.route('/school/<int:school_id>/upload-students', methods=['POST'])
@@ -1348,7 +1352,7 @@ def school_results(school_id):
     coverage_counts = {}
     monthly_trends = {}
     at_risk_count = (
-        TestResult.query
+        db.session.query(func.count(func.distinct(TestResult.user_id)))
         .join(Accounts, Accounts.id == TestResult.user_id)
         .filter(
             Accounts.school_id == school.id,
@@ -1357,32 +1361,27 @@ def school_results(school_id):
     )
     if selected_class:
         at_risk_count = at_risk_count.filter(Accounts.class_group == selected_class)
-    at_risk_count = at_risk_count.count()
+    at_risk_count = at_risk_count.scalar() or 0
 
     if tab == 'at_risk':
-        latest_subq = (
+        ranked_at_risk = (
             db.session.query(
-                TestResult.user_id,
-                TestResult.test_type,
-                func.max(TestResult.taken_at).label('latest_at'),
+                TestResult.id.label('result_id'),
+                func.row_number().over(
+                    partition_by=TestResult.user_id,
+                    order_by=(TestResult.taken_at.desc(), TestResult.id.desc()),
+                ).label('rn'),
             )
-            .join(Accounts, Accounts.id == TestResult.user_id)
-            .filter(Accounts.school_id == school_id)
-            .group_by(TestResult.user_id, TestResult.test_type)
+            .filter(TestResult.stage.in_(['Elevated Stage', 'Clinical Stage']))
             .subquery()
         )
         at_risk_q = (
             db.session.query(TestResult, Accounts)
             .join(Accounts, Accounts.id == TestResult.user_id)
-            .join(
-                latest_subq,
-                (latest_subq.c.user_id == TestResult.user_id) &
-                (latest_subq.c.test_type == TestResult.test_type) &
-                (latest_subq.c.latest_at == TestResult.taken_at),
-            )
+            .join(ranked_at_risk, ranked_at_risk.c.result_id == TestResult.id)
             .filter(
                 Accounts.school_id == school_id,
-                TestResult.stage.in_(['Elevated Stage', 'Clinical Stage']),
+                ranked_at_risk.c.rn == 1,
             )
         )
         if selected_class:
@@ -1622,7 +1621,7 @@ def join_with_code():
 
 
 @main_bp.route('/claim', methods=['GET', 'POST'])
-@limiter.limit("20 per hour")
+@limiter.limit("20 per minute")
 def claim_account():
     """Student activates a pre-created account using their claim code."""
     from werkzeug.security import check_password_hash, generate_password_hash
@@ -1642,15 +1641,10 @@ def claim_account():
         elif new_password != confirm_password:
             error = 'Passwords do not match.'
         else:
-            # Find all unclaimed accounts and check the hash
-            # (can't query by plain code since we only store the hash)
-            account = next(
-                (a for a in Accounts.query.filter_by(is_claimed=False).all()
-                 if a.claim_code_hash and check_password_hash(a.claim_code_hash, claim_code)),
-                None
-            )
-
-            if not account:
+            account = Accounts.query.filter_by(
+                claim_code_plain=claim_code, is_claimed=False
+            ).first()
+            if not account or not check_password_hash(account.claim_code_hash, claim_code):
                 error = 'Invalid or already used claim code.'
             else:
                 account.password = generate_password_hash(new_password)

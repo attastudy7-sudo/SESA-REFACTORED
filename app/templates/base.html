@@ -282,13 +282,25 @@
     dismiss(true);
   });
 })();
+document.querySelectorAll('.flash-toast').forEach((el) => {
+  if (!el.querySelector('.flash-toast__close')) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'flash-toast__close';
+    btn.setAttribute('aria-label', 'Dismiss notification');
+    btn.textContent = '×';
+    el.appendChild(btn);
+  }
+});
 document.querySelectorAll('.flash-toast').forEach((el, i) => {
-  const btn = document.createElement('button');
-  btn.textContent = '×';
-  btn.style.cssText = 'background:none;border:none;color:rgba(250,250,243,.25);font-size:18px;cursor:pointer;padding:0;line-height:1;flex-shrink:0;';
-  btn.addEventListener('click', () => { el.style.opacity='0'; setTimeout(()=>el.remove(),400); });
-  el.appendChild(btn);
-  setTimeout(() => { el.style.transition='opacity 0.4s'; el.style.opacity='0'; setTimeout(()=>el.remove(),400); }, 4000 + i*300);
+  const dismiss = () => {
+    el.style.transition = 'opacity 180ms ease, transform 180ms cubic-bezier(.23,1,.32,1)';
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(16px)';
+    setTimeout(() => el.remove(), 180);
+  };
+  el.addEventListener('click', dismiss);
+  setTimeout(dismiss, 4000 + i * 300);
 });
 </script>
 

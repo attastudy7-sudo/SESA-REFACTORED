@@ -523,10 +523,5 @@ if (photoInput) {
     reader.readAsDataURL(file);
   });
 }
-
-document.querySelectorAll('.flash-toast').forEach(function(el, i) {
-  el.addEventListener('click', function() { el.style.opacity='0'; setTimeout(function(){el.remove();},400); });
-  setTimeout(function() { el.style.transition='opacity 0.4s'; el.style.opacity='0'; setTimeout(function(){el.remove();},400); }, 4000 + i*300);
-});
 </script>
 {% endblock %}

@@ -43,15 +43,11 @@
           {{ stage }}
         </span>
 
-        <div class="result-message">
-          {{ message }}
-        </div>
-
         <p class="result-breakdown">
           Score of <strong>{{ score }}</strong> out of <strong>{{ max_score }}</strong> — <strong>{{ stage }}</strong> range ({{ score_range }})
         </p>
 
-        {# ── Visual score scale ── #}
+        <!-- {# ── Visual score scale ── #}
         {% if max_score %}
         <div style="margin: 16px 0 20px; padding: 0 4px;">
           <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:rgba(255,255,255,.5); margin-bottom:4px;">
@@ -64,7 +60,7 @@
             Your score: {{ score }} / {{ max_score }} ({{ ((score / max_score) * 100) | round | int }}%)
           </div>
         </div>
-        {% endif %}
+        {% endif %} -->
 
         {# ── Psychoeducation coping tips — shown for every stage ── #}
         {% set coping_tips = {

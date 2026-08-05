@@ -204,8 +204,8 @@
     /* QUIZ GRID (2x2) */
     .quiz-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px; }
     .quiz-card {
-      padding: 2rem 1.75rem; border: 1px solid var(--border); background: var(--surface);
-      transition: background 0.2s;
+      padding: 0rem; border: 1px solid var(--border); background: var(--surface);
+      transition: background 0.2s; border-radius: 0px !important;
     }
     .quiz-card:hover { background: var(--surface-hover); }
     .quiz-card:nth-child(1) { border-radius: 16px 0 0 0; }

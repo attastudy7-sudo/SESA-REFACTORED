@@ -20,7 +20,7 @@
           <td data-label="Stage">
             {% set s = (r.stage or '') | lower %}
             <span class="badge {% if 'normal' in s %}stage-normal{% elif 'mild' in s %}stage-mild{% elif 'elevated' in s %}stage-elevated{% elif 'clinical' in s %}stage-clinical{% else %}badge-gray{% endif %}">
-              {{ r.stage or 'Unknown' }}
+              {{ (r.stage or 'Unknown')|replace(' Stage', '') }}
             </span>
           </td>
           <td data-label="Date" style="color:var(--gray-500); font-size:0.82rem;">{{ r.taken_at.strftime('%d %b %Y') }}</td>

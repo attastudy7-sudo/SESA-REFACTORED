@@ -1,8 +1,12 @@
   {% extends 'base.html' %}
   {% block title %}Home{% endblock %}
 
+  {% block extra_head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main/home.css') }}">
+  {% endblock %}
+
   {% block nav_links %}
-    <li><a href="{{ url_for('main.home') }}" class="active">Home</a></li>
+    <li><a href="{{ url_for('main.home') }}" class="active" aria-current="page">Home</a></li>
     <li><a href="{{ url_for('main.results') }}">Results</a></li>
     {% if current_user.is_super_admin %}
       <li><a href="{{ url_for('admin.dashboard') }}">Admin</a></li>
@@ -20,6 +24,21 @@
   {% endblock %}
 
   {% block body %}
+
+  {# ── Greeting hero band (full-bleed) ── #}
+  <header class="app-header">
+    <div class="app-header-inner">
+      <span class="app-eyebrow">Daily check-in</span>
+      <h1 class="app-greeting">
+        {{ greeting }}, <span>{{ user.fname }}!</span>
+      </h1>
+
+      <p class="app-description">
+        How are you feeling today? <b>Ready for your self-check?</b>
+      </p>
+    </div>
+  </header>
+
   <div class="container pb-48">
 
     {# ── Username Prompt (first login only) ── #}
@@ -37,18 +56,6 @@
     </div>
     {% endif %}
 
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/main/home.css') }}">
-
-  {# ── Modern App Greeting ── #}
-  <header class="app-header">
-    <h1 class="app-greeting">
-      {{ greeting }}, <span>{{ user.fname }}!</span>
-    </h1>
-
-    <p class="app-description">
-      How are you feeling today? <b>Ready for your self-check?</b>
-    </p>
-  </header>
     {# ── Assessments ── #}
     <div class="section" id="assessments">
       <div class="section-head">
@@ -62,7 +69,7 @@
         {% for test in tests_meta %}
         <a href="{% if test.is_ready %}{{ url_for('test.display_questions', test_type=test.name) }}{% else %}javascript:void(0);{% endif %}" 
           class="test-card {% if not test.is_ready %}locked{% endif %}"
-          {% if not test.is_ready %}onclick="alert('This assessment will be exactly 7 days after your previous attempt. Please wait {{ test.days_remaining }} more day(s).');"{% endif %}>
+          {% if not test.is_ready %}onclick="showToast('This assessment will be exactly 7 days after your previous attempt. Please wait {{ test.days_remaining }} more day(s).', 'warning'); return false;"{% endif %}>
           <div class="test-card-image">
             {% if test.get('image_url') %}
             <img src="{{ test.image_url }}"
@@ -120,7 +127,7 @@
           {% elif 'clinical' in s %}{% set bar_mod = 'clinical' %}{% set badge_class = 'stage-clinical' %}
           {% else %}{% set bar_mod = 'mild' %}{% set badge_class = 'badge-gray' %}{% endif %}
 
-          <div class="recent-result-card">
+          <a class="recent-result-card" href="{{ url_for('main.results') }}">
             <div class="recent-result-bar recent-result-bar--{{ bar_mod }}"></div>
             <div class="recent-result-title">{{ r.test_type }}</div>
             <div class="recent-result-score">
@@ -130,7 +137,7 @@
               <span class="badge {{ badge_class }}">{{ r.stage or r.details or 'Unknown' }}</span>
               <span class="recent-result-date">{{ r.taken_at.strftime('%d %b') }}</span>
             </div>
-          </div>
+          </a>
         {% endfor %}
 
         <a href="{{ url_for('main.results') }}" class="recent-result-more">
@@ -138,7 +145,7 @@
           <span>View all<br>results</span>
         </a>
       </div>
-      <p class="recent-results-hint">← swipe for more</p>
+      <p class="recent-results-hint">Swipe for more <i class="fa-solid fa-arrow-right"></i></p>
     </div>
     {% endif %}
 

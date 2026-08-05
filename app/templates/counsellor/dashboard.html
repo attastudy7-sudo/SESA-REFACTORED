@@ -3,7 +3,7 @@
 
 
 {% block nav_links %}
-  <li><a href="{{ url_for('counsellor.dashboard') }}" class="active">My Students</a></li>
+  <li><a href="{{ url_for('counsellor.dashboard') }}" class="active" aria-current="page">My Students</a></li>
   <li><a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a></li>
 {% endblock %}
 

@@ -7,15 +7,49 @@
     const toasts = document.querySelectorAll('.flash-toast');
     toasts.forEach((toast, i) => {
       toast.addEventListener('click', () => dismissToast(toast));
-      setTimeout(() => dismissToast(toast), 4500 + i * 300);
+      setTimeout(() => dismissToast(toast), 4000 + i * 300);
     });
     function dismissToast(el) {
-      el.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+      el.style.transition = 'opacity 180ms ease, transform 180ms cubic-bezier(.23,1,.32,1)';
       el.style.opacity = '0';
-      el.style.transform = 'translateX(40px)';
-      setTimeout(() => el.remove(), 400);
+      el.style.transform = 'translateX(16px)';
+      setTimeout(() => el.remove(), 180);
     }
   })();
+
+  /* ─── Show Toast (runtime, e.g. locked-card taps) ───────── */
+  window.showToast = function showToast(message, type) {
+    let stack = document.querySelector('.flash-stack');
+    if (!stack) {
+      stack = document.createElement('div');
+      stack.className = 'flash-stack';
+      document.body.appendChild(stack);
+    }
+    const toast = document.createElement('div');
+    toast.className = 'flash-toast' + (type ? ' ' + type : '');
+    const text = document.createElement('span');
+    text.innerHTML = message;
+    toast.appendChild(text);
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'flash-toast__close';
+    close.setAttribute('aria-label', 'Dismiss notification');
+    close.textContent = '×';
+    close.addEventListener('click', e => {
+      e.stopPropagation();
+      dismissToast(toast);
+    });
+    toast.appendChild(close);
+    stack.appendChild(toast);
+    function dismissToast(el) {
+      el.style.transition = 'opacity 180ms ease, transform 180ms cubic-bezier(.23,1,.32,1)';
+      el.style.opacity = '0';
+      el.style.transform = 'translateX(16px)';
+      setTimeout(() => el.remove(), 180);
+    }
+    toast.addEventListener('click', () => dismissToast(toast));
+    setTimeout(() => dismissToast(toast), 4500);
+  };
 
   /* ─── Hamburger / Mobile Drawer ──────────────────────────── */
   /*

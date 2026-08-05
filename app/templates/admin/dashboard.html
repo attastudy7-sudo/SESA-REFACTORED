@@ -267,7 +267,7 @@
 {% endblock %}
 
 {% block nav_links %}
-  <li><a href="{{ url_for('admin.dashboard') }}" class="active">Admin</a></li>
+  <li><a href="{{ url_for('admin.dashboard') }}" class="active" aria-current="page">Admin</a></li>
   <li><a href="{{ url_for('main.home') }}">Home</a></li>
   <li><a href="{{ url_for('admin.counsellor_applications') }}">Applications</a></li>
   <li><a href="{{ url_for('auth.logout') }}" class="btn-nav-logout">Logout</a></li>
@@ -451,7 +451,7 @@
                   <td><strong>{{ r.score }}</strong>{% if r.max_score %}<span style="color:var(--gray-400);">/{{ r.max_score }}</span>{% endif %}</td>
                   <td>
                     {% set s = (r.stage or r.details or '') | lower %}
-                    <span class="badge {% if 'normal' in s %}stage-normal{% elif 'mild' in s %}stage-mild{% elif 'elevated' in s %}stage-elevated{% elif 'clinical' in s %}stage-clinical{% else %}badge-gray{% endif %}">{{ r.stage or r.details or 'Unknown' }}</span>
+                    <span class="badge {% if 'normal' in s %}stage-normal{% elif 'mild' in s %}stage-mild{% elif 'elevated' in s %}stage-elevated{% elif 'clinical' in s %}stage-clinical{% else %}badge-gray{% endif %}">{{ (r.stage or r.details or 'Unknown')|replace(' Stage', '') }}</span>
                   </td>
                   <td style="font-size:0.75rem; color:var(--gray-400);">{{ r.taken_at.strftime('%d %b %Y') }}</td>
                 </tr>
@@ -604,7 +604,7 @@
                   <td><strong>{{ r.score }}</strong>{% if r.max_score %}<span style="color:var(--gray-400);">/{{ r.max_score }}</span>{% endif %}</td>
                   <td>
                     {% set s = (r.stage or r.details or '') | lower %}
-                    <span class="badge {% if 'normal' in s %}stage-normal{% elif 'mild' in s %}stage-mild{% elif 'elevated' in s %}stage-elevated{% elif 'clinical' in s %}stage-clinical{% else %}badge-gray{% endif %}">{{ r.stage or r.details or 'Unknown' }}</span>
+                    <span class="badge {% if 'normal' in s %}stage-normal{% elif 'mild' in s %}stage-mild{% elif 'elevated' in s %}stage-elevated{% elif 'clinical' in s %}stage-clinical{% else %}badge-gray{% endif %}">{{ (r.stage or r.details or 'Unknown')|replace(' Stage', '') }}</span>
                     {% if 'clinical' in s %}<i class="fa-solid fa-circle-exclamation" style="color:var(--red-600); margin-left:4px;"></i>{% endif %}
                   </td>
                   <td style="font-size:0.75rem; color:var(--gray-400);">{{ r.taken_at.strftime('%d %b %Y %H:%M') }}</td>

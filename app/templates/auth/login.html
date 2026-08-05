@@ -88,10 +88,5 @@ if (toggleBtn && pwField) {
     toggleIcon.className = isHidden ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
   });
 }
-
-document.querySelectorAll('.flash-toast').forEach((el, i) => {
-  el.addEventListener('click', () => { el.style.opacity='0'; setTimeout(()=>el.remove(),400); });
-  setTimeout(() => { el.style.transition='opacity 0.4s'; el.style.opacity='0'; setTimeout(()=>el.remove(),400); }, 4000 + i*300);
-});
 </script>
 {% endblock %}

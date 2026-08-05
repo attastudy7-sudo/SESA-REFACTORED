@@ -130,6 +130,80 @@
     return STAGE_COLOURS[key] || COLORS.muted;
   }
 
+  /* --- stage distribution (shared between overview + results tabs) --- */
+  var STAGE_ORDER = ['Normal', 'Mild', 'Elevated', 'Clinical'];
+
+  function stageRank(label) {
+    var idx = STAGE_ORDER.indexOf((label || '').replace(/\s*Stage$/i, ''));
+    return idx === -1 ? STAGE_ORDER.length : idx;
+  }
+
+  function padStageItems(items) {
+    var seen = {};
+    items.forEach(function (d) { seen[stageRank(d.label)] = true; });
+    STAGE_ORDER.forEach(function (key, idx) {
+      if (!seen[idx]) items.push({ label: key + ' Stage', value: 0 });
+    });
+    return items.sort(function (a, b) { return stageRank(a.label) - stageRank(b.label); });
+  }
+
+  function buildStageItems(data) {
+    var arr = Array.isArray(data)
+      ? data
+      : Object.keys(data).map(function (l) { return { label: l, value: data[l] }; });
+    return padStageItems(arr.map(function (d) {
+      return { label: d.label, value: parseInt(d.value, 10) || 0 };
+    }));
+  }
+
+  function renderStageKey(keyEl, items) {
+    var total = items.reduce(function (a, b) { return a + b.value; }, 0);
+    keyEl.innerHTML = items.map(function (d) {
+      var pct = total ? Math.round(d.value / total * 100) : 0;
+      return '<li class="sd-stage-key__item">' +
+        '<span class="sd-stage-key__chip" style="background:' + stageColour(d.label) + ';"></span>' +
+        '<span class="sd-stage-key__label">' + escHtml(d.label.replace(/\s*Stage$/i, '')) + '</span>' +
+        '<span class="sd-stage-key__count">' + d.value + '</span>' +
+        '<span class="sd-stage-key__pct">' + pct + '%</span>' +
+        '</li>';
+    }).join('');
+  }
+
+  function mountStageDoughnut(canvas, items, totalEl) {
+    var labels = items.map(function (d) { return d.label; });
+    var values = items.map(function (d) { return d.value; });
+    var colours = labels.map(stageColour);
+
+    var chart = new Chart(canvas.getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: labels,
+        datasets: [{ data: values, backgroundColor: colours, borderWidth: 0, hoverBorderWidth: 0 }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '66%',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            displayColors: false,
+            callbacks: {
+              label: function (ctx) {
+                var total = ctx.dataset.data.reduce(function (a, b) { return a + b; }, 0);
+                var pct = total ? Math.round(ctx.raw / total * 100) : 0;
+                return ctx.label.replace(/\s*Stage$/i, '') + ': ' + ctx.raw + ' (' + pct + '%)';
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (totalEl) totalEl.textContent = values.reduce(function (a, b) { return a + b; }, 0);
+    return chart;
+  }
+
   /* ==========================================================
      MONTHLY DICT → CHART HELPER
      Converts {"2025-01": 5, "2025-02": 3} to
@@ -161,61 +235,24 @@
     if (chartEmpty) chartEmpty.classList.toggle('visible', empty);
   }
 
-  /* --- donut --- */
+  /* --- donut view (stage distribution — pie + key) --- */
   function initDonutChart() {
     var canvas = $('#dashDonut');
-    if (!canvas) return;
+    var keyEl = $('#sdDashStageKey');
+    var totalEl = $('#dashDonutTotal');
+    if (!canvas || !keyEl) return;
     if (donutChart) { donutChart.destroy(); donutChart = null; }
 
-    var labels = Object.keys(DATA.stage);
-    var values = Object.values(DATA.stage);
-    var colours = labels.map(function (l) { return stageColour(l); });
-
-    if (labels.length === 0) {
+    var items = buildStageItems(DATA.stage);
+    if (!items.length) {
       setChartEmpty(true);
-      var legendEl = $('#sdDonutLegend');
-      if (legendEl) legendEl.innerHTML = '';
+      keyEl.innerHTML = '';
+      if (totalEl) totalEl.textContent = '0';
       return;
     }
     setChartEmpty(false);
-
-    donutChart = new Chart(canvas.getContext('2d'), {
-      type: 'doughnut',
-      data: {
-        labels: labels,
-        datasets: [{ data: values, backgroundColor: colours, borderWidth: 0 }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '72%',
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: function (ctx) {
-                var total = ctx.dataset.data.reduce(function (a, b) { return a + b; }, 0);
-                var pct = total ? Math.round(ctx.raw / total * 100) : 0;
-                return ctx.label + ': ' + ctx.raw + ' (' + pct + '%)';
-              }
-            }
-          }
-        }
-      }
-    });
-
-    /* build custom legend */
-    var legendEl = $('#sdDonutLegend');
-    if (legendEl) {
-      var total = values.reduce(function (a, b) { return a + b; }, 0);
-      legendEl.innerHTML = labels.map(function (l, i) {
-        var pct = total ? Math.round(values[i] / total * 100) : 0;
-        return '<div class="sd-legend-item">' +
-          '<span class="sd-legend-dot" style="background:' + colours[i] + ';"></span>' +
-          '<span class="sd-legend-label">' + escHtml(l) + '</span>' +
-          '<span class="sd-legend-value">' + values[i] + ' (' + pct + '%)</span></div>';
-      }).join('');
-    }
+    donutChart = mountStageDoughnut(canvas, items, totalEl);
+    renderStageKey(keyEl, items);
   }
 
   /* --- bar (coverage — dashboard coverage_counts is {test_type: count}) --- */
@@ -282,9 +319,6 @@
     var labels = arr.map(function (d) { return d.label; });
     var values = arr.map(function (d) { return d.value; });
 
-    /* colour segments: green where avg <= 30, red where avg > 30 */
-    var segmentColours = values.map(function (v) { return v <= 30 ? COLORS.green : COLORS.red; });
-
     lineChart = new Chart(canvas.getContext('2d'), {
       type: 'line',
       data: {
@@ -297,7 +331,7 @@
           tension: 0.4,
           borderWidth: 2,
           borderCapStyle: 'round',
-          pointBackgroundColor: segmentColours,
+          pointBackgroundColor: COLORS.green,
           pointBorderColor: '#ffffff',
           pointRadius: 4,
           pointHoverRadius: 6
@@ -310,13 +344,11 @@
         scales: {
           y: {
             beginAtZero: true,
-            max: 100,
             grid: { color: 'rgba(0,0,0,0.06)', drawTicks: false },
             border: { display: false },
             ticks: {
               font: { family: 'Manrope', size: 11 },
-              color: COLORS.text,
-              callback: function (v) { return v + '%'; }
+              color: COLORS.text
             }
           },
           x: {
@@ -332,14 +364,14 @@
   }
 
   function updateLineLegend(values) {
-    var avgEl = $('#sdLineAvg');
+    var testsEl = $('#sdLineAvg');
     var monthsEl = $('#sdLineMonths');
-    if (avgEl) {
+    if (testsEl) {
       if (!values || values.length === 0) {
-        avgEl.textContent = '—';
+        testsEl.textContent = '—';
       } else {
-        var avg = Math.round(values.reduce(function (a, b) { return a + b; }, 0) / values.length);
-        avgEl.textContent = avg + '%';
+        /* monthly values are test counts (not percentages) — show the latest month */
+        testsEl.textContent = String(values[values.length - 1]);
       }
     }
     if (monthsEl) monthsEl.textContent = values ? values.length : 0;
@@ -554,7 +586,7 @@
   function switchTab(tab) {
     if (tab === currentTab) return;
     var targetBtn = $('.sd-nav-link[data-tab="' + tab + '"]');
-    if (targetBtn && targetBtn.dataset.locked) return;
+    if (targetBtn && targetBtn.dataset.locked) { showSubscriptionToast(); return; }
     currentTab = tab;
 
     /* update nav link active states */
@@ -605,7 +637,7 @@
         var name = s.name || '';
         var initials = name.split(' ').map(function (w) { return w[0] || ''; }).join('').substring(0, 2).toUpperCase();
         var avatarColor = s.color || 'gray';
-        return '<div class="sd-student-item" data-student-id="' + s.id + '" data-student-name="' + escHtml(name) + '">' +
+        return '<div class="sd-student-item" data-student-id="' + s.id + '" data-student-name="' + escHtml(name) + '" data-stage-color="' + avatarColor + '">' +
           '<div class="sd-student-item__avatar sd-student-item__avatar--' + avatarColor + '">' + escHtml(initials) + '</div>' +
           '<div class="sd-student-item__info">' +
             '<div class="sd-student-item__name">' + escHtml(name) + '</div>' +
@@ -737,7 +769,7 @@
       return '<tr>' +
         '<td>' + escHtml(r.test_type || 'Test') + '</td>' +
         '<td>' + (r.score || 0) + '/' + (r.max_score || 0) + '</td>' +
-        '<td><span class="sd-badge ' + stageClass + '">' + escHtml(r.stage || 'Unknown') + '</span></td>' +
+        '<td><span class="sd-badge ' + stageClass + '">' + escHtml((r.stage || 'Unknown').replace(' Stage', '')) + '</span></td>' +
         '<td>' + escHtml(r.taken_at || '') + '</td>' +
       '</tr>';
     }).join('');
@@ -761,7 +793,6 @@
           '<div class="sd-chart-wrapper">' +
             '<div class="sd-chart-header">' +
               '<span class="sd-inner-title">Monthly Progress</span>' +
-              '<span class="sd-progress-hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> Lower % is better</span>' +
             '</div>' +
             '<canvas id="sdProgressCanvas"></canvas>' +
           '</div>' +
@@ -798,7 +829,14 @@
           '<div style="font-weight:700;font-size:0.85rem;margin-bottom:10px;">Test History (' + (data.total_results || results.length) + ')</div>' +
           '<div class="sd-results-scroll">' +
             '<table class="sd-table"><thead><tr><th>Type</th><th>Score</th><th>Stage</th><th>Date</th></tr></thead>' +
-            '<tbody>' + (resultRows || '<tr><td colspan="4" style="text-align:center;color:var(--sd-gray-light);">No results</td></tr>') + '</tbody></table>' +
+            '<tbody>' + (resultRows ||
+              '<tr class="sd-table-empty"><td colspan="4">' +
+                '<div class="sd-empty-state">' +
+                  '<div class="sd-empty-state__icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>' +
+                  '<div class="sd-empty-state__title">No results</div>' +
+                  '<div class="sd-empty-state__desc">This student has not completed an assessment yet.</div>' +
+                '</div>' +
+              '</td></tr>') + '</tbody></table>' +
           '</div>' +
         '</div>' +
       '</div>';
@@ -910,7 +948,14 @@
         bindResultsFragment();
         bindTableSort();
       } else {
-        mainContent.innerHTML = '<div class="sd-card" style="text-align:center;padding:48px;color:var(--sd-gray-light);">No results found</div>';
+        mainContent.innerHTML =
+          '<div class="sd-card">' +
+            '<div class="sd-empty-state">' +
+              '<div class="sd-empty-state__icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>' +
+              '<div class="sd-empty-state__title">No results found</div>' +
+              '<div class="sd-empty-state__desc">Results appear here once students complete an assessment.</div>' +
+            '</div>' +
+          '</div>';
       }
     })
     .catch(function (err) {
@@ -919,11 +964,13 @@
     });
   }
 
+  /* --- results donut view (stage distribution — pie + key) --- */
   function initResultsDonutChart() {
     var card = $('.sd-results-chart-card');
     var canvas = $('#sdResultsDonut');
-    var legendEl = $('#sdResultsDonutLegend');
-    if (!card || !canvas || !legendEl) return;
+    var keyEl = $('#sdResultsStageKey');
+    var totalEl = $('#sdResultsDonutTotal');
+    if (!card || !canvas || !keyEl) return;
     if (resultsDonutChart) { resultsDonutChart.destroy(); resultsDonutChart = null; }
 
     var data = [];
@@ -933,49 +980,14 @@
       data = [];
     }
 
-    var labels = data.map(function (d) { return d.label; });
-    var values = data.map(function (d) { return d.value; });
-
-    if (labels.length === 0) {
-      legendEl.innerHTML = '<div class="sd-legend-item">No data</div>';
+    var items = buildStageItems(data);
+    if (!items.length) {
+      keyEl.innerHTML = '<li class="sd-stage-key__item sd-stage-key__empty">No data</li>';
+      if (totalEl) totalEl.textContent = '0';
       return;
     }
-
-    var colours = labels.map(function (l) { return stageColour(l); });
-
-    resultsDonutChart = new Chart(canvas.getContext('2d'), {
-      type: 'doughnut',
-      data: {
-        labels: labels,
-        datasets: [{ data: values, backgroundColor: colours, borderWidth: 0 }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '72%',
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: function (ctx) {
-                var total = ctx.dataset.data.reduce(function (a, b) { return a + b; }, 0);
-                var pct = total ? Math.round(ctx.raw / total * 100) : 0;
-                return ctx.label + ': ' + ctx.raw + ' (' + pct + '%)';
-              }
-            }
-          }
-        }
-      }
-    });
-
-    var total = values.reduce(function (a, b) { return a + b; }, 0);
-    legendEl.innerHTML = labels.map(function (l, i) {
-      var pct = total ? Math.round(values[i] / total * 100) : 0;
-      return '<div class="sd-legend-item">' +
-        '<span class="sd-legend-dot" style="background:' + colours[i] + ';"></span>' +
-        '<span class="sd-legend-label">' + escHtml(l) + '</span>' +
-        '<span class="sd-legend-value">' + values[i] + ' (' + pct + '%)</span></div>';
-    }).join('');
+    resultsDonutChart = mountStageDoughnut(canvas, items, totalEl);
+    renderStageKey(keyEl, items);
   }
 
   function initResultsBarChart() {
@@ -1182,15 +1194,13 @@
   function initAtRiskCardLink() {
     $$('.sd-vital-card[data-tab]').forEach(function (card) {
       card.classList.add('sd-vital-card--link');
-      card.setAttribute('role', 'button');
-      card.setAttribute('tabindex', '0');
-      var nameEl = $('.sd-vital-card__name', card);
-      var name = nameEl ? nameEl.textContent.trim() : 'Dashboard';
-      card.setAttribute('aria-label', 'View ' + name);
       card.onclick = function () {
         var tab = card.dataset.tab;
         if (tab) switchTab(tab);
       };
+      if (card.tagName === 'BUTTON') return;
+      card.setAttribute('role', 'button');
+      card.setAttribute('tabindex', '0');
       card.onkeydown = function (e) {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
@@ -1225,30 +1235,16 @@
     return { jhs: 'JHS', shs: 'SHS', university: 'University' }[level] || level;
   }
 
-  function classRiskLine(c) {
-    var parts = [];
-    if (c.clinical_count) {
-      parts.push('<span class="sd-class-card__risk-item"><i class="sd-class-card__risk-dot sd-class-card__risk-dot--clinical" aria-hidden="true"></i>' + c.clinical_count + ' clinical</span>');
-    }
-    if (c.elevated_count) {
-      parts.push('<span class="sd-class-card__risk-item"><i class="sd-class-card__risk-dot sd-class-card__risk-dot--elevated" aria-hidden="true"></i>' + c.elevated_count + ' elevated</span>');
-    }
-    if (parts.length) {
-      return '<div class="sd-class-card__risk">' + parts.join('') + '</div>';
-    }
-    return '<div class="sd-class-card__risk"><span class="sd-class-card__risk-none">No risk flagged</span></div>';
-  }
-
   function renderClassCards(classes) {
     if (!mainContent) return;
     if (!classes || classes.length === 0) {
       mainContent.innerHTML =
         '<div class="sd-card">' +
-          '<div class="sd-classes-empty">' +
-            '<div class="sd-classes-empty__icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></div>' +
-            '<h3 class="sd-classes-empty__title">No classes yet</h3>' +
-            '<p class="sd-classes-empty__desc">Create a class to organise your students, then assign students during upload or from the student panel.</p>' +
-            '<button class="sd-btn-solid" id="sdCreateClassEmptyBtn">Create Class</button>' +
+          '<div class="sd-empty-state">' +
+            '<div class="sd-empty-state__icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></div>' +
+            '<div class="sd-empty-state__title">No classes yet</div>' +
+            '<div class="sd-empty-state__desc">Create a class to organise your students, then assign students during upload or from the student panel.</div>' +
+            '<div class="sd-empty-state__action"><button class="sd-btn-solid" id="sdCreateClassEmptyBtn">Create Class</button></div>' +
           '</div>' +
         '</div>';
       var emptyBtn = $('#sdCreateClassEmptyBtn');
@@ -1277,7 +1273,6 @@
             var level = classLevelLabel(c.level);
             return '<div class="sd-class-card" data-class-id="' + c.id + '" data-class-name="' + escHtml(c.name) + '" data-class-level="' + escHtml(c.level || '') + '">' +
               '<div class="sd-class-card__top">' +
-                '<div class="sd-class-card__icon"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></div>' +
                 '<div class="sd-class-card__meta">' +
                   '<div class="sd-class-card__name">' + escHtml(c.name) + '</div>' +
                   (level ? '<div class="sd-class-card__level">' + level + '</div>' : '') +
@@ -1294,8 +1289,9 @@
                   '</div>' +
                 '</div>' +
               '</div>' +
-              '<div class="sd-class-card__count">' + (c.student_count || 0) + ' student' + ((c.student_count || 0) === 1 ? '' : 's') + (c.screened_count ? ' · ' + c.screened_count + ' screened' : '') + '</div>' +
-              classRiskLine(c) +
+              '<div class="sd-class-card__foot">' +
+                '<div class="sd-class-card__count">' + (c.student_count || 0) + ' student' + ((c.student_count || 0) === 1 ? '' : 's') + (c.screened_count ? ' · ' + c.screened_count + ' screened' : '') + '</div>' +
+              '</div>' +
             '</div>';
           }).join('') +
         '</div>' +
@@ -1420,7 +1416,13 @@
       ? students.map(function (s) {
           return '<tr><td>' + escHtml(s.name) + '</td></tr>';
         }).join('')
-      : '<tr><td colspan="1" class="sd-results-empty" style="text-align:center;color:var(--sd-gray-light);">No students in this class yet</td></tr>';
+      : '<tr class="sd-table-empty"><td colspan="1">' +
+          '<div class="sd-empty-state">' +
+            '<div class="sd-empty-state__icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>' +
+            '<div class="sd-empty-state__title">No students in this class yet</div>' +
+            '<div class="sd-empty-state__desc">Add students to this class to track their wellbeing.</div>' +
+          '</div>' +
+        '</td></tr>';
 
     mainContent.innerHTML =
       '<div class="sd-card">' +
@@ -1458,10 +1460,11 @@
     })
     .then(function (data) {
       if (data && data.error) {
-        alert(data.error);
+        showToast(data.error || 'Could not create this class.', 'error');
         return;
       }
       closeOverlay('sdClassModalOverlay');
+      showToast('Class created.', 'success');
       fetchClasses();
     })
     .catch(function (err) { console.error('Class create failed:', err); });
@@ -1509,10 +1512,11 @@
     })
     .then(function (data) {
       if (data && data.error) {
-        alert(data.error);
+        showToast(data.error || 'Could not rename this class.', 'error');
         return;
       }
       closeOverlay('sdClassModalOverlay');
+      showToast('Class renamed.', 'success');
       fetchClasses();
     })
     .catch(function (err) { console.error('Rename failed:', err); });
@@ -1532,10 +1536,11 @@
     })
     .then(function (data) {
       if (data && data.error) {
-        alert(data.error);
+        showToast(data.error || 'Could not delete this class.', 'error');
         return;
       }
       closeOverlay('sdClassDeleteOverlay');
+      showToast('Class deleted.', 'success');
       fetchClasses();
     })
     .catch(function (err) { console.error('Delete failed:', err); });
@@ -1575,7 +1580,7 @@
   function submitAddStudents(classId) {
     var checks = $$('.sd-class-add-check:checked');
     if (checks.length === 0) {
-      alert('No students selected.');
+      showToast('Select at least one student to add.', 'warning');
       return;
     }
     var ids = checks.map(function (c) { return parseInt(c.value, 10); });
@@ -1585,10 +1590,11 @@
     })
     .then(function (data) {
       if (data && data.error) {
-        alert(data.error);
+        showToast(data.error || 'Could not add students.', 'error');
         return;
       }
       closeOverlay('sdClassAddOverlay');
+      showToast(checks.length + ' student' + (checks.length === 1 ? '' : 's') + ' added.', 'success');
       if (currentClassId == classId) {
         openClassDetail(classId);
       } else {
@@ -1629,6 +1635,7 @@
       var students = data.students || [];
       var schoolName = data.school_name || '';
       var claimUrl = data.claim_url || '';
+      var totalStudents = data.total_students || 0;
 
       if (urlCode) urlCode.textContent = claimUrl;
 
@@ -1637,24 +1644,37 @@
         if (urlCode) urlCode.textContent = '';
         var copyRow = $('.sd-cc-copy-row');
         if (copyRow) copyRow.style.display = 'none';
-        if (grid) grid.innerHTML =
-          '<div class="sd-cc-empty">' +
-            '<div class="sd-cc-empty__icon">' +
-              '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
-                '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>' +
-                '<polyline points="14 2 14 8 20 8"/>' +
-                '<line x1="16" y1="13" x2="8" y2="13"/>' +
-                '<line x1="16" y1="17" x2="8" y2="17"/>' +
-                '<polyline points="10 9 9 9 8 9"/>' +
-              '</svg>' +
-            '</div>' +
-            '<div class="sd-cc-empty__title">No students uploaded yet</div>' +
-            '<div class="sd-cc-empty__desc">Upload students first to generate claim codes for them.</div>' +
-            '<button class="sd-btn-solid" onclick="closeOverlay(\'sdClaimModalOverlay\');uploadOrToast();">' +
-              '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>' +
-              'Upload Students' +
-            '</button>' +
-          '</div>';
+        if (totalStudents === 0) {
+          if (grid) grid.innerHTML =
+            '<div class="sd-cc-empty">' +
+              '<div class="sd-cc-empty__icon">' +
+                '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
+                  '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>' +
+                  '<polyline points="14 2 14 8 20 8"/>' +
+                  '<line x1="16" y1="13" x2="8" y2="13"/>' +
+                  '<line x1="16" y1="17" x2="8" y2="17"/>' +
+                  '<polyline points="10 9 9 9 8 9"/>' +
+                '</svg>' +
+              '</div>' +
+              '<div class="sd-cc-empty__title">No students uploaded yet</div>' +
+              '<div class="sd-cc-empty__desc">Upload students first to generate claim codes for them.</div>' +
+              '<button class="sd-btn-solid" onclick="closeOverlay(\'sdClaimModalOverlay\');uploadOrToast();">' +
+                '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>' +
+                'Upload Students' +
+              '</button>' +
+            '</div>';
+        } else {
+          if (grid) grid.innerHTML =
+            '<div class="sd-cc-empty">' +
+              '<div class="sd-cc-empty__icon">' +
+                '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
+                  '<polyline points="20 6 9 17 4 12"/>' +
+                '</svg>' +
+              '</div>' +
+              '<div class="sd-cc-empty__title">All accounts claimed</div>' +
+              '<div class="sd-cc-empty__desc">Every student has activated their account, so there are no claim codes left to print. New students will receive a claim code when you upload them.</div>' +
+            '</div>';
+        }
         return;
       }
 
@@ -1699,7 +1719,21 @@
     openOverlay('uploadModalOverlay');
   }
 
-  function showSubscriptionToast() {
+  function showToast(message, type) {
+    var toast = document.createElement('div');
+    toast.className = 'flash-toast' + (type ? ' ' + type : '');
+    toast.setAttribute('role', (type === 'error' || type === 'danger') ? 'alert' : 'status');
+    toast.innerHTML = '<span>' + message + '</span>';
+    var close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'flash-toast__close';
+    close.setAttribute('aria-label', 'Dismiss notification');
+    close.textContent = '×';
+    close.addEventListener('click', function (e) {
+      e.stopPropagation();
+      dismissToast(toast);
+    });
+    toast.appendChild(close);
     var stack = document.querySelector('.flash-stack');
     if (!stack) {
       stack = document.createElement('div');
@@ -1708,23 +1742,22 @@
       stack.setAttribute('aria-live', 'polite');
       document.body.appendChild(stack);
     }
-    var toast = document.createElement('div');
-    toast.className = 'flash-toast warning';
-    toast.setAttribute('role', 'alert');
-    toast.innerHTML = '<span>Upload is available with an active subscription. Click <strong>Get Started</strong> to subscribe.</span>';
     stack.appendChild(toast);
-    toast.addEventListener('click', function () {
-      toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-      toast.style.opacity = '0';
-      toast.style.transform = 'translateX(40px)';
-      setTimeout(function () { toast.remove(); }, 400);
-    });
-    setTimeout(function () {
-      toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-      toast.style.opacity = '0';
-      toast.style.transform = 'translateX(40px)';
-      setTimeout(function () { toast.remove(); }, 400);
-    }, 5000);
+    toast.addEventListener('click', function () { dismissToast(toast); });
+    setTimeout(function () { dismissToast(toast); }, 4500);
+    return toast;
+  }
+
+  function dismissToast(toast) {
+    toast.style.transition = 'opacity 180ms ease, transform 180ms cubic-bezier(.23,1,.32,1)';
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(16px)';
+    setTimeout(function () { toast.remove(); }, 180);
+  }
+
+  function showSubscriptionToast() {
+    var toast = showToast('This feature requires an active subscription. <strong>Tap here to subscribe now.</strong>', 'warning');
+    toast.addEventListener('click', function () { initPaystack(); });
   }
 
   function closeUploadModal() {
@@ -1792,7 +1825,7 @@
     classesApi(DATA.classesUrl)
       .then(function (data) {
         var classes = (data && data.classes) || [];
-        var options = '<option value="">— Unassigned (use the class_group column if provided) —</option>';
+        var options = '<option value="">— Unassigned —</option>';
         if (classes.length === 0) {
           options += '<option value="" disabled>No classes yet — create one in the Classes tab first</option>';
         } else {
@@ -1845,7 +1878,7 @@
      ========================================================== */
   function initPaystack() {
     if (!DATA.paystackKey || !window.PaystackPop) {
-      alert('Payment is not configured. Please contact support.');
+      showToast('Payments are not set up yet. Please contact support.', 'error');
       return;
     }
 
@@ -1868,15 +1901,15 @@
         .then(function (res) { return res.json(); })
         .then(function (data) {
           if (data.success) {
-            alert('Payment successful! Your subscription is now active.');
-            location.reload();
+            showToast('Payment successful! Your subscription is now active.', 'success');
+            setTimeout(function () { location.reload(); }, 1500);
           } else {
-            alert('Payment verification failed. Please contact support.');
+            showToast('We could not verify your payment. Please contact support.', 'error');
           }
         })
         .catch(function (err) {
           console.error('Verification failed:', err);
-          alert('Payment could not be verified. Please contact support.');
+          showToast('We could not verify your payment. Please contact support.', 'error');
         });
       },
       onClose: function () {}
@@ -2177,6 +2210,31 @@
       }
     };
 
+    /* QR modal */
+    var qrBtn = $('#sdQrBtn');
+    if (qrBtn) qrBtn.onclick = function () { openOverlay('sdQrModalOverlay'); };
+    var qrModalClose = $('#sdQrModalClose');
+    if (qrModalClose) qrModalClose.onclick = function () { closeOverlay('sdQrModalOverlay'); };
+
+    var qrOverlay = $('#sdQrModalOverlay');
+    if (qrOverlay) {
+      qrOverlay.onclick = function (e) {
+        if (e.target === qrOverlay) closeOverlay('sdQrModalOverlay');
+      };
+    }
+
+    var qrCopyBtn = $('#sdQrCopyBtn');
+    if (qrCopyBtn) qrCopyBtn.onclick = function () {
+      var codeEl = $('#sdQrLink');
+      if (codeEl && navigator.clipboard) {
+        var text = codeEl.textContent || codeEl.innerText;
+        navigator.clipboard.writeText(text).then(function () {
+          qrCopyBtn.textContent = 'Copied!';
+          setTimeout(function () { qrCopyBtn.textContent = 'Copy'; }, 2000);
+        });
+      }
+    };
+
     /* class modal bindings */
     var classModalClose = $('#sdClassModalClose');
     if (classModalClose) classModalClose.onclick = function () { closeOverlay('sdClassModalOverlay'); };
@@ -2448,6 +2506,10 @@
       if (sidebar.classList.contains('open')) closeSidebar();
       else openSidebar();
     });
+  }
+  var sidebarClose = document.getElementById('sdSidebarClose');
+  if (sidebarClose) {
+    sidebarClose.addEventListener('click', closeSidebar);
   }
   if (sidebarOverlay) {
     sidebarOverlay.addEventListener('click', closeSidebar);

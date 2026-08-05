@@ -147,35 +147,32 @@ def get_report_data(school_id: int, period: str) -> dict:
             'stage_counts': {r.stage: r.count for r in rows},
         })
 
-    # ── At-risk students (Elevated + Clinical, latest result per test) ────────
-    latest_subq = (
+    # ── At-risk students (Elevated + Clinical, latest at-risk result per student) ──
+    ranked_at_risk = (
         db.session.query(
-            TestResult.user_id,
-            TestResult.test_type,
-            func.max(TestResult.taken_at).label('latest_at'),
+            TestResult.id.label('result_id'),
+            func.row_number().over(
+                partition_by=TestResult.user_id,
+                order_by=(TestResult.taken_at.desc(), TestResult.id.desc()),
+            ).label('rn'),
         )
         .join(Accounts, Accounts.id == TestResult.user_id)
         .filter(
             Accounts.school_id == school_id,
             TestResult.taken_at >= start,
             TestResult.taken_at <= end,
+            TestResult.stage.in_(['Elevated Stage', 'Clinical Stage']),
         )
-        .group_by(TestResult.user_id, TestResult.test_type)
         .subquery()
     )
 
     at_risk_rows = (
         db.session.query(TestResult, Accounts)
         .join(Accounts, Accounts.id == TestResult.user_id)
-        .join(
-            latest_subq,
-            (latest_subq.c.user_id == TestResult.user_id) &
-            (latest_subq.c.test_type == TestResult.test_type) &
-            (latest_subq.c.latest_at == TestResult.taken_at),
-        )
+        .join(ranked_at_risk, ranked_at_risk.c.result_id == TestResult.id)
         .filter(
             Accounts.school_id == school_id,
-            TestResult.stage.in_(['Elevated Stage', 'Clinical Stage']),
+            ranked_at_risk.c.rn == 1,
         )
         .order_by(
             db.case((TestResult.stage == 'Clinical Stage', 0), else_=1),

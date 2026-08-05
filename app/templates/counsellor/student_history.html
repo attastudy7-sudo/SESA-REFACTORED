@@ -56,7 +56,7 @@
                 </td>
                 <td>
                   <span class="badge {% if 'normal' in s %}stage-normal{% elif 'mild' in s %}stage-mild{% elif 'elevated' in s %}stage-elevated{% elif 'clinical' in s %}stage-clinical{% else %}badge-gray{% endif %}">
-                    {{ r.stage or '—' }}
+                    {{ (r.stage or '—')|replace(' Stage', '') }}
                   </span>
                 </td>
                 <td style="font-size:0.82rem; color:var(--gray-500); white-space:nowrap;">

@@ -63,6 +63,12 @@
   .results-cta-text { font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,.8); }
   .results-cta-btn { background: var(--gold-400, #fecf44); color: var(--green-900, #022818); font-size: 0.78rem; font-weight: 700; padding: 8px 16px; border-radius: var(--radius-md); text-decoration: none; white-space: nowrap; flex-shrink: 0; }
 
+  /* Chart card: match the 16px rhythm of accordions/breakdown on mobile */
+  .results-chart-wrap { margin: 0 16px 20px; }
+  .results-chart-card .card-body { padding: 20px 16px; }
+
+  .results-list-head { display: flex; justify-content: space-between; align-items: baseline; margin: 0 16px 12px; }
+
   /* ── Desktop layout ── */
   @media (min-width: 1024px) {
     .results-hero { padding: 40px 0 56px; }
@@ -98,13 +104,17 @@
     .results-breakdown-label { font-size: 0.78rem; width: 70px; }
     .results-group-name { font-size: 0.85rem; }
     .results-row { padding: 13px 16px; }
+
+    .results-chart-wrap { margin: 0 0 24px; }
+    .results-chart-card .card-body { padding: 22px 24px; }
+    .results-list-head { margin: 0 0 14px; }
   }
 </style>
 {% endblock %}
 
 {% block nav_links %}
   <li><a href="{{ url_for('main.home') }}">Home</a></li>
-  <li><a href="{{ url_for('main.results') }}" class="active">Results</a></li>
+  <li><a href="{{ url_for('main.results') }}" class="active" aria-current="page">Results</a></li>
   {% if current_user.is_super_admin %}
     <li><a href="{{ url_for('admin.dashboard') }}">Admin</a></li>
   {% endif %}
@@ -214,8 +224,8 @@
 
       {# ── Line chart ── #}
       {% if monthly_data and monthly_data|length > 0 %}
-      <div style="margin-bottom: 20px;">
-        <div class="card">
+      <div class="results-chart-wrap">
+        <div class="card results-chart-card">
           <div class="card-body">
             <h3 style="font-family:var(--font-display); font-size:0.95rem; color:var(--green-800); margin-bottom:14px; display:flex; align-items:center; gap:8px;">
               <i class="fa-solid fa-chart-line" style="color:var(--gold-500);"></i> Monthly Progress
@@ -231,7 +241,7 @@
       {% endif %}
 
       {# ── Results grouped by assessment type ── #}
-      <div style="display:flex; justify-content:space-between; align-items:baseline; margin: 0 16px 12px;">
+      <!-- <div class="results-list-head">
         <span style="font-size:0.82rem; font-weight:600; color:var(--green-800);">All Results</span>
         <span style="font-size:0.75rem; color:var(--gray-400);">{{ total }} assessment{{ 's' if total != 1 }}</span>
       </div>
@@ -279,7 +289,7 @@
             </div>
           </details>
         {% endif %}
-      {% endfor %}
+      {% endfor %} -->
 
       <div class="results-cta">
         <div class="results-cta-text">Ready for your next assessment?</div>

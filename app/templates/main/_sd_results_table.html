@@ -3,7 +3,7 @@
 {% elif results_pagination and results_pagination.items %}
 <div class="sd-card sd-results-chart-card" data-chart='{{ chart_data | tojson }}' data-coverage='{{ coverage_counts | tojson }}' data-monthly='{{ monthly_trends | tojson }}'>
   <div class="sd-results-chart-header">
-    <div class="sd-card__title">Results</div>
+      <div class="sd-card__title" style="margin: 0 0 10px; font-size: 1.5rem">Results Summary</div>
     <div class="sd-card__filters">
       <div class="sd-filter-group" id="sdResultsGraphToggle">
         <button type="button" class="sd-period-btn" id="sdResultsGraphBtn" aria-haspopup="true" aria-expanded="false">
@@ -41,8 +41,14 @@
     </div>
   </div>
   <div class="sd-chart-view sd-results-chart-view" data-results-chart="donut">
-    <div class="sd-chart-wrapper"><canvas id="sdResultsDonut" role="img" aria-label="Stage distribution of results"></canvas></div>
-    <div class="sd-chart-legend" id="sdResultsDonutLegend"></div>
+    <div class="sd-stage-pie">
+      <div class="sd-chart-wrapper"><canvas id="sdResultsDonut" role="img" aria-label="Stage distribution of results"></canvas></div>
+      <div class="sd-stage-pie__total">
+        <span class="sd-stage-pie__total-label">Assessments</span>
+        <span class="sd-stage-pie__total-value" id="sdResultsDonutTotal">0</span>
+      </div>
+    </div>
+    <ul class="sd-stage-key" id="sdResultsStageKey"></ul>
   </div>
   <div class="sd-chart-view sd-results-chart-view" data-results-chart="bar">
     <div class="sd-chart-wrapper"><canvas id="sdResultsBar" role="img" aria-label="Assessment coverage of results"></canvas></div>
@@ -50,6 +56,7 @@
 </div>
 
 <div class="sd-card sd-results-card">
+  <div class="sd-card__title" style="margin: 0 0 20px;">All Results </div>
   <div class="sd-results-scroll sd-results-scroll--fragment">
     <table class="sd-table" data-sortable>
       <thead>
@@ -65,7 +72,7 @@
       <tbody>
         {% for r in results_pagination.items %}
         {% set pct = ((r.score / r.max_score) * 100)|round|int if r.max_score else 0 %}
-        {% set band = 'high' if pct >= 70 else ('mid' if pct >= 50 else 'low') %}
+        {% set stage_key = (r.stage or 'unknown')|lower|replace(' stage', '') %}
         <tr>
           <td><strong>{{ r.account.fname }} {{ r.account.lname }}</strong></td>
           <td>{{ r.account.class_group or '—' }}</td>
@@ -73,14 +80,14 @@
           <td class="sd-score-cell">
             <span class="sd-score-cell__top">
               <span class="sd-score-cell__text">{{ r.score }}{% if r.max_score %}/{{ r.max_score }}{% endif %}</span>
-              <span class="sd-score-cell__pct sd-score-cell__pct--{{ band }}">{{ pct }}%</span>
+              <span class="sd-score-cell__pct sd-score-cell__pct--{{ stage_key }}">{{ pct }}%</span>
             </span>
             <span class="sd-score-cell__bar">
-              <span class="sd-score-cell__bar-fill sd-score-cell__bar-fill--{{ band }}" style="width:{{ pct }}%;"></span>
+              <span class="sd-score-cell__bar-fill sd-score-cell__bar-fill--{{ stage_key }}" style="width:{{ pct }}%;"></span>
             </span>
           </td>
           <td>
-            <span class="sd-badge sd-badge--{{ (r.stage or 'unknown')|lower|replace(' stage', '') }}">{{ r.stage or 'Unknown' }}</span>
+            <span class="sd-badge sd-badge--{{ (r.stage or 'unknown')|lower|replace(' stage', '') }}">{{ (r.stage or 'Unknown')|replace(' Stage', '') }}</span>
           </td>
           <td class="sd-table__date">{{ r.taken_at.strftime('%d %b %Y') }}</td>
         </tr>
@@ -102,9 +109,12 @@
 </div>
 {% else %}
 <div class="sd-card">
-  <div class="sd-results-empty">
-    <svg aria-hidden="true" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--sd-icon-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-    <span>No assessment results yet.</span>
+  <div class="sd-empty-state">
+    <div class="sd-empty-state__icon">
+      <svg aria-hidden="true" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    </div>
+    <div class="sd-empty-state__title">No assessment results yet</div>
+    <div class="sd-empty-state__desc">Results appear here once students complete an assessment.</div>
   </div>
 </div>
 {% endif %}

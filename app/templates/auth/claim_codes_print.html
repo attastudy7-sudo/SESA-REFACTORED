@@ -184,8 +184,10 @@
           Claim Codes &mdash;
           {% if unclaimed %}
             {{ unclaimed | length }} unclaimed account{{ 's' if unclaimed | length != 1 }}
-          {% else %}
+          {% elif total_students %}
             All accounts activated
+          {% else %}
+            No students uploaded yet
           {% endif %}
         </div>
       </div>
@@ -225,7 +227,11 @@
   {% else %}
   <div class="empty-state">
     <i class="fa-solid fa-circle-check"></i>
+    {% if total_students %}
     <p>All student accounts for <strong>{{ school.school_name }}</strong> have been activated.</p>
+    {% else %}
+    <p>No students have been uploaded for <strong>{{ school.school_name }}</strong> yet.</p>
+    {% endif %}
   </div>
   {% endif %}
 

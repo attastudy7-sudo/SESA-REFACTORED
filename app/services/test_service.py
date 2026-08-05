@@ -31,10 +31,10 @@ def classify_score(test_type: str, score: int, max_score: int = None) -> dict:
     if max_score is None:
         q_count = Question.query.filter_by(test_type=test_type).count()
         max_score = q_count * 3
-    raw_pct = round((score / max_score) * 100) if max_score > 0 else 0
-    # The stored scoring_ranges read high % as the most severe state. Score is
-    # inverted first so a LOW score maps to the worst stage and HIGH to the best.
-    pct = 100 - raw_pct
+    # The stored scoring_ranges read high % as the most severe state, so a
+    # HIGH symptom score maps to the worst stage and a LOW score to the best
+    # (industry standard for symptom scales). No inversion is applied.
+    pct = round((score / max_score) * 100) if max_score > 0 else 0
     best_match = None
     best_distance = float('inf')
     for r in assessment.scoring_ranges:
@@ -42,7 +42,7 @@ def classify_score(test_type: str, score: int, max_score: int = None) -> dict:
             return {
                 "stage": r["stage"],
                 "message": r["message"],
-                "score_range": f"{100 - r['max']}% – {100 - r['min']}%",
+                "score_range": f"{r['min']}% – {r['max']}%",
                 "color": STAGE_COLORS.get(r["stage"], "#555"),
             }
         # Track nearest range as fallback for gap/boundary edge cases
@@ -55,7 +55,7 @@ def classify_score(test_type: str, score: int, max_score: int = None) -> dict:
         return {
             "stage": best_match["stage"],
             "message": best_match["message"],
-            "score_range": f"{100 - best_match['max']}% – {100 - best_match['min']}%",
+            "score_range": f"{best_match['min']}% – {best_match['max']}%",
             "color": STAGE_COLORS.get(best_match["stage"], "#555"),
         }
     return {"stage": "Unknown", "message": "No result available.", "score_range": "—", "color": "#555"}
