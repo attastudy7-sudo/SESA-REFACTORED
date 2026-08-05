@@ -1748,6 +1748,7 @@ input:-webkit-autofill:active {
 
 /* Intervention banner — Elevated stage */
 .intervention-elevated {
+  display: none;
   background: #fffbeb;
   border: 2px solid #f59e0b;
   border-radius: var(--radius-md);
