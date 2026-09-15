@@ -1,49 +1,297 @@
-<nav class="pub-nav" id="pubNav">
-  <div class="pub-nav-inner">
-    <a href="{{ url_for('main.landing') }}" class="pub-brand">
-      <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="FOPA">
-      SESA
-    </a>
-    <ul class="pub-links">
-      <li><a href="{{ url_for('main.landing') }}" {% if request.endpoint == 'main.landing' %}class="nav-active"{% endif %}>Home</a></li>
-      <li><a href="{{ url_for('main.join_with_code') }}">Join with Code</a></li>
-      <li><a href="{{ url_for('auth.school_signup') }}">Register School</a></li>
-      <li><a href="{{ url_for('main.about') }}" {% if request.endpoint == 'main.about' %}class="nav-active"{% endif %}>About Us</a></li>
-      <li><a href="{{ url_for('main.gallery') }}" {% if request.endpoint == 'main.gallery' %}class="nav-active"{% endif %}>Gallery</a></li>
-      <li><a href="{{ url_for('main.assessment_details') }}" {% if request.endpoint == 'main.assessment_details' %}class="nav-active"{% endif %}>How It Works</a></li>
-      <li><a href="{{ url_for('main.school_guide') }}" {% if request.endpoint == 'main.school_guide' %}class="nav-active"{% endif %}>Help</a></li>
-      <li><a href="{{ url_for('main.contact') }}" {% if request.endpoint == 'main.contact' %}class="nav-active"{% endif %}>Contact</a></li>
-    </ul>
-    <div class="pub-nav-cta">
-      <a href="{{ url_for('main.contact') }}" class="btn-nav-call"> Book a Demo  <i class="fa-solid fa-phone"></i></a>
-      <a href="{{ url_for('auth.login') }}" class="btn-nav-in">Sign In</a>
+<header>
+    <div class="topbar">
+      <div class="container">
+        <div class="inner">
+          <div class="topbar-row">
+            <a class="brand" aria-label="Home" href="{{ url_for('main.landing') }}">
+              <img class="brand-mark" alt="FOPA Dilligent Consult" src="{{ url_for('static', filename='images/fopa-icon.png') }}" />
+              <span class="brand-name">{{ 'FOPA DILLIGENT CONSULT' if request.endpoint == 'main.landing' else 'FOPA Dilligent Consult' }}</span>
+            </a>
+            <div class="topbar-actions">
+              <button type="button" class="btn btn-dark" data-demo-open><span>Book a Demo With Us</span></button>
+              <button type="button" id="navToggle" class="menu-btn" aria-expanded="false" aria-controls="drawer" aria-label="Toggle navigation">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 6h20v2H2zM2 16h20v2H2z"></path></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    <button class="pub-hamburger" id="pubHamburger" aria-label="Open menu">
-      <span></span><span></span><span></span>
-    </button>
+    <div class="drawer" id="drawer" style="height:8px" aria-hidden="true" inert>
+      <div class="drawer-strip">
+        <div class="drawer-panel">
+          <div class="container">
+            <div class="inner">
+              <div class="topbar-row">
+                <a class="brand" aria-label="Home" href="{{ url_for('main.landing') }}">
+                  <img class="brand-mark" alt="FOPA Dilligent Consult" src="{{ url_for('static', filename='images/fopa-icon.png') }}" />
+                  <span class="brand-name">{{ 'FOPA DILLIGENT CONSULT' if request.endpoint == 'main.landing' else 'FOPA Dilligent Consult' }}</span>
+                </a>
+                <div class="topbar-actions">
+                  <button type="button" class="btn btn-light" data-demo-open><span>Book a Demo With Us</span></button>
+                  <button type="button" id="navClose" class="menu-btn menu-btn--close" aria-expanded="true" aria-controls="drawer" aria-label="Toggle navigation">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="m5.636 4.223 14.142 14.142-1.414 1.414L4.222 5.637z"></path>
+                      <path d="M4.222 18.363 18.364 4.22l1.414 1.414L5.636 19.777z"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <nav class="drawer-nav">
+          <div class="drawer-block">
+            <div class="container">
+              <div class="inner">
+                <div class="drawer-grid">
+                  <a class="drawer-link" href="{{ url_for('main.landing') }}"{% if request.endpoint == 'main.landing' %} aria-current="page"{% endif %}>Home</a>
+                  <a class="drawer-link" href="{{ url_for('auth.school_signup') }}"{% if request.endpoint == 'auth.school_signup' %} aria-current="page"{% endif %}>Register School</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="drawer-block">
+            <div class="container">
+              <div class="inner">
+                <div class="drawer-grid">
+                  <a class="drawer-link" href="{{ url_for('main.join_with_code') }}"{% if request.endpoint == 'main.join_with_code' %} aria-current="page"{% endif %}>Join with Code</a>
+                  <a class="drawer-link" href="{{ url_for('main.about') }}"{% if request.endpoint == 'main.about' %} aria-current="page"{% endif %}>About Us</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </div>
+  </header>
+  <script>
+    (function () {
+      var drawer = document.getElementById('drawer');
+      var toggle = document.getElementById('navToggle');
+      var closeBtn = document.getElementById('navClose');
+
+      function setNav(open) {
+        toggle.setAttribute('aria-expanded', String(open));
+        closeBtn.setAttribute('aria-expanded', String(open));
+        drawer.setAttribute('aria-hidden', String(!open));
+        drawer.toggleAttribute('inert', !open);
+        drawer.style.height = open ? drawer.scrollHeight + 'px' : '8px';
+      }
+      window._sesaSetNav = setNav;
+
+      toggle.addEventListener('click', function () {
+        setNav(toggle.getAttribute('aria-expanded') !== 'true');
+      });
+      closeBtn.addEventListener('click', function () {
+        setNav(false);
+      });
+    })();
+
+    (function () {
+      document.addEventListener('DOMContentLoaded', function () {
+        var modal = document.getElementById('demoModal');
+        if (!modal) return;
+        var card = modal.querySelector('.demo-modal-card');
+        var openers = document.querySelectorAll('[data-demo-open]');
+        var lastFocused = null;
+        var scrollPos = 0;
+        var isSheet = window.matchMedia('(max-width: 640px)').matches;
+
+        function showModal() {
+          lastFocused = document.activeElement;
+          scrollPos = window.scrollY || document.documentElement.scrollTop;
+          modal.hidden = false;
+          modal.setAttribute('aria-hidden', 'false');
+          document.body.classList.add('demo-modal-open');
+          if (isSheet) {
+            document.body.style.position = 'fixed';
+            document.body.style.top = '-' + scrollPos + 'px';
+            document.body.style.width = '100%';
+          }
+          var first = modal.querySelector('input, select, textarea, button');
+          if (first) first.focus();
+        }
+
+        function closeModal() {
+          document.body.classList.remove('demo-modal-open');
+          document.body.style.position = '';
+          document.body.style.top = '';
+          document.body.style.width = '';
+          if (isSheet && scrollPos) window.scrollTo(0, scrollPos);
+          modal.hidden = true;
+          modal.setAttribute('aria-hidden', 'true');
+          if (lastFocused && lastFocused.focus) lastFocused.focus();
+        }
+
+        openers.forEach(function (opener) {
+          opener.addEventListener('click', function (e) {
+            e.preventDefault();
+            if (window._sesaSetNav) window._sesaSetNav(false);
+            showModal();
+          });
+        });
+
+        modal.addEventListener('click', function (e) {
+          if (e.target === modal || e.target.classList.contains('demo-modal-close')) {
+            closeModal();
+          }
+        });
+
+        modal.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape') { closeModal(); return; }
+          if (e.key !== 'Tab') return;
+          var focusables = modal.querySelectorAll('button, input, select, textarea, [tabindex]');
+          var list = Array.prototype.filter.call(focusables, function (el) {
+            return !el.disabled && el.offsetParent !== null;
+          });
+          if (!list.length) return;
+          var first = list[0];
+          var last = list[list.length - 1];
+          if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault(); last.focus();
+          } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault(); first.focus();
+          }
+        });
+
+        var touchStartY = null;
+        var touchStartScroll = 0;
+        modal.addEventListener('touchstart', function (e) {
+          touchStartY = e.touches[0].clientY;
+          touchStartScroll = card ? card.scrollTop : 0;
+        }, { passive: true });
+        modal.addEventListener('touchmove', function (e) {
+          if (touchStartY === null) return;
+          var dy = e.touches[0].clientY - touchStartY;
+          if (dy > 80 && touchStartScroll === 0) {
+            touchStartY = null;
+            closeModal();
+          }
+        }, { passive: true });
+        modal.addEventListener('touchend', function () { touchStartY = null; });
+      });
+    })();
+  </script>
+  <div class="demo-modal" id="demoModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="demoModalTitle" aria-describedby="demoModalLede" hidden>
+    <div class="demo-modal-card">
+      <button type="button" class="demo-modal-close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <h2 class="demo-modal-title" id="demoModalTitle">Book a Demo With Us</h2>
+      <p class="demo-modal-lede" id="demoModalLede">Tell us a little about your school and a curator will reach out to schedule a walkthrough of SESA.</p>
+      <form class="demo-modal-form" action="mailto:info@fopaconsult.com" method="post" enctype="text/plain">
+        <div class="demo-modal-grid">
+          <div class="demo-field">
+            <label for="dm-name">Name</label>
+            <input class="demo-input" id="dm-name" name="Name" type="text" autocomplete="name" required />
+          </div>
+          <div class="demo-field">
+            <label for="dm-school">School / Institution</label>
+            <input class="demo-input" id="dm-school" name="School" type="text" autocomplete="organization" required />
+          </div>
+          <div class="demo-field">
+            <label for="dm-email">Official Email</label>
+            <input class="demo-input" id="dm-email" name="Email" type="email" autocomplete="email" required />
+          </div>
+          <div class="demo-field">
+            <label for="dm-date">Preferred Date</label>
+            <input class="demo-input" id="dm-date" name="Preferred Date" type="date" />
+          </div>
+          <div class="demo-field demo-field--wide">
+            <label for="dm-msg">Message</label>
+            <textarea class="demo-input" id="dm-msg" name="Message" rows="4"></textarea>
+          </div>
+        </div>
+        <div class="demo-modal-actions">
+          <button class="btn btn-dark" type="submit"><span>Request Demo</span></button>
+        </div>
+      </form>
+    </div>
   </div>
-  <div class="pub-drawer" id="pubDrawer">
-    <a href="{{ url_for('main.landing') }}" {% if request.endpoint == 'main.landing' %}class="d-active"{% endif %}>Home</a>
-    <a href="{{ url_for('main.join_with_code') }}">Join with Code</a>
-    <a href="{{ url_for('auth.school_signup') }}">Register School</a>
-    <a href="{{ url_for('main.about') }}" {% if request.endpoint == 'main.about' %}class="d-active"{% endif %}>About Us</a>
-    <a href="{{ url_for('main.gallery') }}" {% if request.endpoint == 'main.gallery' %}class="d-active"{% endif %}>Gallery</a>
-    <a href="{{ url_for('main.assessment_details') }}" {% if request.endpoint == 'main.assessment_details' %}class="d-active"{% endif %}>How It Works</a>
-    <a href="{{ url_for('main.school_guide') }}" {% if request.endpoint == 'main.school_guide' %}class="d-active"{% endif %}>Help</a>
-    <a href="{{ url_for('main.contact') }}" {% if request.endpoint == 'main.contact' %}class="d-active"{% endif %}>Contact</a>
-    <a href="{{ url_for('main.contact') }}" class="d-call"> Book a Demo  <i class="fa-solid fa-phone"></i></a>
-    <a href="{{ url_for('auth.login') }}" class="d-signin">Sign In →</a>
-  </div>
-</nav>
-<script>
-  (function(){
-    var nav = document.getElementById('pubNav');
-    var hb  = document.getElementById('pubHamburger');
-    var dr  = document.getElementById('pubDrawer');
-    window.addEventListener('scroll', function(){ nav.classList.toggle('scrolled', window.scrollY > 40); });
-if(document.body.dataset.hero === 'dark'){
-  nav.classList.add('transparent');
-}
-    hb.addEventListener('click', function(){ hb.classList.toggle('open'); dr.classList.toggle('open'); });
-  })();
-</script>
+  <style>
+    button.btn { border: none; font: inherit; cursor: pointer; }
+
+    .demo-modal {
+      position: fixed; inset: 0; z-index: 200;
+      display: flex; align-items: center; justify-content: center;
+      padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+      background: rgba(0, 0, 0, .55);
+      backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    }
+    .demo-modal[hidden] { display: none; }
+    body.demo-modal-open { overflow: hidden; }
+
+    .demo-modal-card {
+      position: relative; width: 100%; max-width: 560px; max-height: min(92vh, 640px);
+      background: var(--ink-05, #fafafa); color: var(--ink, #0a0a0a);
+      border-radius: 20px; padding: 32px 40px 40px;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, .35);
+      overflow-y: auto; -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+    @supports (height: 100dvh) {
+      .demo-modal-card { max-height: min(92dvh, 640px); }
+    }
+
+    .demo-modal-close {
+      position: absolute; top: 16px; right: 16px; width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      background: transparent; border: none; cursor: pointer;
+      color: var(--ink-40, #a3a3a3); font-size: 24px; line-height: 1; border-radius: 10px;
+    }
+    .demo-modal-close:hover { background: var(--ink-10, #f5f5f5); color: var(--ink, #0a0a0a); }
+    .demo-modal-title { font-size: 24px; line-height: 32px; font-weight: 600; margin: 0 0 8px; }
+    .demo-modal-lede { font-size: 15px; line-height: 22px; color: var(--ink-50, #737373); margin: 0 0 24px; }
+    .demo-modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .demo-field--wide { grid-column: 1 / -1; }
+    .demo-field label { display: block; font-size: 14px; line-height: 20px; font-weight: 600; margin-bottom: 8px; }
+    .demo-input {
+      width: 100%; font: inherit; font-size: 16px; line-height: 24px;
+      padding: 12px 16px; border-radius: 12px;
+      border: 1px solid rgba(10, 10, 10, .15); background: #fff; color: var(--ink, #0a0a0a);
+      min-height: 48px;
+    }
+    .demo-input:focus { outline: 2px solid var(--brand, #166534); outline-offset: 1px; border-color: var(--brand, #166534); }
+    textarea.demo-input { resize: vertical; min-height: 96px; }
+    .demo-modal-actions { margin-top: 24px; display: flex; justify-content: flex-end; }
+
+    @media (max-width: 768px) {
+      .demo-modal { backdrop-filter: none; -webkit-backdrop-filter: none; }
+    }
+
+    @media (max-width: 640px) {
+      .demo-modal {
+        align-items: flex-end; justify-content: center;
+        padding: 0; background: rgba(0, 0, 0, .5);
+      }
+      .demo-modal-card {
+        max-width: none; width: 100%;
+        max-height: 92vh; border-radius: 20px 20px 0 0;
+        padding: 12px 20px 0;
+        animation: demo-sheet-up .32s var(--ease);
+      }
+      @supports (height: 100dvh) {
+        .demo-modal-card { max-height: 92dvh; }
+      }
+      @keyframes demo-sheet-up {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+      }
+      .demo-modal-card::before {
+        content: ""; display: block; width: 40px; height: 4px;
+        margin: 0 auto 12px; border-radius: 999px;
+        background: var(--ink-30, #d4d4d4);
+      }
+      .demo-modal-close { top: 12px; right: 12px; width: 44px; height: 44px; font-size: 26px; }
+      .demo-modal-title { font-size: 20px; line-height: 28px; margin: 4px 44px 6px 0; }
+      .demo-modal-lede { margin-bottom: 20px; }
+      .demo-modal-grid { grid-template-columns: 1fr; gap: 14px; }
+      .demo-modal-actions {
+        position: sticky; bottom: -1px; margin-top: 20px;
+        padding: 16px 20px max(16px, env(safe-area-inset-bottom));
+        margin-inline: -20px;
+        background: var(--ink-05, #fafafa);
+        border-top: 1px solid var(--ink-20, #e5e5e5);
+      }
+      .demo-modal-actions .btn { width: 100%; justify-content: center; }
+    }
+  </style>
