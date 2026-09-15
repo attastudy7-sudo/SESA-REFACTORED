@@ -1,14 +1,185 @@
-{% extends 'base.html' %}
-{% block title %}Page Not Found{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Page Not Found &ndash; FOPA Dilligent Consult | SESA</title>
+  <meta name="description" content="The page you are looking for could not be found. Return to the SESA homepage, read the school guide, or contact our team." />
+  <meta property="og:title" content="Page Not Found &ndash; FOPA Dilligent Consult | SESA" />
+  <meta property="og:description" content="The page you are looking for could not be found. Return to the SESA homepage, read the school guide, or contact our team." />
+  <meta property="og:url" content="https://fopaconsult.com/404" />
+  <meta property="og:site_name" content="FOPA Dilligent Consult &middot; Ghana" />
+  <meta property="og:locale" content="en_GH" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Page Not Found &ndash; FOPA Dilligent Consult | SESA" />
+  <meta name="twitter:description" content="The page you are looking for could not be found. Return to the SESA homepage, read the school guide, or contact our team." />
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pub.css') }}" />
+  <style>
+    /* ---------- 404-page extras (not in shared sheet) ---------- */
+    .prose { margin-top: 40px; max-width: 42rem; color: var(--ink-60); }
+    .prose p + p { margin-top: 24px; }
+    .help-list { margin-top: 48px; display: flex; flex-wrap: wrap; gap: 12px; }
+  </style>
+  <link rel="canonical" href="{{ request.url_root.rstrip('/') }}{{ request.path }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <meta name="theme-color" content="#022818">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="SESA">
+  <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/static/sw.js');}</script>
+</head>
+<body>
 
-{% block full_page %}
-<div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; background: var(--green-50);">
-  <div style="text-align: center; max-width: 480px;">
-    <div style="font-size: 5rem; margin-bottom: 16px; opacity: .4;">🔍</div>
-    <h1 style="font-family: var(--font-display); font-size: 4rem; font-weight: 700; color: var(--green-800); margin-bottom: 8px;">404</h1>
-    <h2 style="font-family: var(--font-display); font-size: 1.4rem; color: var(--green-700); margin-bottom: 12px;">Page Not Found</h2>
-    <p style="color: var(--gray-500); margin-bottom: 28px;">The page you're looking for doesn't exist or has been moved.</p>
-    <a href="{{ url_for('main.landing') }}" class="btn btn-primary btn-lg">Go to Homepage</a>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  {% include 'main/_pub_nav.html' %}
+
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg class="pattern pattern--hero" aria-hidden="true">
+        <rect width="100%" height="100%" fill="url(#grid-a)" stroke-width="0"></rect>
+        <svg x="50%" y="-96" stroke-width="0" style="overflow:visible">
+          <path transform="translate(64 160)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(128 320)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(288 480)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(512 320)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(544 640)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(320 800)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+        </svg>
+        <defs>
+          <pattern id="grid-a" width="96" height="480" x="50%" patternUnits="userSpaceOnUse" patternTransform="translate(0 -96)" fill="none">
+            <path d="M128 0 98.572 147.138A16 16 0 0 1 82.883 160H13.117a16 16 0 0 0-15.69 12.862l-26.855 134.276A16 16 0 0 1-45.117 320H-116M64-160 34.572-12.862A16 16 0 0 1 18.883 0h-69.766a16 16 0 0 0-15.69 12.862l-26.855 134.276A16 16 0 0 1-109.117 160H-180M192 160l-29.428 147.138A15.999 15.999 0 0 1 146.883 320H77.117a16 16 0 0 0-15.69 12.862L34.573 467.138A16 16 0 0 1 18.883 480H-52M-136 480h58.883a16 16 0 0 0 15.69-12.862l26.855-134.276A16 16 0 0 1-18.883 320h69.766a16 16 0 0 0 15.69-12.862l26.855-134.276A16 16 0 0 1 109.117 160H192M-72 640h58.883a16 16 0 0 0 15.69-12.862l26.855-134.276A16 16 0 0 1 45.117 480h69.766a15.999 15.999 0 0 0 15.689-12.862l26.856-134.276A15.999 15.999 0 0 1 173.117 320H256M-200 320h58.883a15.999 15.999 0 0 0 15.689-12.862l26.856-134.276A16 16 0 0 1-82.883 160h69.766a16 16 0 0 0 15.69-12.862L29.427 12.862A16 16 0 0 1 45.117 0H128"></path>
+          </pattern>
+        </defs>
+      </svg>
+
+      <main id="main">
+
+        <!-- 404 hero -->
+        <section class="hero container">
+          <div class="inner">
+            <div data-fade>
+              <h1>
+                <span class="eyebrow">Error 404</span>
+                <span class="sr-only"> - </span>
+                <span class="display">This page can&#x27;t be found</span>
+              </h1>
+              <div class="prose">
+                <p>The address may have changed, or the page may have been moved. Every student deserves to be understood &mdash; and so does every visitor.</p>
+              </div>
+              <div class="hero-actions">
+                <a class="btn btn-dark" href="{{ url_for('main.landing') }}"><span>Back to Homepage</span></a>
+                <a class="btn btn-outline" href="{{ url_for('main.school_guide') }}"><span>Read the School Guide</span></a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Helpful next steps -->
+        <section class="band-head container">
+          <div class="inner">
+            <div data-fade>
+              <h2>
+                <span class="eyebrow">Try these instead</span>
+                <span class="sr-only"> - </span>
+                <span class="display">Where to go next</span>
+              </h2>
+              <div class="help-list">
+                <a class="btn btn-outline" href="{{ url_for('main.about') }}"><span>About Us</span></a>
+                <a class="btn btn-outline" href="{{ url_for('main.assessment_details') }}"><span>SESA Methodology</span></a>
+                <a class="btn btn-outline" href="{{ url_for('main.gallery') }}"><span>School Engagements</span></a>
+                <a class="btn btn-outline" href="{{ url_for('main.contact') }}"><span>Contact Our Team</span></a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="band-head container">
+          <div class="inner">
+            <div class="cta-panel" data-fade>
+              <div class="cta-copy">
+                <div class="cta-block">
+                  <h2>Every Student Deserves to Be Understood</h2>
+                  <p class="cta-p">Ghana&#x27;s schools are full of students silently struggling. SESA gives your school the tools to see what grades can&#x27;t show &mdash; and act before it&#x27;s too late.</p>
+                  <div class="cta-actions">
+                    <a class="btn btn-light" href="{{ url_for('auth.school_signup') }}"><span>Register My School</span></a>
+                    <a class="btn btn-outline-light" href="{{ url_for('auth.login') }}"><span>Student Sign In</span></a>
+                  </div>
+                  <div class="cta-contact">
+                    <ul>
+                      <li>
+                        <address>
+                          <strong>Location</strong>
+                          <br />Accra, Ghana
+                        </address>
+                      </li>
+                      <li>
+                        <address>
+                          <strong>Email</strong>
+                          <br />
+                          <a href="mailto:info@fopaconsult.com">info@fopaconsult.com</a>
+                        </address>
+                      </li>
+                      <li>
+                        <address>
+                          <strong>New to SESA?</strong>
+                          <br />
+                          <a href="{{ url_for('main.school_guide') }}">Read the School Guide &rarr;</a>
+                        </address>
+                      </li>
+                    </ul>
+                    <div class="cta-links">
+                      <p class="cta-links-title">Explore</p>
+                      <ul>
+                        <li><a href="{{ url_for('main.about') }}">About Us</a></li>
+                        <li><a href="{{ url_for('main.gallery') }}">Gallery</a></li>
+                        <li><a href="{{ url_for('main.school_guide') }}">School Guide</a></li>
+                        <li><a href="{{ url_for('main.assessment_details') }}">SESA Methodology</a></li>
+                        <li><a href="{{ url_for('main.contact') }}">Contact</a></li>
+                        <li><a href="{{ url_for('main.privacy') }}">Privacy Policy</a></li>
+                        <li><a href="{{ url_for('main.terms') }}">Terms of Service</a></li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+      {% include 'main/_pub_footer.html' %}
+    </div>
   </div>
-</div>
-{% endblock %}
+
+  <script>
+    (function () {
+      var faders = document.querySelectorAll('[data-fade]');
+      if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('fade-in');
+              io.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+        faders.forEach(function (el) {
+          var group = el.closest('[data-fade-group]');
+          if (group) {
+            var siblings = Array.prototype.slice.call(group.querySelectorAll('[data-fade]'));
+            var idx = siblings.indexOf(el);
+            el.style.transitionDelay = Math.min(idx * 90, 450) + 'ms';
+          }
+          io.observe(el);
+        });
+      } else {
+        faders.forEach(function (el) { el.classList.add('fade-in'); });
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -1,115 +1,265 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Contact – FOPA Dilligent Consult | FOPA Dilligent Consult</title>
-  <meta name="description" content="Connect with our administrative curators. SESA is more than a platform — it is a partnership in academic excellence.">
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contact &ndash; FOPA Dilligent Consult | SESA</title>
+  <meta name="description" content="Connect with our curators. SESA is more than a platform; it is a partnership in academic excellence." />
+  <meta property="og:title" content="Contact &ndash; FOPA Dilligent Consult | SESA" />
+  <meta property="og:description" content="Connect with our curators. SESA is more than a platform; it is a partnership in academic excellence." />
+  <meta property="og:url" content="https://fopaconsult.com/contact" />
+  <meta property="og:site_name" content="FOPA Dilligent Consult &middot; Ghana" />
+  <meta property="og:locale" content="en_GH" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Contact &ndash; FOPA Dilligent Consult | SESA" />
+  <meta name="twitter:description" content="Connect with our curators. SESA is more than a platform; it is a partnership in academic excellence." />
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pub.css') }}" />
+  <style>
+    /* ---------- Contact-only styles (not in shared sheet) ---------- */
+    .prose { margin-top: 40px; max-width: 42rem; color: var(--ink-60); }
+    .prose p + p { margin-top: 24px; }
+    .contact-grid { margin-top: 64px; display: grid; grid-template-columns: 1fr; gap: 48px; align-items: start; }
+    @media (min-width: 1024px) { .contact-grid { grid-template-columns: 5fr 7fr; gap: 64px; } }
+    .contact-rows { margin-top: 32px; color: var(--ink-60); }
+    .contact-form { border-radius: 24px; padding: 32px 24px; box-shadow: inset 0 0 0 1px rgba(10,10,10,.08); background: #fff; }
+    @media (min-width: 640px) { .contact-form { padding: 40px; } }
+    .form-grid { display: grid; grid-template-columns: 1fr; gap: 24px; }
+    @media (min-width: 640px) { .form-grid--2col { grid-template-columns: 1fr 1fr; } }
+    .field label { display: block; font-size: 14px; line-height: 20px; font-weight: 600; margin-bottom: 8px; }
+    .input { width: 100%; font: inherit; font-size: 16px; line-height: 24px; padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(10,10,10,.15); background: #fff; color: var(--ink); }
+    .input:focus { outline: 2px solid var(--brand); outline-offset: 1px; border-color: var(--brand); }
+    textarea.input { min-height: 140px; resize: vertical; }
+    select.input { appearance: auto; }
+    .partner-name { margin-top: 40px; font-size: 20px; line-height: 28px; font-weight: 600; color: #fff; }
+    .partner-role { font-size: 14px; line-height: 20px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-30); margin-top: 4px; }
+    .partner-quote { margin-top: 16px; font-size: 18px; line-height: 28px; font-style: italic; color: var(--ink-30); max-width: 48rem; }
+  </style>
+  <link rel="canonical" href="{{ request.url_root.rstrip('/') }}{{ request.path }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
   <meta name="theme-color" content="#022818">
-  {% include 'main/_pub_styles.html' %}
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="SESA">
+  <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/static/sw.js');}</script>
 </head>
-<body data-hero="dark">
+<body>
 
-{% include 'main/_pub_nav.html' %}
+  <a class="skip-link" href="#main">Skip to main content</a>
 
-<!-- ═══ HERO ═══ -->
-<section class="pub-section pub-section--dark grain" style="padding-top:100px;padding-bottom:80px;">
-  <div class="s-wrap" style="width:100%;">
-    <div class="contact-hero-grid">
-      <div class="anim-in">
-        <span class="s-eyebrow s-eyebrow--left">Dialogue for Progress</span>
-        <h1 style="font-family:'Playfair Display',serif;font-size:clamp(2.4rem,5vw,3.8rem);font-weight:700;color:var(--iv);line-height:1.1;margin-bottom:20px;">Connect with our <em style="color:var(--g);font-style:italic;">Curators</em>.</h1>
-        <div style="width:80px;height:2px;background:var(--g);margin-bottom:24px;"></div>
-        <p style="font-size:1rem;color:rgba(250,250,243,.75);line-height:1.75;max-width:460px;margin-bottom:32px;">SESA is more than a platform; it is a partnership in academic excellence. Our administrative curators are ready to help your institution bridge the gap between potential and performance.</p>
-        <div class="contact-quote-inset" style="background:rgba(250,250,243,.06);border-left-color:var(--g);">
-          <p style="color:rgba(250,250,243,.85);">"In the halls of our schools, we don't just teach lessons; we nurture the future architects of our nation."</p>
-          <div class="quote-attr">
-            <div class="q-icon"><i class="fa-solid fa-school"></i></div>
-            <span style="color:rgba(250,250,243,.5);">The SESA Academic Mandate</span>
-          </div>
-        </div>
-      </div>
-      <div class="anim-in-2">
-        <div class="inquiry-form-wrap">
-          <form method="POST" action="#">
-            <div class="form-row">
-              <div class="form-field">
-                <label for="admin-name">Name</label>
-                <input type="text" id="admin-name" name="admin_name" placeholder="Dr. Kwame Mensah" required>
-              </div>
-              <div class="form-field">
-                <label for="institution">Institution</label>
-                <input type="text" id="institution" name="institution" placeholder="Accra Elite Academy" required>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-field">
-                <label for="email">Official Email</label>
-                <input type="email" id="email" name="email" placeholder="admin@school.edu.gh" required>
-              </div>
-              <div class="form-field">
-                <label for="inquiry-type">Nature of Inquiry</label>
-                <select id="inquiry-type" name="inquiry_type">
-                  <option>Standardized Assessment Setup</option>
-                  <option>Platform Integration</option>
-                  <option>Strategic Partnership</option>
-                  <option>Curatorial Support</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-field" style="margin-bottom:36px;">
-              <label for="context">Message</label>
-              <textarea id="context" name="context" placeholder="Please share your thoughts..." rows="4"></textarea>
-            </div>
-            <button type="submit" class="btn-forest" style="width:100%;justify-content:center;letter-spacing:.08em;text-transform:uppercase;font-size:.82rem;">
-              Submit Inquiry <i class="fa-solid fa-arrow-right"></i>
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+  {% include 'main/_pub_nav.html' %}
 
-<!-- ═══ INFRASTRUCTURE PARTNERS ═══ -->
-<section class="pub-section pub-section--alt" style="border-top:1px solid rgba(2,40,24,.08);">
-  <div class="s-wrap">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;">
-      <div>
-        <span class="s-eyebrow s-eyebrow--left">Technological Foundation</span>
-        <h2 class="s-h2 s-h2--left" style="font-style:italic;margin-bottom:16px;">Infrastructure Partners</h2>
-        <div class="s-rule s-rule--left"></div>
-        <p style="font-size:.95rem;color:var(--mg);line-height:1.8;">The SESA framework is powered by the architectural precision of <strong style="color:var(--f);">SAP Technologies</strong>. As our lead infrastructure partner, they have engineered the digital bedrock that ensures institutional stability, data integrity, and the seamless delivery of academic assessments across Ghana.</p>
-      </div>
-      <div>
-        <div style="background:var(--iv);border:1px solid rgba(2,40,24,.08);border-radius:12px;padding:28px;">
-          <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
-            <div style="width:48px;height:48px;background:var(--f);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <i class="fa-solid fa-microchip" style="color:var(--g);font-size:1.2rem;"></i>
-            </div>
-            <div>
-              <p style="font-weight:700;color:var(--f);font-size:.95rem;">SAP Technologies</p>
-              <p style="font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--g);">Systems Architecture</p>
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg class="pattern pattern--hero" aria-hidden="true">
+        <rect width="100%" height="100%" fill="url(#grid-a)" stroke-width="0"></rect>
+        <svg x="50%" y="-96" stroke-width="0" style="overflow:visible">
+          <path transform="translate(64 160)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(128 320)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(288 480)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(512 320)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(544 640)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(320 800)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+        </svg>
+        <defs>
+          <pattern id="grid-a" width="96" height="480" x="50%" patternUnits="userSpaceOnUse" patternTransform="translate(0 -96)" fill="none">
+            <path d="M128 0 98.572 147.138A16 16 0 0 1 82.883 160H13.117a16 16 0 0 0-15.69 12.862l-26.855 134.276A16 16 0 0 1-45.117 320H-116M64-160 34.572-12.862A16 16 0 0 1 18.883 0h-69.766a16 16 0 0 0-15.69 12.862l-26.855 134.276A16 16 0 0 1-109.117 160H-180M192 160l-29.428 147.138A15.999 15.999 0 0 1 146.883 320H77.117a16 16 0 0 0-15.69 12.862L34.573 467.138A16 16 0 0 1 18.883 480H-52M-136 480h58.883a16 16 0 0 0 15.69-12.862l26.855-134.276A16 16 0 0 1-18.883 320h69.766a16 16 0 0 0 15.69-12.862l26.855-134.276A16 16 0 0 1 109.117 160H192M-72 640h58.883a16 16 0 0 0 15.69-12.862l26.855-134.276A16 16 0 0 1 45.117 480h69.766a15.999 15.999 0 0 0 15.689-12.862l26.856-134.276A15.999 15.999 0 0 1 173.117 320H256M-200 320h58.883a15.999 15.999 0 0 0 15.689-12.862l26.856-134.276A16 16 0 0 1-82.883 160h69.766a16 16 0 0 0 15.69-12.862L29.427 12.862A16 16 0 0 1 45.117 0H128"></path>
+          </pattern>
+        </defs>
+      </svg>
+
+      <main id="main">
+
+        <!-- Contact hero -->
+        <section class="hero container">
+          <div class="inner">
+            <div data-fade>
+              <h1>
+                <span class="eyebrow">Contact</span>
+                <span class="sr-only"> - </span>
+                <span class="display">Dialogue for Progress</span>
+              </h1>
+              <p class="lede">Connect with our curators.</p>
+              <div class="prose">
+                <p>SESA is more than a platform; it is a partnership in academic excellence. Our administrative curators are ready to help your institution bridge the gap between potential and performance.</p>
+                <p>&ldquo;In the halls of our schools, we don&rsquo;t just teach lessons; we nurture the future architects of our nation.&rdquo; &mdash; The SESA Academic Mandate</p>
+              </div>
             </div>
           </div>
-          <p style="font-size:.82rem;color:var(--mg);font-style:italic;line-height:1.65;">"Building the systems that empower the next generation of West African leaders through digital innovation."</p>
-        </div>
-      </div>
+        </section>
+
+        <!-- Contact grid -->
+        <section class="services-body container">
+          <div class="inner">
+            <div class="contact-grid">
+              <div data-fade>
+                <h2>
+                  <span class="eyebrow">Direct Channels</span>
+                  <span class="sr-only"> - </span>
+                  <span class="display" style="font-size:30px;line-height:36px">Reach the team</span>
+                </h2>
+                <div class="contact-rows" data-fade-group>
+                  <ul>
+                    <li class="service">
+                      <div data-fade>
+                        <div class="service-rule"><strong>Email. </strong><a href="mailto:info@fopaconsult.com" style="color:var(--brand)">info@fopaconsult.com</a></div>
+                      </div>
+                    </li>
+                    <li class="service">
+                      <div data-fade>
+                        <div class="service-rule"><strong>Location. </strong>Accra, Ghana</div>
+                      </div>
+                    </li>
+                    <li class="service">
+                      <div data-fade>
+                        <div class="service-rule"><strong>New to SESA? </strong>Start with the <a href="{{ url_for('main.school_guide') }}" style="color:var(--brand)">School Guide</a> before reaching out.</div>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <div data-fade>
+                <form class="contact-form" action="mailto:info@fopaconsult.com" method="post" enctype="text/plain">
+                  <div class="form-grid">
+                    <div class="field">
+                      <label for="cf-name">Name</label>
+                      <input class="input" id="cf-name" name="Name" type="text" autocomplete="name" required />
+                    </div>
+                    <div class="field">
+                      <label for="cf-inst">Institution</label>
+                      <input class="input" id="cf-inst" name="Institution" type="text" autocomplete="organization" />
+                    </div>
+                    <div class="field">
+                      <label for="cf-email">Official Email</label>
+                      <input class="input" id="cf-email" name="Email" type="email" autocomplete="email" required />
+                    </div>
+                    <div class="field">
+                      <label for="cf-nature">Nature of Inquiry</label>
+                      <select class="input" id="cf-nature" name="Nature of Inquiry">
+                        <option>Standardized Assessment Setup</option>
+                        <option>Platform Integration</option>
+                        <option>Strategic Partnership</option>
+                        <option>Curatorial Support</option>
+                      </select>
+                    </div>
+                    <div class="field">
+                      <label for="cf-msg">Message</label>
+                      <textarea class="input" id="cf-msg" name="Message" required></textarea>
+                    </div>
+                    <div class="field">
+                      <button class="btn btn-dark" type="submit"><span>Submit Inquiry</span></button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Infrastructure partners -->
+        <section class="trust">
+          <div class="container">
+            <div class="inner">
+              <div data-fade>
+                <h2>
+                  <span class="eyebrow eyebrow--light">Technological Foundation</span>
+                  <span class="sr-only"> - </span>
+                  <span class="display display--light">Infrastructure Partners</span>
+                </h2>
+                <p class="lede lede--light">The SESA framework is powered by the architectural precision of SAP Technologies. As our lead infrastructure partner, they have engineered the digital bedrock that ensures institutional stability, data integrity, and the reliable delivery of academic assessments across Ghana.</p>
+                <p class="partner-name">SAP Technologies</p>
+                <p class="partner-role">Systems Architecture</p>
+                <p class="partner-quote">&ldquo;Building the systems that empower the next generation of West African leaders through digital innovation.&rdquo;</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="band-head container">
+          <div class="inner">
+            <div class="cta-panel" data-fade>
+              <div class="cta-copy">
+                <div class="cta-block">
+                  <h2>Every Student Deserves to Be Understood</h2>
+                  <p class="cta-p">Ghana&#x27;s schools are full of students silently struggling. SESA gives your school the tools to see what grades can&#x27;t show &mdash; and act before it&#x27;s too late.</p>
+                  <div class="cta-actions">
+                    <a class="btn btn-light" href="{{ url_for('auth.school_signup') }}"><span>Register My School</span></a>
+                    <a class="btn btn-outline-light" href="{{ url_for('auth.login') }}"><span>Student Sign In</span></a>
+                  </div>
+                  <div class="cta-contact">
+                    <ul>
+                      <li>
+                        <address>
+                          <strong>Location</strong>
+                          <br />Accra, Ghana
+                        </address>
+                      </li>
+                      <li>
+                        <address>
+                          <strong>Email</strong>
+                          <br />
+                          <a href="mailto:info@fopaconsult.com">info@fopaconsult.com</a>
+                        </address>
+                      </li>
+                      <li>
+                        <address>
+                          <strong>New to SESA?</strong>
+                          <br />
+                          <a href="{{ url_for('main.school_guide') }}">Read the School Guide &rarr;</a>
+                        </address>
+                      </li>
+                    </ul>
+                    <div class="cta-links">
+                      <p class="cta-links-title">Explore</p>
+                      <ul>
+                        <li><a href="{{ url_for('main.about') }}">About Us</a></li>
+                        <li><a href="{{ url_for('main.gallery') }}">Gallery</a></li>
+                        <li><a href="{{ url_for('main.school_guide') }}">School Guide</a></li>
+                        <li><a href="{{ url_for('main.assessment_details') }}">SESA Methodology</a></li>
+                        <li><a href="{{ url_for('main.contact') }}">Contact</a></li>
+                        <li><a href="{{ url_for('main.privacy') }}">Privacy Policy</a></li>
+                        <li><a href="{{ url_for('main.terms') }}">Terms of Service</a></li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+      {% include 'main/_pub_footer.html' %}
     </div>
   </div>
-</section>
-<style>
-  @media (max-width: 768px) {
-    .contact-hero-grid { grid-template-columns: 1fr !important; }
-    .inquiry-form-wrap { max-width: 100%; }
-    div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
-    .form-row { grid-template-columns: 1fr !important; }
-  }
-</style>
-{% include 'main/_pub_footer.html' %}
 
+  <script>
+    (function () {
+      var faders = document.querySelectorAll('[data-fade]');
+      if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('fade-in');
+              io.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+        faders.forEach(function (el) {
+          var group = el.closest('[data-fade-group]');
+          if (group) {
+            var siblings = Array.prototype.slice.call(group.querySelectorAll('[data-fade]'));
+            var idx = siblings.indexOf(el);
+            el.style.transitionDelay = Math.min(idx * 90, 450) + 'ms';
+          }
+          io.observe(el);
+        });
+      } else {
+        faders.forEach(function (el) { el.classList.add('fade-in'); });
+      }
+    })();
+  </script>
 </body>
 </html>

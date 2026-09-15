@@ -1,35 +1,11 @@
-<footer class="pub-footer">
-  <div class="pub-footer-grid">
-    <div class="pub-footer-brand">
-      <span class="footer-brand-name">FOPA Dilligent Consult</span>
-      <p>Dedicated to pioneering social-emotional intelligence within the Ghanaian educational landscape through rigorous data and empathetic, student-centred design.</p>
-    </div>
-    <div class="footer-col">
-      <h4>Navigation</h4>
-      <a href="{{ url_for('auth.login') }}">Student Sign In</a>
-      <a href="{{ url_for('auth.school_signup') }}">Register School</a>
-      <a href="{{ url_for('main.join_with_code') }}">Join with Code</a>
-      <a href="{{ url_for('main.assessment_details') }}">Assessments</a>
-    </div>
-    <div class="footer-col">
-      <h4>Company</h4>
-      <a href="{{ url_for('main.about') }}">About Us</a>
-      <a href="{{ url_for('main.contact') }}">Contact</a>
-      <p>Accra, Ghana</p>
-      <p>info@fopaconsult.com</p>
-    </div>
-    <div class="footer-col">
-      <h4>Legal</h4>
-      <a href="{{ url_for('main.privacy') }}">Privacy Policy</a>
-      <a href="{{ url_for('main.terms') }}">Terms of Service</a>
-      <div class="footer-newsletter" style="margin-top: 16px;">
-        <input type="email" placeholder="Your email" aria-label="Email address">
-        <button aria-label="Subscribe"><i class="fa-solid fa-paper-plane"></i></button>
-      </div>
-    </div>
-  </div>
-  <div class="footer-bottom">
-    <span>© {{ 2026 }} Social Emotional Students' Audit (SESA) - FOPA Dilligent CONSULT, GHANA. All rights reserved.</span>
-    <span>FOPA Dilligent Consult · Ghana</span>
-  </div>
-</footer>
+<footer class="site-footer">
+        <div class="inner">
+          <div class="footer-row">
+            <a class="brand" aria-label="Home" href="{{ url_for('main.landing') }}">
+              <img class="brand-mark footer-mark" alt="FOPA Dilligent Consult" src="{{ url_for('static', filename='images/fopa-icon.png') }}" />
+              <span class="brand-name">{{ 'FOPA DILLIGENT CONSULT' if request.endpoint == 'main.landing' else 'FOPA Dilligent Consult' }}</span>
+            </a>
+            <p class="footer-copy">&copy; 2026 Social Emotional Students&#x27; Audit (SESA) &ndash; FOPA Dilligent Consult, Ghana. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>

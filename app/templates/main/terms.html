@@ -1,251 +1,232 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Terms of Service – SESA by FOPA Dilligent Consult</title>
-  <meta name="description" content="SESA Terms of Service — the rules and conditions governing use of the SESA platform.">
-  <meta name="robots" content="index, follow">
-  <link rel="canonical" href="{{ request.url_root.rstrip('/') }}{{ request.path }}">
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
-  <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
-  <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/static/sw.js');}</script>
-  {% include 'main/_pub_styles.html' %}
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Terms of Service &ndash; SESA by FOPA Dilligent Consult</title>
+  <meta name="description" content="By accessing or using the SESA platform, you agree to be bound by these Terms of Service. Please read them carefully before using the platform." />
+  <meta property="og:title" content="Terms of Service &ndash; SESA by FOPA Dilligent Consult" />
+  <meta property="og:description" content="By accessing or using the SESA platform, you agree to be bound by these Terms of Service. Please read them carefully before using the platform." />
+  <meta property="og:url" content="https://fopaconsult.com/terms" />
+  <meta property="og:site_name" content="FOPA Dilligent Consult &middot; Ghana" />
+  <meta property="og:locale" content="en_GH" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Terms of Service &ndash; SESA by FOPA Dilligent Consult" />
+  <meta name="twitter:description" content="By accessing or using the SESA platform, you agree to be bound by these Terms of Service. Please read them carefully before using the platform." />
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pub.css') }}" />
   <style>
-    .policy-hero {
-      background: var(--f);
-      padding: 120px 32px 72px;
-      position: relative; overflow: hidden;
-    }
-    .policy-hero-inner {
-      max-width: 860px; margin: 0 auto; position: relative; z-index: 2;
-      text-align: center;
-    }
-    .policy-hero-orb {
-      position: absolute; border-radius: 50%;
-      background: var(--g); opacity: .04; pointer-events: none;
-    }
-    .policy-hero h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(2.2rem, 5vw, 3.6rem);
-      font-weight: 700; color: var(--iv); line-height: 1.1;
-      margin-bottom: 16px;
-    }
-    .policy-hero h1 em { color: var(--g); font-style: italic; }
-    .policy-hero-sub {
-      font-size: 1rem; color: rgba(250,250,243,.72);
-      line-height: 1.75; max-width: 560px; margin: 0 auto 24px;
-    }
-    .policy-hero-date {
-      display: inline-block; font-size: .72rem; font-weight: 700;
-      letter-spacing: .14em; text-transform: uppercase;
-      color: var(--g); margin-bottom: 12px;
-    }
-    .policy-hero-nav {
-      display: flex; gap: 12px; justify-content: center; margin-top: 32px; flex-wrap: wrap;
-    }
-    .policy-hero-nav a {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 10px 22px; border-radius: 6px;
-      font-weight: 700; font-size: .9rem;
-      transition: background .2s, transform .15s;
-    }
-    .policy-hero-nav a.back-btn {
-      background: rgba(250,250,243,.08);
-      border: 1px solid rgba(250,250,243,.15);
-      color: var(--iv);
-    }
-    .policy-hero-nav a.back-btn:hover {
-      background: rgba(250,250,243,.14);
-      transform: translateX(-3px);
-    }
-    .policy-hero-nav a.signin-btn {
-      background: var(--g); color: var(--f);
-    }
-    .policy-hero-nav a.signin-btn:hover {
-      background: var(--gd); color: #fff; transform: translateY(-2px);
-    }
-    .policy-rule { width: 60px; height: 3px; background: var(--g); border-radius: 2px; margin: 36px auto 0; }
-
-    .policy-body {
-      max-width: 860px; margin: 0 auto;
-      padding: 72px 32px 96px;
-    }
-    @media (max-width: 600px) { .policy-body { padding: 48px 20px 72px; } }
-
-    .policy-section { margin-bottom: 64px; }
-    .policy-section:last-child { margin-bottom: 0; }
-
-    .section-num {
-      font-family: 'Playfair Display', serif;
-      font-size: .75rem; font-weight: 700; color: var(--g);
-      text-transform: uppercase; letter-spacing: .18em;
-      margin-bottom: 10px; display: block;
-    }
-    .policy-section h2 {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(1.4rem, 3vw, 2rem);
-      font-weight: 700; color: var(--f);
-      margin-bottom: 20px; line-height: 1.25;
-    }
-    .policy-section p, .policy-section li {
-      font-size: .95rem; color: #426652;
-      line-height: 1.85;
-    }
-    .policy-section ul {
-      margin: 16px 0 0 20px; display: flex;
-      flex-direction: column; gap: 10px;
-    }
-    .policy-section li { padding-left: 6px; }
-    .policy-section li strong { color: var(--f); }
-    .policy-section p + p { margin-top: 14px; }
-    .policy-section--alt {
-      background: var(--sl);
-      border-left: 4px solid var(--g);
-      border-radius: 0 12px 12px 0;
-      padding: 36px 40px;
-    }
-    @media (max-width: 600px) { .policy-section--alt { padding: 28px 24px; } }
-    .policy-divider { height: 1px; background: rgba(2,40,24,.08); margin: 0 0 64px; }
-
-    .policy-cta {
-      background: var(--f); border-radius: 16px; padding: 48px;
-      text-align: center; position: relative; overflow: hidden;
-    }
-    .policy-cta h3 {
-      font-family: 'Playfair Display', serif; font-size: 1.6rem;
-      color: var(--iv); font-weight: 700; margin-bottom: 12px;
-    }
-    .policy-cta p { color: rgba(250,250,243,.72); font-size: .95rem; margin-bottom: 28px; }
-    .policy-cta-orb {
-      position: absolute; border-radius: 50%;
-      background: var(--g); opacity: .04; pointer-events: none;
-      width: 400px; height: 400px; top: -150px; right: -100px;
-    }
+    /* ---------- Legal-only styles (not in shared sheet) ---------- */
+    .prose { margin-top: 40px; max-width: 42rem; color: var(--ink-60); }
+    .prose p + p { margin-top: 24px; }
+    .legal-date { margin-top: 24px; font-size: 14px; line-height: 20px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-60); }
+    .legal-list { margin-top: 0; max-width: 48rem; color: var(--ink-60); }
+    .legal-list p + p { margin-top: 16px; }
+    .ticks { margin-top: 16px; }
+    .ticks li { position: relative; padding-left: 20px; margin-top: 10px; color: var(--ink-60); }
+    .ticks li::before { content: ""; position: absolute; left: 0; top: 9px; width: 6px; height: 6px; border-radius: 50%; background: var(--brand); }
+    .ticks li strong { color: var(--ink); font-weight: 600; }
   </style>
+  <link rel="canonical" href="{{ request.url_root.rstrip('/') }}{{ request.path }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <meta name="theme-color" content="#022818">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="SESA">
+  <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/static/sw.js');}</script>
 </head>
 <body>
 
-{% include 'main/_pub_nav.html' %}
+  <a class="skip-link" href="#main">Skip to main content</a>
 
-<!-- ═══ PAGE HERO ═══ -->
-<section class="policy-hero">
-  <div class="policy-hero-orb" style="width:600px;height:600px;top:-200px;right:-200px;"></div>
-  <div class="policy-hero-orb" style="width:400px;height:400px;bottom:-180px;left:-120px;"></div>
-  <div class="policy-hero-inner">
-    <span class="policy-hero-date">Effective Date: March 2026</span>
-    <h1>Terms of <em>Service</em></h1>
-    <p class="policy-hero-sub">By accessing or using the SESA platform, you agree to be bound by these Terms of Service. Please read them carefully before using the platform.</p>
-    <div class="policy-rule"></div>
-    <div class="policy-hero-nav">
-      <a onclick="history.back(); return false;" href="{{ url_for('main.landing') }}" class="back-btn">
-        <i class="fa-solid fa-arrow-left"></i> Go Back
-      </a>
-      <a href="{{ url_for('auth.login') }}" class="signin-btn">
-        Sign In <i class="fa-solid fa-arrow-right"></i>
-      </a>
+  {% include 'main/_pub_nav.html' %}
+
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg class="pattern pattern--hero" aria-hidden="true">
+        <rect width="100%" height="100%" fill="url(#grid-a)" stroke-width="0"></rect>
+        <svg x="50%" y="-96" stroke-width="0" style="overflow:visible">
+          <path transform="translate(64 160)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(128 320)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(288 480)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(512 320)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(544 640)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(320 800)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+        </svg>
+        <defs>
+          <pattern id="grid-a" width="96" height="480" x="50%" patternUnits="userSpaceOnUse" patternTransform="translate(0 -96)" fill="none">
+            <path d="M128 0 98.572 147.138A16 16 0 0 1 82.883 160H13.117a16 16 0 0 0-15.69 12.862l-26.855 134.276A16 16 0 0 1-45.117 320H-116M64-160 34.572-12.862A16 16 0 0 1 18.883 0h-69.766a16 16 0 0 0-15.69 12.862l-26.855 134.276A16 16 0 0 1-109.117 160H-180M192 160l-29.428 147.138A15.999 15.999 0 0 1 146.883 320H77.117a16 16 0 0 0-15.69 12.862L34.573 467.138A16 16 0 0 1 18.883 480H-52M-136 480h58.883a16 16 0 0 0 15.69-12.862l26.855-134.276A16 16 0 0 1-18.883 320h69.766a16 16 0 0 0 15.69-12.862l26.855-134.276A16 16 0 0 1 109.117 160H192M-72 640h58.883a16 16 0 0 0 15.69-12.862l26.855-134.276A16 16 0 0 1 45.117 480h69.766a15.999 15.999 0 0 0 15.689-12.862l26.856-134.276A15.999 15.999 0 0 1 173.117 320H256M-200 320h58.883a15.999 15.999 0 0 0 15.689-12.862l26.856-134.276A16 16 0 0 1-82.883 160h69.766a16 16 0 0 0 15.69-12.862L29.427 12.862A16 16 0 0 1 45.117 0H128"></path>
+          </pattern>
+        </defs>
+      </svg>
+
+      <main id="main">
+
+        <!-- Terms hero -->
+        <section class="hero container">
+          <div class="inner">
+            <div data-fade>
+              <h1>
+                <span class="eyebrow">Legal</span>
+                <span class="sr-only"> - </span>
+                <span class="display">Terms of Service</span>
+              </h1>
+              <p class="legal-date">Effective Date: March 2026</p>
+              <div class="prose">
+                <p>By accessing or using the SESA platform, you agree to be bound by these Terms of Service. Please read them carefully before using the platform.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Terms sections -->
+        <section class="services-body container">
+          <div class="inner">
+            <div class="legal-list" data-fade-group>
+              <ul>
+                <li class="service">
+                  <div data-fade>
+                    <div class="service-rule"><strong>01 &mdash; Acceptance. </strong>By registering for an account or using the Social Emotional Students&rsquo; Audit (SESA) platform operated by FOPA Dilligent Consult (&ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;), you confirm that you have read, understood, and agree to these Terms of Service and our <a href="{{ url_for('main.privacy') }}" style="color:var(--brand)">Privacy Policy</a>. If you are under 18 years of age, you confirm that you are using this platform with the knowledge and consent of a parent or guardian, in accordance with our parental consent policy.</div>
+                  </div>
+                </li>
+                <li class="service">
+                  <div data-fade>
+                    <div class="service-rule"><strong>02 &mdash; Eligibility &amp; Accounts. </strong>Access to SESA is available to:
+                      <ul class="ticks">
+                        <li>Students enrolled at a participating Ghanaian school who have been issued a valid access code by their school administrator.</li>
+                        <li>School Administrators representing a registered educational institution in Ghana.</li>
+                        <li>Verified Counsellors who have been approved through our professional certification review process.</li>
+                      </ul>
+                      <p style="margin-top:16px">You are responsible for maintaining the confidentiality of your account credentials. You must not share your login details with any other person.</p>
+                    </div>
+                  </div>
+                </li>
+                <li class="service">
+                  <div data-fade>
+                    <div class="service-rule"><strong>03 &mdash; Acceptable Use. </strong>When using SESA, you agree to:
+                      <ul class="ticks">
+                        <li>Provide accurate, truthful information during account registration and throughout your use of the platform.</li>
+                        <li>Complete assessments honestly, as results are used to determine appropriate levels of student support.</li>
+                        <li>Respect the privacy and confidentiality of other users on the platform.</li>
+                        <li>Not attempt to reverse-engineer, scrape, or disrupt the platform&rsquo;s services or infrastructure.</li>
+                        <li>Not use the platform for any unlawful purpose or in violation of any applicable Ghanaian law or regulation.</li>
+                      </ul>
+                    </div>
+                  </div>
+                </li>
+                <li class="service">
+                  <div data-fade>
+                    <div class="service-rule"><strong>04 &mdash; Health Data &amp; Clinical Feedback. </strong>SESA&rsquo;s assessments are validated screening tools designed to identify students who may benefit from additional emotional support. They are not a substitute for professional clinical diagnosis. Assessment scores and AI-generated feedback are shared only with the individual student and, where a student is identified as elevated or clinical risk, with authorised school administrators and verified counsellors. We do not share your health data with any third parties outside this structure.</div>
+                  </div>
+                </li>
+                <li class="service">
+                  <div data-fade>
+                    <div class="service-rule"><strong>05 &mdash; Intellectual Property. </strong>All content, assessment instruments, scoring models, and software comprising the SESA platform are the intellectual property of FOPA Dilligent Consult and are protected under applicable Ghanaian and international copyright laws. You are granted a limited, non-transferable licence to use the platform solely for its intended educational and screening purposes. You may not reproduce, redistribute, or create derivative works from any part of the platform.</div>
+                  </div>
+                </li>
+                <li class="service">
+                  <div data-fade>
+                    <div class="service-rule"><strong>06 &mdash; Termination. </strong>We reserve the right to suspend or permanently terminate any account found to be in violation of these Terms, or at the request of a school administrator in relation to a student account. You may delete your own account at any time via your Account Settings. Upon deletion, all your personal data will be permanently removed in accordance with our Privacy Policy.</div>
+                  </div>
+                </li>
+                <li class="service">
+                  <div data-fade>
+                    <div class="service-rule"><strong>07 &mdash; Changes To These Terms. </strong>We may update these Terms of Service from time to time to reflect changes to our platform, legal obligations, or best practices. We will notify registered users of any material changes. Your continued use of the platform after any such changes constitutes your acceptance of the new Terms.</div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="prose" data-fade>
+              <p><strong style="color:var(--ink)">Questions About These Terms?</strong> If you have any questions about our Terms of Service or Privacy Policy, please reach out to us directly: <a href="{{ url_for('main.contact') }}" style="color:var(--brand)">Contact FOPA Dilligent Consult</a>.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="band-head container">
+          <div class="inner">
+            <div class="cta-panel" data-fade>
+              <div class="cta-copy">
+                <div class="cta-block">
+                  <h2>Every Student Deserves to Be Understood</h2>
+                  <p class="cta-p">Ghana&#x27;s schools are full of students silently struggling. SESA gives your school the tools to see what grades can&#x27;t show &mdash; and act before it&#x27;s too late.</p>
+                  <div class="cta-actions">
+                    <a class="btn btn-light" href="{{ url_for('auth.school_signup') }}"><span>Register My School</span></a>
+                    <a class="btn btn-outline-light" href="{{ url_for('auth.login') }}"><span>Student Sign In</span></a>
+                  </div>
+                  <div class="cta-contact">
+                    <ul>
+                      <li>
+                        <address>
+                          <strong>Location</strong>
+                          <br />Accra, Ghana
+                        </address>
+                      </li>
+                      <li>
+                        <address>
+                          <strong>Email</strong>
+                          <br />
+                          <a href="mailto:info@fopaconsult.com">info@fopaconsult.com</a>
+                        </address>
+                      </li>
+                      <li>
+                        <address>
+                          <strong>New to SESA?</strong>
+                          <br />
+                          <a href="{{ url_for('main.school_guide') }}">Read the School Guide &rarr;</a>
+                        </address>
+                      </li>
+                    </ul>
+                    <div class="cta-links">
+                      <p class="cta-links-title">Explore</p>
+                      <ul>
+                        <li><a href="{{ url_for('main.about') }}">About Us</a></li>
+                        <li><a href="{{ url_for('main.gallery') }}">Gallery</a></li>
+                        <li><a href="{{ url_for('main.school_guide') }}">School Guide</a></li>
+                        <li><a href="{{ url_for('main.assessment_details') }}">SESA Methodology</a></li>
+                        <li><a href="{{ url_for('main.contact') }}">Contact</a></li>
+                        <li><a href="{{ url_for('main.privacy') }}">Privacy Policy</a></li>
+                        <li><a href="{{ url_for('main.terms') }}">Terms of Service</a></li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+      {% include 'main/_pub_footer.html' %}
     </div>
   </div>
-</section>
 
-<!-- ═══ TERMS CONTENT ═══ -->
-<section style="background: var(--iv);">
-  <div class="policy-body">
-
-    <div class="policy-section">
-      <span class="section-num">01 — Acceptance</span>
-      <h2>Agreeing to These Terms</h2>
-      <p>By registering for an account or using the Social Emotional Students' Audit (SESA) platform operated by FOPA Dilligent Consult ("we", "our", or "us"), you confirm that you have read, understood, and agree to these Terms of Service and our <a href="{{ url_for('main.privacy') }}" style="color: var(--gd); font-weight: 700;">Privacy Policy</a>.</p>
-      <p>If you are under 18 years of age, you confirm that you are using this platform with the knowledge and consent of a parent or guardian, in accordance with our parental consent policy.</p>
-    </div>
-
-    <div class="policy-divider"></div>
-
-    <div class="policy-section policy-section--alt">
-      <span class="section-num">02 — Eligibility &amp; Accounts</span>
-      <h2>Who Can Use SESA</h2>
-      <p>Access to SESA is available to:</p>
-      <ul>
-        <li><strong>Students</strong> enrolled at a participating Ghanaian school who have been issued a valid access code by their school administrator.</li>
-        <li><strong>School Administrators</strong> representing a registered educational institution in Ghana.</li>
-        <li><strong>Verified Counsellors</strong> who have been approved through our professional certification review process.</li>
-      </ul>
-      <p>You are responsible for maintaining the confidentiality of your account credentials. You must not share your login details with any other person.</p>
-    </div>
-
-    <div class="policy-divider" style="margin-top: 64px;"></div>
-
-    <div class="policy-section">
-      <span class="section-num">03 — Acceptable Use</span>
-      <h2>Platform Rules</h2>
-      <p>When using SESA, you agree to:</p>
-      <ul>
-        <li>Provide accurate, truthful information during account registration and throughout your use of the platform.</li>
-        <li>Complete assessments honestly, as results are used to determine appropriate levels of student support.</li>
-        <li>Respect the privacy and confidentiality of other users on the platform.</li>
-        <li>Not attempt to reverse-engineer, scrape, or disrupt the platform's services or infrastructure.</li>
-        <li>Not use the platform for any unlawful purpose or in violation of any applicable Ghanaian law or regulation.</li>
-      </ul>
-    </div>
-
-    <div class="policy-divider"></div>
-
-    <div class="policy-section">
-      <span class="section-num">04 — Health Data &amp; Clinical Feedback</span>
-      <h2>Understanding Assessment Results</h2>
-      <p>SESA's assessments are validated screening tools designed to identify students who may benefit from additional emotional support. They are <strong>not</strong> a substitute for professional clinical diagnosis.</p>
-      <p>Assessment scores and AI-generated feedback are shared only with the individual student and, where a student is identified as elevated or clinical risk, with authorised school administrators and verified counsellors. We do not share your health data with any third parties outside this structure.</p>
-    </div>
-
-    <div class="policy-divider"></div>
-
-    <div class="policy-section policy-section--alt">
-      <span class="section-num">05 — Intellectual Property</span>
-      <h2>Ownership of Content</h2>
-      <p>All content, assessment instruments, scoring models, and software comprising the SESA platform are the intellectual property of FOPA Dilligent Consult and are protected under applicable Ghanaian and international copyright laws.</p>
-      <p>You are granted a limited, non-transferable licence to use the platform solely for its intended educational and screening purposes. You may not reproduce, redistribute, or create derivative works from any part of the platform.</p>
-    </div>
-
-    <div class="policy-divider" style="margin-top: 64px;"></div>
-
-    <div class="policy-section">
-      <span class="section-num">06 — Termination</span>
-      <h2>Account Suspension &amp; Deletion</h2>
-      <p>We reserve the right to suspend or permanently terminate any account found to be in violation of these Terms, or at the request of a school administrator in relation to a student account.</p>
-      <p>You may delete your own account at any time via your <strong>Account Settings</strong>. Upon deletion, all your personal data will be permanently removed in accordance with our <a href="{{ url_for('main.privacy') }}" style="color: var(--gd); font-weight: 700;">Privacy Policy</a>.</p>
-    </div>
-
-    <div class="policy-divider"></div>
-
-    <div class="policy-section">
-      <span class="section-num">07 — Changes To These Terms</span>
-      <h2>Updates &amp; Amendments</h2>
-      <p>We may update these Terms of Service from time to time to reflect changes to our platform, legal obligations, or best practices. We will notify registered users of any material changes. Your continued use of the platform after any such changes constitutes your acceptance of the new Terms.</p>
-    </div>
-
-    <div class="policy-divider"></div>
-
-    <div class="policy-section">
-      <div class="policy-cta">
-        <div class="policy-cta-orb"></div>
-        <h3>Questions About These Terms?</h3>
-        <p>If you have any questions about our Terms of Service or Privacy Policy, please reach out to us directly.</p>
-        <a href="{{ url_for('main.contact') }}" class="btn-gold" style="position: relative; z-index: 2;">
-          <i class="fa-solid fa-envelope"></i> Contact FOPA Dilligent Consult
-        </a>
-      </div>
-    </div>
-
-  </div>
-</section>
-
-{% include 'main/_pub_footer.html' %}
-
+  <script>
+    (function () {
+      var faders = document.querySelectorAll('[data-fade]');
+      if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('fade-in');
+              io.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+        faders.forEach(function (el) {
+          var group = el.closest('[data-fade-group]');
+          if (group) {
+            var siblings = Array.prototype.slice.call(group.querySelectorAll('[data-fade]'));
+            var idx = siblings.indexOf(el);
+            el.style.transitionDelay = Math.min(idx * 90, 450) + 'ms';
+          }
+          io.observe(el);
+        });
+      } else {
+        faders.forEach(function (el) { el.classList.add('fade-in'); });
+      }
+    })();
+  </script>
 </body>
 </html>

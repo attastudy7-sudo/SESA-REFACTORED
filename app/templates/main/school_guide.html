@@ -1,1006 +1,416 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>School Guide – SESA | FOPA Dilligent Consult</title>
-  <meta name="description" content="A step-by-step guide for SESA school administrators: register your school, upload students, activate accounts, and read their wellbeing.">
-  <link rel="canonical" href="{{ request.url }}">
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>School Guide &ndash; SESA | FOPA Dilligent Consult</title>
+  <meta name="description" content="Register your school, add your students, and read their wellbeing: a step-by-step guide for SESA administrators, from first sign-up to daily use." />
+  <meta property="og:title" content="School Guide &ndash; SESA | FOPA Dilligent Consult" />
+  <meta property="og:description" content="Register your school, add your students, and read their wellbeing: a step-by-step guide for SESA administrators, from first sign-up to daily use." />
+  <meta property="og:url" content="https://fopaconsult.com/school/guide" />
+  <meta property="og:site_name" content="FOPA Dilligent Consult &middot; Ghana" />
+  <meta property="og:locale" content="en_GH" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="School Guide &ndash; SESA | FOPA Dilligent Consult" />
+  <meta name="twitter:description" content="Register your school, add your students, and read their wellbeing: a step-by-step guide for SESA administrators, from first sign-up to daily use." />
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pub.css') }}" />
+  <style>
+    /* ---------- Guide-only styles (not in shared sheet) ---------- */
+    .prose { margin-top: 40px; max-width: 42rem; color: var(--ink-60); }
+    .prose p + p { margin-top: 24px; }
+    .guide-section { scroll-margin-top: 24px; }
+    .guide-section + .guide-section { margin-top: 96px; }
+    @media (min-width: 640px) { .guide-section + .guide-section { margin-top: 128px; } }
+    .guide-h { font-size: 24px; line-height: 32px; font-weight: 600; color: var(--brand); letter-spacing: -0.01em; }
+    .guide-sub { margin-top: 12px; font-size: 16px; line-height: 24px; color: var(--ink-60); max-width: 48rem; }
+    .guide-body { margin-top: 32px; max-width: 48rem; color: var(--ink-60); }
+    .guide-body p + p { margin-top: 16px; }
+    .card-title a { color: inherit; }
+    .card-title a:hover { text-decoration: underline; }
+    .ticks { margin-top: 16px; }
+    .ticks li { position: relative; padding-left: 20px; margin-top: 10px; color: var(--ink-60); }
+    .ticks li::before { content: ""; position: absolute; left: 0; top: 9px; width: 6px; height: 6px; border-radius: 50%; background: var(--brand); }
+    .doc-table-wrap { margin-top: 32px; overflow-x: auto; border-radius: 16px; box-shadow: inset 0 0 0 1px rgba(10,10,10,.08); }
+    .doc-table { width: 100%; border-collapse: collapse; font-size: 14px; line-height: 22px; min-width: 640px; }
+    .doc-table th { text-align: left; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-60); padding: 14px 18px; border-bottom: 1px solid rgba(10,10,10,.1); background: var(--ink-05); font-weight: 600; }
+    .doc-table td { padding: 14px 18px; border-bottom: 1px solid rgba(10,10,10,.06); color: var(--ink-60); vertical-align: top; }
+    .doc-table tr:last-child td { border-bottom: none; }
+    .doc-table td:first-child { font-weight: 600; color: var(--ink); white-space: nowrap; }
+    .tag { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 9999px; box-shadow: inset 0 0 0 1px rgba(10,10,10,.12); }
+    .tag--req { color: var(--brand); box-shadow: inset 0 0 0 1px rgba(22,101,52,.35); background: rgba(22,101,52,.06); }
+  </style>
+  <link rel="canonical" href="{{ request.url_root.rstrip('/') }}{{ request.path }}">
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
   <meta name="theme-color" content="#022818">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="SESA">
   <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/static/sw.js');}</script>
-  {% include 'main/_pub_styles.html' %}
-  <style>
-    /* ═══════════════════════════════════════════════════════
-       SCHOOL GUIDE - HELP CENTER
-       Brand: forest / gold / ivory · Playfair + Manrope
-    ═══════════════════════════════════════════════════════ */
-
-    /* ── Hero entrance - expo, staggered ── */
-    .guide-hero h1 {
-      animation: guideSlide 0.9s cubic-bezier(.16,1,.3,1) .05s both;
-    }
-    .guide-hero .s-eyebrow { animation: guideSlide 0.9s cubic-bezier(.16,1,.3,1) both; }
-    .guide-hero .hero-copy > p { animation: guideSlide 0.9s cubic-bezier(.16,1,.3,1) .15s both; }
-    .guide-hero .hero-copy > .hero-meta { animation: guideSlide 0.9s cubic-bezier(.16,1,.3,1) .3s both; }
-    .guide-hero-aside { animation: guideSlide 0.9s cubic-bezier(.16,1,.3,1) .2s both; }
-    @keyframes guideSlide {
-      from { opacity: 0; transform: translateY(22px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    /* ── Scroll reveal (guide body) ── */
-    [data-reveal] {
-      opacity: 0;
-      transform: translateY(26px);
-      transition: opacity .7s cubic-bezier(.16,1,.3,1), transform .7s cubic-bezier(.16,1,.3,1);
-    }
-    [data-reveal].visible { opacity: 1; transform: translateY(0); }
-
-    /* ── Hero: back-to-dashboard link ── */
-    .guide-back-link {
-      display: inline-flex; align-items: center; gap: 8px;
-      color: var(--g); font-size: .78rem; font-weight: 700;
-      letter-spacing: .08em; text-transform: uppercase;
-      text-decoration: none; margin-bottom: 20px;
-      transition: color .2s ease;
-    }
-    .guide-back-link:hover { color: var(--iv); }
-    .guide-back-link i { font-size: .72rem; transition: transform .2s ease; }
-    .guide-back-link:hover i { transform: translateX(-4px); }
-
-    /* ── Hero: quick-answers card ── */
-    .guide-hero-aside {
-      border-radius: 18px; overflow: hidden;
-      border: 1px solid rgba(250,250,243,.14);
-      background: rgba(250,250,243,.06);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-    }
-    .guide-hero-card-head {
-      display: flex; align-items: center; gap: 14px;
-      padding: 22px 24px;
-      border-bottom: 1px solid rgba(250,250,243,.1);
-    }
-    .guide-hero-card-head .hc-icon {
-      width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
-      background: var(--g); color: var(--f);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1rem;
-    }
-    .guide-hero-card-head strong {
-      display: block; font-family: 'Playfair Display', serif;
-      font-size: 1.05rem; font-weight: 700; color: var(--iv); letter-spacing: -.01em;
-    }
-    .guide-hero-card-head span { font-size: .75rem; color: rgba(250,250,243,.55); }
-    .guide-hero-card-links { padding: 10px; }
-    .guide-hero-card-links a {
-      display: flex; align-items: center; justify-content: space-between; gap: 12px;
-      padding: 11px 14px; border-radius: 10px;
-      color: rgba(250,250,243,.82); font-size: .87rem; font-weight: 500;
-      text-decoration: none; transition: background .15s ease, color .15s ease;
-    }
-    .guide-hero-card-links a:hover { background: rgba(250,250,243,.08); color: var(--g); }
-    .guide-hero-card-links a i { font-size: .68rem; color: var(--g); opacity: .8; transition: transform .15s ease; }
-    .guide-hero-card-links a:hover i { transform: translateX(4px); }
-    @media (max-width: 900px) { .guide-hero-aside { display: none; } }
-
-    /* ── Guide body shell ── */
-    .guide-wrap { padding: 100px 32px 0; }
-    @media (max-width: 600px) { .guide-wrap { padding: 84px 20px 0; } }
-    .guide-shell {
-      max-width: 1280px; margin: 0 auto;
-      display: flex; align-items: flex-start; gap: 48px;
-    }
-    @media (max-width: 991px) { .guide-shell { gap: 0; } }
-
-    /* ── Sidebar ── */
-    .guide-sidebar {
-      width: 276px; flex-shrink: 0;
-      position: sticky; top: 88px;
-      max-height: 100%;
-      overflow-y: auto;
-      background: var(--sl);
-      border: 1px solid rgba(2,40,24,.06);
-      border-radius: 18px;
-      padding: 26px 24px;
-      scrollbar-width: thin; scrollbar-color: rgba(2,40,24,.18) transparent;
-    }
-    .guide-sidebar::-webkit-scrollbar { width: 6px; }
-    .guide-sidebar::-webkit-scrollbar-thumb { background: rgba(2,40,24,.18); border-radius: 3px; }
-    .guide-nav-block { margin-bottom: 26px; }
-    .guide-nav-block:last-child { margin-bottom: 0; }
-    .guide-nav-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-    .guide-nav-icon {
-      width: 27px; height: 27px; border-radius: 8px; flex-shrink: 0;
-      background: var(--f); color: #fff;
-      display: flex; align-items: center; justify-content: center;
-      font-size: .68rem;
-    }
-    .guide-nav-title {
-      font-family: 'Playfair Display', serif;
-      font-size: .94rem; font-weight: 700; color: var(--f); letter-spacing: -.01em;
-    }
-    .guide-nav-list { display: flex; flex-direction: column; gap: 2px; }
-    .guide-nav-link {
-      display: flex; align-items: center; gap: 10px;
-      padding: 8px 12px; margin-left: 10px;
-      border-radius: 9px;
-      font-size: .845rem; font-weight: 500;
-      color: var(--mg); text-decoration: none; line-height: 1.35;
-      transition: color .15s ease, background .15s ease;
-    }
-    .guide-nav-link::before {
-      content: ''; width: 5px; height: 5px; border-radius: 50%;
-      background: currentColor; opacity: .3; flex-shrink: 0;
-    }
-    .guide-nav-link:hover { color: var(--f); background: rgba(2,40,24,.05); }
-    .guide-nav-link.w--current { color: var(--gd); font-weight: 600; }
-    .guide-nav-link.w--current::before { background: var(--g); opacity: 1; }
-
-    /* ── Content column ── */
-    .guide-content { flex: 1; min-width: 0; }
-    .guide-content-inner { max-width: 780px; padding-bottom: 96px; }
-
-    /* ── Dynamic title block ── */
-    .guide-title-block {
-      padding-bottom: 26px; margin-bottom: 12px;
-      border-bottom: 1px solid rgba(2,40,24,.08);
-    }
-    .guide-title {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(1.65rem, 3vw, 2.15rem);
-      font-weight: 700; color: var(--f); line-height: 1.2; letter-spacing: -.015em;
-    }
-    .guide-subtitle { margin-top: 8px; color: var(--mg); font-size: 1rem; line-height: 1.7; }
-
-    /* ── Article typography ── */
-    .guide-section { display: none; }
-    .guide-section p, .guide-section ul, .guide-section ol {
-      font-size: .95rem; color: rgba(2,40,24,.8); line-height: 1.8;
-      margin-bottom: 1.1rem;
-    }
-    .guide-section p { max-width: 70ch; }
-    .guide-section h4 {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.22rem; font-weight: 700; color: var(--f); letter-spacing: -.01em;
-      margin: 2rem 0 .6rem;
-    }
-    .guide-section h4:first-child { margin-top: 0rem; }
-    .guide-section strong { color: var(--f); font-weight: 700; }
-    .guide-section a {
-      color: var(--gd); text-decoration: underline;
-      text-underline-offset: 3px; text-decoration-color: rgba(119,90,25,.35);
-      transition: text-decoration-color .15s ease;
-    }
-    .guide-section a:hover { text-decoration-color: var(--gd); }
-    .guide-section code {
-      font-family: 'SF Mono', 'Fira Code', Menlo, Consolas, monospace;
-      font-size: .85em; font-weight: 500; color: var(--f);
-      background: var(--sl); border: 1px solid rgba(2,40,24,.1);
-      border-radius: 6px; padding: .1em .35em;
-    }
-    .guide-section ul, .guide-section ol { padding-left: 1.4rem; }
-    .guide-section li { margin-bottom: .5rem; }
-    .guide-section li::marker { color: var(--g); font-weight: 700; }
-
-    /* ── Callout (no side stripe) ── */
-    .guide-section blockquote {
-      position: relative;
-      background: rgba(197,160,89,.08);
-      border: 1px solid rgba(197,160,89,.22);
-      border-radius: 12px;
-      padding: 18px 22px; margin: 1.5rem 0;
-      font-size: .9rem; color: var(--mg); line-height: 1.75; max-width: 70ch;
-    }
-    .guide-section blockquote strong { color: var(--gd); }
-
-    /* ── Numbered step chips ── */
-    .guide-section ol.step-list { list-style: none; padding-left: 0; counter-reset: step; margin: 1.4rem 0; }
-    .guide-section ol.step-list li {
-      counter-increment: step;
-      position: relative; padding-left: 44px;
-      margin-bottom: 1.15rem; max-width: 70ch;
-    }
-    .guide-section ol.step-list li::before {
-      content: counter(step);
-      position: absolute; left: 0; top: .18rem;
-      width: 28px; height: 28px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      background: var(--g); color: var(--f);
-      font-family: 'Playfair Display', serif; font-weight: 700; font-size: .78rem;
-    }
-
-    /* ── Download box ── */
-    .guide-download-box {
-      display: flex; align-items: center; justify-content: space-between; gap: 18px;
-      background: var(--sl); border: 1px solid rgba(2,40,24,.08);
-      border-radius: 14px; padding: 16px 18px;
-      margin: 1.4rem 0 1.6rem; flex-wrap: wrap;
-      transition: transform .2s ease-out, box-shadow .2s ease-out;
-    }
-    .guide-download-box:hover { transform: translateY(-2px); box-shadow: 0 14px 34px rgba(2,40,24,.08); }
-    .guide-download-box .d-meta { display: flex; align-items: center; gap: 14px; min-width: 0; }
-    .guide-download-box .file-chip {
-      width: 44px; height: 44px; border-radius: 11px; flex-shrink: 0;
-      background: var(--f); color: var(--g);
-      display: flex; align-items: center; justify-content: center; font-size: 1rem;
-    }
-    .guide-download-box strong { display: block; color: var(--f); font-size: .92rem; font-weight: 700; }
-    .guide-download-box p { margin: 2px 0 0; font-size: .8rem; color: var(--mg); }
-    .btn-download {
-      background: var(--f); color: var(--iv);
-      font-family: inherit; font-size: .85rem; font-weight: 700;
-      padding: 10px 20px; border-radius: 8px; text-decoration: none;
-      display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;
-      transition: transform .15s ease-out, background .2s ease;
-    }
-    .btn-download:hover { background: var(--mg); }
-    .btn-download:active { transform: scale(.97); }
-    .btn-download i { font-size: .78rem; }
-
-    /* ── Table ── */
-    .guide-table-wrap {
-      overflow-x: auto; margin: 1.4rem 0 1.6rem;
-      border: 1px solid rgba(2,40,24,.08); border-radius: 14px; background: var(--iv);
-    }
-    .guide-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
-    .guide-table th {
-      text-align: left; padding: 12px 16px;
-      font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
-      color: var(--mg); background: var(--sl);
-      border-bottom: 1px solid rgba(2,40,24,.08); white-space: nowrap;
-    }
-    .guide-table td {
-      padding: 12px 16px; border-bottom: 1px solid rgba(2,40,24,.06);
-      color: rgba(2,40,24,.75); vertical-align: top; line-height: 1.6;
-    }
-    .guide-table tr:last-child td { border-bottom: none; }
-    .guide-table td strong { font-weight: 700; color: var(--f); }
-    .guide-table td code {
-      font-family: 'SF Mono', 'Fira Code', Menlo, Consolas, monospace;
-      font-size: .82em; font-weight: 500; color: var(--f);
-      background: var(--sl); border: 1px solid rgba(2,40,24,.1);
-      border-radius: 5px; padding: .05em .3em;
-    }
-
-    /* ── Badges ── */
-    .badge-required, .badge-optional {
-      display: inline-block; padding: .14em .6em; border-radius: 999px;
-      font-size: .68rem; font-weight: 700; letter-spacing: .02em; white-space: nowrap;
-    }
-    .badge-required { background: rgba(197,160,89,.16); color: var(--gd); border: 1px solid rgba(197,160,89,.3); }
-    .badge-optional { background: rgba(2,40,24,.06); color: var(--mg); border: 1px solid rgba(2,40,24,.1); }
-
-    /* ── Contact card ── */
-    .guide-contact-card {
-      position: relative; overflow: hidden;
-      background: var(--f); border-radius: 18px;
-      padding: 38px; margin-top: 1.2rem;
-    }
-    .guide-contact-card::after {
-      content: ''; position: absolute;
-      width: 230px; height: 230px; border-radius: 50%;
-      background: rgba(197,160,89,.18);
-      top: -90px; right: -70px; pointer-events: none;
-    }
-    .guide-contact-card h4 {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.4rem; font-weight: 700; color: var(--iv); letter-spacing: -.01em;
-      margin: 0 0 10px;
-    }
-    .guide-contact-card p { color: rgba(250,250,243,.72); font-size: .92rem; line-height: 1.75; max-width: 46ch; margin: 0 0 26px; }
-    .guide-contact-card .btn-gold { position: relative; z-index: 1; }
-    .guide-contact-mail {
-      position: relative; z-index: 1;
-      display: inline-flex; align-items: center; gap: 8px;
-      margin-top: 14px; color: rgba(250,250,243,.6);
-      font-size: .82rem; text-decoration: none;
-      transition: color .15s ease;
-    }
-    .guide-contact-mail:hover { color: var(--g); }
-
-    /* ── Mobile contents bar ── */
-    .guide-mobile-bar {
-      position: sticky; top: 64px; z-index: 60;
-      display: none;
-      padding: 12px 20px;
-      background: rgba(250,250,243,.92);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border-bottom: 1px solid rgba(2,40,24,.06);
-    }
-    .guide-contents-btn {
-      display: inline-flex; align-items: center; gap: 9px;
-      background: var(--f); color: var(--iv);
-      border: none; cursor: pointer;
-      font-family: inherit; font-size: .82rem; font-weight: 700;
-      padding: 9px 16px; border-radius: 8px;
-      transition: transform .15s ease-out, background .2s ease;
-    }
-    .guide-contents-btn:hover { background: var(--mg); }
-    .guide-contents-btn:active { transform: scale(.97); }
-    .guide-contents-btn i { font-size: .78rem; color: var(--g); }
-
-    /* ── Drawer bottom nav (mobile only) ── */
-    .guide-drawer-bottom { display: none; }
-    .guide-drawer-divider { height: 1px; background: rgba(2,40,24,.08); margin: 4px 0 8px; }
-
-    /* ── Drawer brand header (mobile only) ── */
-    .guide-drawer-head {
-      display: none;
-      align-items: center; justify-content: space-between;
-      padding-bottom: 16px; margin-bottom: 16px;
-      border-bottom: 1px solid rgba(2,40,24,.08);
-    }
-    .guide-drawer-brand {
-      display: inline-flex; align-items: center; gap: 10px;
-      font-family: 'Playfair Display', Georgia, serif;
-      font-size: 1.05rem; font-weight: 700; color: var(--f);
-      text-decoration: none;
-    }
-    .guide-drawer-brand img { width: 30px; height: 30px; border-radius: 50%; }
-    .guide-drawer-close {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 34px; height: 34px; border-radius: 9px;
-      border: none; cursor: pointer; background: rgba(2,40,24,.06); color: var(--f);
-      font-size: .9rem; transition: background .15s ease, transform .15s ease;
-    }
-    .guide-drawer-close:hover { background: rgba(2,40,24,.12); }
-    .guide-drawer-close:active { transform: scale(.95); }
-
-    /* ── Responsive ── */
-    @media screen and (max-width: 991px) {
-      .guide-mobile-bar {
-        display: block;
-        margin-left: -32px; margin-right: -32px;
-        padding-left: 32px; padding-right: 32px;
-      }
-      .guide-sidebar {
-        position: fixed; top: 0; left: 0; bottom: 0; z-index: 200;
-        width: 300px; max-width: 86vw; max-height: none;
-        border-radius: 0; border: none;
-        border-right: 1px solid rgba(2,40,24,.08);
-        background: var(--iv); padding: 20px 20px 28px;
-        transform: translateX(-106%);
-        transition: transform .3s cubic-bezier(.32,.72,0,1);
-      }
-      .guide-sidebar.is-open { transform: translateX(0); box-shadow: 0 0 60px rgba(2,40,24,.22); }
-      .guide-drawer-head { display: flex; }
-      .guide-drawer-bottom { display: flex; flex-direction: column; gap: 2px; margin-top: 8px; }
-      .guide-drawer-bottom .drawer-link {
-        display: flex; align-items: center; gap: 10px;
-        padding: 10px 12px; border-radius: 9px;
-        color: var(--mg); font-size: .85rem; font-weight: 600; text-decoration: none;
-        transition: color .15s ease, background .15s ease;
-      }
-      .guide-drawer-bottom .drawer-link:hover { color: var(--f); background: rgba(2,40,24,.05); }
-      .guide-drawer-bottom .drawer-link i { width: 15px; color: var(--g); font-size: .8rem; }
-    }
-    @media screen and (max-width: 767px) {
-      .guide-content-inner { padding-bottom: 72px; }
-    }
-    @media screen and (max-width: 600px) {
-      .guide-mobile-bar {
-        margin-left: -20px; margin-right: -20px;
-        padding-left: 20px; padding-right: 20px;
-      }
-    }
-    @media screen and (max-width: 479px) {
-      .guide-contact-card { padding: 30px 24px; }
-    }
-
-    /* ── Drawer overlay ── */
-    .guide-drawer-overlay {
-      display: none;
-    }
-    @media screen and (max-width: 991px) {
-      .guide-drawer-overlay {
-        display: block;
-        position: fixed; inset: 0; top: 0; z-index: 199;
-        background: rgba(0, 0, 0, 0.3);
-        backdrop-filter: blur(3px);
-        -webkit-backdrop-filter: blur(3px);
-        opacity: 0; pointer-events: none;
-        transition: opacity .3s ease;
-      }
-      .guide-drawer-overlay.is-open { opacity: 1; pointer-events: auto; }
-    }
-
-    /* ── Reduced motion ── */
-    @media (prefers-reduced-motion: reduce) {
-      .guide-hero h1, .guide-hero .s-eyebrow, .guide-hero .hero-copy > p,
-      .guide-hero .hero-copy > .hero-meta, .guide-hero-aside {
-        animation: none !important; opacity: 1 !important; transform: none !important;
-      }
-      [data-reveal] { transition: none !important; opacity: 1 !important; transform: none !important; }
-      .guide-sidebar, .guide-drawer-overlay, .guide-download-box { transition: none !important; }
-    }
-  </style>
 </head>
 <body>
 
-{% include 'main/_pub_nav.html' %}
+  <a class="skip-link" href="#main">Skip to main content</a>
 
-<!-- ═══ HERO ═══ -->
-<section class="page-hero grain guide-hero">
-  <div class="page-hero-orb" style="width:620px;height:620px;top:-220px;right:-160px;"></div>
-  <div class="page-hero-inner">
-    <div class="hero-copy">
-      {% if session.get('school_id') %}
-      <a href="{{ url_for('main.school_dashboard', school_id=session.get('school_id')) }}" class="guide-back-link">
-        <i class="fa-solid fa-arrow-left"></i> Back to dashboard
-      </a>
-      {% endif %}
-      <span class="s-eyebrow s-eyebrow--left">Help Center &middot; School Guide</span>
-      <h1>Everything your school needs to <em>get started</em>.</h1>
-      <p>Register your school, add your students, and read their wellbeing: a step-by-step guide for SESA administrators, from first sign-up to daily use.</p>
-      <div class="hero-meta" style="display:flex;gap:14px;flex-wrap:wrap;margin-top:34px;">
-        <a href="{{ url_for('auth.school_signup') }}" class="btn-gold">Register My School</a>
-        <a href="{{ url_for('auth.school_login') }}" class="btn-outline-light">School Sign In</a>
-      </div>
-    </div>
+  {% include 'main/_pub_nav.html' %}
 
-    <!-- ── Quick answers card ── -->
-    <div class="guide-hero-aside">
-      <div class="guide-hero-card-head">
-        <div class="hc-icon"><i class="fa-solid fa-book-open"></i></div>
-        <div>
-          <strong>Quick answers</strong>
-          <span>The topics administrators ask about most</span>
-        </div>
-      </div>
-      <div class="guide-hero-card-links">
-        <a href="#upload" data-section="upload"><span>Bulk student upload</span><i class="fa-solid fa-arrow-right"></i></a>
-        <a href="#claim-codes" data-section="claim-codes"><span>Claim codes</span><i class="fa-solid fa-arrow-right"></i></a>
-        <a href="#password-reset" data-section="password-reset"><span>Password reset</span><i class="fa-solid fa-arrow-right"></i></a>
-        <a href="#troubleshooting" data-section="troubleshooting"><span>Troubleshooting</span><i class="fa-solid fa-arrow-right"></i></a>
-        <a href="#contact" data-section="contact"><span>Contact support</span><i class="fa-solid fa-arrow-right"></i></a>
-      </div>
-    </div>
-  </div>
-</section>
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg class="pattern pattern--hero" aria-hidden="true">
+        <rect width="100%" height="100%" fill="url(#grid-a)" stroke-width="0"></rect>
+        <svg x="50%" y="-96" stroke-width="0" style="overflow:visible">
+          <path transform="translate(64 160)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(128 320)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(288 480)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(512 320)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(544 640)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(320 800)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+        </svg>
+        <defs>
+          <pattern id="grid-a" width="96" height="480" x="50%" patternUnits="userSpaceOnUse" patternTransform="translate(0 -96)" fill="none">
+            <path d="M128 0 98.572 147.138A16 16 0 0 1 82.883 160H13.117a16 16 0 0 0-15.69 12.862l-26.855 134.276A16 16 0 0 1-45.117 320H-116M64-160 34.572-12.862A16 16 0 0 1 18.883 0h-69.766a16 16 0 0 0-15.69 12.862l-26.855 134.276A16 16 0 0 1-109.117 160H-180M192 160l-29.428 147.138A15.999 15.999 0 0 1 146.883 320H77.117a16 16 0 0 0-15.69 12.862L34.573 467.138A16 16 0 0 1 18.883 480H-52M-136 480h58.883a16 16 0 0 0 15.69-12.862l26.855-134.276A16 16 0 0 1-18.883 320h69.766a16 16 0 0 0 15.69-12.862l26.855-134.276A16 16 0 0 1 109.117 160H192M-72 640h58.883a16 16 0 0 0 15.69-12.862l26.855-134.276A16 16 0 0 1 45.117 480h69.766a15.999 15.999 0 0 0 15.689-12.862l26.856-134.276A15.999 15.999 0 0 1 173.117 320H256M-200 320h58.883a15.999 15.999 0 0 0 15.689-12.862l26.856-134.276A16 16 0 0 1-82.883 160h69.766a16 16 0 0 0 15.69-12.862L29.427 12.862A16 16 0 0 1 45.117 0H128"></path>
+          </pattern>
+        </defs>
+      </svg>
 
-<!-- ═══ GUIDE BODY ═══ -->
-<div class="guide-wrap" data-reveal>
+      <main id="main">
 
-  {# ── Mobile contents bar (outside the flex shell so it spans full width) ── #}
-  <div class="guide-shell">
-
-    {# ── SIDEBAR ── #}
-    <aside class="guide-sidebar" id="guideSidebar">
-      <div class="guide-drawer-head">
-        <a href="{{ url_for('main.landing') }}" class="guide-drawer-brand">
-          <img src="{{ url_for('static', filename='images/Pofa.png') }}" alt="FOPA">
-          SESA
-        </a>
-        <button class="guide-drawer-close" id="guideDrawerClose" aria-label="Close guide contents">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-      <div class="guide-nav-block">
-        <div class="guide-nav-head">
-          <div class="guide-nav-icon"><i class="fa-solid fa-rocket"></i></div>
-          <span class="guide-nav-title">Get started</span>
-        </div>
-        <div class="guide-nav-list">
-          <a href="#registration" class="guide-nav-link" data-section="registration" data-title="School Registration" data-subtitle="How to register your school on the SESA platform.">School Registration</a>
-          <a href="#activation" class="guide-nav-link" data-section="activation" data-title="Account Activation" data-subtitle="Understanding the account activation process.">Account Activation</a>
-          <a href="#first-login" class="guide-nav-link" data-section="first-login" data-title="First Login" data-subtitle="What to do after your account is activated.">First Login</a>
-        </div>
-      </div>
-
-      <div class="guide-nav-block">
-        <div class="guide-nav-head">
-          <div class="guide-nav-icon"><i class="fa-solid fa-file-arrow-up"></i></div>
-          <span class="guide-nav-title">Upload</span>
-        </div>
-        <div class="guide-nav-list">
-          <a href="#upload" class="guide-nav-link" data-section="upload" data-title="Bulk Student Upload" data-subtitle="The fastest way to add your entire student body at once.">Excel Upload</a>
-          <a href="#columns" class="guide-nav-link" data-section="columns" data-title="Column Reference" data-subtitle="Required and optional columns in the upload template.">Column Reference</a>
-          <a href="#upload-steps" class="guide-nav-link" data-section="upload-steps" data-title="Step-by-Step Upload" data-subtitle="A step-by-step walkthrough of the upload process.">Step-by-Step</a>
-        </div>
-      </div>
-
-      <div class="guide-nav-block">
-        <div class="guide-nav-head">
-          <div class="guide-nav-icon"><i class="fa-solid fa-users"></i></div>
-          <span class="guide-nav-title">Students</span>
-        </div>
-        <div class="guide-nav-list">
-          <a href="#code" class="guide-nav-link" data-section="code" data-title="Join by Code" data-subtitle="How students can join your school using an access code.">Join by Code</a>
-          <a href="#claim-codes" class="guide-nav-link" data-section="claim-codes" data-title="Claim Codes" data-subtitle="How bulk-uploaded students activate their accounts.">Claim Codes</a>
-        </div>
-      </div>
-
-      <div class="guide-nav-block">
-        <div class="guide-nav-head">
-          <div class="guide-nav-icon"><i class="fa-solid fa-life-ring"></i></div>
-          <span class="guide-nav-title">Help</span>
-        </div>
-        <div class="guide-nav-list">
-          <a href="#password-reset" class="guide-nav-link" data-section="password-reset" data-title="Password Reset" data-subtitle="How students can reset a forgotten password.">Password Reset</a>
-          <a href="#troubleshooting" class="guide-nav-link" data-section="troubleshooting" data-title="Troubleshooting" data-subtitle="Common issues and how to resolve them.">Troubleshooting</a>
-          <a href="#contact" class="guide-nav-link" data-section="contact" data-title="Contact Support" data-subtitle="Get in touch with our team.">Contact Support</a>
-        </div>
-      </div>
-
-      {# ── Drawer bottom nav (mobile only) ── #}
-      <div class="guide-drawer-bottom">
-        <a href="{{ url_for('main.landing') }}" class="drawer-link"><i class="fa-solid fa-house"></i> Back to Home</a>
-        <div class="guide-drawer-divider"></div>
-        {% if session.get('school_id') %}
-        <a href="{{ url_for('main.school_dashboard', school_id=session.get('school_id')) }}" class="drawer-link"><i class="fa-solid fa-gauge"></i> Dashboard</a>
-        {% else %}
-        <a href="{{ url_for('auth.school_login') }}" class="drawer-link"><i class="fa-solid fa-arrow-right-to-bracket"></i> School Sign In</a>
-        {% endif %}
-        <a href="{{ url_for('main.contact') }}" class="drawer-link"><i class="fa-solid fa-envelope"></i> Contact Support</a>
-      </div>
-    </aside>
-
-    <div class="guide-drawer-overlay" id="guideDrawerOverlay"></div>
-
-    {# ── CONTENT ── #}
-    <main class="guide-content">
-      <div class="guide-content-inner">
-
-        <div class="guide-title-block">
-          <h2 class="guide-title" id="guideTitle">School Registration</h2>
-          <p class="guide-subtitle" id="guideSubtitle">How to register your school on the SESA platform.</p>
-        </div>
-
-        {# ── Registration ── #}
-        <div class="guide-section" id="section-registration" style="display:block;">
-          <p>Registering your school on SESA takes about two minutes. On the SESA homepage, click <strong>Register My School</strong> to open the <a href="{{ url_for('auth.school_signup') }}">registration wizard</a>. The form walks you through four short steps.</p>
-
-          <h4>Step 1: Your School</h4>
-          <p>Enter your school's full official name. This name must be unique across the SESA platform, so if another school has already registered with the same name, you will be asked to choose a different one. The name you enter will be visible to students when they join.</p>
-
-          <h4>Step 2: Administrator</h4>
-          <p>Provide the administrator's full name, and optionally an email address and phone number. Email and phone are not required, but providing them makes it easier for our team to reach you about your account.</p>
-
-          <h4>Step 3: Set a Password</h4>
-          <p>Choose a password with at least 8 characters. You will use this password along with your administrator name to <a href="{{ url_for('auth.school_login') }}">sign in to your school dashboard</a>. There is no email-based password recovery. If you forget your password, <a href="{{ url_for('main.contact') }}">contact FOPA DILLIGENT CONSULT</a> directly.</p>
-
-          <h4>Step 4: Confirm &amp; Register</h4>
-          <p>Review your details on the summary card. Tick the data processing consent checkbox, which confirms you are authorised to register the school and agree to the collection and processing of school and student data in accordance with the Ghana Data Protection Act, 2012 (Act 843). Click <strong>Register School</strong> to complete.</p>
-
-          <h4>What happens next</h4>
-          <p>There is no email verification step. Once you register, you are automatically signed in and taken straight to your <a href="{{ url_for('main.school_dashboard', school_id=session.get('school_id', 1)) }}">school dashboard</a>. However, student upload and other advanced features will not be available until your subscription is activated. See <a href="#activation" data-section="activation">Account Activation</a> for the next step.</p>
-        </div>
-
-        {# ── Activation ── #}
-        <div class="guide-section" id="section-activation">
-          <p>After registering, your dashboard will show a limited view. Student upload, access codes, and other advanced features are locked until your subscription is activated through payment.</p>
-
-          <h4>How to activate</h4>
-          <p>On your <a href="{{ url_for('main.school_dashboard', school_id=session.get('school_id', 1)) }}">dashboard</a>, you will see a subscription prompt with a <strong>Subscribe</strong> button. Click it to open the Paystack payment popup. The subscription costs <strong>GHS 100 per year</strong>. Complete the payment using any of the supported methods (card, mobile money, bank transfer).</p>
-          <p>Once Paystack confirms your payment, your account is activated automatically. There is no manual approval step. Upload access is enabled immediately, and you can start adding students right away.</p>
-
-          <h4>Subscription details</h4>
-          <ul>
-            <li>Your subscription lasts <strong>365 days</strong> from the date of payment.</li>
-            <li>You will see a reminder on your dashboard when your subscription is approaching expiry.</li>
-            <li>If your subscription expires, student upload will be disabled again. You can renew at any time from the dashboard.</li>
-            <li>Students who already have accounts can continue to log in even when your subscription expires; only new uploads are affected.</li>
-          </ul>
-
-          <blockquote>If you experience any issues with payment, or need to arrange a different payment method, <a href="{{ url_for('main.contact') }}">contact FOPA DILLIGENT CONSULT</a> directly.</blockquote>
-        </div>
-
-        {# ── First Login ── #}
-        <div class="guide-section" id="section-first-login">
-          <p>To access your school portal, go to the SESA homepage and click <strong>Sign In</strong>. On the login page, select <strong>School Administrator Login</strong> and enter the administrator name and password you chose during <a href="#registration" data-section="registration">registration</a>.</p>
-
-          <h4>Account security</h4>
-          <p>Your account is protected by a lockout mechanism. After <strong>5 failed login attempts</strong>, your account will be locked for <strong>15 minutes</strong>. During this time, you cannot sign in even with the correct password. Wait 15 minutes and try again, or <a href="{{ url_for('main.contact') }}">contact FOPA DILLIGENT CONSULT</a> if the issue persists.</p>
-
-          <h4>Your dashboard at a glance</h4>
-          <p>Once signed in, you will see your <a href="{{ url_for('main.school_dashboard', school_id=session.get('school_id', 1)) }}">school dashboard</a> with the following sections:</p>
-          <ul>
-            <li><strong>Monthly wellness trends</strong>: a line chart showing student assessment scores over time.</li>
-            <li><strong>Vital statistics</strong>: total students, total assessments, and your school's overall wellness score.</li>
-            <li><strong>Student list</strong>: a searchable list of all registered students with their status (Normal, Mild, Elevated, At Risk).</li>
-            <li><strong>Upload Students</strong>: the section where you upload your Excel file to bulk-add students.</li>
-            <li><strong>Access code &amp; QR code</strong>: your school's unique join code and QR flyer for student self-registration.</li>
-          </ul>
-          <p>If your subscription is not yet active, the upload section will show a prompt to <a href="#activation" data-section="activation">subscribe</a>. You can still view your dashboard overview, but student data will be empty until you add students.</p>
-        </div>
-
-        {# ── Upload ── #}
-        <div class="guide-section" id="section-upload">
-          <p>Bulk upload is the fastest way to add your entire student body at once. You upload an Excel file with your student data, and SESA creates accounts for every student automatically.</p>
-
-          <h4>Requirements</h4>
-          <ul>
-            <li>An <a href="#activation" data-section="activation"><strong>active subscription</strong></a>: upload is locked until payment is confirmed.</li>
-            <li>An <strong>Excel file</strong> in <code>.xlsx</code> or <code>.xls</code> format. CSV files are not accepted.</li>
-            <li>Maximum file size: <strong>5 MB</strong>.</li>
-            <li>Maximum <strong>1,000 students</strong> per upload. If you have more students, split them into multiple files and upload separately.</li>
-          </ul>
-
-          <h4>Download the template</h4>
-          <p>Use only the official SESA template. Do not rename, add, or remove columns, as the uploader depends on the exact column headers. The template includes 5 sample rows that you must delete before uploading your own data.</p>
-          <div class="guide-download-box">
-            <div class="d-meta">
-              <div class="file-chip"><i class="fa-solid fa-file-excel"></i></div>
-              <div>
-                <strong>SESA_Student_Upload_Template.xlsx</strong>
-                <p>Official template for bulk student upload</p>
+        <!-- Guide hero -->
+        <section class="hero container">
+          <div class="inner">
+            <div data-fade>
+              <h1>
+                <span class="eyebrow">Help Center &middot; School Guide</span>
+                <span class="sr-only"> - </span>
+                <span class="display">Everything your school needs to get started</span>
+              </h1>
+              <p class="lede">Register your school, add your students, and read their wellbeing: a step-by-step guide for SESA administrators, from first sign-up to daily use.</p>
+              <div class="hero-actions">
+                <a class="btn btn-dark" href="{{ url_for('auth.school_signup') }}"><span>Register My School</span></a>
+                <a class="btn btn-outline" href="{{ url_for('auth.login') }}"><span>School Sign In</span></a>
               </div>
             </div>
-            <a href="{{ url_for('static', filename='downloads/SESA_Student_Upload_Template.xlsx') }}" class="btn-download" download><i class="fa-solid fa-download"></i> Download</a>
           </div>
+        </section>
 
-          <h4>What happens after upload</h4>
-          <p>SESA creates an account for each valid row. You will see a success message showing how many accounts were created and how many rows were skipped. Each student receives:</p>
-          <ul>
-            <li>An <strong>auto-generated username</strong> in the format <code>{first initial}{lastname}</code> (e.g. <code>amamensah</code>). If that username already exists in your school, a number is appended (e.g. <code>amamensah1</code>).</li>
-            <li>A <strong>temporary password</strong>: either their <code>student_id</code> from the Excel file, or their username if no student_id was provided.</li>
-            <li>A <strong>claim code</strong>: a 6-character code printed on claim slips that students use to activate their account and set their own password.</li>
-          </ul>
-          <p>Uploaded students are <strong>not yet claimed</strong>. They must activate their accounts using their claim code before they can log in. See <a href="#claim-codes" data-section="claim-codes">Claim Codes</a> for details.</p>
-        </div>
-
-        {# ── Columns ── #}
-        <div class="guide-section" id="section-columns">
-          <p>The upload template has columns in row 4. Only two are required; everything else is optional but recommended. The more data you provide, the richer your dashboard reports will be.</p>
-          <div class="guide-table-wrap">
-            <table class="guide-table">
-              <thead>
-                <tr>
-                  <th>Column</th>
-                  <th>Required?</th>
-                  <th>Description</th>
-                  <th>Example</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><code>first_name</code></td>
-                  <td><span class="badge-required">Required</span></td>
-                  <td>Student's first name</td>
-                  <td>Ama</td>
-                </tr>
-                <tr>
-                  <td><code>last_name</code></td>
-                  <td><span class="badge-required">Required</span></td>
-                  <td>Student's last name</td>
-                  <td>Mensah</td>
-                </tr>
-                <tr>
-                  <td><code>student_id</code></td>
-                  <td><span class="badge-optional">Optional</span></td>
-                  <td>School's student ID. Used as <strong>initial password</strong>. If blank, username is used instead.</td>
-                  <td>STU001</td>
-                </tr>
-                <tr>
-                  <td><code>class_group</code></td>
-                  <td><span class="badge-optional">Optional</span></td>
-                  <td>Class or form group</td>
-                  <td>3A, Form 2</td>
-                </tr>
-                <tr>
-                  <td><code>level</code></td>
-                  <td><span class="badge-optional">Optional</span></td>
-                  <td>Must be exactly one of: <code>jhs</code>, <code>shs</code>, or <code>university</code></td>
-                  <td>jhs</td>
-                </tr>
-                <tr>
-                  <td><code>gender</code></td>
-                  <td><span class="badge-optional">Optional</span></td>
-                  <td>Must be exactly one of: <code>male</code>, <code>female</code>, or <code>other</code></td>
-                  <td>female</td>
-                </tr>
-                <tr>
-                  <td><code>birthdate</code></td>
-                  <td><span class="badge-optional">Optional</span></td>
-                  <td>Date of birth in <code>YYYY-MM-DD</code> format</td>
-                  <td>2008-04-12</td>
-                </tr>
-                <tr>
-                  <td><code>email</code></td>
-                  <td><span class="badge-optional">Optional</span></td>
-                  <td>Student email address. Duplicates across the system are saved without email.</td>
-                  <td>ama@school.edu</td>
-                </tr>
-              </tbody>
-            </table>
+        <!-- Quick answers -->
+        <section class="services-body container">
+          <div class="inner">
+            <div data-fade>
+              <h2>
+                <span class="eyebrow">Quick Answers</span>
+                <span class="sr-only"> - </span>
+                <span class="display" style="font-size:30px;line-height:36px">The topics administrators ask about most</span>
+              </h2>
+            </div>
+            <div class="suite-grid" data-fade-group>
+              <div class="flex" data-fade>
+                <article class="suite-card">
+                  <p class="card-meta"><span class="strong">Guide</span><span class="sep" aria-hidden="true">/</span><span>Upload</span></p>
+                  <p class="card-title"><a href="#upload">Bulk student upload</a></p>
+                  <p class="card-desc">Add your entire student body at once with the official Excel template.</p>
+                </article>
+              </div>
+              <div class="flex" data-fade>
+                <article class="suite-card">
+                  <p class="card-meta"><span class="strong">Guide</span><span class="sep" aria-hidden="true">/</span><span>Activation</span></p>
+                  <p class="card-title"><a href="#claim">Claim codes</a></p>
+                  <p class="card-desc">How students activate their accounts and set their own passwords.</p>
+                </article>
+              </div>
+              <div class="flex" data-fade>
+                <article class="suite-card">
+                  <p class="card-meta"><span class="strong">Guide</span><span class="sep" aria-hidden="true">/</span><span>Access</span></p>
+                  <p class="card-title"><a href="#password">Password reset</a></p>
+                  <p class="card-desc">Reset any student password with your school access code &mdash; no email needed.</p>
+                </article>
+              </div>
+              <div class="flex" data-fade>
+                <article class="suite-card">
+                  <p class="card-meta"><span class="strong">Guide</span><span class="sep" aria-hidden="true">/</span><span>Fixes</span></p>
+                  <p class="card-title"><a href="#troubleshooting">Troubleshooting</a></p>
+                  <p class="card-desc">Solutions to the most common upload, login, and claim-code issues.</p>
+                </article>
+              </div>
+              <div class="flex" data-fade>
+                <article class="suite-card">
+                  <p class="card-meta"><span class="strong">Guide</span><span class="sep" aria-hidden="true">/</span><span>Help</span></p>
+                  <p class="card-title"><a href="{{ url_for('main.contact') }}">Contact support</a></p>
+                  <p class="card-desc">Still stuck? Our curators are ready to help your institution.</p>
+                </article>
+              </div>
+              <div class="flex" data-fade>
+                <article class="suite-card">
+                  <p class="card-meta"><span class="strong">Guide</span><span class="sep" aria-hidden="true">/</span><span>Setup</span></p>
+                  <p class="card-title"><a href="#registration">School registration</a></p>
+                  <p class="card-desc">Register your school in about two minutes with the setup wizard.</p>
+                </article>
+              </div>
+            </div>
           </div>
+        </section>
 
-          <h4>How usernames are generated</h4>
-          <p>Usernames are created automatically in the format <code>{first initial}{last name}</code>, all lowercase, with non-alphanumeric characters removed. For example, <strong>Ama Mensah</strong> becomes <code>amamensah</code>. If that username already exists within your school, a number is added: <code>amamensah1</code>, <code>amamensah2</code>, and so on.</p>
-          <p>Note: this is different from the format used when students join by code, which produces <code>firstname.lastname.schoolcode</code>. Both formats work for logging in.</p>
-        </div>
-
-        {# ── Upload Steps ── #}
-        <div class="guide-section" id="section-upload-steps">
-          <p>Follow these steps to upload your student file.</p>
-
-          <h4>1. Download and open the template</h4>
-          <p>Download the official template from the <a href="#upload" data-section="upload">Excel Upload</a> section above. Open it in Microsoft Excel or Google Sheets. Student data starts at <strong>row 5</strong>: rows 1 through 3 contain instructions, and row 4 contains the column headers.</p>
-
-          <h4>2. Delete the sample rows</h4>
-          <p>The template includes 5 sample student rows. Delete all of them before entering your own data. Do not modify the headers in row 4.</p>
-
-          <h4>3. Fill in student data</h4>
-          <p>Enter one student per row. Only <code>first_name</code> and <code>last_name</code> are required. Fill in as many optional columns as you can: class group, level, gender, and student ID all help generate richer dashboard analytics. If you want students to log in with a specific password, set their <code>student_id</code> to that password.</p>
-
-          <h4>4. Save as Excel</h4>
-          <p>Save the file in <strong>.xlsx</strong> or <strong>.xls</strong> format. CSV files are not accepted. If you are using Google Sheets, go to <strong>File &rarr; Download &rarr; Microsoft Excel (.xlsx)</strong>.</p>
-
-          <h4>5. Upload on your dashboard</h4>
-          <p>Go to your <a href="{{ url_for('main.school_dashboard', school_id=session.get('school_id', 1)) }}">school dashboard</a> and find the <strong>Upload Students</strong> section. Click <strong>Choose File</strong>, select your Excel file, then click <strong>Upload</strong>. The file must be under 5 MB and contain no more than 1,000 rows.</p>
-
-          <h4>6. Check the result</h4>
-          <p>You will see a message showing how many accounts were created and how many rows were skipped. Rows are skipped when:</p>
-          <ul>
-            <li><code>first_name</code> or <code>last_name</code> is blank.</li>
-            <li>The student's name (first + last) already exists in your school; duplicates are silently skipped.</li>
-          </ul>
-          <p>After a successful upload, print the <strong>claim codes</strong> for your students so they can activate their accounts. See <a href="#claim-codes" data-section="claim-codes">Claim Codes</a> for the next steps.</p>
-        </div>
-
-        {# ── Join by Code ── #}
-        <div class="guide-section" id="section-code">
-          <p>If you prefer not to use <a href="#upload" data-section="upload">Excel upload</a>, students can join your school individually using a <strong>join code</strong>. Each school has a unique 6-character access code (e.g. <code>A3F9B2</code>) and a corresponding QR code.</p>
-
-          <h4>Generating your access code</h4>
-          <p>On your <a href="{{ url_for('main.school_dashboard', school_id=session.get('school_id', 1)) }}">dashboard</a>, find the access code section in the right sidebar. If you haven't generated a code yet, click <strong>Generate Code</strong>. This creates a random 6-character code that is unique across all schools on SESA. You can regenerate a new code at any time; the old one stops working immediately.</p>
-
-          <h4>How students join</h4>
-          <ol class="step-list">
-            <li>Share your access code with the student, or direct them to scan your QR code.</li>
-            <li>The student goes to the SESA homepage and clicks <strong><a href="{{ url_for('main.join_with_code') }}">Join with Code</a></strong>.</li>
-            <li>They enter the 6-character code. The system confirms your school name.</li>
-            <li>The student fills in their first name, last name, and chooses a password (minimum 6 characters). They can also add their class group and level.</li>
-            <li>After submitting, their account is created and they are signed in immediately.</li>
-          </ol>
-
-          <h4>QR code</h4>
-          <p>Your dashboard displays a QR code that encodes your join link. Students can scan it with their phone camera to go directly to the join page, pre-linked to your school. From your dashboard, you can also open a printable QR flyer. Print it and display it on your school notice board for easy access.</p>
-
-          <h4>Username format for self-joined students</h4>
-          <p>When students join by code, their username is generated as <code>{firstname}.{lastname}.{schoolcode}</code> (e.g. <code>kofi.mensah.acraa</code>). This is different from the format used in bulk upload (<code>{first_initial}{lastname}</code>). Both formats work for logging in.</p>
-
-          <blockquote>Use <strong><a href="#upload" data-section="upload">bulk upload</a></strong> for onboarding many students at once at the start of term. Use <strong>join by code</strong> for students who enrol mid-term, or for schools that prefer students to create their own accounts.</blockquote>
-        </div>
-
-        {# ── Claim Codes ── #}
-        <div class="guide-section" id="section-claim-codes">
-          <p>When you <a href="#upload" data-section="upload">bulk-upload students</a>, their accounts are created but <strong>not yet activated</strong>. Each student receives a unique 6-character <strong>claim code</strong> that they must use to set their own password and activate their account.</p>
-
-          <h4>Printing claim codes</h4>
-          <p>After a successful upload, click <strong>Print Claim Codes</strong> on your <a href="{{ url_for('main.school_dashboard', school_id=session.get('school_id', 1)) }}">dashboard</a>. This opens a printable page with individual slips for each unclaimed student. Each slip shows:</p>
-          <ul>
-            <li>The student's name and class</li>
-            <li>Their auto-generated username</li>
-            <li>Their 6-character claim code</li>
-            <li>The claim URL (<code>yourdomain.com/claim</code>)</li>
-          </ul>
-          <p>Cut the slips and distribute them to students. Students should keep their claim code private. Anyone with the code can activate the account.</p>
-
-          <h4>How students claim their account</h4>
-          <ol class="step-list">
-            <li>Go to the SESA homepage and click <strong>Sign In</strong>.</li>
-            <li>On the login page, click <strong><a href="{{ url_for('main.claim_account') }}">Activate Account</a></strong> (or go directly to <code>/claim</code>).</li>
-            <li>Enter the 6-character claim code from their slip.</li>
-            <li>Set a new password (minimum 6 characters) and confirm it.</li>
-            <li>Click <strong>Activate Account</strong>. The student is now signed in and can access the platform.</li>
-          </ol>
-
-          <h4>Important details</h4>
-          <ul>
-            <li>Students <strong>cannot log in until they claim their account</strong>. If they try to sign in before claiming, they will be redirected to the claim page.</li>
-            <li>Claim codes are <strong>case-sensitive</strong>: students should enter them exactly as shown on the slip.</li>
-            <li>Once claimed, the claim code is no longer valid. Each code can only be used once.</li>
-            <li>If a student loses their claim code, the school admin can re-print claim codes from the dashboard to get a new copy.</li>
-          </ul>
-
-          <h4>Initial passwords (before claiming)</h4>
-          <p>Before claiming, the student's temporary password is either their <code>student_id</code> from the Excel file (if provided), or their auto-generated username. However, since the account is not claimed yet, they cannot use this password to log in; they must go through the claim flow first.</p>
-        </div>
-
-        {# ── Password Reset ── #}
-        <div class="guide-section" id="section-password-reset">
-          <p>If a student forgets their password, they can reset it themselves, with no email required. The reset process uses the school's <a href="#code" data-section="code">access code</a> as verification.</p>
-
-          <h4>How to reset</h4>
-          <ol class="step-list">
-            <li>Go to the SESA <a href="{{ url_for('auth.login') }}">login page</a> and click <strong>Forgot your password?</strong></li>
-            <li>Enter the <strong>school access code</strong> (the same 6-character code used for student <a href="#code" data-section="code">join</a>).</li>
-            <li>Enter the student's <strong>username</strong>.</li>
-            <li>Enter and confirm a <strong>new password</strong> (minimum 8 characters).</li>
-            <li>Click <strong>Reset Password</strong>. The student can now <a href="{{ url_for('auth.login') }}">log in</a> with the new password.</li>
-          </ol>
-
-          <h4>What the student needs</h4>
-          <p>The student must know two things to reset their password:</p>
-          <ul>
-            <li>Their <strong>school's access code</strong>: the same code used to <a href="#code" data-section="code">join the school</a>.</li>
-            <li>Their <strong>username</strong>: the auto-generated username assigned during upload or self-registration.</li>
-          </ul>
-          <p>If the student does not know their username, the school admin can find it on the <a href="{{ url_for('main.school_dashboard', school_id=session.get('school_id', 1)) }}">dashboard</a> in the student list.</p>
-
-          <blockquote>The access code acts as a shared secret. Anyone who knows the school's access code and a student's username can reset that student's password. For this reason, schools should treat the access code as confidential and regenerate it periodically from the dashboard.</blockquote>
-        </div>
-
-        {# ── Troubleshooting ── #}
-        <div class="guide-section" id="section-troubleshooting">
-          <h4>"Upload is not enabled"</h4>
-          <p>Your <a href="#activation" data-section="activation">subscription</a> has not been activated yet. Go to your <a href="{{ url_for('main.school_dashboard', school_id=session.get('school_id', 1)) }}">dashboard</a> and click the <strong>Subscribe</strong> button to complete payment via Paystack. Once payment is confirmed, upload is enabled instantly.</p>
-
-          <h4>"Missing required columns: first_name, last_name"</h4>
-          <p>The column headers in your file don't match the <a href="#upload" data-section="upload">template</a> exactly. Make sure the headers in <strong>row 4</strong> are spelled <code>first_name</code> and <code>last_name</code>: all lowercase, with underscores, no spaces, no extra characters. Do not modify the template headers.</p>
-
-          <h4>"Invalid file type"</h4>
-          <p>Only <strong>.xlsx</strong> and <strong>.xls</strong> files are accepted. CSV files are not supported. If you are using Google Sheets, go to <strong>File &rarr; Download &rarr; Microsoft Excel (.xlsx)</strong> before uploading.</p>
-
-          <h4>Some rows were skipped</h4>
-          <p>Rows are skipped when <code>first_name</code> or <code>last_name</code> is blank. Rows are also skipped when the combination of first name and last name already exists in your school; this prevents duplicate accounts. Check your file for empty rows or duplicate names and <a href="#upload-steps" data-section="upload-steps">re-upload</a>.</p>
-
-          <h4>Level or gender not showing correctly</h4>
-          <p>These fields only accept exact lowercase values. For level: <code>jhs</code>, <code>shs</code>, or <code>university</code>. For gender: <code>male</code>, <code>female</code>, or <code>other</code>. Any other value (including capitalised versions like <code>JHS</code> or <code>Male</code>) will be ignored.</p>
-
-          <h4>Account locked after too many attempts</h4>
-          <p>After <strong>5 failed <a href="{{ url_for('auth.login') }}">login</a> attempts</strong>, the account is locked for <strong>15 minutes</strong>. Wait 15 minutes and try again. If the lockout keeps happening, the school admin should verify the correct username and password.</p>
-
-          <h4>Student can't log in (redirected to claim page)</h4>
-          <p>The student's account has not been claimed yet. They must go to <code>/claim</code>, enter their claim code, and set a new password before they can log in. See <a href="#claim-codes" data-section="claim-codes">Claim Codes</a> for the full flow.</p>
-
-          <h4>Claim code not working</h4>
-          <p>Claim codes are <strong>case-sensitive</strong>: enter them exactly as shown on the slip. Each code can only be used once. If the code still doesn't work, the student may have already claimed the account, or the code may have been regenerated. Re-print claim codes from the <a href="{{ url_for('main.school_dashboard', school_id=session.get('school_id', 1)) }}">dashboard</a> to get updated slips.</p>
-
-          <h4>Student forgot their password</h4>
-          <p>Students can reset their own password at the <a href="{{ url_for('auth.login') }}">login page</a> by clicking <strong>Forgot your password?</strong>. They need their school's <a href="#code" data-section="code">access code</a> and their username. If they don't know their username, you can find it on your dashboard in the student list. See <a href="#password-reset" data-section="password-reset">Password Reset</a> for details.</p>
-
-          <h4>Students can't find the login page</h4>
-          <p>Direct students to the SESA homepage and tell them to click <strong><a href="{{ url_for('auth.login') }}">Sign In</a></strong>. They should select the regular login (not School Administrator Login). They log in with their <strong>username</strong> (not email) and their password.</p>
-
-          <h4>"Username or password is incorrect"</h4>
-          <p>Students log in with their <strong>username</strong>, not their email. Usernames are auto-generated; the student cannot choose their own. If a student doesn't know their username, you can find it on your <a href="{{ url_for('main.school_dashboard', school_id=session.get('school_id', 1)) }}">dashboard</a>. If they've forgotten their password, they can reset it using the school <a href="#code" data-section="code">access code</a>.</p>
-        </div>
-
-        {# ── Contact ── #}
-        <div class="guide-section" id="section-contact">
-          <div class="guide-contact-card">
-            <h4>Still need help?</h4>
-            <p>Our team is ready to help with your school account, subscription, or any technical issue not covered in this guide. Reach out and we'll get you back on track.</p>
-            <a href="{{ url_for('main.contact') }}" class="btn-gold">Contact FOPA Dilligent Consult</a><br>
-            <a href="mailto:support@fopaconsult.com" class="guide-contact-mail"><i class="fa-solid fa-envelope"></i> support@fopaconsult.com</a>
+        <!-- Registration -->
+        <section class="band-head container guide-section" id="registration">
+          <div class="inner">
+            <div data-fade>
+              <h2 class="guide-h">School Registration</h2>
+              <p class="guide-sub">How to register your school on the SESA platform. Registering takes about two minutes &mdash; the form walks you through four short steps.</p>
+            </div>
+            <div class="services-body">
+              <div class="approach-list" data-fade-group>
+                <ul>
+                  <li class="service"><div data-fade><div class="service-rule"><strong>Step 1: Your School. </strong>Enter your school&rsquo;s full official name. This name must be unique across the SESA platform, so if another school has already registered with the same name, you will be asked to choose a different one. The name you enter will be visible to students when they join.</div></div></li>
+                  <li class="service"><div data-fade><div class="service-rule"><strong>Step 2: Administrator. </strong>Provide the administrator&rsquo;s full name, and optionally an email address and phone number. Email and phone are not required, but providing them makes it easier for our team to reach you about your account.</div></div></li>
+                  <li class="service"><div data-fade><div class="service-rule"><strong>Step 3: Set a Password. </strong>Choose a password with at least 8 characters. You will use this password along with your administrator name to sign in to your school dashboard. There is no email-based password recovery &mdash; if you forget your password, contact FOPA Dilligent Consult directly.</div></div></li>
+                  <li class="service"><div data-fade><div class="service-rule"><strong>Step 4: Confirm &amp; Register. </strong>Review your details on the summary card. Tick the data processing consent checkbox, which confirms you are authorised to register the school and agree to the collection and processing of school and student data in accordance with the Ghana Data Protection Act, 2012 (Act 843). Click Register School to complete.</div></div></li>
+                </ul>
+              </div>
+            </div>
+            <div class="guide-body" data-fade>
+              <p><strong style="color:var(--ink)">What happens next.</strong> There is no email verification step. Once you register, you are automatically signed in and taken straight to your school dashboard. However, student upload and other advanced features will not be available until your subscription is activated.</p>
+            </div>
           </div>
-        </div>
+        </section>
 
-      </div>
-    </main>
+        <!-- Activation -->
+        <section class="band-head container guide-section" id="activation">
+          <div class="inner">
+            <div data-fade>
+              <h2 class="guide-h">Account Activation</h2>
+              <p class="guide-sub">After registering, your dashboard will show a limited view. Student upload, access codes, and other advanced features are locked until your subscription is activated through payment.</p>
+            </div>
+            <div class="guide-body" data-fade>
+              <p><strong style="color:var(--ink)">How to activate.</strong> On your dashboard, you will see a subscription prompt with a Subscribe button. Click it to open the Paystack payment popup. The subscription costs GHS 100 per year. Complete the payment using any of the supported methods (card, mobile money, bank transfer). Once Paystack confirms your payment, your account is activated automatically &mdash; there is no manual approval step.</p>
+              <p><strong style="color:var(--ink)">Subscription details.</strong> Your subscription lasts 365 days from the date of payment. You will see a reminder on your dashboard when your subscription is approaching expiry. If your subscription expires, student upload will be disabled again, though students who already have accounts can continue to log in &mdash; only new uploads are affected.</p>
+            </div>
+          </div>
+        </section>
 
+        <!-- Bulk upload -->
+        <section class="band-head container guide-section" id="upload">
+          <div class="inner">
+            <div data-fade>
+              <h2 class="guide-h">Bulk Student Upload</h2>
+              <p class="guide-sub">Bulk upload is the fastest way to add your entire student body at once. SESA creates accounts for every student automatically.</p>
+            </div>
+            <div class="guide-body" data-fade>
+              <p><strong style="color:var(--ink)">Requirements.</strong></p>
+              <ul class="ticks">
+                <li>An active subscription &mdash; upload is locked until payment is confirmed.</li>
+                <li>An Excel file in .xlsx or .xls format. CSV files are not accepted.</li>
+                <li>Maximum file size: 5 MB. Maximum 1,000 students per upload &mdash; split larger bodies into multiple files.</li>
+                <li>Use only the official SESA template. Do not rename, add, or remove columns. Delete the 5 sample rows before uploading your own data.</li>
+              </ul>
+              <p style="margin-top:24px"><strong style="color:var(--ink)">What happens after upload.</strong> Each student receives an auto-generated username ({first initial}{lastname}, e.g. amamensah, with a number appended on duplicates), a temporary password (their student_id, or username if blank), and a 6-character claim code. Uploaded students are not yet claimed &mdash; they must activate their accounts before they can log in.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Column reference -->
+        <section class="band-head container guide-section" id="columns">
+          <div class="inner">
+            <div data-fade>
+              <h2 class="guide-h">Upload Column Reference</h2>
+              <p class="guide-sub">The upload template has columns in row 4. Only two are required; everything else is optional but recommended &mdash; the more data you provide, the richer your dashboard reports will be.</p>
+            </div>
+            <div class="doc-table-wrap" data-fade>
+              <table class="doc-table">
+                <thead><tr><th>Column</th><th>Required?</th><th>Description</th><th>Example</th></tr></thead>
+                <tbody>
+                  <tr><td>first_name</td><td><span class="tag tag--req">Required</span></td><td>Student&rsquo;s first name</td><td>Ama</td></tr>
+                  <tr><td>last_name</td><td><span class="tag tag--req">Required</span></td><td>Student&rsquo;s last name</td><td>Mensah</td></tr>
+                  <tr><td>student_id</td><td><span class="tag">Optional</span></td><td>School&rsquo;s student ID. Used as initial password. If blank, username is used instead.</td><td>STU001</td></tr>
+                  <tr><td>class_group</td><td><span class="tag">Optional</span></td><td>Class or form group</td><td>3A, Form 2</td></tr>
+                  <tr><td>level</td><td><span class="tag">Optional</span></td><td>Must be exactly one of: jhs, shs, or university</td><td>jhs</td></tr>
+                  <tr><td>gender</td><td><span class="tag">Optional</span></td><td>Must be exactly one of: male, female, or other</td><td>female</td></tr>
+                  <tr><td>birthdate</td><td><span class="tag">Optional</span></td><td>Date of birth in YYYY-MM-DD format</td><td>2008-04-12</td></tr>
+                  <tr><td>email</td><td><span class="tag">Optional</span></td><td>Student email. Duplicates across the system are saved without email.</td><td>ama@school.edu</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="guide-body" data-fade>
+              <p><strong style="color:var(--ink)">How usernames are generated.</strong> Usernames are created automatically in the format {first initial}{last name}, all lowercase, with non-alphanumeric characters removed &mdash; Ama Mensah becomes amamensah, then amamensah1, amamensah2 on duplicates. Note: this differs from join-by-code, which produces firstname.lastname.schoolcode. Both formats work for logging in.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Step by step -->
+        <section class="band-head container guide-section" id="steps">
+          <div class="inner">
+            <div data-fade>
+              <h2 class="guide-h">Step-by-Step Upload</h2>
+              <p class="guide-sub">Follow these steps to upload your student file.</p>
+            </div>
+            <div class="services-body">
+              <div class="approach-list" data-fade-group>
+                <ul>
+                  <li class="service"><div data-fade><div class="service-rule"><strong>1. Download and open the template. </strong>Open it in Microsoft Excel or Google Sheets. Student data starts at row 5: rows 1 through 3 contain instructions, and row 4 contains the column headers.</div></div></li>
+                  <li class="service"><div data-fade><div class="service-rule"><strong>2. Delete the sample rows. </strong>The template includes 5 sample student rows. Delete all of them before entering your own data. Do not modify the headers in row 4.</div></div></li>
+                  <li class="service"><div data-fade><div class="service-rule"><strong>3. Fill in student data. </strong>Enter one student per row. Only first_name and last_name are required. If you want students to log in with a specific password, set their student_id to that password.</div></div></li>
+                  <li class="service"><div data-fade><div class="service-rule"><strong>4. Save as Excel. </strong>Save the file in .xlsx or .xls format &mdash; CSV files are not accepted. In Google Sheets, go to File &rarr; Download &rarr; Microsoft Excel (.xlsx).</div></div></li>
+                  <li class="service"><div data-fade><div class="service-rule"><strong>5. Upload on your dashboard. </strong>Go to the Upload Students section, click Choose File, select your Excel file, then click Upload. The file must be under 5 MB with no more than 1,000 rows.</div></div></li>
+                  <li class="service"><div data-fade><div class="service-rule"><strong>6. Check the result. </strong>You will see how many accounts were created and how many rows were skipped (blank names or duplicates). Then print the claim codes so students can activate their accounts.</div></div></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Join by code -->
+        <section class="band-head container guide-section" id="join">
+          <div class="inner">
+            <div data-fade>
+              <h2 class="guide-h">Students Join by Code</h2>
+              <p class="guide-sub">If you prefer not to use Excel upload, students can join your school individually using a join code.</p>
+            </div>
+            <div class="guide-body" data-fade>
+              <p>Each school has a unique 6-character access code (e.g. A3F9B2) and a corresponding QR code. On your dashboard, find the access code section in the right sidebar &mdash; if you haven&rsquo;t generated a code yet, click Generate Code. You can regenerate a new code at any time; the old one stops working immediately.</p>
+              <p>Share your access code with the student, or direct them to scan your QR code. The student goes to the SESA homepage and clicks Join with Code, enters the 6-character code, confirms your school name, then fills in first name, last name, and a password (minimum 6 characters). Their account is created and they are signed in immediately.</p>
+              <p>From your dashboard you can open a printable QR flyer &mdash; print it and display it on your school notice board. Use bulk upload for onboarding many students at once; use join by code for mid-term enrolments or schools that prefer self-registration.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Claim codes -->
+        <section class="band-head container guide-section" id="claim">
+          <div class="inner">
+            <div data-fade>
+              <h2 class="guide-h">Claim Codes</h2>
+              <p class="guide-sub">When you bulk-upload students, their accounts are created but not yet activated. Each student receives a unique 6-character claim code.</p>
+            </div>
+            <div class="guide-body" data-fade>
+              <p><strong style="color:var(--ink)">Printing claim codes.</strong> After a successful upload, click Print Claim Codes on your dashboard. Each slip shows the student&rsquo;s name and class, their auto-generated username, their 6-character claim code, and the claim URL. Cut the slips and distribute them &mdash; students should keep their claim code private.</p>
+              <p><strong style="color:var(--ink)">How students claim.</strong> Go to the SESA homepage and click Sign In, then Activate Account (or go directly to /claim). Enter the 6-character claim code, set a new password (minimum 6 characters), and click Activate Account.</p>
+              <p><strong style="color:var(--ink)">Important details.</strong> Students cannot log in until they claim their account. Claim codes are case-sensitive and each code can only be used once. If a student loses their code, re-print claim codes from the dashboard.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Password reset -->
+        <section class="band-head container guide-section" id="password">
+          <div class="inner">
+            <div data-fade>
+              <h2 class="guide-h">Password Reset</h2>
+              <p class="guide-sub">If a student forgets their password, they can reset it themselves &mdash; with no email required. The reset uses the school&rsquo;s access code as verification.</p>
+            </div>
+            <div class="guide-body" data-fade>
+              <p><strong style="color:var(--ink)">How to reset.</strong> Go to the SESA login page and click Forgot your password? Enter the school access code (the same 6-character code used for student join), the student&rsquo;s username, and a new password (minimum 8 characters). The student can now log in with the new password.</p>
+              <p><strong style="color:var(--ink)">What the student needs.</strong> Their school&rsquo;s access code and their username (find it on the dashboard student list if unknown). Treat the access code as confidential and regenerate it periodically &mdash; anyone who knows it plus a username can reset that password.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Troubleshooting -->
+        <section class="band-head container guide-section" id="troubleshooting">
+          <div class="inner">
+            <div data-fade>
+              <h2 class="guide-h">Troubleshooting</h2>
+              <p class="guide-sub">Solutions to the most common upload, login, and claim-code issues.</p>
+            </div>
+            <div class="services-body">
+              <div class="approach-list" data-fade-group>
+                <ul>
+                  <li class="service"><div data-fade><div class="service-rule"><strong>&ldquo;Upload is not enabled.&rdquo; </strong>Your subscription has not been activated yet. Complete payment via Paystack on your dashboard &mdash; upload is enabled instantly on confirmation.</div></div></li>
+                  <li class="service"><div data-fade><div class="service-rule"><strong>&ldquo;Missing required columns.&rdquo; </strong>Headers in row 4 must read first_name and last_name exactly &mdash; all lowercase, underscores, no spaces. Do not modify the template headers.</div></div></li>
+                  <li class="service"><div data-fade><div class="service-rule"><strong>&ldquo;Invalid file type.&rdquo; </strong>Only .xlsx and .xls files are accepted. From Google Sheets, download as Microsoft Excel (.xlsx) before uploading.</div></div></li>
+                  <li class="service"><div data-fade><div class="service-rule"><strong>Some rows were skipped. </strong>Rows are skipped when first_name or last_name is blank, or when the name already exists in your school. Check for empty rows or duplicates and re-upload.</div></div></li>
+                  <li class="service"><div data-fade><div class="service-rule"><strong>Level or gender not showing correctly. </strong>These fields only accept exact lowercase values &mdash; jhs, shs, or university; male, female, or other. Capitalised versions are ignored.</div></div></li>
+                  <li class="service"><div data-fade><div class="service-rule"><strong>Account locked after too many attempts. </strong>After 5 failed logins the account locks for 15 minutes. Wait and try again, or verify the username and password.</div></div></li>
+                  <li class="service"><div data-fade><div class="service-rule"><strong>Student can&rsquo;t log in (redirected to claim page). </strong>The account has not been claimed yet &mdash; the student must enter their claim code and set a password first.</div></div></li>
+                  <li class="service"><div data-fade><div class="service-rule"><strong>Claim code not working. </strong>Codes are case-sensitive and single-use. Re-print claim codes from the dashboard for updated slips.</div></div></li>
+                  <li class="service"><div data-fade><div class="service-rule"><strong>Students can&rsquo;t find the login page. </strong>Direct them to the SESA homepage to click Sign In, selecting the regular login &mdash; not School Administrator Login.</div></div></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="band-head container">
+          <div class="inner">
+            <div class="cta-panel" data-fade>
+              <div class="cta-copy">
+                <div class="cta-block">
+                  <h2>Every Student Deserves to Be Understood</h2>
+                  <p class="cta-p">Ghana&#x27;s schools are full of students silently struggling. SESA gives your school the tools to see what grades can&#x27;t show &mdash; and act before it&#x27;s too late.</p>
+                  <div class="cta-actions">
+                    <a class="btn btn-light" href="{{ url_for('auth.school_signup') }}"><span>Register My School</span></a>
+                    <a class="btn btn-outline-light" href="{{ url_for('auth.login') }}"><span>Student Sign In</span></a>
+                  </div>
+                  <div class="cta-contact">
+                    <ul>
+                      <li>
+                        <address>
+                          <strong>Location</strong>
+                          <br />Accra, Ghana
+                        </address>
+                      </li>
+                      <li>
+                        <address>
+                          <strong>Email</strong>
+                          <br />
+                          <a href="mailto:info@fopaconsult.com">info@fopaconsult.com</a>
+                        </address>
+                      </li>
+                      <li>
+                        <address>
+                          <strong>Still stuck?</strong>
+                          <br />
+                          <a href="{{ url_for('main.contact') }}">Contact support &rarr;</a>
+                        </address>
+                      </li>
+                    </ul>
+                    <div class="cta-links">
+                      <p class="cta-links-title">Explore</p>
+                      <ul>
+                        <li><a href="{{ url_for('main.about') }}">About Us</a></li>
+                        <li><a href="{{ url_for('main.gallery') }}">Gallery</a></li>
+                        <li><a href="{{ url_for('main.school_guide') }}">School Guide</a></li>
+                        <li><a href="{{ url_for('main.assessment_details') }}">SESA Methodology</a></li>
+                        <li><a href="{{ url_for('main.contact') }}">Contact</a></li>
+                        <li><a href="{{ url_for('main.privacy') }}">Privacy Policy</a></li>
+                        <li><a href="{{ url_for('main.terms') }}">Terms of Service</a></li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+      {% include 'main/_pub_footer.html' %}
+    </div>
   </div>
-</div>
 
-{% include 'main/_pub_footer.html' %}
-
-<script>
-(function(){
-  'use strict';
-  var sections = document.querySelectorAll('.guide-section');
-  var navLinks = document.querySelectorAll('.guide-nav-link');
-  var titleEl = document.getElementById('guideTitle');
-  var subtitleEl = document.getElementById('guideSubtitle');
-
-  function showSection(id, fromHistory) {
-    var target = document.getElementById('section-' + id);
-    if (!target) return;
-    sections.forEach(function(s) { s.style.display = 'none'; });
-    target.style.display = 'block';
-    navLinks.forEach(function(l) {
-      l.classList.toggle('w--current', l.getAttribute('data-section') === id);
-    });
-    var active = document.querySelector('[data-section="' + id + '"]');
-    if (active) {
-      if (titleEl) titleEl.textContent = active.getAttribute('data-title') || 'School Guide';
-      if (subtitleEl) subtitleEl.textContent = active.getAttribute('data-subtitle') || '';
-    }
-    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-    if (!fromHistory && id !== (location.hash || '').slice(1)) {
-      history.pushState({ section: id }, '', '#' + id);
-    }
-  }
-
-  /* ── Section navigation (sidebar, hero quick answers, in-content links) ── */
-  document.addEventListener('click', function(e) {
-    var link = e.target.closest('[data-section]');
-    if (!link) return;
-    e.preventDefault();
-    var id = link.getAttribute('data-section');
-    if (document.getElementById('section-' + id)) showSection(id, false);
-    closeDrawer();
-  });
-
-  /* ── Browser back / forward ── */
-  window.addEventListener('popstate', function(e) {
-    var id = (e.state && e.state.section) ||
-             (location.hash ? location.hash.slice(1) : 'registration');
-    showSection(id, true);
-  });
-
-  /* ── Mobile drawer ── */
-  var menuBtn = document.getElementById('guideMenuBtn');
-  var sidebar = document.getElementById('guideSidebar');
-  var overlay = document.getElementById('guideDrawerOverlay');
-  var pubHamburger = document.getElementById('pubHamburger');
-
-  function openDrawer() {
-    if (!sidebar) return;
-    sidebar.classList.add('is-open');
-    overlay.classList.add('is-open');
-    if (menuBtn) menuBtn.setAttribute('aria-expanded', 'true');
-    document.body.style.overflow = 'hidden';
-  }
-  function closeDrawer() {
-    if (!sidebar) return;
-    sidebar.classList.remove('is-open');
-    overlay.classList.remove('is-open');
-    if (menuBtn) menuBtn.setAttribute('aria-expanded', 'false');
-    if (pubHamburger) pubHamburger.classList.remove('open');
-    document.body.style.overflow = '';
-  }
-
-  if (menuBtn) {
-    menuBtn.addEventListener('click', function() {
-      sidebar.classList.contains('is-open') ? closeDrawer() : openDrawer();
-    });
-  }
-  overlay.addEventListener('click', closeDrawer);
-  var closeBtn = document.getElementById('guideDrawerClose');
-  if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeDrawer();
-  });
-
-  /* ── Site nav hamburger opens the guide side nav (mobile only) ──
-     Capture phase: intercept the click before the shared pub-nav handler
-     toggles the main site drawer, so the hamburger drives the guide drawer
-     instead on this page. */
-  document.addEventListener('click', function(e) {
-    var hb = e.target.closest('#pubHamburger');
-    if (!hb || !sidebar) return;
-    if (window.innerWidth > 991) return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    var willOpen = !sidebar.classList.contains('is-open');
-    hb.classList.toggle('open', willOpen);
-    if (willOpen) { openDrawer(); } else { closeDrawer(); }
-  }, true);
-
-  /* ── Initial section (deep link or default) ── */
-  var hash = location.hash.replace('#', '');
-  var initial = document.getElementById('section-' + hash) ? hash : 'registration';
-  showSection(initial, true);
-
-  /* ── Scroll reveal ── */
-  var revealEls = document.querySelectorAll('[data-reveal]');
-  if (revealEls.length && 'IntersectionObserver' in window) {
-    var observer = new IntersectionObserver(function(entries) {
-      entries.forEach(function(entry) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-    revealEls.forEach(function(el) { observer.observe(el); });
-  } else {
-    revealEls.forEach(function(el) { el.classList.add('visible'); });
-  }
-})();
-</script>
-
+  <script>
+    (function () {
+      var faders = document.querySelectorAll('[data-fade]');
+      if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('fade-in');
+              io.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+        faders.forEach(function (el) {
+          var group = el.closest('[data-fade-group]');
+          if (group) {
+            var siblings = Array.prototype.slice.call(group.querySelectorAll('[data-fade]'));
+            var idx = siblings.indexOf(el);
+            el.style.transitionDelay = Math.min(idx * 90, 450) + 'ms';
+          }
+          io.observe(el);
+        });
+      } else {
+        faders.forEach(function (el) { el.classList.add('fade-in'); });
+      }
+    })();
+  </script>
 </body>
 </html>

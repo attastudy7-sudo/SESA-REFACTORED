@@ -1,308 +1,524 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>How It Works – The SESA Methodology | FOPA Dilligent Consult</title>
-  <meta name="description" content="A multi-dimensional clinical audit designed to identify emotional developmental patterns in Ghanaian students. 6 dimensions. 4 result tiers. GES aligned.">
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The SESA Methodology &ndash; FOPA Dilligent Consult | SESA</title>
+  <meta name="description" content="A multi-dimensional clinical audit designed to identify emotional developmental patterns in Ghanaian students. 6 dimensions. 4 result tiers. GES aligned." />
+  <meta property="og:title" content="The SESA Methodology &ndash; FOPA Dilligent Consult | SESA" />
+  <meta property="og:description" content="A multi-dimensional clinical audit designed to identify emotional developmental patterns in Ghanaian students. 6 dimensions. 4 result tiers. GES aligned." />
+  <meta property="og:url" content="https://fopaconsult.com/methodology" />
+  <meta property="og:site_name" content="FOPA Dilligent Consult &middot; Ghana" />
+  <meta property="og:locale" content="en_GH" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="The SESA Methodology &ndash; FOPA Dilligent Consult | SESA" />
+  <meta name="twitter:description" content="A multi-dimensional clinical audit designed to identify emotional developmental patterns in Ghanaian students. 6 dimensions. 4 result tiers. GES aligned." />
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pub.css') }}" />
+  <style>
+    /* ---------- Methodology-page extras (not in shared sheet) ---------- */
+    .eyebrow--light { color: #fff; }
+    .display--light { color: #fff; }
+    .lede--light { color: var(--ink-30); }
+    .prose { margin-top: 40px; max-width: 42rem; color: var(--ink-60); }
+    .prose p + p { margin-top: 24px; }
+    .badges { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 32px; }
+    .badge-pill { display: flex; align-items: center; gap: 10px; font-size: 14px; line-height: 20px; font-weight: 700; color: var(--brand); }
+    .badge-pill svg { width: 20px; height: 20px; color: var(--brand); }
+
+    /* ---------- 6 dimensions ---------- */
+    .dim-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; column-gap: 24px; row-gap: 16px; }
+    .dim-num { font-size: 96px; line-height: 0.85; font-weight: 700; letter-spacing: -0.02em; color: var(--ink-10); user-select: none; }
+    @media (min-width: 640px) { .dim-num { font-size: 128px; } }
+
+    /* ---------- Traffic light protocol (dark band) ---------- */
+    .protocol { margin-top: 96px; background: var(--brand-dark); padding-block: 96px; --ease-spring: cubic-bezier(.32,.72,0,1); }
+    @media (min-width: 640px) { .protocol { margin-top: 128px; padding-block: 128px; } }
+    .protocol-inner { display: block; }
+    @media (min-width: 1024px) { .protocol-inner { display: flex; align-items: center; justify-content: space-between; gap: 64px; } }
+    .protocol-copy { max-width: 44rem; }
+    .traffic-stages { position: relative; margin-top: 40px; max-width: 44rem; }
+    .traffic-stages::before { content: ""; position: absolute; left: 27px; top: 27px; bottom: 27px; width: 1px; background: rgba(255,255,255,0.12); }
+    .traffic-stage { position: relative; display: flex; gap: 20px; }
+    .traffic-stage + .traffic-stage { margin-top: 16px; }
+    .stage-dot { position: relative; flex-shrink: 0; z-index: 1; width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; font-size: 16px; font-weight: 800; letter-spacing: 0.04em; color: var(--brand-dark); transition: box-shadow .5s var(--ease), transform .5s var(--ease); }
+    .stage-dot--n { background: #10b981; }
+    .stage-dot--m { background: #f59e0b; }
+    .stage-dot--e { background: #f97316; color: #fff; }
+    .stage-dot--c { background: #ef4444; color: #fff; }
+    .traffic-stage h4 { margin-top: 15px; font-size: 16px; line-height: 24px; font-weight: 600; color: var(--ink-30); transition: color .4s var(--ease); }
+    .traffic-stage.is-current h4 { color: #fff; }
+    .traffic-stage.is-current .stage-dot--n { box-shadow: 0 0 0 6px rgba(16,185,129,0.18), 0 0 26px rgba(16,185,129,0.55); transform: scale(1.05); }
+    .traffic-stage.is-current .stage-dot--m { box-shadow: 0 0 0 6px rgba(245,158,11,0.18), 0 0 26px rgba(245,158,11,0.55); transform: scale(1.05); }
+    .traffic-stage.is-current .stage-dot--e { box-shadow: 0 0 0 6px rgba(249,115,22,0.18), 0 0 26px rgba(249,115,22,0.55); transform: scale(1.05); }
+    .traffic-stage.is-current .stage-dot--c { box-shadow: 0 0 0 6px rgba(239,68,68,0.18), 0 0 26px rgba(239,68,68,0.55); transform: scale(1.05); }
+    .traffic-stage p { margin-top: 8px; font-size: 14px; line-height: 20px; color: var(--ink-30); max-width: 38rem; }
+    .protocol-visual { margin-top: 64px; display: flex; flex-direction: column; align-items: center; gap: 24px; text-align: center; }
+    @media (min-width: 1024px) { .protocol-visual { margin-top: 0; } }
+    .tl-shell { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); padding: 8px; border-radius: 116px; box-shadow: 0 24px 64px rgba(0,0,0,0.35); }
+    .tl-housing { display: flex; flex-direction: column; gap: 16px; background: var(--brand-dark); padding: 26px 22px; border-radius: 999px; border: 10px solid rgba(255,255,255,0.08); box-shadow: inset 0 1px 0 rgba(255,255,255,0.08); }
+    .tl-bulb { width: 58px; height: 58px; border-radius: 50%; border: 0; padding: 0; background: rgba(255,255,255,0.07); box-shadow: inset 0 2px 5px rgba(0,0,0,0.4); cursor: pointer; transition: background-color .45s var(--ease-spring), box-shadow .45s var(--ease-spring), transform .45s var(--ease-spring); }
+    .tl-bulb.on-green { background: #10b981; box-shadow: inset 0 -3px 6px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.5), 0 0 30px rgba(16,185,129,0.65); transform: scale(1.04); }
+    .tl-bulb.on-yellow { background: #f59e0b; box-shadow: inset 0 -3px 6px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.5), 0 0 30px rgba(245,158,11,0.65); transform: scale(1.04); }
+    .tl-bulb.on-red { background: #ef4444; box-shadow: inset 0 -3px 6px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.5), 0 0 30px rgba(239,68,68,0.65); transform: scale(1.04); }
+    .tl-bulb:not([class*="on-"]):hover { background: rgba(255,255,255,0.14); box-shadow: inset 0 2px 5px rgba(0,0,0,0.4), 0 0 0 3px rgba(255,255,255,0.12); }
+    .tl-bulb:active { transform: scale(0.96); }
+    .tl-bulb:focus-visible { outline: 2px solid rgba(255,255,255,0.5); outline-offset: 4px; }
+    .tl-readout { margin-top: 30px; display: flex; align-items: center; gap: 12px; }
+    .tl-readout-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--tier-color, #10b981); box-shadow: inset 0 1px 1px rgba(255,255,255,0.5), 0 0 0 4px rgba(255,255,255,0.06), 0 0 18px var(--tier-color, #10b981); transition: background-color .45s var(--ease-spring), box-shadow .45s var(--ease-spring); }
+    .tl-readout-stage { display: inline-block; font-size: 24px; line-height: 30px; font-weight: 600; letter-spacing: -0.02em; color: #fff; transition: opacity .2s var(--ease-spring), transform .2s var(--ease-spring); }
+    .tl-readout-stage.swap-out { opacity: 0; transform: translateY(-6px); }
+    .tl-readout-stage.swap-in { opacity: 0; transform: translateY(6px); }
+    .tl-cap { margin-top: 10px; font-size: 13px; line-height: 18px; letter-spacing: 0.01em; color: var(--ink-30); transition: opacity .2s var(--ease-spring), transform .2s var(--ease-spring); }
+    .tl-cap.swap-out { opacity: 0; transform: translateY(-6px); }
+    .tl-cap.swap-in { opacity: 0; transform: translateY(6px); }
+    @media (max-width: 480px) { .tl-shell { border-radius: 104px; padding: 7px; } .tl-bulb { width: 52px; height: 52px; } .tl-housing { gap: 14px; padding: 22px 18px; } }
+    @media (prefers-reduced-motion: reduce) { .tl-bulb { transform: none; } .tl-bulb, .tl-readout-dot { transition: background-color .2s ease; } .tl-readout-stage, .tl-cap { transform: none !important; transition: opacity .18s ease; } .stage-dot { transition: none; } }
+
+    /* ---------- Curator ---------- */
+    .curator { margin-top: 64px; margin-inline: auto; max-width: 64rem; display: grid; grid-template-columns: 1fr; gap: 40px; align-items: center; }
+    @media (min-width: 768px) { .curator { grid-template-columns: 5fr 7fr; gap: 56px; } }
+    .curator-photo { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 16px; background: var(--ink-10); }
+    .curator-quote-icon { width: 36px; height: 36px; color: var(--brand); margin-bottom: 20px; }
+    .curator-quote { font-size: 24px; line-height: 32px; font-weight: 500; letter-spacing: -0.025em; color: var(--brand); }
+    @media (min-width: 640px) { .curator-quote { font-size: 28px; line-height: 36px; } }
+    .curator-sig { margin-top: 28px; display: flex; align-items: center; gap: 16px; }
+    .curator-avatar { flex-shrink: 0; width: 52px; height: 52px; border-radius: 50%; background: var(--brand); color: #fff; display: grid; place-items: center; font-size: 13px; font-weight: 800; letter-spacing: 0.06em; }
+    .curator-name { font-size: 16px; line-height: 24px; font-weight: 600; color: var(--ink); }
+    .curator-title { font-size: 14px; line-height: 20px; color: var(--ink-60); }
+  </style>
+  <link rel="canonical" href="{{ request.url_root.rstrip('/') }}{{ request.path }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
   <meta name="theme-color" content="#022818">
-  {% include 'main/_pub_styles.html' %}
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="SESA">
+  <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/static/sw.js');}</script>
 </head>
-<body data-hero="dark">
+<body>
 
-{% include 'main/_pub_nav.html' %}
+  <a class="skip-link" href="#main">Skip to main content</a>
 
-<!-- ═══ HERO ═══ -->
-<section class="pub-section pub-section--dark grain" style="min-height:100vh;display:flex;align-items:center;padding-top:64px;padding-bottom:64px;box-sizing:border-box;">
-  <div class="s-wrap" style="width:100%;">
-    <div style="display:grid;grid-template-columns:1fr 620px;gap:32px;align-items:center;">
-      <div class="anim-in">
-        
-        <h1 style="font-family:'Playfair Display',serif;font-size:clamp(2.8rem,4.5vw,4.5rem);font-weight:700;color:var(--iv);line-height:1.05;margin-bottom:24px;">The SESA <br><em style="color:var(--g);font-style:italic;font-weight:400;">Methodology</em></h1>
-        <p style="font-size:1.1rem;color:rgba(250,250,243,.75);line-height:1.8;max-width:560px;margin-bottom:36px;">A multi-dimensional clinical audit designed to identify emotional developmental patterns in Ghanaian students, ensuring every child feels safe, seen, and supported within their academic environment.</p>
-        <div class="method-badges-row">
-          <div class="method-badge-pill">
-            <div class="pill-icon"><i class="fa-solid fa-shield-halved"></i></div>
-            <span>Effectiveness Proven </span>
+  {% include 'main/_pub_nav.html' %}
+
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg class="pattern pattern--hero" aria-hidden="true">
+        <rect width="100%" height="100%" fill="url(#grid-a)" stroke-width="0"></rect>
+        <svg x="50%" y="-96" stroke-width="0" style="overflow:visible">
+          <path transform="translate(64 160)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(128 320)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(288 480)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(512 320)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(544 640)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(320 800)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+        </svg>
+        <defs>
+          <pattern id="grid-a" width="96" height="480" x="50%" patternUnits="userSpaceOnUse" patternTransform="translate(0 -96)" fill="none">
+            <path d="M128 0 98.572 147.138A16 16 0 0 1 82.883 160H13.117a16 16 0 0 0-15.69 12.862l-26.855 134.276A16 16 0 0 1-45.117 320H-116M64-160 34.572-12.862A16 16 0 0 1 18.883 0h-69.766a16 16 0 0 0-15.69 12.862l-26.855 134.276A16 16 0 0 1-109.117 160H-180M192 160l-29.428 147.138A15.999 15.999 0 0 1 146.883 320H77.117a16 16 0 0 0-15.69 12.862L34.573 467.138A16 16 0 0 1 18.883 480H-52M-136 480h58.883a16 16 0 0 0 15.69-12.862l26.855-134.276A16 16 0 0 1-18.883 320h69.766a16 16 0 0 0 15.69-12.862l26.855-134.276A16 16 0 0 1 109.117 160H192M-72 640h58.883a16 16 0 0 0 15.69-12.862l26.855-134.276A16 16 0 0 1 45.117 480h69.766a15.999 15.999 0 0 0 15.689-12.862l26.856-134.276A15.999 15.999 0 0 1 173.117 320H256M-200 320h58.883a15.999 15.999 0 0 0 15.689-12.862l26.856-134.276A16 16 0 0 1-82.883 160h69.766a16 16 0 0 0 15.69-12.862L29.427 12.862A16 16 0 0 1 45.117 0H128"></path>
+          </pattern>
+        </defs>
+      </svg>
+
+      <main id="main">
+
+        <!-- Methodology hero -->
+        <section class="hero container">
+          <div class="inner">
+            <div class="hero-row" data-fade-group>
+              <div>
+                <div class="hero-text" data-fade>
+                  <h1>
+                    <span class="eyebrow">How the audit works</span>
+                    <span class="sr-only"> - </span>
+                    <span class="display">The SESA Methodology</span>
+                  </h1>
+                  <div class="prose">
+                    <p>A multi-dimensional clinical audit designed to identify emotional developmental patterns in Ghanaian students, ensuring every child feels safe, seen, and supported within their academic environment.</p>
+                  </div>
+                  <div class="badges" data-fade>
+                    <span class="badge-pill">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></svg>
+                      Effectiveness Proven
+                    </span>
+                    <span class="badge-pill">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg>
+                      Clinical Precision
+                    </span>
+                  </div>
+                </div>
+                <div data-fade>
+                  <div class="hero-actions">
+                    <a class="btn btn-dark" href="{{ url_for('auth.school_signup') }}"><span>Register My School</span></a>
+                    <button type="button" class="btn btn-outline" data-demo-open><span>Book a Demo With Us</span></button>
+                  </div>
+                </div>
+              </div>
+              <div class="hero-media">
+                <div class="media-frame" data-fade>
+                  <div class="media-stage">
+                    <svg class="clip-svg" viewBox="0 0 655 680" fill="none" aria-hidden="true">
+                      <g clip-path="url(#method-clip)">
+                        <g class="clip-zoom">
+                          <foreignObject width="655" height="680">
+                            <img alt="" width="1280" height="960" decoding="sync" style="width:100%;height:100%;object-fit:cover;background:#f5f5f5;color:transparent" src="{{ url_for('static', filename='images/hero_jhs1.jpg') }}" />
+                          </foreignObject>
+                        </g>
+                        <use href="#method-shape" stroke-width="2" stroke="rgba(10,10,10,0.1)"></use>
+                      </g>
+                      <defs>
+                        <clipPath id="method-clip">
+                          <path id="method-shape" d="M537.827 9.245A11.5 11.5 0 0 1 549.104 0h63.366c7.257 0 12.7 6.64 11.277 13.755l-25.6 128A11.5 11.5 0 0 1 586.87 151h-28.275a15.999 15.999 0 0 0-15.689 12.862l-59.4 297c-1.98 9.901 5.592 19.138 15.689 19.138h17.275l.127.001c.85.009 1.701.074 2.549.009 11.329-.874 21.411-7.529 24.88-25.981.002-.012.016-.016.023-.007.008.009.022.005.024-.006l24.754-123.771A11.5 11.5 0 0 1 580.104 321h63.366c7.257 0 12.7 6.639 11.277 13.755l-25.6 128A11.5 11.5 0 0 1 617.87 472H559c-22.866 0-28.984 7.98-31.989 25.931-.004.026-.037.035-.052.014-.015-.02-.048-.013-.053.012l-24.759 123.798A11.5 11.5 0 0 1 490.87 631h-29.132a14.953 14.953 0 0 0-14.664 12.021c-4.3 21.502-23.18 36.979-45.107 36.979H83.502c-29.028 0-50.8-26.557-45.107-55.021l102.4-512C145.096 91.477 163.975 76 185.902 76h318.465c10.136 0 21.179-5.35 23.167-15.288l10.293-51.467Zm-512 160A11.5 11.5 0 0 1 37.104 160h63.366c7.257 0 12.7 6.639 11.277 13.755l-25.6 128A11.5 11.5 0 0 1 74.87 311H11.504c-7.257 0-12.7-6.639-11.277-13.755l25.6-128Z" fill-rule="evenodd" clip-rule="evenodd"></path>
+                        </clipPath>
+                      </defs>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="method-badge-pill">
-            <div class="pill-icon"><i class="fa-solid fa-stethoscope"></i></div>
-            <span>Clinical Precision</span>
+        </section>
+
+        <!-- 6 dimensions -->
+        <section class="band-head container">
+          <div class="inner">
+            <div class="dim-head" data-fade>
+              <div class="intro">
+                <h2>
+                  <span class="eyebrow">What we measure</span>
+                  <span class="sr-only"> - </span>
+                  <span class="display">The 6 Dimensions of Emotional Safety</span>
+                </h2>
+                <p class="lede">Our audit evaluates the ecosystem of the child across these critical pillars, using clinical indicators to map their emotional landscape.</p>
+              </div>
+              <div class="dim-num" aria-hidden="true">06</div>
+            </div>
           </div>
-        </div>
-      </div>
-      <div class="anim-in-2 hero-method-img" style="position:relative;">
-        <div style="position:relative;border-radius:20px;overflow:hidden;border:2px solid rgba(250,250,243,.12);box-shadow:0 32px 80px rgba(0,0,0,.4);aspect-ratio:4/3;width:100%;min-height:400px;background:var(--mg);transform:rotate(-2deg);">
-          <img src="{{ url_for('static', filename='images/hero_smiles.jpg') }}" alt="Ghanaian student" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">
-          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(2,40,24,.8) 0%,transparent 50%);"></div>
-          <div style="position:absolute;bottom:28px;left:24px;right:24px;">
-            <p style="font-family:'Playfair Display',serif;font-style:italic;color:var(--iv);font-size:1rem;line-height:1.6;">"Rooted in Ghanaian Excellence, Focused on Emotional Growth."</p>
+        </section>
+
+        <section class="services-body container">
+          <div class="inner">
+            <div class="suite-grid" data-fade-group>
+              <div class="flex" data-fade>
+                <article class="suite-card">
+                  <h3>
+                    <img class="card-badge" alt="Cognitive Resilience" loading="lazy" decoding="async" src="{{ url_for('static', filename='images/dim-resilience.png') }}" />
+                  </h3>
+                  <p class="card-meta">
+                    <span class="strong">Dimension 01</span>
+                    <span class="sep" aria-hidden="true">/</span>
+                    <span>Validated Instrument</span>
+                  </p>
+                  <p class="card-title">Cognitive Resilience</p>
+                  <p class="card-desc">Evaluating the ability to manage stress and bounce back from academic setbacks and life challenges.</p>
+                </article>
+              </div>
+              <div class="flex" data-fade>
+                <article class="suite-card">
+                  <h3>
+                    <img class="card-badge" alt="Relational Trust" loading="lazy" decoding="async" src="{{ url_for('static', filename='images/dim-trust.png') }}" />
+                  </h3>
+                  <p class="card-meta">
+                    <span class="strong">Dimension 02</span>
+                    <span class="sep" aria-hidden="true">/</span>
+                    <span>Validated Instrument</span>
+                  </p>
+                  <p class="card-title">Relational Trust</p>
+                  <p class="card-desc">Measuring the quality of peer-to-peer and student-teacher connections within the school ecosystem.</p>
+                </article>
+              </div>
+              <div class="flex" data-fade>
+                <article class="suite-card">
+                  <h3>
+                    <img class="card-badge" alt="Emotional Autonomy" loading="lazy" decoding="async" src="{{ url_for('static', filename='images/dim-autonomy.png') }}" />
+                  </h3>
+                  <p class="card-meta">
+                    <span class="strong">Dimension 03</span>
+                    <span class="sep" aria-hidden="true">/</span>
+                    <span>Validated Instrument</span>
+                  </p>
+                  <p class="card-title">Emotional Autonomy</p>
+                  <p class="card-desc">Assessing the student&#x27;s capacity for independent emotional regulation and self-awareness.</p>
+                </article>
+              </div>
+              <div class="flex" data-fade>
+                <article class="suite-card">
+                  <h3>
+                    <img class="card-badge" alt="Sense of Belonging" loading="lazy" decoding="async" src="{{ url_for('static', filename='images/dim-belonging.png') }}" />
+                  </h3>
+                  <p class="card-meta">
+                    <span class="strong">Dimension 04</span>
+                    <span class="sep" aria-hidden="true">/</span>
+                    <span>Validated Instrument</span>
+                  </p>
+                  <p class="card-title">Sense of Belonging</p>
+                  <p class="card-desc">Understanding the student&#x27;s perception of value and integration within the school culture.</p>
+                </article>
+              </div>
+              <div class="flex" data-fade>
+                <article class="suite-card">
+                  <h3>
+                    <img class="card-badge" alt="Behavioural Safety" loading="lazy" decoding="async" src="{{ url_for('static', filename='images/dim-safety.png') }}" />
+                  </h3>
+                  <p class="card-meta">
+                    <span class="strong">Dimension 05</span>
+                    <span class="sep" aria-hidden="true">/</span>
+                    <span>Validated Instrument</span>
+                  </p>
+                  <p class="card-title">Behavioural Safety</p>
+                  <p class="card-desc">Screening for environments free from bullying, social exclusion, and physical threats.</p>
+                </article>
+              </div>
+              <div class="flex" data-fade>
+                <article class="suite-card">
+                  <h3>
+                    <img class="card-badge" alt="Future Orientation" loading="lazy" decoding="async" src="{{ url_for('static', filename='images/dim-future.png') }}" />
+                  </h3>
+                  <p class="card-meta">
+                    <span class="strong">Dimension 06</span>
+                    <span class="sep" aria-hidden="true">/</span>
+                    <span>Validated Instrument</span>
+                  </p>
+                  <p class="card-title">Future Orientation</p>
+                  <p class="card-desc">Identifying long-term motivation, positive academic aspirations, and future goal setting.</p>
+                </article>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        </section>
+
+        <!-- Traffic light protocol -->
+        <section class="protocol">
+          <div class="container">
+            <div class="inner">
+              <div class="protocol-inner" data-fade-group>
+                <div class="protocol-copy" data-fade>
+                  <h2>
+                    <span class="eyebrow eyebrow--light">Result Protocol</span>
+                    <span class="sr-only"> - </span>
+                    <span class="display display--light">The Traffic Light System</span>
+                  </h2>
+                  <div class="prose" style="color:var(--ink-30)">
+                    <p>Our staged results system ensures clarity in intervention. Every assessment is categorised into one of four distinct stages, guiding educators and psychologists on the next steps.</p>
+                  </div>
+                  <div class="traffic-stages">
+                    <div class="traffic-stage">
+                      <div class="stage-dot stage-dot--n">N</div>
+                      <div>
+                        <h4>Normal</h4>
+                        <p>Optimal emotional health. The child demonstrates resilience and strong supportive networks.</p>
+                      </div>
+                    </div>
+                    <div class="traffic-stage">
+                      <div class="stage-dot stage-dot--m">M</div>
+                      <div>
+                        <h4>Mild</h4>
+                        <p>Transient stressors identified. Recommend standard pastoral care monitoring and routine check-ins.</p>
+                      </div>
+                    </div>
+                    <div class="traffic-stage">
+                      <div class="stage-dot stage-dot--e">E</div>
+                      <div>
+                        <h4>Elevated</h4>
+                        <p>Significant emotional distress markers. Tier-2 intervention required: targeted counselling sessions.</p>
+                      </div>
+                    </div>
+                    <div class="traffic-stage">
+                      <div class="stage-dot stage-dot--c">C</div>
+                      <div>
+                        <h4>Clinical</h4>
+                        <p>Acute psychological distress. Immediate clinical referral and comprehensive parental intervention.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="protocol-visual" data-fade>
+                  <div class="tl-shell">
+                    <div class="tl-housing">
+                      <button type="button" class="tl-bulb" id="tl-red" aria-label="Preview the Clinical stage"></button>
+                      <button type="button" class="tl-bulb" id="tl-yellow" aria-label="Preview the Mild or Elevated stage"></button>
+                      <button type="button" class="tl-bulb" id="tl-green" aria-label="Preview the Normal stage"></button>
+                    </div>
+                  </div>
+                  <div class="tl-readout" aria-hidden="true">
+                    <span class="tl-readout-dot" id="tlReadoutDot"></span>
+                    <span class="tl-readout-stage" id="tlStageLabel">Normal</span>
+                  </div>
+                  <p class="tl-cap" id="tlStageIndex" aria-hidden="true">Tier 1/4 - auto-tiered from 120+ clinical data points</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Curator -->
+        <section class="band-head container">
+          <div class="inner">
+            <div class="curator" data-fade-group>
+              <div data-fade>
+                <img class="curator-photo" alt="Dr. Felix Oppusu Paapa Agyiri" decoding="sync" src="{{ url_for('static', filename='images/felix.jpg') }}" />
+              </div>
+              <div data-fade>
+                <svg class="curator-quote-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>
+                <blockquote class="curator-quote"><p>&ldquo;Emotional safety is not just a metric; it is the prerequisite for all academic and personal growth. Our audit is the first step toward that realization.&rdquo;</p></blockquote>
+                <div class="curator-sig">
+                  <div class="curator-avatar">FOPA</div>
+                  <div>
+                    <p class="curator-name">Felix Oppusu Paapa Agyiri</p>
+                    <p class="curator-title">PhD &middot; Educational Sociologist</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="band-head container">
+          <div class="inner">
+            <div class="cta-panel" data-fade>
+              <div class="cta-copy">
+                <div class="cta-block">
+                  <h2>Every Student Deserves to Be Understood</h2>
+                  <p class="cta-p">Ghana&#x27;s schools are full of students silently struggling. SESA gives your school the tools to see what grades can&#x27;t show &mdash; and act before it&#x27;s too late.</p>
+                  <div class="cta-actions">
+                    <a class="btn btn-light" href="{{ url_for('auth.school_signup') }}"><span>Register My School</span></a>
+                    <a class="btn btn-outline-light" href="{{ url_for('auth.login') }}"><span>Student Sign In</span></a>
+                  </div>
+                  <div class="cta-contact">
+                    <ul>
+                      <li>
+                        <address>
+                          <strong>Location</strong>
+                          <br />Accra, Ghana
+                        </address>
+                      </li>
+                      <li>
+                        <address>
+                          <strong>Email</strong>
+                          <br />
+                          <a href="mailto:info@fopaconsult.com">info@fopaconsult.com</a>
+                        </address>
+                      </li>
+                      <li>
+                        <address>
+                          <strong>New to SESA?</strong>
+                          <br />
+                          <a href="{{ url_for('main.school_guide') }}">Read the School Guide &rarr;</a>
+                        </address>
+                      </li>
+                    </ul>
+                    <div class="cta-links">
+                      <p class="cta-links-title">Explore</p>
+                      <ul>
+                        <li><a href="{{ url_for('main.about') }}">About Us</a></li>
+                        <li><a href="{{ url_for('main.gallery') }}">Gallery</a></li>
+                        <li><a href="{{ url_for('main.school_guide') }}">School Guide</a></li>
+                        <li><a href="{{ url_for('main.assessment_details') }}">SESA Methodology</a></li>
+                        <li><a href="{{ url_for('main.contact') }}">Contact</a></li>
+                        <li><a href="{{ url_for('main.privacy') }}">Privacy Policy</a></li>
+                        <li><a href="{{ url_for('main.terms') }}">Terms of Service</a></li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+      {% include 'main/_pub_footer.html' %}
     </div>
   </div>
-</section>
 
-<!-- ═══ 6 DIMENSIONS BENTO ═══ -->
-<section class="pub-section pub-section--alt">
-  <div class="s-wrap">
-    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:48px;">
-      <div>
-        <h2 class="s-h2 s-h2--left" style="margin-bottom:10px;">The 6 Dimensions of Emotional Safety</h2>
-        <p class="s-sub s-sub--left" style="max-width:520px;">Our audit evaluates the ecosystem of the child across these critical pillars, using clinical indicators to map their emotional landscape.</p>
-      </div>
-      <div style="font-family:'Playfair Display',serif;font-size:5rem;font-weight:700;color:rgba(197,160,89,.08);line-height:1;user-select:none;">06</div>
-    </div>
-    <div class="dim-bento">
-
-      <div class="dim-bento-card">
-        <div>
-          <div class="dim-icon-box"><i class="fa-solid fa-house-heart"></i></div>
-          <h3>Cognitive Resilience</h3>
-          <p>Evaluating the ability to manage stress and bounce back from academic setbacks and life challenges.</p>
-        </div>
-        <div class="dim-bento-card-footer">
-          <span class="dim-label">Dimension 01</span>
-          <i class="fa-solid fa-arrow-right" style="color:var(--g);opacity:0;transition:opacity .2s;"></i>
-        </div>
-      </div>
-
-      <div class="dim-bento-card dim-bento-card--featured">
-        <div>
-          <div class="dim-icon-box dim-icon-box--gold"><i class="fa-solid fa-brain" style="color:var(--f);"></i></div>
-          <h3>Relational Trust</h3>
-          <p>Measuring the quality of peer-to-peer and student-teacher connections within the school ecosystem.</p>
-        </div>
-        <div class="dim-bento-card-footer">
-          <span class="dim-label">Dimension 02</span>
-          <i class="fa-solid fa-arrow-right" style="color:var(--g);"></i>
-        </div>
-      </div>
-
-      <div class="dim-bento-card">
-        <div>
-          <div class="dim-icon-box"><i class="fa-solid fa-people-group"></i></div>
-          <h3>Emotional Autonomy</h3>
-          <p>Assessing the student's capacity for independent emotional regulation and self-awareness.</p>
-        </div>
-        <div class="dim-bento-card-footer">
-          <span class="dim-label">Dimension 03</span>
-        </div>
-      </div>
-
-      <div class="dim-bento-card">
-        <div>
-          <div class="dim-icon-box"><i class="fa-solid fa-school"></i></div>
-          <h3>Sense of Belonging</h3>
-          <p>Understanding the student's perception of value and integration within the school culture.</p>
-        </div>
-        <div class="dim-bento-card-footer">
-          <span class="dim-label">Dimension 04</span>
-        </div>
-      </div>
-
-      <div class="dim-bento-card">
-        <div>
-          <div class="dim-icon-box"><i class="fa-solid fa-face-tired"></i></div>
-          <h3>Behavioural Safety</h3>
-          <p>Screening for environments free from bullying, social exclusion, and physical threats.</p>
-        </div>
-        <div class="dim-bento-card-footer">
-          <span class="dim-label">Dimension 05</span>
-        </div>
-      </div>
-
-      <div class="dim-bento-card">
-        <div>
-          <div class="dim-icon-box"><i class="fa-solid fa-earth-africa"></i></div>
-          <h3>Future Orientation</h3>
-          <p>Identifying long-term motivation, positive academic aspirations, and future goal setting.</p>
-        </div>
-        <div class="dim-bento-card-footer">
-          <span class="dim-label">Dimension 06</span>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- ═══ TRAFFIC LIGHT PROTOCOL ═══ -->
-<section class="pub-section">
-  <div class="s-wrap">
-    <div class="traffic-grid">
-      <div>
-        <h2 class="s-h2 s-h2--left" style="margin-bottom:16px;">The Traffic Light<br><em style="color:var(--g);font-style:italic;">Result Protocol</em></h2>
-        <p class="s-sub s-sub--left" style="margin-bottom:40px;">Our staged results system ensures clarity in intervention. Every assessment is categorised into one of four distinct stages, guiding educators and psychologists on the next steps.</p>
-        <div class="traffic-stages">
-          <div class="traffic-stage">
-            <div class="stage-dot stage-dot--n">N</div>
-            <div>
-              <h4>Normal</h4>
-              <p>Optimal emotional health. The child demonstrates robust resilience and strong supportive networks.</p>
-            </div>
-          </div>
-          <div class="traffic-stage">
-            <div class="stage-dot stage-dot--m">M</div>
-            <div>
-              <h4>Mild</h4>
-              <p>Transient stressors identified. Recommend standard pastoral care monitoring and routine check-ins.</p>
-            </div>
-          </div>
-          <div class="traffic-stage">
-            <div class="stage-dot stage-dot--e">E</div>
-            <div>
-              <h4>Elevated</h4>
-              <p>Significant emotional distress markers. Tier-2 intervention required: targeted counselling sessions.</p>
-            </div>
-          </div>
-          <div class="traffic-stage">
-            <div class="stage-dot stage-dot--c">C</div>
-            <div>
-              <h4>Clinical</h4>
-              <p>Acute psychological distress. Immediate clinical referral and comprehensive parental intervention.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="traffic-visual" style="display:flex;flex-direction:column;align-items:center;gap:20px;">
-        <div class="traffic-light-mock">
-          <div class="tl-housing">
-            <div class="tl-bulb" id="tl-red"></div>
-            <div class="tl-bulb" id="tl-yellow"></div>
-            <div class="tl-bulb" id="tl-green"></div>
-          </div>
-        </div>
-        <div class="tl-insight" id="tlInsight">
-          <div class="tl-insight-stage" id="tlStageLabel">Normal</div>
-          <p id="tlInsightText">Optimal emotional health. Strong resilience and supportive networks detected.</p>
-        </div>
-        <h3>Automated Tiering</h3>
-        <p>Our proprietary algorithm analyses over 120 clinical data points to assign the correct safety tier instantly.</p>
-      </div>
-
-      <style>
-        .tl-housing {
-          display: flex; flex-direction: column; gap: 14px;
-          background: var(--f); padding: 24px 20px; border-radius: 100px;
-          border: 10px solid var(--sm); box-shadow: 0 16px 48px rgba(2,40,24,.4);
-        }
-        .tl-bulb { width: 56px; height: 56px; border-radius: 50%; background: rgba(255,255,255,.07); transition: background .6s ease, box-shadow .6s ease; }
-        .tl-bulb.on-green  { background: #10b981; box-shadow: 0 0 28px rgba(16,185,129,.65); }
-        .tl-bulb.on-yellow { background: #f59e0b; box-shadow: 0 0 28px rgba(245,158,11,.65); }
-        .tl-bulb.on-red    { background: #ef4444; box-shadow: 0 0 28px rgba(239,68,68,.65); }
-        .tl-insight {
-          background: var(--iv); border-radius: 12px; padding: 18px 20px;
-          width: 100%; max-width: 280px;
-          border-left: 4px solid #10b981;
-          transition: border-color .6s ease;
-        }
-        .tl-insight-stage {
-          font-family: 'Playfair Display', serif; font-weight: 700;
-          font-size: 1rem; margin-bottom: 6px; color: var(--f);
-        }
-        .tl-insight p { font-size: .82rem; color: var(--mg); line-height: 1.6; margin: 0; }
-        .traffic-visual h3 { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; color: var(--f); margin-bottom: 8px; }
-        .traffic-visual > p { font-size: .82rem; color: var(--mg); line-height: 1.65; max-width: 280px; text-align: center; }
-          .method-badge-pill span { font-size: .82rem; font-weight: 700; color: var(--iv); }
-  .method-badge-pill .pill-icon { background: rgba(197,160,89,.15); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
-  .method-badge-pill .pill-icon i { color: var(--g); font-size: .85rem; }
-  .method-badges-row { display: flex; gap: 24px; flex-wrap: wrap; margin-top: 8px; }
-  .method-badge-pill { display: flex; align-items: center; gap: 10px; }
-
-      </style>
-      <script>
-      (function(){
-        var stages = [
-          {
-            bulb: 'green', label: 'Normal',
-            color: '#10b981',
-            text: 'Optimal emotional health. Strong resilience and supportive networks detected.'
-          },
-          {
-            bulb: 'yellow', label: 'Mild',
-            color: '#f59e0b',
-            text: 'Transient stressors present. Standard pastoral monitoring and routine check-ins recommended.'
-          },
-          {
-            bulb: 'yellow', label: 'Elevated',
-            color: '#f97316',
-            text: 'Significant distress markers identified. Tier-2 intervention and targeted counselling required.'
-          },
-          {
-            bulb: 'red', label: 'Clinical',
-            color: '#ef4444',
-            text: 'Acute psychological distress. Immediate clinical referral and parental intervention required.'
+  <script>
+    (function () {
+      var faders = document.querySelectorAll('[data-fade]');
+      if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('fade-in');
+              io.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+        faders.forEach(function (el) {
+          var group = el.closest('[data-fade-group]');
+          if (group) {
+            var siblings = Array.prototype.slice.call(group.querySelectorAll('[data-fade]'));
+            var idx = siblings.indexOf(el);
+            el.style.transitionDelay = Math.min(idx * 90, 450) + 'ms';
           }
-        ];
-        var i = 0;
-        function tick() {
-          var s = stages[i];
-          /* reset all bulbs */
-          document.getElementById('tl-green').className  = 'tl-bulb';
-          document.getElementById('tl-yellow').className = 'tl-bulb';
-          document.getElementById('tl-red').className    = 'tl-bulb';
-          /* light the right one */
-          document.getElementById('tl-' + s.bulb).className = 'tl-bulb on-' + s.bulb;
-          /* update insight card */
-          var insight = document.getElementById('tlInsight');
-          insight.style.borderColor = s.color;
-          document.getElementById('tlStageLabel').textContent = s.label;
-          document.getElementById('tlInsightText').textContent = s.text;
-          i = (i + 1) % stages.length;
-        }
-        tick();
-        setInterval(tick, 2200);
-      })();
-      </script>
-    </div>
-  </div>
-</section>
+          io.observe(el);
+        });
+      } else {
+        faders.forEach(function (el) { el.classList.add('fade-in'); });
+      }
 
-<!-- ═══ CURATOR'S INSET ═══ -->
-<section class="pub-section pub-section--alt">
-  <div class="s-wrap">
-    <div class="curator-full">
-      <div class="curator-full-bg">
-        <img src="{{ url_for('static', filename='images/SESA.png') }}" alt="School environment" onerror="this.style.display='none'">
-      </div>
-      <div class="curator-full-content">
-        <i class="fa-solid fa-quote-left"></i>
-        <blockquote>"Emotional safety is not just a metric; it is the prerequisite for all academic and personal growth. Our audit is the first step toward that realization."</blockquote>
-        <div class="cite-line"></div>
-        <p class="cite-title">Director of Clinical Services</p>
-        <p class="cite-sub">FOPA Dilligent Consult Assessment</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══ BOTTOM CTA ═══ -->
-<section class="bottom-cta grain">
-  <div class="bottom-cta-orb"></div>
-  <h2 style="font-family:'Playfair Display',serif;font-size:clamp(2rem,4vw,3rem);font-weight:700;color:var(--iv);margin-bottom:20px;line-height:1.2;position:relative;z-index:2;">Begin the Audit <em style="color:var(--g);font-style:italic;">Journey</em></h2>
-  <p style="color:rgba(250,250,243,.75);font-size:1.05rem;max-width:540px;margin:0 auto 48px;line-height:1.75;position:relative;z-index:2;">Empower your institution with data-driven empathy. Contact our academic curators today to schedule a demo of the SESA Assessment Platform.</p>
-  <div class="bottom-cta-btns">
-    <a href="{{ url_for('main.contact') }}" class="btn-gold">Schedule Consultation</a>
-    <a href="{{ url_for('main.about') }}" class="btn-outline-light">Download Brochure</a>
-  </div>
-</section>
-
-{% include 'main/_pub_footer.html' %}
-
-<style>
-  .dim-bento-card:hover .dim-icon-box { background: var(--g); }
-  .dim-bento-card:hover .dim-icon-box i { color: var(--f); }
-  @media (max-width:900px) {
-    section.pub-section > .s-wrap > div[style*="grid-template-columns:1fr 620px"] { grid-template-columns: 1fr !important; }
-    section.pub-section > .s-wrap > div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
-    .hero-method-img { display: none !important; }
-  }
-</style>
-
+      var stages = [
+        { bulb: 'green', label: 'Normal', color: '#10b981' },
+        { bulb: 'yellow', label: 'Mild', color: '#f59e0b' },
+        { bulb: 'yellow', label: 'Elevated', color: '#f97316' },
+        { bulb: 'red', label: 'Clinical', color: '#ef4444' }
+      ];
+      var i = 0;
+      var tlGreen = document.getElementById('tl-green');
+      var tlYellow = document.getElementById('tl-yellow');
+      var tlRed = document.getElementById('tl-red');
+      var tlReadoutDot = document.getElementById('tlReadoutDot');
+      var tlStageLabel = document.getElementById('tlStageLabel');
+      var tlStageIndex = document.getElementById('tlStageIndex');
+      var stageEls = Array.prototype.slice.call(document.querySelectorAll('.traffic-stage'));
+      var protocolInner = document.querySelector('.protocol-inner');
+      var autoTimer = null;
+      function swapText(el, text) {
+        if (el._t1) { clearTimeout(el._t1); el._t1 = null; el.classList.remove('swap-in'); }
+        if (el._t0) { clearTimeout(el._t0); el._t0 = null; }
+        if (el.textContent === text) return;
+        el.classList.add('swap-out');
+        el._t0 = setTimeout(function () {
+          el.classList.remove('swap-out');
+          el.textContent = text;
+          el.classList.add('swap-in');
+          el._t1 = setTimeout(function () {
+            el.classList.remove('swap-in');
+            el._t1 = null;
+          }, 240);
+        }, 220);
+      }
+      function setStage(k) {
+        i = k;
+        var s = stages[k];
+        tlGreen.className = 'tl-bulb' + (k === 0 ? ' on-green' : '');
+        tlYellow.className = 'tl-bulb' + (k === 1 || k === 2 ? ' on-yellow' : '');
+        tlRed.className = 'tl-bulb' + (k === 3 ? ' on-red' : '');
+        tlReadoutDot.style.setProperty('--tier-color', s.color);
+        swapText(tlStageLabel, s.label);
+        swapText(tlStageIndex, 'Tier ' + (k + 1) + '/4 - auto-tiered from 120+ clinical data points');
+        stageEls.forEach(function (el, j) { el.classList.toggle('is-current', j === k); });
+      }
+      function stopAuto() { if (autoTimer) { clearInterval(autoTimer); autoTimer = null; } }
+      function startAuto() { stopAuto(); autoTimer = setInterval(function () { setStage((i + 1) % stages.length); }, 2600); }
+      function pick(k) { stopAuto(); setStage(k); }
+      tlGreen.addEventListener('pointerenter', function () { pick(0); });
+      tlGreen.addEventListener('pointerdown', function () { pick(0); });
+      tlYellow.addEventListener('pointerenter', function () { pick(1); });
+      tlYellow.addEventListener('pointerdown', function () { pick(1); });
+      tlRed.addEventListener('pointerenter', function () { pick(3); });
+      tlRed.addEventListener('pointerdown', function () { pick(3); });
+      stageEls.forEach(function (el, j) {
+        el.addEventListener('pointerenter', function () { pick(j); });
+      });
+      protocolInner.addEventListener('pointerleave', startAuto);
+      protocolInner.addEventListener('focusout', function (e) {
+        if (!protocolInner.contains(e.relatedTarget)) { startAuto(); }
+      });
+      setStage(0);
+      startAuto();
+    })();
+  </script>
 </body>
 </html>

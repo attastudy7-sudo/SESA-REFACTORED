@@ -247,7 +247,9 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
   margin: 0 auto;
 }
 .navbar-brand { display: flex; align-items: center; gap: 10px; }
-.navbar-logo  { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
+.navbar-logo  { width: 36px; height
+  
+  : 36px; border-radius: 50%; object-fit: cover; }
 .navbar-title {
   font-family: var(--font-display);
   font-weight: 600;

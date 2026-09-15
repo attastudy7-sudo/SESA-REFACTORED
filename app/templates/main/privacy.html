@@ -1,482 +1,235 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Privacy Policy – SESA by FOPA Dilligent Consult</title>
-  <meta name="description"
-    content="SESA Privacy Policy — How we protect your personal data under Ghana's Data Protection Act, 2012 (Act 843).">
-  <meta name="robots" content="index, follow">
-  <link rel="canonical" href="{{ request.url_root.rstrip('/') }}{{ request.path }}">
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
-  <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Manrope:wght@400;500;700&display=swap"
-    rel="stylesheet">
-  <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/static/sw.js'); }</script>
-  {% include 'main/_pub_styles.html' %}
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Privacy Policy &ndash; SESA by FOPA Dilligent Consult</title>
+  <meta name="description" content="FOPA Dilligent Consult is committed to protecting your personal data in full compliance with the Ghana Data Protection Act, 2012 (Act 843)." />
+  <meta property="og:title" content="Privacy Policy &ndash; SESA by FOPA Dilligent Consult" />
+  <meta property="og:description" content="FOPA Dilligent Consult is committed to protecting your personal data in full compliance with the Ghana Data Protection Act, 2012 (Act 843)." />
+  <meta property="og:url" content="https://fopaconsult.com/privacy" />
+  <meta property="og:site_name" content="FOPA Dilligent Consult &middot; Ghana" />
+  <meta property="og:locale" content="en_GH" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Privacy Policy &ndash; SESA by FOPA Dilligent Consult" />
+  <meta name="twitter:description" content="FOPA Dilligent Consult is committed to protecting your personal data in full compliance with the Ghana Data Protection Act, 2012 (Act 843)." />
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pub.css') }}" />
   <style>
-    /* ── Privacy / ToS shared inner-page styles ── */
-    .policy-hero {
-      background: var(--f);
-      padding: 120px 32px 72px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .policy-hero-inner {
-      max-width: 860px;
-      margin: 0 auto;
-      position: relative;
-      z-index: 2;
-      text-align: center;
-    }
-
-    .policy-hero-orb {
-      position: absolute;
-      border-radius: 50%;
-      background: var(--g);
-      opacity: .04;
-      pointer-events: none;
-    }
-
-    .policy-hero h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(2.2rem, 5vw, 3.6rem);
-      font-weight: 700;
-      color: var(--iv);
-      line-height: 1.1;
-      margin-bottom: 16px;
-    }
-
-    .policy-hero h1 em {
-      color: var(--g);
-      font-style: italic;
-    }
-
-    .policy-hero-sub {
-      font-size: 1rem;
-      color: rgba(250, 250, 243, .72);
-      line-height: 1.75;
-      max-width: 560px;
-      margin: 0 auto 24px;
-    }
-
-    .policy-hero-date {
-      display: inline-block;
-      font-size: .72rem;
-      font-weight: 700;
-      letter-spacing: .14em;
-      text-transform: uppercase;
-      color: var(--g);
-      margin-bottom: 12px;
-    }
-
-    .policy-hero-nav {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      margin-top: 32px;
-      flex-wrap: wrap;
-    }
-
-    .policy-hero-nav a {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 22px;
-      border-radius: 6px;
-      font-weight: 700;
-      font-size: .9rem;
-      transition: background .2s, transform .15s;
-    }
-
-    .policy-hero-nav a.back-btn {
-      background: rgba(250, 250, 243, .08);
-      border: 1px solid rgba(250, 250, 243, .15);
-      color: var(--iv);
-    }
-
-    .policy-hero-nav a.back-btn:hover {
-      background: rgba(250, 250, 243, .14);
-      transform: translateX(-3px);
-    }
-
-    .policy-hero-nav a.signin-btn {
-      background: var(--g);
-      color: var(--f);
-    }
-
-    .policy-hero-nav a.signin-btn:hover {
-      background: var(--gd);
-      color: #fff;
-      transform: translateY(-2px);
-    }
-
-    .policy-rule {
-      width: 60px;
-      height: 3px;
-      background: var(--g);
-      border-radius: 2px;
-      margin: 36px auto 0;
-    }
-
-    /* Content body */
-    .policy-body {
-      max-width: 860px;
-      margin: 0 auto;
-      padding: 72px 32px 96px;
-    }
-
-    @media (max-width: 600px) {
-      .policy-body {
-        padding: 48px 20px 72px;
-      }
-    }
-
-    .policy-section {
-      margin-bottom: 64px;
-    }
-
-    .policy-section:last-child {
-      margin-bottom: 0;
-    }
-
-    .section-num {
-      font-family: 'Playfair Display', serif;
-      font-size: .75rem;
-      font-weight: 700;
-      color: var(--g);
-      text-transform: uppercase;
-      letter-spacing: .18em;
-      margin-bottom: 10px;
-      display: block;
-    }
-
-    .policy-section h2 {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(1.4rem, 3vw, 2rem);
-      font-weight: 700;
-      color: var(--f);
-      margin-bottom: 20px;
-      line-height: 1.25;
-    }
-
-    .policy-section p,
-    .policy-section li {
-      font-size: .95rem;
-      color: #426652;
-      line-height: 1.85;
-    }
-
-    .policy-section ul {
-      margin: 16px 0 0 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .policy-section li {
-      padding-left: 6px;
-    }
-
-    .policy-section li strong {
-      color: var(--f);
-    }
-
-    .policy-section p+p {
-      margin-top: 14px;
-    }
-
-    /* Highlighted box (alt section) */
-    .policy-section--alt {
-      background: var(--sl);
-      border-left: 4px solid var(--g);
-      border-radius: 0 12px 12px 0;
-      padding: 36px 40px;
-      margin-left: 0;
-    }
-
-    @media (max-width: 600px) {
-      .policy-section--alt {
-        padding: 28px 24px;
-      }
-    }
-
-    /* Dark inset (rights section) */
-    .policy-section--dark {
-      background: var(--f);
-      border-radius: 16px;
-      padding: 48px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    @media (max-width: 600px) {
-      .policy-section--dark {
-        padding: 32px 24px;
-      }
-    }
-
-    .policy-section--dark h2 {
-      color: var(--iv);
-    }
-
-    .policy-section--dark p,
-    .policy-section--dark li {
-      color: rgba(250, 250, 243, .75);
-    }
-
-    .policy-section--dark li strong {
-      color: var(--g);
-    }
-
-    .policy-section--dark .section-num {
-      color: var(--g);
-    }
-
-    .rights-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 32px;
-      margin-top: 28px;
-    }
-
-    @media (max-width: 680px) {
-      .rights-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .right-card {
-      background: rgba(250, 250, 243, .06);
-      border: 1px solid rgba(250, 250, 243, .1);
-      border-radius: 10px;
-      padding: 24px;
-    }
-
-    .right-card i {
-      color: var(--g);
-      font-size: 1.2rem;
-      margin-bottom: 12px;
-      display: block;
-    }
-
-    .right-card h4 {
-      font-family: 'Playfair Display', serif;
-      font-size: 1rem;
-      color: var(--iv);
-      margin-bottom: 8px;
-      font-weight: 700;
-    }
-
-    .right-card p {
-      font-size: .82rem;
-      color: rgba(250, 250, 243, .65);
-      line-height: 1.65;
-    }
-
-    .dark-orb {
-      position: absolute;
-      border-radius: 50%;
-      background: var(--g);
-      opacity: .04;
-      pointer-events: none;
-    }
-
-    .contact-box {
-      margin-top: 36px;
-      background: rgba(250, 250, 243, .08);
-      border: 1px solid rgba(197, 160, 89, .25);
-      border-radius: 10px;
-      padding: 28px 32px;
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
-
-    .contact-box i {
-      color: var(--g);
-      font-size: 1.4rem;
-      flex-shrink: 0;
-    }
-
-    .contact-box div p {
-      font-size: .85rem;
-      color: rgba(250, 250, 243, .6);
-      margin-bottom: 4px;
-    }
-
-    .contact-box div a {
-      color: var(--g);
-      font-weight: 700;
-      font-size: .95rem;
-    }
-
-    .contact-box div a:hover {
-      text-decoration: underline;
-    }
-
-    /* divider */
-    .policy-divider {
-      height: 1px;
-      background: rgba(2, 40, 24, .08);
-      margin: 0 0 64px;
-    }
-
-    .policy-divider--gold {
-      background: var(--g);
-      opacity: .25;
-    }
+    /* ---------- Legal-only styles (not in shared sheet) ---------- */
+    .prose { margin-top: 40px; max-width: 42rem; color: var(--ink-60); }
+    .prose p + p { margin-top: 24px; }
+    .legal-date { margin-top: 24px; font-size: 14px; line-height: 20px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-60); }
+    .legal-list { margin-top: 0; max-width: 48rem; color: var(--ink-60); }
+    .legal-list p + p { margin-top: 16px; }
+    .ticks { margin-top: 16px; }
+    .ticks li { position: relative; padding-left: 20px; margin-top: 10px; color: var(--ink-60); }
+    .ticks li::before { content: ""; position: absolute; left: 0; top: 9px; width: 6px; height: 6px; border-radius: 50%; background: var(--brand); }
+    .ticks li strong { color: var(--ink); font-weight: 600; }
   </style>
+  <link rel="canonical" href="{{ request.url_root.rstrip('/') }}{{ request.path }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <meta name="theme-color" content="#022818">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="SESA">
+  <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/static/sw.js');}</script>
 </head>
-
 <body>
+
+  <a class="skip-link" href="#main">Skip to main content</a>
 
   {% include 'main/_pub_nav.html' %}
 
-  <!-- ═══ PAGE HERO ═══ -->
-  <section class="policy-hero">
-    <div class="policy-hero-orb" style="width:600px;height:600px;top:-200px;right:-200px;"></div>
-    <div class="policy-hero-orb" style="width:400px;height:400px;bottom:-180px;left:-120px;"></div>
-    <div class="policy-hero-inner">
-      <span class="policy-hero-date">Effective Date: March 2026</span>
-      <h1>Privacy <em>Policy</em></h1>
-      <p class="policy-hero-sub">FOPA Dilligent Consult is committed to protecting your personal data in full compliance
-        with the Ghana Data Protection Act, 2012 (Act 843).</p>
-      <div class="policy-rule"></div>
-      <div class="policy-hero-nav">
-        <a onclick="history.back(); return false;" href="{{ url_for('main.landing') }}" class="back-btn">
-          <i class="fa-solid fa-arrow-left"></i> Go Back
-        </a>
-        <a href="{{ url_for('auth.login') }}" class="signin-btn">
-          Sign In <i class="fa-solid fa-arrow-right"></i>
-        </a>
-      </div>
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg class="pattern pattern--hero" aria-hidden="true">
+        <rect width="100%" height="100%" fill="url(#grid-a)" stroke-width="0"></rect>
+        <svg x="50%" y="-96" stroke-width="0" style="overflow:visible">
+          <path transform="translate(64 160)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(128 320)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(288 480)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(512 320)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(544 640)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(320 800)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+        </svg>
+        <defs>
+          <pattern id="grid-a" width="96" height="480" x="50%" patternUnits="userSpaceOnUse" patternTransform="translate(0 -96)" fill="none">
+            <path d="M128 0 98.572 147.138A16 16 0 0 1 82.883 160H13.117a16 16 0 0 0-15.69 12.862l-26.855 134.276A16 16 0 0 1-45.117 320H-116M64-160 34.572-12.862A16 16 0 0 1 18.883 0h-69.766a16 16 0 0 0-15.69 12.862l-26.855 134.276A16 16 0 0 1-109.117 160H-180M192 160l-29.428 147.138A15.999 15.999 0 0 1 146.883 320H77.117a16 16 0 0 0-15.69 12.862L34.573 467.138A16 16 0 0 1 18.883 480H-52M-136 480h58.883a16 16 0 0 0 15.69-12.862l26.855-134.276A16 16 0 0 1-18.883 320h69.766a16 16 0 0 0 15.69-12.862l26.855-134.276A16 16 0 0 1 109.117 160H192M-72 640h58.883a16 16 0 0 0 15.69-12.862l26.855-134.276A16 16 0 0 1 45.117 480h69.766a15.999 15.999 0 0 0 15.689-12.862l26.856-134.276A15.999 15.999 0 0 1 173.117 320H256M-200 320h58.883a15.999 15.999 0 0 0 15.689-12.862l26.856-134.276A16 16 0 0 1-82.883 160h69.766a16 16 0 0 0 15.69-12.862L29.427 12.862A16 16 0 0 1 45.117 0H128"></path>
+          </pattern>
+        </defs>
+      </svg>
+
+      <main id="main">
+
+        <!-- Privacy hero -->
+        <section class="hero container">
+          <div class="inner">
+            <div data-fade>
+              <h1>
+                <span class="eyebrow">Legal</span>
+                <span class="sr-only"> - </span>
+                <span class="display">Privacy Policy</span>
+              </h1>
+              <p class="legal-date">Effective Date: March 2026</p>
+              <div class="prose">
+                <p>FOPA Dilligent Consult is committed to protecting your personal data in full compliance with the Ghana Data Protection Act, 2012 (Act 843).</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Privacy sections -->
+        <section class="services-body container">
+          <div class="inner">
+            <div class="legal-list" data-fade-group>
+              <ul>
+                <li class="service">
+                  <div data-fade>
+                    <div class="service-rule">
+                      <strong>01 &mdash; Information We Collect. </strong>At SESA, we collect and process personal data based on explicit consent provided during account registration. We only collect what is necessary to deliver the platform&rsquo;s services safely and effectively.
+                      <ul class="ticks">
+                        <li><strong>Registration Data:</strong> Name, username, email address, date of birth, gender, and school details.</li>
+                        <li><strong>Health &amp; Assessment Data:</strong> Responses to psychological assessments and the AI-generated or counsellor-provided clinical feedback associated with your scores.</li>
+                        <li><strong>Professional Data (Counsellors only):</strong> National ID numbers (Ghana Card) and professional certification details.</li>
+                        <li><strong>Technical Data:</strong> IP addresses and browser session metadata collected automatically to maintain platform security.</li>
+                      </ul>
+                    </div>
+                  </div>
+                </li>
+                <li class="service">
+                  <div data-fade>
+                    <div class="service-rule">
+                      <strong>02 &mdash; Functional Usage. </strong>The information collected is strictly used for the following core purposes: operating and maintaining the SESA platform; calculating mental health assessment scores to provide context-aware, personalised clinical feedback; enabling authorised school administrators and verified counsellors to support students identified at elevated or clinical risk; ensuring secure communication channels between counsellors and students; and maintaining audit trails of authorised data access for accountability.
+                    </div>
+                  </div>
+                </li>
+                <li class="service">
+                  <div data-fade>
+                    <div class="service-rule">
+                      <strong>03 &mdash; Security Standards. </strong>We implement robust, industry-standard security safeguards at every layer:
+                      <ul class="ticks">
+                        <li><strong>Encryption at Rest:</strong> Highly sensitive health data and National IDs are encrypted at rest using Fernet symmetric encryption.</li>
+                        <li><strong>Password Hashing:</strong> All passwords are irreversibly hashed using PBKDF2 &mdash; they are never stored in plain text.</li>
+                        <li><strong>Audit Logging:</strong> All system and clinical events are securely logged to maintain accountability without exposing sensitive payload content.</li>
+                        <li><strong>Access Controls:</strong> Data is accessible only to the specific role authorised to view it.</li>
+                      </ul>
+                    </div>
+                  </div>
+                </li>
+                <li class="service">
+                  <div data-fade>
+                    <div class="service-rule">
+                      <strong>04 &mdash; Retention Policy. </strong>We only retain your personal data for as long as necessary to fulfil the operational purposes outlined in this policy. Inactive accounts that have not been accessed for five (5) consecutive years are automatically and permanently purged. You may also request deletion at any time through your Account Settings.
+                    </div>
+                  </div>
+                </li>
+                <li class="service">
+                  <div data-fade>
+                    <div class="service-rule">
+                      <strong>05 &mdash; Data Subject Rights. </strong>Under Ghana&rsquo;s Data Protection Act, you retain full control over your personal data, exercisable at any time through your Account Settings:
+                      <ul class="ticks">
+                        <li><strong>Right to Access:</strong> Review your assessment history and results at any time from your personal dashboard.</li>
+                        <li><strong>Right to Portability:</strong> Export a full, machine-readable JSON copy of your personal data and complete assessment history.</li>
+                        <li><strong>Right to Rectification:</strong> Contact your school administrator or our team to correct inaccurate data held on your account.</li>
+                        <li><strong>Right to Erasure:</strong> Permanently delete your account and withdraw consent for further processing at any time.</li>
+                      </ul>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="prose" data-fade>
+              <p><strong style="color:var(--ink)">Data Protection enquiries &mdash; FOPA Dilligent Consult:</strong> <a href="mailto:info@fopaconsult.com" style="color:var(--brand)">info@fopaconsult.com</a>. Also see our <a href="{{ url_for('main.terms') }}" style="color:var(--brand)">Terms of Service</a>.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="band-head container">
+          <div class="inner">
+            <div class="cta-panel" data-fade>
+              <div class="cta-copy">
+                <div class="cta-block">
+                  <h2>Every Student Deserves to Be Understood</h2>
+                  <p class="cta-p">Ghana&#x27;s schools are full of students silently struggling. SESA gives your school the tools to see what grades can&#x27;t show &mdash; and act before it&#x27;s too late.</p>
+                  <div class="cta-actions">
+                    <a class="btn btn-light" href="{{ url_for('auth.school_signup') }}"><span>Register My School</span></a>
+                    <a class="btn btn-outline-light" href="{{ url_for('auth.login') }}"><span>Student Sign In</span></a>
+                  </div>
+                  <div class="cta-contact">
+                    <ul>
+                      <li>
+                        <address>
+                          <strong>Location</strong>
+                          <br />Accra, Ghana
+                        </address>
+                      </li>
+                      <li>
+                        <address>
+                          <strong>Email</strong>
+                          <br />
+                          <a href="mailto:info@fopaconsult.com">info@fopaconsult.com</a>
+                        </address>
+                      </li>
+                      <li>
+                        <address>
+                          <strong>New to SESA?</strong>
+                          <br />
+                          <a href="{{ url_for('main.school_guide') }}">Read the School Guide &rarr;</a>
+                        </address>
+                      </li>
+                    </ul>
+                    <div class="cta-links">
+                      <p class="cta-links-title">Explore</p>
+                      <ul>
+                        <li><a href="{{ url_for('main.about') }}">About Us</a></li>
+                        <li><a href="{{ url_for('main.gallery') }}">Gallery</a></li>
+                        <li><a href="{{ url_for('main.school_guide') }}">School Guide</a></li>
+                        <li><a href="{{ url_for('main.assessment_details') }}">SESA Methodology</a></li>
+                        <li><a href="{{ url_for('main.contact') }}">Contact</a></li>
+                        <li><a href="{{ url_for('main.privacy') }}">Privacy Policy</a></li>
+                        <li><a href="{{ url_for('main.terms') }}">Terms of Service</a></li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+      {% include 'main/_pub_footer.html' %}
     </div>
-  </section>
+  </div>
 
-  <!-- ═══ POLICY CONTENT ═══ -->
-  <section style="background: var(--iv);">
-    <div class="policy-body">
-
-      <div class="policy-section">
-        <span class="section-num">01 — Information We Collect</span>
-        <h2>What Data We Hold</h2>
-        <p>At SESA, we collect and process personal data based on explicit consent provided during account registration.
-          We only collect what is necessary to deliver the platform's services safely and effectively.</p>
-        <ul>
-          <li><strong>Registration Data:</strong> Name, username, email address, date of birth, gender, and school
-            details.</li>
-          <li><strong>Health &amp; Assessment Data:</strong> Responses to psychological assessments and the AI-generated
-            or counsellor-provided clinical feedback associated with your scores.</li>
-          <li><strong>Professional Data (Counsellors only):</strong> National ID numbers (Ghana Card) and professional
-            certification details.</li>
-          <li><strong>Technical Data:</strong> IP addresses and browser session metadata collected automatically to
-            maintain platform security.</li>
-        </ul>
-      </div>
-
-      <div class="policy-divider"></div>
-
-      <div class="policy-section policy-section--alt">
-        <span class="section-num">02 — Functional Usage</span>
-        <h2>How We Use Your Information</h2>
-        <p>The information collected is strictly used for the following core purposes:</p>
-        <ul>
-          <li>Operating and maintaining the SESA platform effectively.</li>
-          <li>Calculating mental health assessment scores to provide context-aware, personalised clinical feedback.</li>
-          <li>Enabling authorised school administrators and verified counsellors to support students identified at
-            elevated or clinical risk.</li>
-          <li>Ensuring secure communication channels between counsellors and students.</li>
-          <li>Maintaining audit trails of authorised data access for accountability.</li>
-        </ul>
-      </div>
-
-      <div class="policy-divider" style="margin-top: 64px;"></div>
-
-      <div class="policy-section">
-        <span class="section-num">03 — Security Standards</span>
-        <h2>How We Protect Your Data</h2>
-        <p>We implement robust, industry-standard security safeguards to protect your data at every layer:</p>
-        <ul>
-          <li><strong>Encryption at Rest:</strong> Highly sensitive health data (clinical feedback) and National IDs are
-            encrypted at rest using Fernet symmetric encryption.</li>
-          <li><strong>Password Hashing:</strong> All passwords are irreversibly hashed using PBKDF2 — they are never
-            stored in plain text.</li>
-          <li><strong>Audit Logging:</strong> All system and clinical events are securely logged to maintain
-            accountability and track authorised actions without exposing sensitive payload content.</li>
-          <li><strong>Access Controls:</strong> Data is accessible only to the specific role authorised to view it
-            (e.g., a student's results are not visible to other students).</li>
-        </ul>
-      </div>
-
-      <div class="policy-divider"></div>
-
-      <div class="policy-section">
-        <span class="section-num">04 — Retention Policy</span>
-        <h2>How Long We Keep It</h2>
-        <p>We only retain your personal data for as long as necessary to fulfill the operational purposes outlined in
-          this policy. In accordance with the data minimality principles of the Ghana Data Protection Act 2012 (Act
-          843):</p>
-        <p>Inactive accounts that have not been accessed for <strong>five (5) consecutive years</strong> are
-          automatically and permanently purged from our systems. You may also request deletion at any time through your
-          Account Settings.</p>
-      </div>
-
-      <div class="policy-divider"></div>
-
-      <!-- Dark rights section -->
-      <div class="policy-section policy-section--dark">
-        <div class="dark-orb" style="width:500px;height:500px;top:-200px;right:-150px;"></div>
-        <span class="section-num">05 — Data Subject Rights</span>
-        <h2>Your Rights Under Act 843</h2>
-        <p>Under Ghana's Data Protection Act, you inherently retain full control over your personal data on the SESA
-          platform. These rights are exercisable at any time through your <strong style="color:var(--g);">Account
-            Settings</strong>.</p>
-        <div class="rights-grid">
-          <div class="right-card">
-            <i class="fa-solid fa-eye"></i>
-            <h4>Right to Access</h4>
-            <p>Review your assessment history and results at any time from your personal dashboard.</p>
-          </div>
-          <div class="right-card">
-            <i class="fa-solid fa-file-export"></i>
-            <h4>Right to Portability</h4>
-            <p>Export a full, machine-readable JSON copy of your personal data and complete assessment history.</p>
-          </div>
-          <div class="right-card">
-            <i class="fa-solid fa-pen-to-square"></i>
-            <h4>Right to Rectification</h4>
-            <p>Contact your school administrator or our team to correct inaccurate data held on your account.</p>
-          </div>
-          <div class="right-card">
-            <i class="fa-solid fa-trash-can"></i>
-            <h4>Right to Erasure</h4>
-            <p>Permanently delete your account and withdraw consent for further processing of your data at any time.</p>
-          </div>
-        </div>
-        <div class="contact-box">
-          <i class="fa-solid fa-shield-halved"></i>
-          <div>
-            <p>Data Protection enquiries — FOPA Dilligent Consult</p>
-            <a href="mailto:info@fopaconsult.com">info@fopaconsult.com</a>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  {% include 'main/_pub_footer.html' %}
-
+  <script>
+    (function () {
+      var faders = document.querySelectorAll('[data-fade]');
+      if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('fade-in');
+              io.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+        faders.forEach(function (el) {
+          var group = el.closest('[data-fade-group]');
+          if (group) {
+            var siblings = Array.prototype.slice.call(group.querySelectorAll('[data-fade]'));
+            var idx = siblings.indexOf(el);
+            el.style.transitionDelay = Math.min(idx * 90, 450) + 'ms';
+          }
+          io.observe(el);
+        });
+      } else {
+        faders.forEach(function (el) { el.classList.add('fade-in'); });
+      }
+    })();
+  </script>
 </body>
-
 </html>

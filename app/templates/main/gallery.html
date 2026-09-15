@@ -1,181 +1,334 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gallery – SESA by FOPA Dilligent Consult</title>
-  <meta name="description" content="Browse our collection of images and videos from SESA events and activities.">
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/main/gallery.css') }}">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gallery &ndash; SESA by FOPA Dilligent Consult</title>
+  <meta name="description" content="Browse our collection of images and videos from SESA events and activities." />
+  <meta property="og:title" content="Gallery &ndash; SESA by FOPA Dilligent Consult" />
+  <meta property="og:description" content="Browse our collection of images and videos from SESA events and activities." />
+  <meta property="og:url" content="https://fopaconsult.com/gallery" />
+  <meta property="og:site_name" content="FOPA Dilligent Consult &middot; Ghana" />
+  <meta property="og:locale" content="en_GH" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Gallery &ndash; SESA by FOPA Dilligent Consult" />
+  <meta name="twitter:description" content="Browse our collection of images and videos from SESA events and activities." />
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pub.css') }}" />
+  <style>
+    /* ---------- Gallery-only styles (not in shared sheet) ---------- */
+    .gallery-grid { margin-top: 64px; columns: 3; column-gap: 24px; }
+    @media (max-width: 900px) { .gallery-grid { columns: 2; column-gap: 16px; } }
+    @media (max-width: 560px) { .gallery-grid { columns: 1; } }
+    .g-item {
+      position: relative;
+      break-inside: avoid;
+      margin-bottom: 24px;
+      border-radius: 20px;
+      overflow: hidden;
+      background: var(--ink-05);
+      box-shadow: 0 2px 16px rgba(2,40,24,0.06);
+      cursor: zoom-in;
+      transition: transform .25s cubic-bezier(.4,1,.6,1), box-shadow .25s;
+    }
+    .g-item:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(2,40,24,0.12); }
+    .g-item img, .g-item video { width: 100%; height: auto; display: block; object-fit: cover; transition: transform .35s cubic-bezier(.4,1,.6,1), filter .35s; }
+    .g-item:hover img { transform: scale(1.03); filter: brightness(1.05) saturate(1.08); }
+    .g-skel { position: absolute; inset: 0; background: #f0f0ec; }
+    /* ---------- Lightbox overlay ---------- */
+    .g-overlay {
+      position: fixed; inset: 0; z-index: 10000;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(10,10,10,0.85);
+      backdrop-filter: blur(12px);
+    }
+    .g-overlay[hidden] { display: none; }
+    .g-overlay-bg { position: absolute; inset: 0; }
+    .g-overlay-figure { position: relative; z-index: 2; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .g-overlay-img { position: relative; z-index: 2; max-width: 90vw; max-height: 90vh; object-fit: contain; box-shadow: 0 8px 40px rgba(0,0,0,0.5); border-radius: 12px; background: transparent; }
+    .g-overlay-caption { margin-top: 18px; color: #fff; font-size: 1.1rem; background: rgba(10,10,10,0.45); padding: 10px 28px; border-radius: 8px; max-width: 80vw; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.18); }
+    .g-overlay-caption:empty { display: none; }
+    .g-overlay-close {
+      position: absolute; top: 32px; right: 48px; z-index: 3;
+      font-size: 2.5rem; color: #fff; background: none; border: none;
+      cursor: pointer; padding: 0 12px; opacity: 0.85; transition: opacity 0.2s;
+    }
+    .g-overlay-close:hover { opacity: 1; }
+    .g-overlay-nav {
+      position: absolute; top: 50%; transform: translateY(-50%); z-index: 3;
+      font-size: 2.5rem; color: #fff; background: none; border: none;
+      cursor: pointer; padding: 0 18px; opacity: 0.85; transition: opacity 0.2s; user-select: none;
+    }
+    .g-overlay-prev { left: 24px; }
+    .g-overlay-next { right: 24px; }
+    .g-overlay-nav:hover { opacity: 1; }
+    .g-overlay-error {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      color: #fff; background: rgba(120,0,0,0.8); padding: 18px 32px;
+      border-radius: 10px; font-size: 1.2rem; z-index: 10;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+    }
+    .g-overlay-error[hidden] { display: none; }
+  </style>
+  <link rel="canonical" href="{{ request.url_root.rstrip('/') }}{{ request.path }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
   <meta name="theme-color" content="#022818">
-
-  <!-- Ensure public navigation styles are loaded last -->
-  {% include 'main/_pub_styles.html' %}
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="SESA">
+  <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/static/sw.js');}</script>
 </head>
-<body class="gallery-page" data-hero="dark">
+<body>
 
-{% include 'main/_pub_nav.html' %}
+  <a class="skip-link" href="#main">Skip to main content</a>
 
+  {% include 'main/_pub_nav.html' %}
 
-<section class="pub-section">
-  <div class="s-wrap">
-    <div class="gallery-container">
-      <h1 class="gallery-title">Our <em style="color:var(--g);font-style:italic;">Gallery</em>.</h1>
-      <p class="gallery-desc">Browse our collection of images and videos from SESA events and activities.</p>
+  <div class="sheet">
+    <div class="sheet-inner">
+      <svg class="pattern pattern--hero" aria-hidden="true">
+        <rect width="100%" height="100%" fill="url(#grid-a)" stroke-width="0"></rect>
+        <svg x="50%" y="-96" stroke-width="0" style="overflow:visible">
+          <path transform="translate(64 160)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(128 320)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(288 480)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(512 320)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(544 640)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+          <path transform="translate(320 800)" d="M45.119 4.5a11.5 11.5 0 0 0-11.277 9.245l-25.6 128C6.82 148.861 12.262 155.5 19.52 155.5h63.366a11.5 11.5 0 0 0 11.277-9.245l25.6-128c1.423-7.116-4.02-13.755-11.277-13.755H45.119Z"></path>
+        </svg>
+        <defs>
+          <pattern id="grid-a" width="96" height="480" x="50%" patternUnits="userSpaceOnUse" patternTransform="translate(0 -96)" fill="none">
+            <path d="M128 0 98.572 147.138A16 16 0 0 1 82.883 160H13.117a16 16 0 0 0-15.69 12.862l-26.855 134.276A16 16 0 0 1-45.117 320H-116M64-160 34.572-12.862A16 16 0 0 1 18.883 0h-69.766a16 16 0 0 0-15.69 12.862l-26.855 134.276A16 16 0 0 1-109.117 160H-180M192 160l-29.428 147.138A15.999 15.999 0 0 1 146.883 320H77.117a16 16 0 0 0-15.69 12.862L34.573 467.138A16 16 0 0 1 18.883 480H-52M-136 480h58.883a16 16 0 0 0 15.69-12.862l26.855-134.276A16 16 0 0 1-18.883 320h69.766a16 16 0 0 0 15.69-12.862l26.855-134.276A16 16 0 0 1 109.117 160H192M-72 640h58.883a16 16 0 0 0 15.69-12.862l26.855-134.276A16 16 0 0 1 45.117 480h69.766a15.999 15.999 0 0 0 15.689-12.862l26.856-134.276A15.999 15.999 0 0 1 173.117 320H256M-200 320h58.883a15.999 15.999 0 0 0 15.689-12.862l26.856-134.276A16 16 0 0 1-82.883 160h69.766a16 16 0 0 0 15.69-12.862L29.427 12.862A16 16 0 0 1 45.117 0H128"></path>
+          </pattern>
+        </defs>
+      </svg>
 
-      {% set captions = [
-        'Students collaborating on a group assignment',
-        'Active classroom discussion during SESA session',
-        'Hands-on learning with educational materials',
-        'School assembly for SESA program launch',
-        'Interactive quiz session in progress',
-        'Counsellor guiding students through assessment',
-        'Students using SESA digital resources',
-        'Teamwork and peer learning in action',
-        'Celebrating academic achievements',
-        'Engaged learners exploring new concepts',
-        'SESA workshop for teachers and staff',
-        'Motivational talk by guest speaker',
-        'Students preparing for national exams',
-        'Outdoor learning activity',
-        'School leadership addressing students',
-        'Classroom technology demonstration',
-        'Student feedback session',
-        'Award ceremony for top performers',
-        'Group study session',
-        'SESA onboarding for new schools'
-      ] %}
+      <main id="main">
 
-      <div class="gallery-grid">
-        {% for col in range(3) %}
-        <div class="gallery-col">
-          {% for file in gallery_files %}
-            {% if loop.index0 % 3 == col %}
-              {% set idx = loop.index0 %}
-              <div class="gallery-item">
-                {% if file.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')) %}
-                  <span class="gallery-skeleton"></span>
-                  <img src="{{ url_for('static', filename='gallery/' + file) }}" alt="Gallery Image" data-index="{{ idx }}" data-caption="{{ captions[idx % captions|length] }}">
-                {% elif file.lower().endswith(('.mp4', '.webm', '.ogg')) %}
-                  <video controls preload="metadata">
-                    <source src="{{ url_for('static', filename='gallery/' + file) }}">
-                    Your browser does not support the video tag.
-                  </video>
-                  <span class="gallery-skeleton"></span>
-                {% endif %}
+        <!-- Gallery hero -->
+        <section class="hero container">
+          <div class="inner">
+            <div data-fade>
+              <h1>
+                <span class="eyebrow">Our Engagements</span>
+                <span class="sr-only"> - </span>
+                <span class="display">Moments from the Field</span>
+              </h1>
+              <p class="lede">Browse our collection of images and videos from SESA events and activities across Ghanaian schools.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Gallery grid -->
+        <section class="services-body container">
+          <div class="inner">
+            <div class="gallery-grid" data-fade-group>
+              <div class="g-item" data-fade><span class="g-skel"></span><img src="{{ url_for('static', filename='gallery/gal-01.jpg') }}" alt="Students collaborating on a group assignment" loading="lazy" decoding="async" data-caption="Students collaborating on a group assignment" /></div>
+              <div class="g-item" data-fade><span class="g-skel"></span><img src="{{ url_for('static', filename='gallery/gal-02.jpg') }}" alt="Active classroom discussion during SESA session" loading="lazy" decoding="async" data-caption="Active classroom discussion during SESA session" /></div>
+              <div class="g-item" data-fade><span class="g-skel"></span><img src="{{ url_for('static', filename='gallery/gal-03.jpg') }}" alt="Hands-on learning with educational materials" loading="lazy" decoding="async" data-caption="Hands-on learning with educational materials" /></div>
+              <div class="g-item" data-fade><span class="g-skel"></span><img src="{{ url_for('static', filename='gallery/gal-04.jpg') }}" alt="School assembly for SESA program launch" loading="lazy" decoding="async" data-caption="School assembly for SESA program launch" /></div>
+              <div class="g-item" data-fade><span class="g-skel"></span><img src="{{ url_for('static', filename='gallery/gal-05.jpg') }}" alt="Interactive quiz session in progress" loading="lazy" decoding="async" data-caption="Interactive quiz session in progress" /></div>
+              <div class="g-item" data-fade><span class="g-skel"></span><img src="{{ url_for('static', filename='gallery/gal-06.jpg') }}" alt="Counsellor guiding students through assessment" loading="lazy" decoding="async" data-caption="Counsellor guiding students through assessment" /></div>
+              <div class="g-item" data-fade><span class="g-skel"></span><img src="{{ url_for('static', filename='gallery/gal-07.jpg') }}" alt="Students using SESA digital resources" loading="lazy" decoding="async" data-caption="Students using SESA digital resources" /></div>
+              <div class="g-item" data-fade><span class="g-skel"></span><img src="{{ url_for('static', filename='gallery/gal-08.jpg') }}" alt="Teamwork and peer learning in action" loading="lazy" decoding="async" data-caption="Teamwork and peer learning in action" /></div>
+              <div class="g-item" data-fade><span class="g-skel"></span><img src="{{ url_for('static', filename='gallery/gal-09.jpg') }}" alt="Celebrating academic achievements" loading="lazy" decoding="async" data-caption="Celebrating academic achievements" /></div>
+              <div class="g-item" data-fade><span class="g-skel"></span><img src="{{ url_for('static', filename='gallery/gal-10.jpg') }}" alt="Engaged learners exploring new concepts" loading="lazy" decoding="async" data-caption="Engaged learners exploring new concepts" /></div>
+              <div class="g-item" data-fade><span class="g-skel"></span><img src="{{ url_for('static', filename='gallery/gal-11.jpg') }}" alt="SESA workshop for teachers and staff" loading="lazy" decoding="async" data-caption="SESA workshop for teachers and staff" /></div>
+              <div class="g-item" data-fade><span class="g-skel"></span><img src="{{ url_for('static', filename='gallery/gal-12.jpg') }}" alt="Motivational talk by guest speaker" loading="lazy" decoding="async" data-caption="Motivational talk by guest speaker" /></div>
+              <div class="g-item" data-fade><span class="g-skel"></span><img src="{{ url_for('static', filename='gallery/gal-13.jpg') }}" alt="Students preparing for national exams" loading="lazy" decoding="async" data-caption="Students preparing for national exams" /></div>
+              <div class="g-item" data-fade><span class="g-skel"></span><img src="{{ url_for('static', filename='gallery/gal-14.jpg') }}" alt="Outdoor learning activity" loading="lazy" decoding="async" data-caption="Outdoor learning activity" /></div>
+              <div class="g-item" data-fade><span class="g-skel"></span><img src="{{ url_for('static', filename='gallery/gal-15.jpg') }}" alt="School leadership addressing students" loading="lazy" decoding="async" data-caption="School leadership addressing students" /></div>
+              <div class="g-item" data-fade><span class="g-skel"></span><img src="{{ url_for('static', filename='gallery/gal-16.jpg') }}" alt="Classroom technology demonstration" loading="lazy" decoding="async" data-caption="Classroom technology demonstration" /></div>
+              <div class="g-item" data-fade><span class="g-skel"></span><img src="{{ url_for('static', filename='gallery/gal-17.jpg') }}" alt="Student feedback session" loading="lazy" decoding="async" data-caption="Student feedback session" /></div>
+              <div class="g-item" data-fade><span class="g-skel"></span><img src="{{ url_for('static', filename='gallery/gal-18.jpg') }}" alt="Award ceremony for top performers" loading="lazy" decoding="async" data-caption="Award ceremony for top performers" /></div>
+              <div class="g-item" data-fade><span class="g-skel"></span><img src="{{ url_for('static', filename='gallery/gal-19.jpg') }}" alt="Group study session" loading="lazy" decoding="async" data-caption="Group study session" /></div>
+              <div class="g-item" data-fade><span class="g-skel"></span><img src="{{ url_for('static', filename='gallery/gal-20.jpg') }}" alt="SESA onboarding for new schools" loading="lazy" decoding="async" data-caption="SESA onboarding for new schools" /></div>
+              <div class="g-item" data-fade><span class="g-skel"></span><video controls preload="metadata"><source src="{{ url_for('static', filename='gallery/vid-01.mp4') }}" />Your browser does not support the video tag.</video></div>
+              <div class="g-item" data-fade><span class="g-skel"></span><video controls preload="metadata"><source src="{{ url_for('static', filename='gallery/vid-02.mp4') }}" />Your browser does not support the video tag.</video></div>
+              <div class="g-item" data-fade><span class="g-skel"></span><video controls preload="metadata"><source src="{{ url_for('static', filename='gallery/VID-20260812-WA0001.mp4') }}" />Your browser does not support the video tag.</video></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="band-head container">
+          <div class="inner">
+            <div class="cta-panel" data-fade>
+              <div class="cta-copy">
+                <div class="cta-block">
+                  <h2>Every Student Deserves to Be Understood</h2>
+                  <p class="cta-p">Ghana&#x27;s schools are full of students silently struggling. SESA gives your school the tools to see what grades can&#x27;t show &mdash; and act before it&#x27;s too late.</p>
+                  <div class="cta-actions">
+                    <a class="btn btn-light" href="{{ url_for('auth.school_signup') }}"><span>Register My School</span></a>
+                    <a class="btn btn-outline-light" href="{{ url_for('auth.login') }}"><span>Student Sign In</span></a>
+                  </div>
+                  <div class="cta-contact">
+                    <ul>
+                      <li>
+                        <address>
+                          <strong>Location</strong>
+                          <br />Accra, Ghana
+                        </address>
+                      </li>
+                      <li>
+                        <address>
+                          <strong>Email</strong>
+                          <br />
+                          <a href="mailto:info@fopaconsult.com">info@fopaconsult.com</a>
+                        </address>
+                      </li>
+                      <li>
+                        <address>
+                          <strong>New to SESA?</strong>
+                          <br />
+                          <a href="{{ url_for('main.school_guide') }}">Read the School Guide &rarr;</a>
+                        </address>
+                      </li>
+                    </ul>
+                    <div class="cta-links">
+                      <p class="cta-links-title">Explore</p>
+                      <ul>
+                        <li><a href="{{ url_for('main.about') }}">About Us</a></li>
+                        <li><a href="{{ url_for('main.gallery') }}">Gallery</a></li>
+<li><a href="{{ url_for('main.school_guide') }}">School Guide</a></li>
+                        <li><a href="{{ url_for('main.assessment_details') }}">SESA Methodology</a></li>
+                        <li><a href="{{ url_for('main.contact') }}">Contact</a></li>
+                        <li><a href="{{ url_for('main.privacy') }}">Privacy Policy</a></li>
+                        <li><a href="{{ url_for('main.terms') }}">Terms of Service</a></li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
               </div>
-            {% endif %}
-          {% endfor %}
-        </div>
-        {% endfor %}
-      </div>
-
-      {% if not gallery_files %}
-        <p style="text-align:center;color:var(--gray-500);padding:64px 0;">No gallery items found.</p>
-      {% endif %}
-
-      <!-- Overlay Image Player -->
-      <div id="imageOverlay" class="image-overlay" style="display:none;" tabindex="-1" aria-modal="true" role="dialog">
-        <div class="image-overlay-bg"></div>
-        <button class="image-overlay-close" aria-label="Close" tabindex="0">&times;</button>
-        <button class="image-overlay-nav image-overlay-prev" aria-label="Previous image" tabindex="0">&#10094;</button>
-        <figure class="image-overlay-figure">
-          <img id="overlayImage" class="image-overlay-img" src="" alt="Gallery Image">
-          <figcaption id="overlayCaption" class="image-overlay-caption"></figcaption>
-        </figure>
-        <button class="image-overlay-nav image-overlay-next" aria-label="Next image" tabindex="0">&#10095;</button>
-        <div id="overlayError" class="image-overlay-error" style="display:none;">Image failed to load.</div>
-      </div>
+            </div>
+          </div>
+        </section>
+      </main>
+      {% include 'main/_pub_footer.html' %}
     </div>
   </div>
-</section>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  document.querySelectorAll('.gallery-item').forEach(function(item) {
-    const img = item.querySelector('img');
-    const video = item.querySelector('video');
-    const skeleton = item.querySelector('.gallery-skeleton');
-    if (img) {
-      img.addEventListener('load', function() { if (skeleton) skeleton.style.display = 'none'; });
-      img.addEventListener('error', function() { if (skeleton) skeleton.style.display = 'none'; });
-      if (img.complete && skeleton) skeleton.style.display = 'none';
-    }
-    if (video) {
-      video.addEventListener('loadeddata', function() {
-        video.style.display = '';
-        if (skeleton) skeleton.style.display = 'none';
+
+  <div id="gOverlay" class="g-overlay" hidden tabindex="-1" aria-modal="true" role="dialog">
+    <div class="g-overlay-bg"></div>
+    <button class="g-overlay-close" aria-label="Close" tabindex="0">&times;</button>
+    <button class="g-overlay-nav g-overlay-prev" aria-label="Previous image" tabindex="0">&#10094;</button>
+    <figure class="g-overlay-figure">
+      <img id="gOverlayImg" class="g-overlay-img" src="" alt="Gallery Image" />
+      <figcaption id="gOverlayCaption" class="g-overlay-caption"></figcaption>
+    </figure>
+    <button class="g-overlay-nav g-overlay-next" aria-label="Next image" tabindex="0">&#10095;</button>
+    <div id="gOverlayError" class="g-overlay-error" hidden>Image failed to load.</div>
+  </div>
+
+  <script>
+    (function () {
+      var faders = document.querySelectorAll('[data-fade]');
+      if ('IntersectionObserver' in window) {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('fade-in');
+              io.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+        faders.forEach(function (el) {
+          var group = el.closest('[data-fade-group]');
+          if (group) {
+            var siblings = Array.prototype.slice.call(group.querySelectorAll('[data-fade]'));
+            var idx = siblings.indexOf(el);
+            el.style.transitionDelay = Math.min(idx * 90, 450) + 'ms';
+          }
+          io.observe(el);
+        });
+      } else {
+        faders.forEach(function (el) { el.classList.add('fade-in'); });
+      }
+
+      /* ---------- Gallery lightbox ---------- */
+      document.querySelectorAll('.g-item').forEach(function (item) {
+        var img = item.querySelector('img');
+        var video = item.querySelector('video');
+        var skel = item.querySelector('.g-skel');
+        if (img) {
+          img.addEventListener('load', function () { if (skel) skel.style.display = 'none'; });
+          img.addEventListener('error', function () { if (skel) skel.style.display = 'none'; });
+          if (img.complete && skel) skel.style.display = 'none';
+        }
+        if (video) {
+          video.addEventListener('loadeddata', function () {
+            if (skel) skel.style.display = 'none';
+          });
+        }
       });
-    }
-  });
 
-  const galleryImages = Array.from(document.querySelectorAll('.gallery-item img'));
-  const overlay = document.getElementById('imageOverlay');
-  const overlayImg = document.getElementById('overlayImage');
-  const overlayCaption = document.getElementById('overlayCaption');
-  const overlayError = document.getElementById('overlayError');
-  const closeBtn = document.querySelector('.image-overlay-close');
-  const prevBtn = document.querySelector('.image-overlay-prev');
-  const nextBtn = document.querySelector('.image-overlay-next');
-  let currentIndex = 0;
+      var galleryImages = Array.prototype.slice.call(document.querySelectorAll('.g-item img'));
+      var overlay = document.getElementById('gOverlay');
+      var overlayImg = document.getElementById('gOverlayImg');
+      var overlayCaption = document.getElementById('gOverlayCaption');
+      var overlayError = document.getElementById('gOverlayError');
+      var closeBtn2 = document.querySelector('.g-overlay-close');
+      var prevBtn = document.querySelector('.g-overlay-prev');
+      var nextBtn = document.querySelector('.g-overlay-next');
+      var currentIndex = 0;
 
-  function showOverlay(index) {
-    if (index < 0 || index >= galleryImages.length) return;
-    currentIndex = index;
-    overlayImg.style.opacity = 0;
-    overlayError.style.display = 'none';
-    overlayImg.src = galleryImages[index].src;
-    overlayCaption.textContent = galleryImages[index].dataset.caption || '';
-    overlay.style.display = 'flex';
-    overlay.focus();
-    document.body.style.overflow = 'hidden';
-    preloadImage((index + 1) % galleryImages.length);
-    preloadImage((index - 1 + galleryImages.length) % galleryImages.length);
-  }
-  function hideOverlay() {
-    overlay.style.display = 'none';
-    overlayImg.src = '';
-    overlayCaption.textContent = '';
-    overlayError.style.display = 'none';
-    document.body.style.overflow = '';
-  }
-  function showPrev() { showOverlay((currentIndex - 1 + galleryImages.length) % galleryImages.length); }
-  function showNext() { showOverlay((currentIndex + 1) % galleryImages.length); }
-  function preloadImage(idx) { const img = new Image(); img.src = galleryImages[idx].src; }
+      function preloadImage(idx) { var im = new Image(); im.src = galleryImages[idx].src; }
+      function showOverlay(index) {
+        if (index < 0 || index >= galleryImages.length) return;
+        currentIndex = index;
+        overlayImg.style.opacity = 0;
+        overlayError.hidden = true;
+        overlayImg.src = galleryImages[index].src;
+        overlayCaption.textContent = galleryImages[index].getAttribute('data-caption') || '';
+        overlay.hidden = false;
+        overlay.focus();
+        document.body.style.overflow = 'hidden';
+        preloadImage((index + 1) % galleryImages.length);
+        preloadImage((index - 1 + galleryImages.length) % galleryImages.length);
+      }
+      function hideOverlay() {
+        overlay.hidden = true;
+        overlayImg.src = '';
+        overlayCaption.textContent = '';
+        overlayError.hidden = true;
+        document.body.style.overflow = '';
+      }
+      function showPrev() { showOverlay((currentIndex - 1 + galleryImages.length) % galleryImages.length); }
+      function showNext() { showOverlay((currentIndex + 1) % galleryImages.length); }
 
-  galleryImages.forEach(function(img, idx) {
-    img.addEventListener('click', function() { showOverlay(idx); });
-    img.setAttribute('tabindex', '0');
-    img.setAttribute('role', 'button');
-    img.setAttribute('aria-label', 'View image: ' + (img.dataset.caption || 'Gallery Image'));
-    img.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showOverlay(idx); }
-    });
-  });
-  closeBtn.addEventListener('click', hideOverlay);
-  prevBtn.addEventListener('click', showPrev);
-  nextBtn.addEventListener('click', showNext);
-  overlay.addEventListener('click', function(e) {
-    if (e.target === overlay || e.target.classList.contains('image-overlay-bg')) hideOverlay();
-  });
-  overlayImg.addEventListener('load', function() { overlayImg.style.opacity = 1; overlayError.style.display = 'none'; });
-  overlayImg.addEventListener('error', function() { overlayImg.style.opacity = 0; overlayError.style.display = 'block'; });
-  document.addEventListener('keydown', function(e) {
-    if (overlay.style.display !== 'flex') return;
-    if (e.key === 'Escape') hideOverlay();
-    if (e.key === 'ArrowLeft') showPrev();
-    if (e.key === 'ArrowRight') showNext();
-    if (e.key === 'Tab') {
-      const focusable = [closeBtn, prevBtn, nextBtn];
-      let i = focusable.indexOf(document.activeElement);
-      i = e.shiftKey ? (i - 1 + focusable.length) % focusable.length : (i + 1) % focusable.length;
-      focusable[i].focus();
-      e.preventDefault();
-    }
-  });
-});
-</script>
+      galleryImages.forEach(function (img, idx) {
+        img.addEventListener('click', function () { showOverlay(idx); });
+        img.setAttribute('tabindex', '0');
+        img.setAttribute('role', 'button');
+        img.setAttribute('aria-label', 'View image: ' + (img.getAttribute('data-caption') || 'Gallery Image'));
+        img.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showOverlay(idx); }
+        });
+      });
+      closeBtn2.addEventListener('click', hideOverlay);
+      prevBtn.addEventListener('click', showPrev);
+      nextBtn.addEventListener('click', showNext);
+      overlay.addEventListener('click', function (e) {
+        if (e.target === overlay || e.target.classList.contains('g-overlay-bg')) hideOverlay();
+      });
+      overlayImg.addEventListener('load', function () { overlayImg.style.opacity = 1; overlayError.hidden = true; });
+      overlayImg.addEventListener('error', function () { overlayImg.style.opacity = 0; overlayError.hidden = false; });
+      document.addEventListener('keydown', function (e) {
+        if (overlay.hidden) return;
+        if (e.key === 'Escape') hideOverlay();
+        if (e.key === 'ArrowLeft') showPrev();
+        if (e.key === 'ArrowRight') showNext();
+        if (e.key === 'Tab') {
+          var focusable = [closeBtn2, prevBtn, nextBtn];
+          var i = focusable.indexOf(document.activeElement);
+          i = e.shiftKey ? (i - 1 + focusable.length) % focusable.length : (i + 1) % focusable.length;
+          focusable[i].focus();
+          e.preventDefault();
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
