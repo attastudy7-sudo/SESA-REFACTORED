@@ -1771,7 +1771,17 @@
 }
 
 /* ── Claim Codes Modal ─────────────────────────────────────────────── */
-.sd-modal--wide { max-width: 780px; }
+.sd-modal--wide {
+  max-width: 780px;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 40px);
+}
+.sd-modal--wide .sd-modal__top { flex-shrink: 0; }
+.sd-modal--wide .sd-modal__body {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
 .sd-cc-header {
   display: flex;
   flex-direction: column;
@@ -1852,6 +1862,54 @@
   transition: background 0.15s;
 }
 .sd-cc-copy-row__btn:hover { background: var(--sd-bg); }
+.sd-cc-search {
+  position: relative;
+  display: none;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.sd-cc-search.is-visible { display: flex; }
+.sd-cc-search__icon {
+  position: absolute;
+  left: 12px;
+  color: var(--sd-gray);
+  pointer-events: none;
+}
+.sd-cc-search__input {
+  width: 100%;
+  font-family: var(--sd-font);
+  font-size: 0.85rem;
+  color: var(--sd-navy);
+  background: var(--sd-white);
+  border: 1px solid var(--sd-border);
+  border-radius: 10px;
+  padding: 9px 36px 9px 36px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.sd-cc-search__input::placeholder { color: var(--sd-gray); }
+.sd-cc-search__input:focus-visible {
+  border-color: var(--sd-green);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+.sd-cc-search__clear {
+  position: absolute;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--sd-gray);
+  background: var(--sd-bg);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.sd-cc-search__clear:hover { background: var(--sd-border); color: var(--sd-navy); }
 .sd-cc-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -2016,6 +2074,9 @@
   .sd-modal-overlay { position: static !important; background: none !important; backdrop-filter: none !important; }
   .sd-modal { box-shadow: none !important; max-width: 100% !important; border-radius: 0 !important; transform: none !important; }
   .sd-modal__top, .sd-cc-copy-row, .sd-modal__close { display: none !important; }
+  .sd-modal--wide { max-height: none !important; display: block !important; }
+  .sd-modal--wide .sd-modal__body { overflow: visible !important; max-height: none !important; }
+  .sd-cc-search { display: none !important; }
   .sd-cc-slip { break-inside: avoid; border: 1px solid #ccc; }
 }
 

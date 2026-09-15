@@ -1621,12 +1621,78 @@
   /* ==========================================================
      CLAIM CODES MODAL
      ========================================================== */
+  var claimStudents = [];
+  var claimSchoolName = '';
+  var claimUrl = '';
+
+  function renderClaimSlips(list) {
+    var grid = $('#sdClaimGrid');
+    if (!grid) return;
+    if (list.length === 0) {
+      grid.innerHTML =
+        '<div class="sd-cc-empty">' +
+          '<div class="sd-cc-empty__icon">' +
+            '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
+              '<circle cx="11" cy="11" r="8"/>' +
+              '<line x1="21" y1="21" x2="16.65" y2="16.65"/>' +
+            '</svg>' +
+          '</div>' +
+          '<div class="sd-cc-empty__title">No students match</div>' +
+          '<div class="sd-cc-empty__desc">No student names match your search. Try a different spelling.</div>' +
+        '</div>';
+      return;
+    }
+    grid.innerHTML = list.map(function (s) {
+      var code = s.claim_code || '——';
+      var name = s.name || 'Unnamed';
+      var meta = (s.username ? '@' + escHtml(s.username) : '') + (s.class_group ? ' · ' + escHtml(s.class_group) : '');
+      return '<div class="sd-cc-slip">' +
+        '<div class="sd-cc-slip__school">' + escHtml(claimSchoolName) + '</div>' +
+        '<div class="sd-cc-slip__name">' + escHtml(name) + '</div>' +
+        (meta ? '<div class="sd-cc-slip__meta">' + meta + '</div>' : '') +
+        '<hr class="sd-cc-slip__divider">' +
+        '<div class="sd-cc-slip__code-label">Claim Code</div>' +
+        '<div class="sd-cc-slip__code">' + escHtml(code) + '</div>' +
+        '<div class="sd-cc-slip__url">Go to <strong>' + escHtml(claimUrl) + '</strong> and enter this code.</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function filterClaimStudents() {
+    var input = $('#sdClaimSearch');
+    var clearBtn = $('#sdClaimSearchClear');
+    var query = (input && input.value || '').trim().toLowerCase();
+    if (clearBtn) clearBtn.hidden = query.length === 0;
+    if (query === '') {
+      renderClaimSlips(claimStudents);
+      return;
+    }
+    var filtered = claimStudents.filter(function (s) {
+      var haystack = ((s.name || '') + ' ' + (s.username || '') + ' ' + (s.class_group || '')).toLowerCase();
+      return haystack.indexOf(query) !== -1;
+    });
+    renderClaimSlips(filtered);
+  }
+
+  function resetClaimSearch() {
+    var input = $('#sdClaimSearch');
+    var clearBtn = $('#sdClaimSearchClear');
+    if (input) input.value = '';
+    if (clearBtn) clearBtn.hidden = true;
+  }
+
   function openClaimCodes() {
     var grid = $('#sdClaimGrid');
     var header = $('#sdClaimHeader');
     var urlCode = $('#sdClaimUrlCode');
+    var searchWrap = $('#sdClaimSearchWrap');
+    var modalBody = $('#sdClaimModalOverlay');
+    var bodyEl = modalBody && modalBody.querySelector('.sd-modal__body');
     openOverlay('sdClaimModalOverlay');
+    if (bodyEl) bodyEl.scrollTop = 0;
     if (grid) grid.innerHTML = '<div class="sd-loading"><div class="sd-spinner"></div>Loading claim codes…</div>';
+    if (searchWrap) searchWrap.classList.remove('is-visible');
+    resetClaimSearch();
 
     fetch(DATA.claimCodesUrl, {
       headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -1634,17 +1700,16 @@
     .then(function (res) { return res.json(); })
     .then(function (data) {
       var students = data.students || [];
-      var schoolName = data.school_name || '';
-      var claimUrl = data.claim_url || '';
       var totalStudents = data.total_students || 0;
 
-      if (urlCode) urlCode.textContent = claimUrl;
+      if (urlCode) urlCode.textContent = data.claim_url || '';
 
       if (students.length === 0) {
         if (header) header.innerHTML = '';
         if (urlCode) urlCode.textContent = '';
         var copyRow = $('.sd-cc-copy-row');
         if (copyRow) copyRow.style.display = 'none';
+        if (searchWrap) searchWrap.classList.remove('is-visible');
         if (totalStudents === 0) {
           if (grid) grid.innerHTML =
             '<div class="sd-cc-empty">' +
@@ -1679,32 +1744,22 @@
         return;
       }
 
+      claimStudents = students;
+      claimSchoolName = data.school_name || '';
+      claimUrl = data.claim_url || '';
+
       if (header) header.innerHTML =
         '<div class="sd-cc-header__icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>' +
         '<div class="sd-cc-header__text">' +
-          '<div class="sd-cc-header__name">' + escHtml(schoolName) + '</div>' +
+          '<div class="sd-cc-header__name">' + escHtml(claimSchoolName) + '</div>' +
           '<div class="sd-cc-header__count">' + students.length + ' unclaimed account' + (students.length !== 1 ? 's' : '') + '</div>' +
         '</div>';
 
       var copyRow2 = $('.sd-cc-copy-row');
       if (copyRow2) copyRow2.style.display = '';
 
-      if (grid) {
-        grid.innerHTML = students.map(function (s) {
-          var code = s.claim_code || '——';
-          var name = s.name || 'Unnamed';
-          var meta = (s.username ? '@' + escHtml(s.username) : '') + (s.class_group ? ' · ' + escHtml(s.class_group) : '');
-          return '<div class="sd-cc-slip">' +
-            '<div class="sd-cc-slip__school">' + escHtml(schoolName) + '</div>' +
-            '<div class="sd-cc-slip__name">' + escHtml(name) + '</div>' +
-            (meta ? '<div class="sd-cc-slip__meta">' + meta + '</div>' : '') +
-            '<hr class="sd-cc-slip__divider">' +
-            '<div class="sd-cc-slip__code-label">Claim Code</div>' +
-            '<div class="sd-cc-slip__code">' + escHtml(code) + '</div>' +
-            '<div class="sd-cc-slip__url">Go to <strong>' + escHtml(claimUrl) + '</strong> and enter this code.</div>' +
-          '</div>';
-        }).join('');
-      }
+      if (searchWrap) searchWrap.classList.add('is-visible');
+      renderClaimSlips(claimStudents);
     })
     .catch(function (err) {
       console.error('Claim codes fetch failed:', err);
@@ -2188,6 +2243,15 @@
     };
     var claimModalClose = $('#sdClaimModalClose');
     if (claimModalClose) claimModalClose.onclick = function () { closeOverlay('sdClaimModalOverlay'); };
+
+    var claimSearchInput = $('#sdClaimSearch');
+    if (claimSearchInput) claimSearchInput.oninput = filterClaimStudents;
+    var claimSearchClear = $('#sdClaimSearchClear');
+    if (claimSearchClear) claimSearchClear.onclick = function () {
+      resetClaimSearch();
+      filterClaimStudents();
+      if (claimSearchInput) claimSearchInput.focus();
+    };
 
     var claimOverlay = $('#sdClaimModalOverlay');
     if (claimOverlay) {
