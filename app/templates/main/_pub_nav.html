@@ -170,6 +170,75 @@
           }
         }, { passive: true });
         modal.addEventListener('touchend', function () { touchStartY = null; });
+
+        // ── Form: POST to /api/demo-request, inline success/error ──────────
+        var form = document.getElementById('demoForm');
+        var success = document.getElementById('demoSuccess');
+        var statusEl = document.getElementById('demoStatus');
+        var submitBtn = document.getElementById('demoSubmit');
+        var submitLabel = submitBtn ? submitBtn.querySelector('.demo-submit-label') : null;
+        var submitSpinner = submitBtn ? submitBtn.querySelector('.demo-submit-spinner') : null;
+
+        function setFieldError(id, msg) {
+          var el = document.getElementById('err-' + id);
+          var input = document.getElementById(id);
+          if (!el) return;
+          if (msg) { el.textContent = msg; el.hidden = false; if (input) input.setAttribute('aria-invalid','true'); }
+          else { el.textContent = ''; el.hidden = true; if (input) input.removeAttribute('aria-invalid'); }
+        }
+        function clearErrors() {
+          ['dm-name','dm-school','dm-email','dm-date','dm-msg'].forEach(function(i){ setFieldError(i,''); });
+          if (statusEl) { statusEl.textContent=''; statusEl.hidden=true; statusEl.className='demo-form-status'; }
+        }
+        function showSuccess() {
+          if (form) form.hidden = true;
+          if (success) { success.hidden = false; var b=success.querySelector('.demo-success-close'); if(b) b.focus(); }
+        }
+        function resetForm() {
+          if (form) { form.hidden = false; form.reset(); }
+          if (success) success.hidden = true;
+          clearErrors();
+        }
+        // Reset on open
+        var _origShow = showModal;
+        showModal = function() { resetForm(); _origShow(); };
+        // Close from success panel also resets
+        if (success) success.addEventListener('click', function(e){
+          if (e.target.closest('.demo-success-close')) closeModal();
+        });
+
+        if (form) form.addEventListener('submit', function(e){
+          e.preventDefault();
+          clearErrors();
+          var payload = {
+            _hp: (document.getElementById('dm-hp')||{}).value || '',
+            name: (document.getElementById('dm-name')||{}).value || '',
+            school: (document.getElementById('dm-school')||{}).value || '',
+            email: (document.getElementById('dm-email')||{}).value || '',
+            date: (document.getElementById('dm-date')||{}).value || '',
+            message: (document.getElementById('dm-msg')||{}).value || ''
+          };
+          if (submitBtn) { submitBtn.disabled = true; if(submitLabel) submitLabel.hidden=true; if(submitSpinner) submitSpinner.hidden=false; }
+          fetch('/api/demo-request', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(payload)
+          }).then(function(r){ return r.json().then(function(j){ return {status:r.status, body:j}; }); }).then(function(res){
+            if (res.body && res.body.ok) { showSuccess(); return; }
+            if (res.body && res.body.errors) {
+              var map = {name:'dm-name', school:'dm-school', email:'dm-email', date:'dm-date', message:'dm-msg'};
+              Object.keys(res.body.errors).forEach(function(k){ var id=map[k]; if(id) setFieldError(id, res.body.errors[k]); });
+              var firstErr = document.querySelector('.demo-field-error:not([hidden])');
+              if (firstErr) { var inp=document.getElementById(firstErr.id.replace('err-','')); if(inp) inp.focus(); }
+            }
+            var msg = (res.body && (res.body.error || res.body.message)) || 'Could not send request. Please try again.';
+            if (statusEl) { statusEl.textContent = msg; statusEl.hidden=false; statusEl.className='demo-form-status demo-form-status--error'; }
+          }).catch(function(){
+            if (statusEl) { statusEl.textContent='Network error. Please try again.'; statusEl.hidden=false; statusEl.className='demo-form-status demo-form-status--error'; }
+          }).then(function(){
+            if (submitBtn) { submitBtn.disabled=false; if(submitLabel) submitLabel.hidden=false; if(submitSpinner) submitSpinner.hidden=true; }
+          });
+        });
       });
     })();
   </script>
@@ -178,33 +247,46 @@
       <button type="button" class="demo-modal-close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
       <h2 class="demo-modal-title" id="demoModalTitle">Book a Demo With Us</h2>
       <p class="demo-modal-lede" id="demoModalLede">Tell us a little about your school and a curator will reach out to schedule a walkthrough of SESA.</p>
-      <form class="demo-modal-form" action="mailto:info@fopaconsult.com" method="post" enctype="text/plain">
+      <form class="demo-modal-form" id="demoForm" novalidate>
+        <input type="text" name="_hp" id="dm-hp" tabindex="-1" autocomplete="off" aria-hidden="true" class="demo-hp" />
         <div class="demo-modal-grid">
           <div class="demo-field">
             <label for="dm-name">Name</label>
-            <input class="demo-input" id="dm-name" name="Name" type="text" autocomplete="name" required />
+            <input class="demo-input" id="dm-name" name="name" type="text" autocomplete="name" required />
+            <p class="demo-field-error" id="err-dm-name" hidden></p>
           </div>
           <div class="demo-field">
             <label for="dm-school">School / Institution</label>
-            <input class="demo-input" id="dm-school" name="School" type="text" autocomplete="organization" required />
+            <input class="demo-input" id="dm-school" name="school" type="text" autocomplete="organization" required />
+            <p class="demo-field-error" id="err-dm-school" hidden></p>
           </div>
           <div class="demo-field">
             <label for="dm-email">Official Email</label>
-            <input class="demo-input" id="dm-email" name="Email" type="email" autocomplete="email" required />
+            <input class="demo-input" id="dm-email" name="email" type="email" autocomplete="email" required />
+            <p class="demo-field-error" id="err-dm-email" hidden></p>
           </div>
           <div class="demo-field">
             <label for="dm-date">Preferred Date</label>
-            <input class="demo-input" id="dm-date" name="Preferred Date" type="date" />
+            <input class="demo-input" id="dm-date" name="date" type="date" />
+            <p class="demo-field-error" id="err-dm-date" hidden></p>
           </div>
           <div class="demo-field demo-field--wide">
             <label for="dm-msg">Message</label>
-            <textarea class="demo-input" id="dm-msg" name="Message" rows="4"></textarea>
+            <textarea class="demo-input" id="dm-msg" name="message" rows="4" maxlength="1000"></textarea>
+            <p class="demo-field-error" id="err-dm-msg" hidden></p>
           </div>
         </div>
+        <p class="demo-form-status" id="demoStatus" role="status" aria-live="polite" hidden></p>
         <div class="demo-modal-actions">
-          <button class="btn btn-dark" type="submit"><span>Request Demo</span></button>
+          <button class="btn btn-dark" type="submit" id="demoSubmit"><span class="demo-submit-label">Request Demo</span><span class="demo-submit-spinner" aria-hidden="true" hidden> — sending…</span></button>
         </div>
       </form>
+      <div class="demo-success" id="demoSuccess" hidden>
+        <div class="demo-success-icon" aria-hidden="true">✓</div>
+        <h3 class="demo-success-title">Request sent</h3>
+        <p class="demo-success-lede">Thanks — we got your demo request. A curator will reach out within 24 hours.</p>
+        <button type="button" class="btn btn-dark demo-success-close"><span>Done</span></button>
+      </div>
     </div>
   </div>
   <style>
@@ -253,6 +335,21 @@
     .demo-input:focus { outline: 2px solid var(--brand, #166534); outline-offset: 1px; border-color: var(--brand, #166534); }
     textarea.demo-input { resize: vertical; min-height: 96px; }
     .demo-modal-actions { margin-top: 24px; display: flex; justify-content: flex-end; }
+    .demo-modal-actions .btn[disabled] { opacity: .6; cursor: not-allowed; }
+
+    .demo-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; opacity: 0; }
+    .demo-field-error { margin: 6px 0 0; font-size: 13px; line-height: 18px; color: #b91c1c; }
+    .demo-field-error[hidden] { display: none; }
+    .demo-input[aria-invalid="true"] { border-color: #dc2626; }
+    .demo-form-status { margin: 16px 0 0; padding: 12px 14px; border-radius: 12px; font-size: 14px; line-height: 20px; }
+    .demo-form-status[hidden] { display: none; }
+    .demo-form-status--error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+
+    .demo-success { text-align: center; padding: 24px 0 8px; }
+    .demo-success[hidden] { display: none; }
+    .demo-success-icon { width: 56px; height: 56px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; border-radius: 999px; background: #dcfce7; color: #166534; font-size: 28px; font-weight: 700; }
+    .demo-success-title { font-size: 22px; line-height: 28px; font-weight: 700; margin: 0 0 8px; }
+    .demo-success-lede { font-size: 15px; line-height: 22px; color: var(--ink-50, #737373); margin: 0 0 24px; }
 
     @media (max-width: 768px) {
       .demo-modal { backdrop-filter: none; -webkit-backdrop-filter: none; }

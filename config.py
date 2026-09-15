@@ -38,6 +38,14 @@ class Config:
     ]
 
     APP_BASE_URL = os.environ.get('APP_BASE_URL', '')
+
+    # ── Email (Brevo) + Demo requests ─────────────────────────────────────────
+    BREVO_API_KEY = os.environ.get('BREVO_API_KEY', '')
+    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER', os.environ.get('MAIL_USERNAME', ''))
+    DEMO_REQUEST_TO = os.environ.get('DEMO_REQUEST_TO', 'info@fopaconsult.com')
+    DEMO_REQUEST_FROM = os.environ.get('DEMO_REQUEST_FROM', '')  # falls back to MAIL_DEFAULT_SENDER at send time
+    DEMO_REQUEST_FROM_NAME = os.environ.get('DEMO_REQUEST_FROM_NAME', 'SESA Demo')
+
     PAYSTACK_SECRET_KEY = os.environ.get('PAYSTACK_SECRET_KEY', '')
     PAYSTACK_PUBLIC_KEY = os.environ.get('PAYSTACK_PUBLIC_KEY', '')
     SUBSCRIPTION_AMOUNT = int(os.environ.get('SUBSCRIPTION_AMOUNT', 10000))  # in pesewas

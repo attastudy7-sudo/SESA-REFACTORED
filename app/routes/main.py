@@ -18,6 +18,104 @@ main_bp = Blueprint('main', __name__)
 logger = logging.getLogger(__name__)
 
 
+# ── Demo request (public, rate-limited, Brevo) ─────────────────────────────
+
+@main_bp.route('/api/demo-request', methods=['POST'])
+@csrf.exempt
+@limiter.limit("5 per hour; 20 per day")
+def demo_request():
+    """Secure demo-request endpoint.
+
+    - Honeypot `_hp` silently succeeds for bots.
+    - Strict validation + HTML-escaping before emailing.
+    - Rate-limited per IP via Flask-Limiter.
+    - Uses Brevo (BREVO_API_KEY). Env: DEMO_REQUEST_TO / FROM.
+    - Never leaks config or stack traces to the client.
+    """
+    import html as _html
+    import re as _re
+
+    data = request.get_json(silent=True) or {}
+
+    # Honeypot — bots fill hidden field
+    if (data.get('_hp') or '').strip():
+        return jsonify({"ok": True}), 200
+
+    name = (data.get('name') or '').strip()
+    school = (data.get('school') or '').strip()
+    email = (data.get('email') or '').strip().lower()
+    pref_date = (data.get('date') or '').strip()
+    message = (data.get('message') or '').strip()
+
+    errors = {}
+    if not name or len(name) < 2 or len(name) > 80:
+        errors['name'] = 'Enter your name (2–80 characters).'
+    if not school or len(school) < 2 or len(school) > 120:
+        errors['school'] = 'Enter school / institution.'
+    # RFC-5322-lite
+    if not email or len(email) > 254 or not _re.match(r'^[^@\s]+@[^@\s]+\.[^@\s]+$', email):
+        errors['email'] = 'Enter a valid email address.'
+    if pref_date:
+        # YYYY-MM-DD only, no past dates (light check)
+        if not _re.match(r'^\d{4}-\d{2}-\d{2}$', pref_date):
+            errors['date'] = 'Invalid date.'
+    if len(message) > 1000:
+        errors['message'] = 'Message too long (max 1000 characters).'
+
+    if errors:
+        return jsonify({"ok": False, "errors": errors}), 400
+
+    # Escape for HTML email — never inject raw user input
+    esc = {k: _html.escape(v) for k, v in {
+        'name': name, 'school': school, 'email': email,
+        'date': pref_date or '—', 'message': message or '—'
+    }.items()}
+
+    brevo_key = (current_app.config.get('BREVO_API_KEY') or '').strip()
+    to_addr = (current_app.config.get('DEMO_REQUEST_TO') or 'info@fopaconsult.com').strip()
+    from_addr = (current_app.config.get('DEMO_REQUEST_FROM') or current_app.config.get('MAIL_DEFAULT_SENDER') or '').strip()
+    from_name = (current_app.config.get('DEMO_REQUEST_FROM_NAME') or 'SESA Demo').strip()
+
+    if not brevo_key or not from_addr:
+        # Config missing — log server-side, return 503 without leaking detail
+        current_app.logger.warning("demo_request: email not configured (BREVO_API_KEY or sender missing) ip=%s", request.remote_addr)
+        return jsonify({"ok": False, "error": "Email service not configured. Please contact info@fopaconsult.com directly."}), 503
+
+    # Brevo payload (server-side only — key never leaves server)
+    subject = f"SESA demo request — {esc['school']}"
+    html_body = (
+        f"<p><strong>Name:</strong> {esc['name']}</p>"
+        f"<p><strong>School / Institution:</strong> {esc['school']}</p>"
+        f"<p><strong>Email:</strong> {esc['email']}</p>"
+        f"<p><strong>Preferred date:</strong> {esc['date']}</p>"
+        f"<p><strong>Message:</strong><br>{esc['message'].replace(chr(10), '<br>')}</p>"
+        f"<hr><p style='color:#6b7280;font-size:12px'>IP: {_html.escape(request.remote_addr or '')} · UA: {_html.escape(request.headers.get('User-Agent','')[:200])}</p>"
+    )
+
+    try:
+        import requests as _req
+        resp = _req.post(
+            'https://api.brevo.com/v3/smtp/email',
+            headers={'api-key': brevo_key, 'Content-Type': 'application/json'},
+            json={
+                'sender': {'name': from_name, 'email': from_addr},
+                'to': [{'email': to_addr}],
+                'replyTo': {'email': email, 'name': name},
+                'subject': subject,
+                'htmlContent': html_body,
+            },
+            timeout=15,
+        )
+        if resp.status_code == 201:
+            current_app.logger.info("demo_request: sent to=%s from=%s ip=%s", to_addr, email, request.remote_addr)
+            return jsonify({"ok": True}), 200
+        current_app.logger.error("demo_request: Brevo %s %s", resp.status_code, resp.text[:500])
+        return jsonify({"ok": False, "error": "Could not send request. Please try again later."}), 502
+    except Exception as e:
+        current_app.logger.error("demo_request: exception %s ip=%s", e, request.remote_addr)
+        return jsonify({"ok": False, "error": "Could not send request. Please try again later."}), 502
+
+
 def _get_school_from_session():
     """Return School from session or None."""
     school_id = session.get('school_id')
