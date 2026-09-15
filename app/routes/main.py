@@ -5,6 +5,7 @@ import logging
 from flask import Blueprint, render_template, redirect, url_for, flash, session, request, jsonify, current_app, abort
 from flask_login import login_required, current_user
 from sqlalchemy import or_, func
+from sqlalchemy.exc import IntegrityError
 from app.extensions import db, csrf, limiter
 from app.models.account import Accounts
 from app.models.school import School
@@ -1218,10 +1219,17 @@ def upload_students(school_id):
 
     except Exception as e:
         db.session.rollback()
-        logger.error('Bulk upload error | school=%s error=%s', school.school_name, e)
+        # Log the full error server-side; never leak SQL/constraints/hashes to the client
+        logger.error(
+            'Bulk upload error | school=%s ip=%s error=%s',
+            school.school_name, request.remote_addr, e, exc_info=True,
+        )
+        friendly = 'We could not process this file. Please check the data and try again, or contact support if the problem continues.'
+        if isinstance(e, IntegrityError):
+            friendly = 'Some rows conflict with existing records (duplicate username or email). Please review your file and try again.'
         if is_ajax:
-            return jsonify({'error': f'An error occurred while processing the file: {e}'}), 500
-        flash(f'An error occurred while processing the file: {e}', 'error')
+            return jsonify({'error': friendly}), 500
+        flash(friendly, 'error')
 
     return redirect(url_for('main.school_dashboard', school_id=school_id))
 

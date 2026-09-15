@@ -83,7 +83,7 @@ def upgrade():
             sa.Column('id', sa.Integer(), nullable=False),
             sa.Column('fname', sa.String(length=100), nullable=False),
             sa.Column('lname', sa.String(length=100), nullable=False),
-            sa.Column('email', sa.String(length=120), nullable=False),
+            sa.Column('email', sa.String(length=120), nullable=True),
             sa.Column('username', sa.String(length=50), nullable=False),
             sa.Column('password', sa.String(length=256), nullable=False),
             sa.Column('level', sa.String(length=50), nullable=True),
