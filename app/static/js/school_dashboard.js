@@ -28,6 +28,7 @@
     schoolName:       node.dataset.schoolName,
     period:           node.dataset.period || 'all',
     uploadEnabled:    node.dataset.uploadEnabled === 'true',
+    subscriptionActive: node.dataset.subscriptionActive === 'true',
     paystackKey:      node.dataset.paystackKey || '',
     email:            node.dataset.email || '',
     amount:           parseInt(node.dataset.amount) || 0,
@@ -2148,15 +2149,9 @@
       if (pd && pd.classList.contains('open')) closeProfileDropdown();
     });
 
-    /* upload */
+    /* upload — free for all schools; subscription only gates student access */
     var uploadBtn = $('#uploadBtn');
-    if (uploadBtn) uploadBtn.onclick = function () {
-      if (DATA.uploadEnabled) {
-        openUploadModal();
-      } else {
-        showSubscriptionToast();
-      }
-    };
+    if (uploadBtn) uploadBtn.onclick = openUploadModal;
 
     var uploadModalClose = $('#uploadModalClose');
     if (uploadModalClose) uploadModalClose.onclick = closeUploadModal;
@@ -2185,9 +2180,12 @@
       };
     }
 
-    /* claim codes */
+    /* claim codes — locked until the subscription is active */
     var claimBtn = $('#sdClaimCodesBtn');
-    if (claimBtn) claimBtn.onclick = openClaimCodes;
+    if (claimBtn) claimBtn.onclick = function () {
+      if (DATA.subscriptionActive) openClaimCodes();
+      else showSubscriptionToast();
+    };
     var claimModalClose = $('#sdClaimModalClose');
     if (claimModalClose) claimModalClose.onclick = function () { closeOverlay('sdClaimModalOverlay'); };
 
@@ -2291,6 +2289,8 @@
     /* paystack */
     var payBtn = $('#sdPayBtn');
     if (payBtn) payBtn.onclick = initPaystack;
+    var payBtnLocked = $('#sdPayBtnLocked');
+    if (payBtnLocked) payBtnLocked.onclick = initPaystack;
 
     /* at-risk card */
     initAtRiskCardLink();
@@ -2428,62 +2428,37 @@
   }
 
   function getStarted() {
-    if (DATA.uploadEnabled) {
-      openUploadModal();
-    } else {
-      initPaystack();
-    }
+    openUploadModal();
   }
   window.getStarted = getStarted;
 
   function uploadOrToast() {
-    if (DATA.uploadEnabled) {
-      openUploadModal();
-    } else {
-      showSubscriptionToast();
-    }
+    openUploadModal();
   }
   window.uploadOrToast = uploadOrToast;
 
   function showDashboardEmpty() {
     if (!mainContent) return;
 
-    if (DATA.uploadEnabled) {
-      mainContent.innerHTML =
-        '<div class="sd-dashboard-empty">' +
-          '<div class="sd-dashboard-empty__icon">' +
-            '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
-              '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>' +
-              '<polyline points="14 2 14 8 20 8"/>' +
-              '<line x1="16" y1="13" x2="8" y2="13"/>' +
-              '<line x1="16" y1="17" x2="8" y2="17"/>' +
-              '<polyline points="10 9 9 9 8 9"/>' +
-            '</svg>' +
-          '</div>' +
-          '<h2 class="sd-dashboard-empty__title">Welcome to your dashboard</h2>' +
-          '<p class="sd-dashboard-empty__desc">Upload your first batch of students to see insights, trends, and at-risk students here.</p>' +
-          '<button class="sd-btn-solid" onclick="getStarted()">' +
-            '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>' +
-            'Upload Students' +
-          '</button>' +
-        '</div>';
-    } else {
-      mainContent.innerHTML =
-        '<div class="sd-dashboard-empty">' +
-          '<div class="sd-dashboard-empty__icon sd-dashboard-empty__icon--gold">' +
-            '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
-              '<circle cx="12" cy="8" r="7"/>' +
-              '<polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>' +
-            '</svg>' +
-          '</div>' +
-          '<h2 class="sd-dashboard-empty__title">Welcome to your dashboard</h2>' +
-          '<p class="sd-dashboard-empty__desc">Set up your school to start tracking student wellbeing.</p>' +
-          '<button class="sd-btn-solid" onclick="getStarted()">' +
-            'Get Started' +
-            '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left:6px;"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>' +
-          '</button>' +
-        '</div>';
-    }
+    /* Upload is free for every school — the welcome state always invites an upload */
+    mainContent.innerHTML =
+      '<div class="sd-dashboard-empty">' +
+        '<div class="sd-dashboard-empty__icon">' +
+          '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
+            '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>' +
+            '<polyline points="14 2 14 8 20 8"/>' +
+            '<line x1="16" y1="13" x2="8" y2="13"/>' +
+            '<line x1="16" y1="17" x2="8" y2="17"/>' +
+            '<polyline points="10 9 9 9 8 9"/>' +
+          '</svg>' +
+        '</div>' +
+        '<h2 class="sd-dashboard-empty__title">Welcome to your dashboard</h2>' +
+        '<p class="sd-dashboard-empty__desc">Upload your first batch of students to see insights, trends, and at-risk students here.</p>' +
+        '<button class="sd-btn-solid" onclick="getStarted()">' +
+          '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>' +
+          'Upload Students' +
+        '</button>' +
+      '</div>';
   }
 
   /* ── Mobile sidebar drawer ── */

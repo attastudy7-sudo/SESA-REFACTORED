@@ -12,7 +12,7 @@ from app.models.school_class import SchoolClass
 from app.models.test_result import TestResult
 from app.models.question import Question
 from flask import send_file
-from app.utils.decorators import school_login_required, subscription_required
+from app.utils.decorators import school_login_required, subscription_required, student_subscription_required
 
 main_bp = Blueprint('main', __name__)
 logger = logging.getLogger(__name__)
@@ -158,6 +158,7 @@ def assessment_details():
 
 @main_bp.route('/home')
 @login_required
+@student_subscription_required
 def home():
     user = current_user
     results = user.test_results.order_by(TestResult.taken_at.desc()).all()
@@ -256,6 +257,7 @@ def home():
 
 @main_bp.route('/results')
 @login_required
+@student_subscription_required
 def results():
     from datetime import datetime, timedelta, timezone
     from app.models.assessment_type import AssessmentType
@@ -573,7 +575,6 @@ def dashboard_students_json(school_id):
 
 @main_bp.route('/school/<int:school_id>/dashboard/classes')
 @school_login_required
-@subscription_required
 def dashboard_classes_json(school_id):
     """JSON list of this school's classes with student counts."""
     from flask import jsonify
@@ -651,7 +652,6 @@ def dashboard_classes_json(school_id):
 
 @main_bp.route('/school/<int:school_id>/dashboard/classes/create', methods=['POST'])
 @school_login_required
-@subscription_required
 def dashboard_class_create(school_id):
     """Create a new class for this school."""
     from flask import jsonify
@@ -688,7 +688,6 @@ def dashboard_class_create(school_id):
 
 @main_bp.route('/school/<int:school_id>/dashboard/classes/<int:class_id>/rename', methods=['POST'])
 @school_login_required
-@subscription_required
 def dashboard_class_rename(school_id, class_id):
     """Rename a class and sync the denormalized class_group on its students."""
     from flask import jsonify
@@ -728,7 +727,6 @@ def dashboard_class_rename(school_id, class_id):
 
 @main_bp.route('/school/<int:school_id>/dashboard/classes/<int:class_id>/delete', methods=['POST'])
 @school_login_required
-@subscription_required
 def dashboard_class_delete(school_id, class_id):
     """Delete a class, unassigning its students but keeping their accounts."""
     from flask import jsonify
@@ -754,7 +752,6 @@ def dashboard_class_delete(school_id, class_id):
 
 @main_bp.route('/school/<int:school_id>/dashboard/classes/<int:class_id>')
 @school_login_required
-@subscription_required
 def dashboard_class_students(school_id, class_id):
     """JSON: students in a class + unassigned students for the add-student picker."""
     from flask import jsonify
@@ -788,7 +785,6 @@ def dashboard_class_students(school_id, class_id):
 
 @main_bp.route('/school/<int:school_id>/dashboard/classes/<int:class_id>/add-students', methods=['POST'])
 @school_login_required
-@subscription_required
 def dashboard_class_add_students(school_id, class_id):
     """Assign the given student ids to a class."""
     from flask import jsonify
@@ -827,7 +823,6 @@ def dashboard_class_add_students(school_id, class_id):
 
 @main_bp.route('/school/<int:school_id>/dashboard/student/<int:student_id>/class', methods=['POST'])
 @school_login_required
-@subscription_required
 def dashboard_student_set_class(school_id, student_id):
     """Set (or clear) a student's class from the student detail panel."""
     from flask import jsonify
@@ -991,7 +986,6 @@ def print_claim_codes(school_id):
 
 @main_bp.route('/school/<int:school_id>/upload-students', methods=['POST'])
 @school_login_required
-@subscription_required
 def upload_students(school_id):
     """
     Bulk upload students from Excel.
@@ -1020,10 +1014,6 @@ def upload_students(school_id):
     if not school or school.id != school_id:
         logger.warning('Bulk upload REJECTED | reason=not_authorised school_id=%s ip=%s', school_id, request.remote_addr)
         return _respond('error', 'Not authorised.', 403)
-
-    if not school.upload_enabled:
-        logger.warning('Bulk upload REJECTED | reason=upload_disabled school=%s ip=%s', school.school_name, request.remote_addr)
-        return _respond('warning', 'Upload is not enabled. Please complete the subscription payment.', 403)
 
     file = request.files.get('file')
     if not file or file.filename == '':
@@ -1079,9 +1069,12 @@ def upload_students(school_id):
             )
 
         # ── Pre-load existing data into sets for fast in-memory lookup ───────
+        # username is GLOBALLY unique (ix_accounts_username), so the scan must
+        # not be school-scoped — a cross-school collision would otherwise pass
+        # this guard and blow up at flush with "Query-invoked autoflush".
         existing_usernames = {
             r.username for r in
-            Accounts.query.filter_by(school_id=school.id).with_entities(Accounts.username).all()
+            Accounts.query.with_entities(Accounts.username).all()
         }
         existing_emails = {
             r.email for r in
@@ -1108,6 +1101,9 @@ def upload_students(school_id):
             else:
                 cls = school.get_or_create_class(name)
                 class_cache[key] = cls
+                if cls is not None and cls.id is None:
+                    # New class: flush so students get a real class_id instead of NULL
+                    db.session.flush()
             resolved_level = level or (cls.level if cls else None)
             return cls, resolved_level
 
@@ -1126,7 +1122,8 @@ def upload_students(school_id):
             # Standardized: fname.lname.schoolcode (school_code defined on line 340)
             u_fname_initial = _re.sub(r'[^a-z]', '', fname.lower())[0] if fname else ''
             u_lname = _re.sub(r'[^a-z0-9]', '', lname.lower())
-            base_uname = f"{u_fname_initial}{u_lname}"[:48]
+            # 46 + up to 4 suffix digits stays within VARCHAR(50) on Postgres
+            base_uname = f"{u_fname_initial}{u_lname}"[:46]
             username = base_uname
             suffix = 1
             while username in existing_usernames:
@@ -1231,7 +1228,6 @@ def upload_students(school_id):
 
 @main_bp.route('/school/<int:school_id>/search-students')
 @school_login_required
-@subscription_required
 @limiter.limit("60 per minute")
 def search_students(school_id):
     """AJAX student search for school dashboard."""
@@ -1387,19 +1383,55 @@ def verify_subscription_payment(school_id):
     try:
         import requests as http_requests
         secret = current_app.config.get('PAYSTACK_SECRET_KEY', '')
-        resp = http_requests.get(
-            f'https://api.paystack.co/transaction/verify/{reference}',
-            headers={'Authorization': f'Bearer {secret}'},
-            timeout=15,
+
+        # TEST MODE: bypass the real API — any reference is a synthetic success
+        from app.services.payment_service import is_test_mode
+        if is_test_mode():
+            amount_ok, currency_ok = True, True
+        else:
+            resp = http_requests.get(
+                f'https://api.paystack.co/transaction/verify/{reference}',
+                headers={'Authorization': f'Bearer {secret}'},
+                timeout=15,
+            )
+            body = resp.json()
+            pay_data = body.get('data', {}) if body.get('status') else {}
+            if pay_data.get('status') != 'success':
+                return jsonify({'success': False, 'error': 'Payment not successful'}), 400
+
+            # Enforce expected amount in live mode
+            expected_amount = current_app.config.get('SUBSCRIPTION_AMOUNT', 10000)
+            amount_ok = pay_data.get('amount', 0) >= expected_amount
+            currency_ok = pay_data.get('currency') == current_app.config.get('SUBSCRIPTION_CURRENCY', 'GHS')
+            if not amount_ok or not currency_ok:
+                current_app.logger.error(
+                    'Paystack amount mismatch | school=%s amount=%s currency=%s',
+                    school.school_name, pay_data.get('amount'), pay_data.get('currency'),
+                )
+                return jsonify({'success': False, 'error': 'Payment amount insufficient'}), 400
+
+        # Guard against reference replay — one reference activates once
+        already_used = School.query.filter_by(paystack_reference=reference).first()
+        if already_used and already_used.id != school.id:
+            return jsonify({'success': False, 'error': 'This payment reference has already been used'}), 400
+
+        # Activate the subscription — subscription_paid is what makes
+        # subscription_active True; without it payment never unlocked anything.
+        from datetime import timedelta
+        now = datetime.now(timezone.utc)
+        school.subscription_paid = True
+        school.upload_enabled = True
+        school.paystack_reference = reference
+        school.payment_date = now
+        school.subscription_expires = now + timedelta(days=365)
+        db.session.commit()
+        logger.info(
+            'Subscription activated | school=%s ref=%s test_mode=%s ip=%s',
+            school.school_name, reference, is_test_mode(), request.remote_addr,
         )
-        body = resp.json()
-        if body.get('status') and body.get('data', {}).get('status') == 'success':
-            from datetime import timedelta
-            school.subscription_expires = datetime.now(timezone.utc) + timedelta(days=365)
-            db.session.commit()
-            return jsonify({'success': True, 'message': 'Payment verified'})
-        return jsonify({'success': False, 'error': 'Payment not successful'}), 400
+        return jsonify({'success': True, 'message': 'Payment verified'})
     except Exception as exc:
+        db.session.rollback()
         current_app.logger.error(f'Paystack verify error: {exc}')
         return jsonify({'success': False, 'error': 'Verification failed'}), 500
 
@@ -1418,7 +1450,6 @@ def school_settings(school_id):
 
 @main_bp.route('/school/<int:school_id>/results')
 @school_login_required
-@subscription_required
 def school_results(school_id):
     school = _get_school_from_session()
     if current_user.is_authenticated and current_user.is_super_admin:
@@ -1594,7 +1625,6 @@ def school_results(school_id):
 
 @main_bp.route('/school/<int:school_id>/report/download')
 @school_login_required
-@subscription_required
 def download_report(school_id):
     """Generate and download a PDF performance report for the school."""
     if current_user.is_authenticated and current_user.is_super_admin:
@@ -1643,6 +1673,9 @@ def join_with_code():
         school = School.query.filter_by(access_code=code).first()
         if not school:
             error = 'Invalid access code. Please check with your school administrator.'
+        elif not school.subscription_active:
+            error = "Your school's subscription is not active yet. Please contact your school administrator."
+            school = None
 
     if request.method == 'POST':
         code = request.form.get('code', '').strip().upper()
@@ -1650,6 +1683,9 @@ def join_with_code():
 
         if not school:
             error = 'Invalid access code.'
+        elif not school.subscription_active:
+            error = "Your school's subscription is not active yet. Please contact your school administrator."
+            school = None
         else:
             fname = request.form.get('fname', '').strip()
             lname = request.form.get('lname', '').strip()
@@ -1745,18 +1781,22 @@ def claim_account():
             if not account or not check_password_hash(account.claim_code_hash, claim_code):
                 error = 'Invalid or already used claim code.'
             else:
-                account.password = generate_password_hash(new_password)
-                account.is_claimed = True
-                account.claim_code_plain = None   # clear plain text after use
-                db.session.commit()
-                login_user(account)
-                logger.info(
-                    'Account claimed | username=%s school_id=%s ip=%s',
-                    account.username, account.school_id, request.remote_addr,
-                )
-                session['show_username_prompt'] = account.username
-                flash(f'Welcome to SESA, {account.fname}!', 'success')
-                return redirect(url_for('main.home'))
+                school = School.query.get(account.school_id) if account.school_id else None
+                if school is not None and not school.subscription_active:
+                    error = "Your school's subscription is not active yet. Please contact your school administrator."
+                else:
+                    account.password = generate_password_hash(new_password)
+                    account.is_claimed = True
+                    account.claim_code_plain = None   # clear plain text after use
+                    db.session.commit()
+                    login_user(account)
+                    logger.info(
+                        'Account claimed | username=%s school_id=%s ip=%s',
+                        account.username, account.school_id, request.remote_addr,
+                    )
+                    session['show_username_prompt'] = account.username
+                    flash(f'Welcome to SESA, {account.fname}!', 'success')
+                    return redirect(url_for('main.home'))
 
     return render_template('auth/claim.html', error=error)
 

@@ -39,6 +39,30 @@ def subscription_required(f):
     return decorated
 
 
+def student_subscription_required(f):
+    """Block students of an unpaid/lapsed school from the student app.
+
+    Place BELOW @login_required so the user is authenticated when this runs.
+    Accounts without a school (legacy/admin) are not subject to school billing.
+    """
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not current_user.is_authenticated or current_user.is_super_admin:
+            return f(*args, **kwargs)
+        school = School.query.get(current_user.school_id) if current_user.school_id else None
+        if school is None or school.subscription_active:
+            return f(*args, **kwargs)
+        logger.warning(
+            'Student blocked: subscription inactive | user=%s school=%s ip=%s path=%s',
+            current_user.username, school.school_name, request.remote_addr, request.path,
+        )
+        from flask_login import logout_user
+        logout_user()
+        flash("Your school's subscription is not active yet. Please contact your school administrator.", 'warning')
+        return redirect(url_for('auth.login'))
+    return decorated
+
+
 def counsellor_required(f):
     """Require is_counsellor flag on the logged-in Accounts user.
 

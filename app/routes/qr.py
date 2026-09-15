@@ -29,6 +29,10 @@ def school_qr_png(school_id: int):
     if not is_admin and session.get('school_id') != school_id:
         abort(403)
 
+    # Join QR leads students to /join — locked until the subscription is active
+    if not is_admin and not school.subscription_active:
+        abort(403)
+
     if not school.access_code:
         abort(400)
 
@@ -62,6 +66,8 @@ def school_qr_print(school_id: int):
     school = School.query.get_or_404(school_id)
     is_admin = current_user.is_authenticated and current_user.is_super_admin
     if not is_admin and session.get('school_id') != school_id:
+        abort(403)
+    if not is_admin and not school.subscription_active:
         abort(403)
     join_url = _build_join_url(school)
     qr_url = request.url_root.rstrip('/') + f"/school/{school_id}/qr.png?size=14"

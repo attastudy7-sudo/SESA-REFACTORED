@@ -4,16 +4,16 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>The SESA Methodology &ndash; FOPA Dilligent Consult | SESA</title>
-  <meta name="description" content="A multi-dimensional clinical audit designed to identify emotional developmental patterns in Ghanaian students. 6 dimensions. 4 result tiers. GES aligned." />
+  <meta name="description" content="A multi-dimensional educational audit designed to identify emotional developmental patterns in Ghanaian students. 6 dimensions. 4 result tiers. GES aligned." />
   <meta property="og:title" content="The SESA Methodology &ndash; FOPA Dilligent Consult | SESA" />
-  <meta property="og:description" content="A multi-dimensional clinical audit designed to identify emotional developmental patterns in Ghanaian students. 6 dimensions. 4 result tiers. GES aligned." />
+  <meta property="og:description" content="A multi-dimensional educational audit designed to identify emotional developmental patterns in Ghanaian students. 6 dimensions. 4 result tiers. GES aligned." />
   <meta property="og:url" content="https://fopaconsult.com/methodology" />
   <meta property="og:site_name" content="FOPA Dilligent Consult &middot; Ghana" />
   <meta property="og:locale" content="en_GH" />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="The SESA Methodology &ndash; FOPA Dilligent Consult | SESA" />
-  <meta name="twitter:description" content="A multi-dimensional clinical audit designed to identify emotional developmental patterns in Ghanaian students. 6 dimensions. 4 result tiers. GES aligned." />
+  <meta name="twitter:description" content="A multi-dimensional educational audit designed to identify emotional developmental patterns in Ghanaian students. 6 dimensions. 4 result tiers. GES aligned." />
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/Pofa_pwa.png') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pub.css') }}" />
   <style>
@@ -191,7 +191,7 @@
                   <span class="sr-only"> - </span>
                   <span class="display">The 6 Dimensions of Emotional Safety</span>
                 </h2>
-                <p class="lede">Our audit evaluates the ecosystem of the child across these critical pillars, using clinical indicators to map their emotional landscape.</p>
+                <p class="lede">Our audit evaluates the ecosystem of the child across these critical pillars, using evidence-based screening indicators to map their emotional landscape.</p>
               </div>
               <div class="dim-num" aria-hidden="true">06</div>
             </div>
@@ -346,7 +346,7 @@
                     <span class="tl-readout-dot" id="tlReadoutDot"></span>
                     <span class="tl-readout-stage" id="tlStageLabel">Normal</span>
                   </div>
-                  <p class="tl-cap" id="tlStageIndex" aria-hidden="true">Tier 1/4 - auto-tiered from 120+ clinical data points</p>
+                  <p class="tl-cap" id="tlStageIndex" aria-hidden="true">Tier 1/4 - auto-tiered from 120+ assessment data points</p>
                 </div>
               </div>
             </div>
@@ -497,7 +497,7 @@
         tlRed.className = 'tl-bulb' + (k === 3 ? ' on-red' : '');
         tlReadoutDot.style.setProperty('--tier-color', s.color);
         swapText(tlStageLabel, s.label);
-        swapText(tlStageIndex, 'Tier ' + (k + 1) + '/4 - auto-tiered from 120+ clinical data points');
+        swapText(tlStageIndex, 'Tier ' + (k + 1) + '/4 - auto-tiered from 120+ assessment data points');
         stageEls.forEach(function (el, j) { el.classList.toggle('is-current', j === k); });
       }
       function stopAuto() { if (autoTimer) { clearInterval(autoTimer); autoTimer = null; } }

@@ -11,6 +11,7 @@ from app.forms import FeedbackForm
 from app.services.test_service import classify_score, get_next_test, ANSWER_SCORES
 from app.services.sms_service import send_clinical_alert
 from app.models.audit_log import audit
+from app.utils.decorators import student_subscription_required
 
 test_bp = Blueprint('test', __name__)
 logger = logging.getLogger(__name__)
@@ -19,6 +20,7 @@ MHAP_HELPLINE = '0800 111 222'  # Ghana Mental Health Authority helpline
 
 @test_bp.route('/<path:test_type>', methods=['GET'])
 @login_required
+@student_subscription_required
 def display_questions(test_type):
     questions = Question.query.filter_by(test_type=test_type).order_by(Question.order, Question.id).all()
     if not questions:
@@ -70,6 +72,7 @@ def display_questions(test_type):
 @test_bp.route('/api/<path:test_type>/next', methods=['POST'])
 @csrf.exempt
 @login_required
+@student_subscription_required
 def next_question_api(test_type):
     """JSON API — handles next / back navigation during a test."""
     questions = Question.query.filter_by(test_type=test_type).order_by(Question.order, Question.id).all()
@@ -167,6 +170,7 @@ def next_question_api(test_type):
 
 @test_bp.route('/result/<int:result_id>')
 @login_required
+@student_subscription_required
 def show_results(result_id):
     """Score is never in the URL. Load the persisted row and verify ownership."""
     result_obj = TestResult.query.filter_by(
@@ -228,6 +232,7 @@ def show_results(result_id):
 
 @test_bp.route('/submit-feedback', methods=['POST'])
 @login_required
+@student_subscription_required
 def submit_feedback():
     """Attach optional free-text feedback to an already-saved result."""
     form = FeedbackForm()

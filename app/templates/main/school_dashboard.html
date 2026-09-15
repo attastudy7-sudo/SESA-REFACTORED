@@ -24,7 +24,8 @@
        data-school-id="{{ school.id }}"
        data-school-name="{{ school.school_name }}"
        data-period="{{ period }}"
-       data-upload-enabled="{{ 'true' if upload_enabled else 'false' }}"
+        data-upload-enabled="{{ 'true' if upload_enabled else 'false' }}"
+       data-subscription-active="{{ 'true' if school.subscription_active else 'false' }}"
        data-paystack-key="{{ paystack_public_key or '' }}"
        data-email="{{ school.email or '' }}"
        data-amount="{{ subscription_amount or 0 }}"
@@ -60,7 +61,7 @@
         </svg>
         Dashboard
       </button>
-      <button class="sd-nav-link" data-tab="students" {% if not school.upload_enabled %}data-locked="true" aria-label="Students — locked. Subscribe to unlock." title="Requires an active subscription"{% endif %}>
+      <button class="sd-nav-link" data-tab="students">
         <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
           <circle cx="9" cy="7" r="4"/>
@@ -68,17 +69,15 @@
           <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
         </svg>
         Students
-        {% if not school.upload_enabled %}<svg aria-hidden="true" class="sd-nav-link__lock" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>{% endif %}
       </button>
-      <button class="sd-nav-link" data-tab="classes" {% if not school.upload_enabled %}data-locked="true" aria-label="Classes — locked. Subscribe to unlock." title="Requires an active subscription"{% endif %}>
+      <button class="sd-nav-link" data-tab="classes">
         <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
           <path d="M6 12v5c3 3 9 3 12 0v-5"/>
         </svg>
         Classes
-        {% if not school.upload_enabled %}<svg aria-hidden="true" class="sd-nav-link__lock" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>{% endif %}
       </button>
-      <button class="sd-nav-link" data-tab="results" {% if not school.upload_enabled %}data-locked="true" aria-label="Results — locked. Subscribe to unlock." title="Requires an active subscription"{% endif %}>
+      <button class="sd-nav-link" data-tab="results">
         <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="4" y="2" width="16" height="20" rx="2"/>
           <line x1="8" y1="8" x2="16" y2="8"/>
@@ -86,16 +85,14 @@
           <line x1="8" y1="16" x2="12" y2="16"/>
         </svg>
         Results
-        {% if not school.upload_enabled %}<svg aria-hidden="true" class="sd-nav-link__lock" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>{% endif %}
       </button>
-      <button class="sd-nav-link" data-tab="at-risk" {% if not school.upload_enabled %}data-locked="true" aria-label="At Risk — locked. Subscribe to unlock." title="Requires an active subscription"{% endif %}>
+      <button class="sd-nav-link" data-tab="at-risk">
         <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
           <line x1="12" y1="9" x2="12" y2="13"/>
           <line x1="12" y1="17" x2="12.01" y2="17"/>
         </svg>
         At Risk
-        {% if not school.upload_enabled %}<svg aria-hidden="true" class="sd-nav-link__lock" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>{% endif %}
       </button>
     </div>
     <div class="sd-topnav__user" id="sdProfileDropdown" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false" aria-label="Account menu">
@@ -400,7 +397,7 @@
         </div>
       </div>
 
-      {% if school.upload_enabled %}
+      {% if school.subscription_active %}
         {% if school.access_code %}
         <div class="sd-action-card">
           <img class="sd-reg-qr" src="{{ url_for('qr.school_qr_png', school_id=school.id) }}" alt="School QR Code">
@@ -424,6 +421,17 @@
           </form>
         </div>
         {% endif %}
+      {% else %}
+        <div class="sd-action-card sd-action-card--prompt">
+          <div class="sd-reg-prompt">
+            <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <div>
+              <div class="sd-reg-prompt__title">Student registration — locked</div>
+              <div class="sd-reg-prompt__desc">Subscribe to generate the student registration link, QR code and claim codes.</div>
+            </div>
+          </div>
+          <button type="button" class="sd-btn-gold" id="sdPayBtnLocked">Subscribe to unlock</button>
+        </div>
       {% endif %}
 
       <div class="sd-payment-card">
@@ -437,14 +445,14 @@
         </div>
         {% if not school.subscription_active %}
         <div class="sd-payment-card__hero">
-          <h3>Upgrade to Premium</h3>
-          <p>Unlock all features for your school</p>
+          <h3>Activate Student Access</h3>
+          <p>You can upload students and explore everything free — subscribe to bring students online</p>
         </div>
         {% endif %}
         <div class="sd-payment-card__features">
-          <div class="sd-payment-card__feature"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg> Unlimited student assessments</div>
-          <div class="sd-payment-card__feature"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg> Detailed analytics & reports</div>
-          <div class="sd-payment-card__feature"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg> Priority support</div>
+          <div class="sd-payment-card__feature"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg> Student registration link, QR &amp; claim codes</div>
+          <div class="sd-payment-card__feature"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg> Students get their personal dashboards</div>
+          <div class="sd-payment-card__feature"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg> Unlimited assessments &amp; full reports</div>
         </div>
         <div class="sd-payment-card__cta">
           {% if school.subscription_active %}
