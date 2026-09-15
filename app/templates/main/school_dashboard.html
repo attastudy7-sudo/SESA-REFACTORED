@@ -506,10 +506,12 @@
     <div class="sd-modal sd-modal--wide">
       <div class="sd-modal__top">
         <h3><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 010-6h20a3 3 0 010 6"/><path d="M2 15a3 3 0 000 6h20a3 3 0 000-6"/><line x1="12" y1="3" x2="12" y2="21"/></svg> Claim Codes</h3>
-        <button class="sd-modal__close" id="sdClaimModalClose" aria-label="Close"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        <div class="sd-cc-topbar">
+          <div class="sd-cc-topinfo" id="sdClaimTopInfo"></div>
+          <button class="sd-modal__close" id="sdClaimModalClose" aria-label="Close"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        </div>
       </div>
       <div class="sd-modal__body">
-        <div class="sd-cc-header" id="sdClaimHeader"></div>
         <div class="sd-cc-copy-row">
           <span class="sd-cc-copy-row__label">Share this link with students to claim their account</span>
           <div class="sd-cc-copy-row__url-wrap">
@@ -517,10 +519,13 @@
             <button class="sd-cc-copy-row__btn" id="sdClaimCopyBtn">Copy</button>
           </div>
         </div>
-        <div class="sd-cc-search" id="sdClaimSearchWrap">
-          <svg class="sd-cc-search__icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" class="sd-cc-search__input" id="sdClaimSearch" placeholder="Search student name…" autocomplete="off" aria-label="Search student names">
-          <button type="button" class="sd-cc-search__clear" id="sdClaimSearchClear" aria-label="Clear search" hidden>&times;</button>
+        <div class="sd-cc-toolbar" id="sdClaimToolbar">
+          <div class="sd-cc-search" id="sdClaimSearchWrap">
+            <svg class="sd-cc-search__icon" aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" class="sd-cc-search__input" id="sdClaimSearch" placeholder="Search student name…" autocomplete="off" aria-label="Search student names">
+            <button type="button" class="sd-cc-search__clear" id="sdClaimSearchClear" aria-label="Clear search" hidden>&times;</button>
+          </div>
+          <select class="sd-cc-filter" id="sdClaimClassFilter" aria-label="Filter by class"></select>
         </div>
         <div class="sd-cc-grid" id="sdClaimGrid"></div>
       </div>
